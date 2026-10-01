@@ -1,0 +1,289 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Firm",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 89,
+                "sourceId" : "",
+                "startColumn" : 5,
+                "startLine" : 89
+              }
+            }, {
+              "_type" : "var",
+              "name" : "businessDate",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 89,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 89
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 89,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 89
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 91
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "test::Firm",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 91,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 91
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 92,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 92
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "alias" : "employees",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "businessDate",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 93,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 93
+                  }
+                } ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 93,
+                  "sourceId" : "",
+                  "startColumn" : 23,
+                  "startLine" : 93
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 16,
+                    "endLine" : 94,
+                    "sourceId" : "",
+                    "startColumn" : 13,
+                    "startLine" : 94
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 89
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 100
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "test::Firm",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 100
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 101,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 101
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "alias" : "employees",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "businessDate",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 102,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 102
+                }
+              } ],
+              "property" : "employees",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 102,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 102
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 103,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 103
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 98,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 98
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "DateTime",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 88
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "businessDate",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 88
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 88
+      }
+    } ],
+    "name" : "fetch__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 86,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 86
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 109,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 86
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

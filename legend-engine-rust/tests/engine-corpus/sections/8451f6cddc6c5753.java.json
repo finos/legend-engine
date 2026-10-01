@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "FirmRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 45
+        },
+        "store" : {
+          "path" : "test::store::FirmDB",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 45
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::FirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 47
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 47
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 42
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 40
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 40
+    }
+  } ],
+  "imports" : [ ]
+}

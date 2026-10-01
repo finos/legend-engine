@@ -1,0 +1,57 @@
+
+
+PersistenceContext test::TestPersistenceContext 
+
+{
+  persistence: test::TestPersistence;
+  serviceParameters:
+  [
+    foo='hello',
+    bar=1,
+    con1=test::ServiceConnection,
+    con2=
+    #{
+      RelationalDatabaseConnection
+      {
+        store: test::TestDatabase;
+        type: H2;
+        specification: LocalH2
+        {
+        };
+        auth: Test;
+      }
+    }#
+  ];
+  sinkConnection: test::SinkConnection;
+}
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::TestDatabase;    }
+    ingestMode: UnitemporalDelta
+    {
+      mergeStrategy: NoDeletes;
+      transactionMilestoning: DateTime
+      {
+        dateTimeInName: 'IN_Z';
+        dateTimeOutName: 'OUT_Z';
+        derivation: SourceSpecifiesInDateTime
+        {
+          sourceDateTimeInField: 'dateTimeIn';
+        }
+      }
+    }
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ServiceResult;
+    }
+  }
+}

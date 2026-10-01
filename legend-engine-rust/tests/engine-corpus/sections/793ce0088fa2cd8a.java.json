@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::Metadata", "meta::external::store::service::showcase::domain::Person", "meta::external::store::service::showcase::domain::Firm", "meta::external::store::service::showcase::domain::Address", "meta::external::store::service::showcase::domain::ApiResponse" ]
+    },
+    "name" : "ApiResponseSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 135,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 125
+    }
+  } ],
+  "imports" : [ ]
+}

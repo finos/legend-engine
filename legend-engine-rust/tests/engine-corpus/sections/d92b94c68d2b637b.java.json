@@ -1,0 +1,45 @@
+{
+  "elements" : [ {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "includeNamespace",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "value" : true
+    }, {
+      "name" : "propertyProfile",
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "value" : [ "model::myProfile", "model::nextProfile" ]
+    } ],
+    "name" : "generationOutputPath",
+    "package" : "FileGeneration::import::scopeElements",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "avro",
+    "typeSourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

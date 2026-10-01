@@ -1,0 +1,11 @@
+
+Database meta::dataquality::db
+(
+   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, SALARY DOUBLE, SCORE FLOAT, BONUS DECIMAL(18,4))
+   Table addressTable (ID INT PRIMARY KEY, LOCATIONID INT, TYPE INT)
+   Table locationTable (ID INT PRIMARY KEY, STREET VARCHAR(200), LOCALITY VARCHAR(200))
+
+   Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+   Join Address_Location(addressTable.LOCATIONID = locationTable.ID)
+)
+

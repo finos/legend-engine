@@ -1,0 +1,91 @@
+
+import meta::*;
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  title: 'my Service';
+  owners:[];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: mySimpleClass[1]|$src.name;
+    mapping: mySimpleMapping;
+    runtime: mySimpleRuntime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      { [], res: mySimpleClass[1]|$res.name == '1' }
+    ];
+  }
+}
+
+Service meta::pure::myServiceMulti
+{
+  pattern: 'url/myUrl/';
+  title: 'my Service';
+  owners:[];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: src: mySimpleClass[1]|$src.name;
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: mySimpleMapping;
+      runtime: mySimpleRuntime;
+    }
+  }
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: 'moreData';
+      asserts:
+    [
+      { [], res: mySimpleClass[1]|$res.name == '1' }
+    ];
+    }
+  }
+}
+
+Service meta::pure::myServiceSingleWithEmbeddedRuntime
+{
+  pattern: 'url/myUrl/';
+  title: 'my Service';
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: mySimpleClass[1]|$src.name;
+    mapping: mySimpleMapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: myConnection,
+          id3: #{
+            JsonModelConnection
+            {
+              class: mySimpleClass2;
+              url: 'my_url';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

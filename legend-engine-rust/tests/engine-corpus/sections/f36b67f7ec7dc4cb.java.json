@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Service Store Elements should have unique ids. Multiple elements found with ids - [TestServices]",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "property",
+    "parameters" : [ {
+      "_type" : "packageableElementPtr",
+      "fullPath" : "MyEnum",
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      }
+    } ],
+    "property" : "30_360",
+    "sourceInformation" : {
+      "endColumn" : 16,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 16,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

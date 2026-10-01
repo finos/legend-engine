@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ {
+      "functionDefinition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "ok",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 3
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "this"
+        } ]
+      },
+      "name" : "0",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "names",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

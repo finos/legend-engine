@@ -1,0 +1,34 @@
+
+Service test::service::FirmService
+{
+  pattern: '/firm';
+  title: 'my Service';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Firm.all()->project(~[name: f | $f.name]);
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::TestRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1
+    (
+      test::data::PersonSeed;
+      test::store::TestDB:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,NAME
+            1,Alice;
+        }#;
+      test_1 =>
+        Relation
+        #{
+          name
+          Alice;
+        }#;
+    )
+  ]
+}

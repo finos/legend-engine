@@ -1,0 +1,13 @@
+
+DataSpace meta::dataquality::PersonDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'default';
+      mapping: meta::dataquality::dataquality::Mapping;
+      defaultRuntime: meta::dataquality::DataQualityRuntime;
+    }
+  ];
+  defaultExecutionContext: 'default';
+}

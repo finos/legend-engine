@@ -1,0 +1,20 @@
+
+Database sample::test
+(
+  Table table
+  (
+    milestoning
+    (
+      processing(PROCESSING_SNAPSHOT_DATE = PROCESSING_DATE),
+      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy),
+      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, OUT_IS_INCLUSIVE = false, INFINITY_DATE = %9999-12-30T19:00:00.0000),
+      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, OUT_IS_INCLUSIVE = true, INFINITY_DATE = %9999-12-30T19:00:00.0000),
+      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, INFINITY_DATE = %9999-12-30T19:00:00.0000),
+      business(BUS_SNAPSHOT_DATE = BUSINESS_DATE),
+      business(BUS_FROM = dummy, BUS_THRU = dummy),
+      business(BUS_FROM = dummy, BUS_THRU = dummy, THRU_IS_INCLUSIVE = false, INFINITY_DATE = %9999-12-30T19:00:00.0000),
+      business(BUS_FROM = dummy, BUS_THRU = dummy, THRU_IS_INCLUSIVE = true, INFINITY_DATE = %9999-12-30T19:00:00.0000),
+      business(BUS_FROM = dummy, BUS_THRU = dummy, INFINITY_DATE = %9999-12-30T19:00:00.0000)
+    )
+  )
+)

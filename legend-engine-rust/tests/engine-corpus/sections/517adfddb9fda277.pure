@@ -1,0 +1,28 @@
+
+Class <<temporal.processingtemporal>> test::ProcessingTemporalAddress
+{
+  DunmmyProperty : String[1];
+}
+
+Class <<temporal.businesstemporal>> test::BusinessTemporalAddress
+{
+  DunmmyProperty : String[1];
+}
+
+Class <<temporal.bitemporal>> test::BiTemporalAddress
+{
+  DunmmyProperty : String[1];
+}
+
+Class test::Person
+{
+  processingTemporalAddress1 : test::ProcessingTemporalAddress[1];
+  businessTemporalAddress1 : test::BusinessTemporalAddress[1];
+  biTemporalAddress1 : test::BiTemporalAddress[1];
+  processingTemporalAddress2 : test::ProcessingTemporalAddress[0..1];
+  businessTemporalAddress2 : test::BusinessTemporalAddress[0..1];
+  biTemporalAddress2 : test::BiTemporalAddress[0..1];
+  processingTemporalAddress3 : test::ProcessingTemporalAddress[*];
+  businessTemporalAddress3 : test::BusinessTemporalAddress[*];
+  biTemporalAddress3 : test::BiTemporalAddress[*];
+}

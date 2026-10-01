@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 83
+      },
+      "id" : "person_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "pathOffset" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "firms"
+          } ],
+          "startType" : "$service.response"
+        },
+        "service" : {
+          "service" : "EmployeesService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeesServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 85
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 85
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 83
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 90,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 81
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

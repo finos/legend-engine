@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Expected a non-empty function caller",
+    "sourceInformation" : {
+      "endColumn" : 22,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 15,
+      "startLine" : 7
+    }
+  }
+}

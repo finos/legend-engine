@@ -1,0 +1,2297 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "FirmXFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "LEGALNAME",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 66
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 66
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 66
+          },
+          "value" : "Firm X"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 44,
+          "startLine" : 66
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 66
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "LastNameFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "LASTNAME",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 67
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 67,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 67
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 50,
+            "startLine" : 67
+          },
+          "value" : "Uyaguari"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 67,
+          "sourceId" : "",
+          "startColumn" : 48,
+          "startLine" : 67
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 67
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "personViewWithFirmTable",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 69
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 69
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 49,
+            "startLine" : 69
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 69
+            },
+            "table" : "PersonViewWithDistinct"
+          },
+          "tableAlias" : "PersonViewWithDistinct"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 69,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 69
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 69
+      }
+    }, {
+      "name" : "PersonWithPersonView",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 70
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 70,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 70
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          }, {
+            "_type" : "column",
+            "column" : "id",
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 70
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 70,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 70
+              },
+              "table" : "personViewWithGroupBy"
+            },
+            "tableAlias" : "personViewWithGroupBy"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 70
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "AGE",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 77,
+              "startLine" : 70
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 70,
+                "sourceId" : "",
+                "startColumn" : 77,
+                "startLine" : 70
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          }, {
+            "_type" : "column",
+            "column" : "maxage",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 70
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 70,
+                "sourceId" : "",
+                "startColumn" : 95,
+                "startLine" : 70
+              },
+              "table" : "personViewWithGroupBy"
+            },
+            "tableAlias" : "personViewWithGroupBy"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 122,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 93,
+            "startLine" : 70
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 122,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 73,
+          "startLine" : 70
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 123,
+        "endLine" : 70,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 70
+      }
+    }, {
+      "name" : "Address_Firm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 71,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 71
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 71,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 71
+            },
+            "table" : "addressTable"
+          },
+          "tableAlias" : "addressTable"
+        }, {
+          "_type" : "column",
+          "column" : "ADDRESSID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 71,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 71
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 71,
+              "sourceId" : "",
+              "startColumn" : 41,
+              "startLine" : 71
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 71
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 71,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 71
+      }
+    }, {
+      "name" : "Address_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 72
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 72
+            },
+            "table" : "addressTable"
+          },
+          "tableAlias" : "addressTable"
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "ADDRESSID",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 72
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 72,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 72
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          }, {
+            "_type" : "column",
+            "column" : "ADDRESSID",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 72
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 72,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 72
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 72
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 72,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 72
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 88,
+        "endLine" : 72,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 72
+      }
+    }, {
+      "name" : "Firm_Ceo",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "CEOID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 73
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 73
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 73
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 73
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 73
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 73,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 73
+      }
+    }, {
+      "name" : "Firm_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 74
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 74,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 74
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "FIRMID",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 74
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 74,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 74
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 74
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 74
+      }
+    }, {
+      "name" : "Person_Location",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 75
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 75,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 75
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "PERSONID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 75
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 75,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 75
+            },
+            "table" : "locationTable"
+          },
+          "tableAlias" : "locationTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 75
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 75
+      }
+    }, {
+      "name" : "Person_Manager",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "MANAGERID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 76
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 76,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 76
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 49,
+            "startLine" : 76
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 76,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 76
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 76
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 76
+      }
+    }, {
+      "name" : "location_PlaceOfInterest",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 77
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 77,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 77
+            },
+            "table" : "locationTable"
+          },
+          "tableAlias" : "locationTable"
+        }, {
+          "_type" : "column",
+          "column" : "locationID",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 55,
+            "startLine" : 77
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 77,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 77
+            },
+            "table" : "placeOfInterestTable"
+          },
+          "tableAlias" : "placeOfInterestTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 77
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 86,
+        "endLine" : 77,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 77
+      }
+    }, {
+      "name" : "Person_OtherFirm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "FIRMID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 78
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 78,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 78
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 78
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 78,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 78
+            },
+            "table" : "otherFirmTable"
+          },
+          "tableAlias" : "otherFirmTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 46,
+          "startLine" : 78
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 78,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 78
+      }
+    }, {
+      "name" : "Person_PersonFirm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 79
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 79,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 79
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "PERSONID",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 79
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 79,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 79
+            },
+            "table" : "PersonToFirm"
+          },
+          "tableAlias" : "PersonToFirm"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 43,
+          "startLine" : 79
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 79,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 79
+      }
+    }, {
+      "name" : "Firm_PersonFirm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 80
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 80
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "FIRMID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 80
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 41,
+              "startLine" : 80
+            },
+            "table" : "PersonToFirm"
+          },
+          "tableAlias" : "PersonToFirm"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 80
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 80,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 80
+      }
+    }, {
+      "name" : "OtherFirm_PersonFirm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 81
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 81
+            },
+            "table" : "otherFirmTable"
+          },
+          "tableAlias" : "otherFirmTable"
+        }, {
+          "_type" : "column",
+          "column" : "FIRMID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 81
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 81
+            },
+            "table" : "PersonToFirm"
+          },
+          "tableAlias" : "PersonToFirm"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 49,
+          "startLine" : 81
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 81
+      }
+    } ],
+    "name" : "dbInc",
+    "package" : "model::relational::tests",
+    "schemas" : [ {
+      "name" : "productSchema",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 61
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 63,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 63
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 63,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 63
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "productTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 63
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 23
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 88,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 68,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 100,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 124,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 115,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 139,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 127,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 140,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 100,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 109,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 124,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 136,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "differentPersonTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 149,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "CEOID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 88,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 89,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "columns" : [ {
+          "name" : "PERSONID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 50,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PersonToFirm",
+        "primaryKey" : [ "PERSONID", "FIRMID" ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 70,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherFirmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 83,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 30
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "TYPE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "STREET",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 73,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "COMMENTS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 94,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "addressTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 115,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PERSONID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PLACE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 59,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "date",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 78,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "locationTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "locationID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 79,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "placeOfInterestTable",
+        "primaryKey" : [ "ID", "locationID" ],
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "PERSON_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 39
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 39
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 39
+          }
+        }, {
+          "name" : "lastName",
+          "operation" : {
+            "_type" : "column",
+            "column" : "LASTNAME",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 40
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 40
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 40
+          }
+        }, {
+          "name" : "firm_name",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::dbInc",
+              "name" : "Firm_Person",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 41
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "LEGALNAME",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 41
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 41
+                },
+                "table" : "firmTable"
+              },
+              "tableAlias" : "firmTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 41
+          }
+        } ],
+        "distinct" : false,
+        "filter" : {
+          "filter" : {
+            "name" : "LastNameFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 38
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "PersonFirmView",
+        "primaryKey" : [ "PERSON_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 48
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 48
+              },
+              "table" : "personTable"
+            },
+            "tableAlias" : "personTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 48
+          }
+        }, {
+          "name" : "maxage",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "max",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "AGE",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 49,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 49
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 49,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 49
+                },
+                "table" : "personTable"
+              },
+              "tableAlias" : "personTable"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 49,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 49
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 49
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 47
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "name" : "personViewWithGroupBy",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 45
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::dbInc",
+              "name" : "PersonWithPersonView",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 55,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 55
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "ID",
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 55,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 55
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 55,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 55
+                },
+                "table" : "personTable"
+              },
+              "tableAlias" : "personTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 55
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 55
+          }
+        }, {
+          "name" : "firstName",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::dbInc",
+              "name" : "PersonWithPersonView",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 56,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 56
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "FIRSTNAME",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 56,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 56
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 56,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 56
+                },
+                "table" : "personTable"
+              },
+              "tableAlias" : "personTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 56,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 56
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 56
+          }
+        }, {
+          "name" : "lastName",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::dbInc",
+              "name" : "PersonWithPersonView",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 57,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 57
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "LASTNAME",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 57,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 57
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 57,
+                  "sourceId" : "",
+                  "startColumn" : 39,
+                  "startLine" : 57
+                },
+                "table" : "personTable"
+              },
+              "tableAlias" : "personTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 57,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 57,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 57
+          }
+        }, {
+          "name" : "firmId",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::dbInc",
+              "name" : "PersonWithPersonView",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 58,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 58
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "FIRMID",
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 58,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 58
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::dbInc",
+                "mainTableDb" : "model::relational::tests::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 58,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 58
+                },
+                "table" : "personTable"
+              },
+              "tableAlias" : "personTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 58,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 58
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 58
+          }
+        } ],
+        "distinct" : true,
+        "groupBy" : [ ],
+        "name" : "PersonViewWithDistinct",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 52
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 83,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ]
+  } ]
+}

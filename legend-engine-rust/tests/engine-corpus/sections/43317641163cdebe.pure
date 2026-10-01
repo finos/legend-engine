@@ -1,0 +1,5 @@
+
+function my::integerFunction():Integer[1]
+{
+  1;
+}

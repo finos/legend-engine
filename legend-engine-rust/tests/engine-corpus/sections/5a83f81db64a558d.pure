@@ -1,0 +1,53 @@
+
+Service demo::service::PersonService
+{
+  pattern: '/api/persons';
+  documentation: 'List all persons.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    mapping: demo::PersonMapping;
+    runtime: demo::runtime::PersonRuntime;
+  }
+  testSuites:
+  [
+    serviceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firstName,lastName\n' +
+                '1,John,Doe\n' +
+                '2,Jane,Smith\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        allPersons:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"John","Last Name":"Doe"},{"First Name":"Jane","Last Name":"Smith"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

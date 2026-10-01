@@ -1,0 +1,12 @@
+
+Runtime test::runtime::FirmRuntime
+{
+  mappings: [ test::mapping::FirmMapping ];
+  connections:
+  [
+    test::store::FirmDB:
+    [
+      c1: test::runtime::FirmConnection
+    ]
+  ];
+}

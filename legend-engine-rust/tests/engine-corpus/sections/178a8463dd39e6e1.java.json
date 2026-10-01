@@ -1,0 +1,127 @@
+{
+  "elements" : [ {
+    "_type" : "measure",
+    "canonicalUnit" : {
+      "measure" : "test::NewNonConvertibleMeasure",
+      "name" : "UnitOne",
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      }
+    },
+    "name" : "NewNonConvertibleMeasure",
+    "nonCanonicalUnits" : [ {
+      "measure" : "test::NewNonConvertibleMeasure",
+      "name" : "UnitTwo",
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      }
+    }, {
+      "measure" : "test::NewNonConvertibleMeasure",
+      "name" : "UnitThree",
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      }
+    } ],
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NewNonConvertibleMeasure~UnitOne",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "unitOne",
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NewNonConvertibleMeasure~UnitTwo",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "unitTwo",
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   optional : String[0..1];
+   prop(cond:Boolean[1]) { if($cond, | [$this.optional], | []) } : String[*];
+}

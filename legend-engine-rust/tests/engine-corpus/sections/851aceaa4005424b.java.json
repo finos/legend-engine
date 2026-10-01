@@ -1,0 +1,397 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "MultiScoreFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "greaterThan",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "array_size",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "SCORES",
+              "sourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 50,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 64,
+                "startLine" : 50
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssd::store::TeamDB",
+                "mainTableDb" : "demo::ssd::store::TeamDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 50,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 64,
+                  "startLine" : 50
+                },
+                "table" : "TEAM_TABLE"
+              },
+              "tableAlias" : "TEAM_TABLE"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 90,
+                "endLine" : 50,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 83,
+                "startLine" : 50
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 103,
+                "endLine" : 50,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 93,
+                "startLine" : 50
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 50,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 38,
+              "startLine" : 50
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 109,
+            "endLine" : 50,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 27,
+            "startLine" : 50
+          }
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 109,
+            "endLine" : 50,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 109,
+            "startLine" : 50
+          },
+          "value" : 2
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 109,
+          "endLine" : 50,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 107,
+          "startLine" : 50
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 110,
+        "endLine" : 50,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 50
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "TeamDB",
+    "package" : "demo::ssd::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 59,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 36
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 40,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LABEL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 41,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 41
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "SCORES",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 43,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        }, {
+          "name" : "DIVISIONS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 45,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TEAM_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 46,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 38
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 55,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 9,
+              "startLine" : 55
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssd::store::TeamDB",
+              "mainTableDb" : "demo::ssd::store::TeamDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 55,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 9,
+                "startLine" : 55
+              },
+              "table" : "TEAM_TABLE"
+            },
+            "tableAlias" : "TEAM_TABLE"
+          },
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 55
+          }
+        }, {
+          "name" : "TOTAL",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "array_size",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "SCORES",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 56,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 49,
+                  "startLine" : 56
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssd::store::TeamDB",
+                  "mainTableDb" : "demo::ssd::store::TeamDB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 56,
+                    "sourceId" : "store/db.pure",
+                    "startColumn" : 49,
+                    "startLine" : 56
+                  },
+                  "table" : "TEAM_TABLE"
+                },
+                "tableAlias" : "TEAM_TABLE"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 56,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 68,
+                  "startLine" : 56
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 56,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 78,
+                  "startLine" : 56
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 56,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 23,
+                "startLine" : 56
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 56,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 12,
+              "startLine" : 56
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 56,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 56
+          }
+        }, {
+          "name" : "TOP",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "array_max",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "SCORES",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 57,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 46,
+                  "startLine" : 57
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssd::store::TeamDB",
+                  "mainTableDb" : "demo::ssd::store::TeamDB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 57,
+                    "sourceId" : "store/db.pure",
+                    "startColumn" : 46,
+                    "startLine" : 57
+                  },
+                  "table" : "TEAM_TABLE"
+                },
+                "tableAlias" : "TEAM_TABLE"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 57,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 65,
+                  "startLine" : 57
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 85,
+                  "endLine" : 57,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 75,
+                  "startLine" : 57
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 57,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 20,
+                "startLine" : 57
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 57,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 10,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 57,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 57
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "TEAM_STATS",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 58,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 53
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 59,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 36
+    },
+    "stereotypes" : [ ]
+  } ]
+}

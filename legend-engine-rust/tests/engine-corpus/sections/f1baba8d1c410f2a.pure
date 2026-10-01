@@ -1,0 +1,15 @@
+
+Data demo::data::OtherwiseEmployeeData
+{
+  Relational
+  #{
+    default.EmployeeFirmDenormTable:
+      'id,name,firmId,legalName\n' +
+      '1,John Doe,1,Firm A\n' +
+      '2,Jane Smith,2,Firm B\n';
+    default.FirmInfoTable:
+      'id,name,other\n' +
+      '1,Firm A,Info A\n' +
+      '2,Firm B,Info B\n';
+  }#
+}

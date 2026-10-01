@@ -1,0 +1,81 @@
+{
+  "elements" : [ {
+    "_type" : "association",
+    "name" : "Employment",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Firm",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 18,
+            "sourceId" : "model/employment.pure",
+            "startColumn" : 13,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "employer",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 18,
+        "sourceId" : "model/employment.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Employee",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 19,
+            "sourceId" : "model/employment.pure",
+            "startColumn" : 14,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 19,
+        "sourceId" : "model/employment.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "model/employment.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

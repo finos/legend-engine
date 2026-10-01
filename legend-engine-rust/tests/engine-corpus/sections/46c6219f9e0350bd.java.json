@@ -1,0 +1,37 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "reference",
+      "dataElement" : {
+        "path" : "meta::data::MyData",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "DATA"
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "MyData",
+    "package" : "meta::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

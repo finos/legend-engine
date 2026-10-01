@@ -1,0 +1,32 @@
+
+DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
+{
+  groupId: 'test.group';
+  artifactId: 'test-data-space';
+  versionId: '1.0.0';
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    },
+    {
+      name: 'Context 2';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  description: 'some description';
+  featuredDiagrams:
+  [
+    model::Diagram,
+    model::Diagram2
+  ];
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}

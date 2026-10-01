@@ -1,0 +1,9 @@
+
+Mapping 
+model::mapping::myMap
+(
+   model::Person: Relational
+   {
+      name : [model::store::db]myTable.name
+   }
+)

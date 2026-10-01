@@ -1,0 +1,109 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "A",
+    "package" : "a",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 103,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "other",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 2
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id2",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "errr",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 101,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 85,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb2",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 2
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 103,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

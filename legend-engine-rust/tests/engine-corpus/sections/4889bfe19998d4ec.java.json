@@ -1,0 +1,313 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "example::Report",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 32
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "example::Report",
+          "property" : "hasOption",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 35
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 35
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "instanceOf",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 35,
+                  "sourceId" : "",
+                  "startColumn" : 30,
+                  "startLine" : 35
+                }
+              } ],
+              "property" : "product",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 35
+              }
+            }, {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "example::Option",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 35
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 35
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "example::Report",
+          "property" : "productSide",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 36
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 36
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "match",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 36,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 36
+                }
+              } ],
+              "property" : "product",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 36,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 36
+              }
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 52,
+                "startLine" : 36
+              },
+              "values" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 75,
+                      "endLine" : 36,
+                      "sourceId" : "",
+                      "startColumn" : 74,
+                      "startLine" : 36
+                    }
+                  } ],
+                  "property" : "side1",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 36,
+                    "sourceId" : "",
+                    "startColumn" : 77,
+                    "startLine" : 36
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "example::Option",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 36,
+                        "sourceId" : "",
+                        "startColumn" : 55,
+                        "startLine" : 36
+                      }
+                    },
+                    "typeArguments" : [ ],
+                    "typeVariableValues" : [ ]
+                  },
+                  "multiplicity" : {
+                    "lowerBound" : 1,
+                    "upperBound" : 1
+                  },
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 36,
+                    "sourceId" : "",
+                    "startColumn" : 53,
+                    "startLine" : 36
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 36,
+                  "sourceId" : "",
+                  "startColumn" : 73,
+                  "startLine" : 36
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "s",
+                    "sourceInformation" : {
+                      "endColumn" : 73,
+                      "endLine" : 37,
+                      "sourceId" : "",
+                      "startColumn" : 72,
+                      "startLine" : 37
+                    }
+                  } ],
+                  "property" : "side2",
+                  "sourceInformation" : {
+                    "endColumn" : 79,
+                    "endLine" : 37,
+                    "sourceId" : "",
+                    "startColumn" : 75,
+                    "startLine" : 37
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "example::Swap",
+                      "sourceInformation" : {
+                        "endColumn" : 67,
+                        "endLine" : 37,
+                        "sourceId" : "",
+                        "startColumn" : 55,
+                        "startLine" : 37
+                      }
+                    },
+                    "typeArguments" : [ ],
+                    "typeVariableValues" : [ ]
+                  },
+                  "multiplicity" : {
+                    "lowerBound" : 1,
+                    "upperBound" : 1
+                  },
+                  "name" : "s",
+                  "sourceInformation" : {
+                    "endColumn" : 70,
+                    "endLine" : 37,
+                    "sourceId" : "",
+                    "startColumn" : 53,
+                    "startLine" : 37
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 79,
+                  "endLine" : 37,
+                  "sourceId" : "",
+                  "startColumn" : 71,
+                  "startLine" : 37
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 36
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 34
+      },
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 32
+      },
+      "srcClass" : "example::Trade"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mappingWithMatch",
+    "package" : "example",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

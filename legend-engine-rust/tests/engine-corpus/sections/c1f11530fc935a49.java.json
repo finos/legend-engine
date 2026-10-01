@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 26,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 21
+        },
+        "table" : "SALE_TABLE",
+        "values" : "ID,PRODUCT,AMOUNT\n1,Widget,100\n2,Gadget,250\n3,Trinket,50\n"
+      } ]
+    },
+    "name" : "SaleData",
+    "package" : "demo::view::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

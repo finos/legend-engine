@@ -1,0 +1,56 @@
+
+Enum domain::CustomerType
+{
+  Member,
+  Guest
+}
+
+Class domain::Customer
+{
+  id: Integer[1];
+  name: String[1];
+  birthDate: Date[1];
+  time: DateTime[1];
+  strictDate: StrictDate[1];
+  boolean: Boolean[1];
+  number: Number[1];
+  float: Float[1];
+  decimal: Decimal[1];
+  type: domain::CustomerType[1];
+}
+
+function functions::parameterizedFunction(var: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  domain::Customer.all()->filter(
+    x|$x.id==$var
+  )->project(
+    [
+      x|$x.id
+    ],
+    [
+      'Customer ID'
+    ]
+  )->from(
+    mapping::customerMapping,
+    runtime::dummyRuntime
+  )
+}
+
+function functions::functionWithEnumOutput(): meta::pure::tds::TabularDataSet[1]
+{
+  domain::Customer.all()->project(
+  [
+    x|$x.id,
+    x|$x.type,
+    x|$x.boolean
+  ],
+  [
+    'Customer ID',
+    'Customer Type',
+    'IsMember'
+  ]
+  )->from(
+    mapping::customerMapping,
+    runtime::snowflakeRuntime
+  )
+}

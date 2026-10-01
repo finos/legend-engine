@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())
+}

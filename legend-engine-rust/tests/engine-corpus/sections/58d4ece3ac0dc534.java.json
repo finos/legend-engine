@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'b'. Valid alternatives: ['&&', '||', '==', '!=', '->', '[', '.', ';', '+', '*', '-', '/', '<', '<=', '>', '>=']",
+    "sourceInformation" : {
+      "endColumn" : 30,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 30,
+      "startLine" : 5
+    }
+  }
+}

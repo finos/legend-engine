@@ -1,0 +1,110 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "joinStrings",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "sortBy",
+      "parameters" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "this",
+            "sourceInformation" : {
+              "endColumn" : 6,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 2,
+              "startLine" : 1
+            }
+          } ],
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 1
+          }
+        } ],
+        "property" : "lastName",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 1
+        },
+        "type" : "path",
+        "value" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 82,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 74,
+              "startLine" : 1
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 1
+          },
+          "startType" : "model::Person"
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 76,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 75,
+        "startLine" : 1
+      },
+      "value" : ""
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 73,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 63,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 77,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

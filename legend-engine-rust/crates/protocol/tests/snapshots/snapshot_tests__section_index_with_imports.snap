@@ -1,0 +1,52 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 667
+expression: json
+---
+{
+  "_type": "sectionIndex",
+  "name": "test.pure",
+  "package": "__internal__",
+  "sections": [
+    {
+      "_type": "importAware",
+      "elements": [
+        "model::Person",
+        "model::Address"
+      ],
+      "imports": [
+        "model::domain",
+        "model::common"
+      ],
+      "parserName": "Pure",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 20,
+        "sourceId": "test.pure",
+        "startColumn": 1,
+        "startLine": 1
+      }
+    },
+    {
+      "_type": "default",
+      "elements": [
+        "model::store::MyStore"
+      ],
+      "parserName": "Relational",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 40,
+        "sourceId": "test.pure",
+        "startColumn": 1,
+        "startLine": 21
+      }
+    }
+  ],
+  "sourceInformation": {
+    "endColumn": 1,
+    "endLine": 40,
+    "sourceId": "test.pure",
+    "startColumn": 1,
+    "startLine": 1
+  }
+}

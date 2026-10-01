@@ -1,0 +1,60 @@
+
+Mapping demo::joins::LeftOuterJoinMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME,
+    department: [demo::store::JoinsDB]@Emp_Dept
+  }
+
+  *demo::joins::Department: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.DEPARTMENT.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.DEPARTMENT
+    name: [demo::store::JoinsDB]HR.DEPARTMENT.NAME,
+    location: [demo::store::JoinsDB]HR.DEPARTMENT.LOCATION
+  }
+
+  testSuites:
+  [
+    leftOuterSuite:
+    {
+      function: |demo::joins::Employee.all()->sortBy(x | $x.name)->project([x | $x.name, x | $x.department.name], ['Name', 'Dept']);
+      tests:
+      [
+        unmatchedRowSurvives:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::LeftOuterJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldKeepEmployeeWithoutDepartment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Dept":"Engineering"},{"Name":"Bob","Dept":"Sales"},{"Name":"Carol","Dept":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

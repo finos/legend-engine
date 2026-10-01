@@ -1,0 +1,8 @@
+
+
+PersistenceContext test::TestPersistenceContext 
+{
+  persistence: test::TestPersistence;
+  serviceParameters: [foo='hello',bar=1];
+  serviceParameters: [foo='hello',bar=1];
+}

@@ -1,0 +1,5 @@
+
+function test::fetch(dt: DateTime[1]): Any[*]
+{
+  test::Trade.all()->filter(t | $t.time == $dt)->project([t | $t.id], ['id'])
+}

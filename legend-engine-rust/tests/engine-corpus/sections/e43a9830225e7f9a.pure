@@ -1,0 +1,42 @@
+
+Mapping model::dummyMapping2
+(
+  *model::animal::mammal::Mammal: Pure
+  {
+    noOfLegs: '41231'
+  }
+  *model::animal::reptile::Reptile: Pure
+  {
+    ~src model::animal::reptile::Reptile
+    family: EnumerationMapping model_animal_Family: $src.name
+  }
+
+  model::animal::Family: EnumerationMapping
+  {
+    UO: ['op']
+  }
+)
+
+Mapping model::dummyMapping
+(
+  *model::animal::Animal: Pure
+  {
+    noOfLegs: 4
+  }
+  *model::animal::Animal2: Pure
+  {
+    name: 'asdasdasdasd'
+  }
+  *model::animal::GenericAnimal: Pure
+  {
+  }
+  *model::animal::GenericAnimal2: Pure
+  {
+  }
+
+  model::animal::Family: EnumerationMapping
+  {
+    UO: ['uo']
+  }
+)
+

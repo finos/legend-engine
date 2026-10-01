@@ -1,0 +1,97 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "filter",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "Person",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 1
+        },
+        "value" : true
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Person",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 1
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "p",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 35,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 40,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

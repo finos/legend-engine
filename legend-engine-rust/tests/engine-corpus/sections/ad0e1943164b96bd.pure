@@ -1,0 +1,55 @@
+
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::TradeProductServiceStore :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::serviceStoreConnection2
+        ],
+        ModelStore :
+        [
+            connection_3 : meta::external::store::service::showcase::connection::modelChainConnection,
+            connection_4 : meta::external::store::service::showcase::connection::jsonModelConnection
+        ]
+    ];
+}
+
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime2
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::EmployeeServiceStore1 :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection3
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore2 :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::serviceStoreConnection4
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore3 :
+        [
+            connection_3 : meta::external::store::service::showcase::connection::serviceStoreConnection5
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore4 :
+        [
+            connection_4 : meta::external::store::service::showcase::connection::serviceStoreConnection6
+        ],
+        meta::external::store::service::showcase::store::EmployeeServiceStore5 :
+        [
+            connection_5 : meta::external::store::service::showcase::connection::serviceStoreConnection7
+        ]
+    ];
+}

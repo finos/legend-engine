@@ -1,0 +1,5 @@
+
+import anything::*;
+GenerationSpecification test::x
+{
+}

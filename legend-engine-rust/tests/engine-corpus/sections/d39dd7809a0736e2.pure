@@ -1,0 +1,7 @@
+
+Class test::Person
+{
+  fullName: String[1];
+  birthTime: DateTime[0..1];
+}
+

@@ -1,0 +1,269 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "firm_person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 41
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 41
+            },
+            "table" : "firm"
+          },
+          "tableAlias" : "firm"
+        }, {
+          "_type" : "column",
+          "column" : "FIRM_ID",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 41
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 41
+            },
+            "table" : "person"
+          },
+          "tableAlias" : "person"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 41
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      }
+    } ],
+    "name" : "DB",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGAL_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "BUS_FROM",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "BUS_THRU",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "BUS_FROM",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 20
+          },
+          "thru" : "BUS_THRU",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "firm",
+        "primaryKey" : [ "ID", "BUS_FROM" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 16
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "FIRM_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "BUS_FROM",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "BUS_THRU",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "BUS_FROM",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 32
+          },
+          "thru" : "BUS_THRU",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "person",
+        "primaryKey" : [ "ID", "BUS_FROM" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 28
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,11 @@
+
+Data demo::ssa::data::PersonData
+{
+  Relation
+  #{
+    default.PERSON_TABLE:
+      ID,FIRST_NAME,FIRM_DETAILS
+      1,Alice,"{""legalName"":""Firm X"",""scores"":[30,10,20,10],""addresses"":[{""name"":""A1"",""rank"":5},{""name"":""B2"",""rank"":3},{""name"":""A3"",""rank"":9}]}"
+      2,Bob,"{""legalName"":""Firm A"",""scores"":[7],""addresses"":[{""name"":""Z9"",""rank"":1}]}";
+  }#
+}

@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "PersonDB",
+    "package" : "demo::ssa::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 58,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 50
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 54,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 54
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRST_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 55
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "FIRM_DETAILS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 56,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 56
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 57,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 52
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 50
+    },
+    "stereotypes" : [ ]
+  } ]
+}

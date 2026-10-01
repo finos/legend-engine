@@ -1,0 +1,445 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "relational",
+      "association" : {
+        "path" : "Firm_Address",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 59
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 63,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 63
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "db",
+            "name" : "firmAddress",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 63,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 63
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 63,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 63
+          }
+        },
+        "source" : "p1_firm",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 63
+        },
+        "target" : "a1"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 65,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 59
+      },
+      "stores" : [ "db" ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "Address",
+      "classSourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 41
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "a1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Address",
+          "property" : "line1",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 43
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "address1",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 43
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 43,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 43
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        },
+        "source" : "a1",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 43
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Address",
+          "property" : "postcode",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 44
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "postcode",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 44
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 44
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        },
+        "source" : "a1",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 44
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 41
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 46
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "p1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 48
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 48
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 48
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 48
+        }
+      }, {
+        "_type" : "embeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ {
+            "_type" : "column",
+            "column" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 51,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 51
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "db",
+              "mainTableDb" : "db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 51,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 51
+              },
+              "table" : "employeeFirmDenormTable"
+            },
+            "tableAlias" : "employeeFirmDenormTable"
+          } ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 52,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 52
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 52,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 52
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "db",
+                "mainTableDb" : "db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 52,
+                  "sourceId" : "",
+                  "startColumn" : 29,
+                  "startLine" : 52
+                },
+                "table" : "employeeFirmDenormTable"
+              },
+              "tableAlias" : "employeeFirmDenormTable"
+            },
+            "source" : "p1",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 52,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 52
+            }
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 50
+          }
+        },
+        "property" : {
+          "class" : "Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 49
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 53,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 50
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 46
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "Firm",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 55
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "f1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 57,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 57
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 57,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 57
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 57,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 57
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        },
+        "source" : "f1",
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 57,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 57
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 58,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 55
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 66,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 39
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ "other", "mapping" ]
+}

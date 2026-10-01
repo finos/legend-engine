@@ -1,0 +1,6 @@
+
+Profile meta::pure::profiles::'with quotes'
+{
+  stereotypes: ['two words'];
+  tags: ['s tag', 'another tag'];
+}

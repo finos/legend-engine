@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->filter(a|$a.nam == 'ohoh')}:test::A[*];
+}

@@ -1,0 +1,21 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: store::Store;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'okilkol.asdasd';
+    warehouse: 'warehousename';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: false;
+    enableQueryTags: true;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}

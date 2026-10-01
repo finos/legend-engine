@@ -1,0 +1,75 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.AllTradeService
+  }
+
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductsByIdsService
+     (
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
+     )
+  }
+
+  meta::external::store::service::showcase::domain::Trade[trade_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    tradeId: $src.s_tradeId,
+    +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+    trader[trader_set]: $src
+  }
+
+  meta::external::store::service::showcase::domain::Trader[trader_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    kerberos  : $src.s_traderDetails->split(':')->at(0),
+    firstName : $src.s_traderDetails->split(':')->at(1),
+    lastName  : $src.s_traderDetails->split(':')->at(2)
+  }
+
+  meta::external::store::service::showcase::domain::Product[prod_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Product
+
+    productId: $src.s_productId,
+    productName: $src.s_productName,
+    description: $src.s_description,
+    synonyms[synonym_set]: $src.s_synonyms
+  }
+
+  meta::external::store::service::showcase::domain::Synonym[synonym_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Synonym
+
+    name: $src.s_name,
+    type: EnumerationMapping SynonymTypeMapping: $src.s_type
+  }
+
+  meta::external::store::service::showcase::domain::SynonymType: EnumerationMapping SynonymTypeMapping
+  {
+    CUSIP: ['cusip', 'CUSIP'],
+    ISIN: ['isin', 'ISIN']
+  }
+
+  meta::external::store::service::showcase::domain::S_Trade_S_Product[s_cross_set]: XStore
+  {
+    s_product[s_trade_set, s_prod_set]: $this.s_tradeDetails == $that.s_productId
+  }
+
+  meta::external::store::service::showcase::domain::Trade_Product[cross_set]: XStore
+  {
+    product[trade_set, prod_set]: $this.prodId == $that.productId
+  }
+)

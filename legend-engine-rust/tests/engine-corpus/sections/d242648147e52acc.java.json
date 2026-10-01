@@ -1,0 +1,156 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "project",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Position",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 66
+          }
+        }, {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 66
+          },
+          "value" : "9999-12-31"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 66
+        }
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 44,
+          "startLine" : 66
+        },
+        "values" : [ {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "p",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 66,
+                "sourceId" : "",
+                "startColumn" : 49,
+                "startLine" : 66
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 52,
+              "startLine" : 66
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "p"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 66
+          }
+        } ]
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 57,
+          "startLine" : 66
+        },
+        "values" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 58,
+            "startLine" : 66
+          },
+          "value" : "id"
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 66
+      }
+    } ],
+    "name" : "fetch__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 64
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 67,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

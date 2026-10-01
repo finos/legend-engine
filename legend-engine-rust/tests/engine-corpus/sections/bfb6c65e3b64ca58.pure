@@ -1,0 +1,15 @@
+
+Database model::store::ProductDatabase
+(
+  Schema productSchema
+  (
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+  View productView
+  (
+    id: productSchema.productTable.ID PRIMARY KEY
+  )
+)

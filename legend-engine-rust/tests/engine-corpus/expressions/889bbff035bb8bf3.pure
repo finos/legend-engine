@@ -1,0 +1,1 @@
+|eq($this.var2 / $this.var1, $this.var4 / $this.var3)

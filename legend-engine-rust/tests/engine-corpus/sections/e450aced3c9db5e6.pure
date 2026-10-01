@@ -1,0 +1,5 @@
+
+function abc::cast(): Float[1]
+{
+  1->cast(@Float)
+}

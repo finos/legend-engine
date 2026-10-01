@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunctionTyped():Relation<(FIRSTNAME:String[1],AGE:Integer[1],FIRMID:Integer[1],CITY:String[1])>[1]",
+        "sourceInformation" : {
+          "endColumn" : 121,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 46
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "funcMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,104 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "from",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "select",
+          "parameters" : [ {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 1
+            },
+            "type" : ">",
+            "value" : {
+              "path" : [ "local::db", "person" ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 1
+              }
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Runtime",
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 67,
+          "startLine" : 1
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 85,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 33,
+        "startLine" : 1
+      }
+    } ],
+    "name" : "func__Any_MANY_",
+    "package" : "local",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 87,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

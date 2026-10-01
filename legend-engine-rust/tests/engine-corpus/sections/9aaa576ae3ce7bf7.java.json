@@ -1,0 +1,271 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "BigFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "greaterThanEqual",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "AMOUNT",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 43,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 20,
+            "startLine" : 43
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::SalesViewDB",
+            "mainTableDb" : "demo::store::SalesViewDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 43,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 20,
+              "startLine" : 43
+            },
+            "table" : "SALE_TABLE"
+          },
+          "tableAlias" : "SALE_TABLE"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 43,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 41,
+            "startLine" : 43
+          },
+          "value" : 100
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 43,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 38,
+          "startLine" : 43
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 43,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 43
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "SalesViewDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 44,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 26
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PRODUCT",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "AMOUNT",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "SALE_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 33,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 28
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 38,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 9,
+              "startLine" : 38
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::SalesViewDB",
+              "mainTableDb" : "demo::store::SalesViewDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 38,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 9,
+                "startLine" : 38
+              },
+              "table" : "SALE_TABLE"
+            },
+            "tableAlias" : "SALE_TABLE"
+          },
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 38,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        }, {
+          "name" : "product",
+          "operation" : {
+            "_type" : "column",
+            "column" : "PRODUCT",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 39,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 14,
+              "startLine" : 39
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::SalesViewDB",
+              "mainTableDb" : "demo::store::SalesViewDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 39,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 14,
+                "startLine" : 39
+              },
+              "table" : "SALE_TABLE"
+            },
+            "tableAlias" : "SALE_TABLE"
+          },
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        }, {
+          "name" : "amount",
+          "operation" : {
+            "_type" : "column",
+            "column" : "AMOUNT",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 40,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 13,
+              "startLine" : 40
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::SalesViewDB",
+              "mainTableDb" : "demo::store::SalesViewDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 40,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 13,
+                "startLine" : 40
+              },
+              "table" : "SALE_TABLE"
+            },
+            "tableAlias" : "SALE_TABLE"
+          },
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 40,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        } ],
+        "distinct" : false,
+        "filter" : {
+          "filter" : {
+            "name" : "BigFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 37,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "BigSaleView",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 41,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 35
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 26
+    },
+    "stereotypes" : [ ]
+  } ]
+}

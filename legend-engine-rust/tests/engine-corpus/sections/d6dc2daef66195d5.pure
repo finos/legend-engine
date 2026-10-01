@@ -1,0 +1,47 @@
+
+Database meta::external::store::mongodb::showcase::store::PersonDatabase
+(
+  Collection PersonCollection
+  (
+    validationLevel: strict;
+    validationAction: warn;
+    jsonSchema: {
+      "bsonType": "object",
+      "title": "Person",
+      "properties": {
+        "firstName": {
+          "bsonType": "string"
+        },
+        "lastName": {
+          "bsonType": "string"
+        },
+        "middleName": {
+          "bsonType": "string"
+        },
+        "firm": {
+          "bsonType": "object",
+          "properties": {
+            "firmName": {
+              "bsonType": "string"
+            },
+            "firmId": {
+              "bsonType": "int"
+            },
+            "address": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "object",
+                "properties": {
+                  "street": {
+                    "bsonType": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    };   )
+
+)
+

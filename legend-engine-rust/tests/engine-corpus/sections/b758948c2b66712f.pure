@@ -1,0 +1,21 @@
+
+function test::fetch(): String[1]
+{
+  test::Address.all()
+    ->graphFetch(#{
+      test::Address {
+        name,
+        persons {
+          fullName
+        }
+      }
+    }#, 1)
+    ->serialize(#{
+      test::Address {
+        name,
+        persons {
+          fullName
+        }
+      }
+    }#)
+}

@@ -1,0 +1,24 @@
+
+Mapping relational::graphFetch::Relational_Mapping
+(
+  *relational::graphFetch::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [relational::graphFetch::dbInc]firmTable.FirmCode
+    )
+    ~mainTable [relational::graphFetch::dbInc]firmTable
+    name: [relational::graphFetch::dbInc]firmTable.FirmName,
+    id: [relational::graphFetch::dbInc]firmTable.FirmCode
+  }
+)
+
+Mapping relational::graphFetch::M2M_Mapping
+(
+  relational::graphFetch::Target_Firm: Pure
+  {
+    ~src relational::graphFetch::Firm
+    firmName: $src.name->toUpper(),
+    firmCode: $src.id
+  }
+)

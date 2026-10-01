@@ -1,0 +1,5 @@
+
+function test::func(): Any[*]
+{
+  let s = {| 'sample string'}; $s->eval();
+} 

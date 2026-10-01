@@ -1,0 +1,10 @@
+
+Database store::CovidDataStore
+(
+  Table COVID_DATA
+  (
+    ID INTEGER PRIMARY KEY,
+    CASES INTEGER
+  )
+)
+

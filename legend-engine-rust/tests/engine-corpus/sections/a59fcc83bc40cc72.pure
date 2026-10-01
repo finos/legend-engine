@@ -1,0 +1,4 @@
+
+function test::f(x:meta::pure::metamodel::relation::Relation<(x:meta::pure::precisePrimitives::Varchar(2))>[1]):Any[*]
+{
+   []}

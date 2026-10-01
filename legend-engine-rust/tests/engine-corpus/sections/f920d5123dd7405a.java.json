@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type TIMESTAMP does not expect any parameters in declaration 'clientIdTIMESTAMP(2,2)'",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 5
+    }
+  }
+}

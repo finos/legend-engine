@@ -1,0 +1,115 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
+(
+  *demo::relation::domain::BusinessTemporalEmployee[biz]: Relation
+  {
+    ~func demo::relation::func::businessTemporalEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  *demo::relation::domain::TemporalEmployee[proc]: Relation
+  {
+    ~func demo::relation::func::temporalEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  *demo::relation::domain::TemporalDepartment[dept]: Relation
+  {
+    ~func demo::relation::func::sameSchemeDepartments():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    employeeId: EMPLOYEE_ID
+  }
+
+  demo::relation::domain::EmployeeTemporalLink: ModelJoin
+  {
+    {businessRecord: demo::relation::domain::BusinessTemporalEmployee[1], processingRecord: demo::relation::domain::TemporalEmployee[1] | $businessRecord.id == $processingRecord.id}
+  }
+
+  demo::relation::domain::EmployeeDepartmentSameScheme: ModelJoin
+  {
+    {employee: demo::relation::domain::TemporalEmployee[1], department: demo::relation::domain::TemporalDepartment[1] | $employee.id == $department.employeeId}
+  }
+
+  testSuites:
+  [
+    diffSchemeModelJoinSuite:
+    {
+      function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.processingRecord(%2025-01-01).firstName],
+                    ['BizName', 'ProcName']
+                  );
+      tests:
+      [
+        crossSchemeModelJoinAtDate:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::AsymmetricMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoinAcrossDifferentMilestoningSchemes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BizName":"Alice","ProcName":"Alice"},{"BizName":"Bob","ProcName":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sameSchemeModelJoinSuite:
+    {
+      function: |demo::relation::domain::TemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.department(%2025-06-01).name],
+                    ['EmpName', 'DeptName']
+                  );
+      tests:
+      [
+        sameSchemeModelJoinAtIndependentDates:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::SameSchemeMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveDepartmentAtItsOwnDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EmpName":"Alice","DeptName":"Platform Engineering"},{"EmpName":"Bob","DeptName":"Marketing"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

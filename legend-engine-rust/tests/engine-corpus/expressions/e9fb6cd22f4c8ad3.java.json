@@ -1,0 +1,56 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "equal",
+    "parameters" : [ {
+      "_type" : "property",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "this",
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      } ],
+      "property" : "time",
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 1
+      },
+      "value" : "www"
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 14,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 20,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

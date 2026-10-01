@@ -1,0 +1,10 @@
+
+Class anything::goes
+{
+  v: String[1];
+}
+
+function f(): Any[1]
+{
+  let x = ^anything::goes(v='value')
+}

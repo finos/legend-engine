@@ -1,0 +1,71 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/x.flatdata';
+              data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{Age:12, Name:"dummy"}';
+                  }#;
+              }#
+          ]
+        },
+        test2:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{Age:12, Name:"dummy"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

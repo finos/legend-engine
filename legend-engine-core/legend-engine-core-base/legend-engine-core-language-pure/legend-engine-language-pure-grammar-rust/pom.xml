@@ -25,14 +25,13 @@
     <artifactId>legend-engine-language-pure-grammar-rust</artifactId>
     <name>Legend Engine - Language Pure - Grammar - Rust</name>
     <description>
-        Parses ###Pure sections with the Rust grammar parser (legend-pure's legend-pure-rust-parser, via JNI).
-        Mode is chosen per parse with -Dlegend.grammar.rust.mode=off|shadow|on (default off: the Java parser).
-        Only built in the rust-parser profile, activated by -Dlegend.pure.rust.parser.lib=/abs/path/to/library.
+        Parses grammar with the Rust grammar parser (legend-engine-rust, via JNI): the sections and expressions its
+        native library reads. Mode is chosen per parse with -Dlegend.grammar.rust.mode=off|shadow|on (default off: the
+        Java parser). The library is loaded from -Dlegend.pure.rust.parser.lib=/abs/path/to/library, else from
+        java.library.path; without it, the Java parser is used.
     </description>
 
     <properties>
-        <!-- The JNI binding comes from a legend-pure build of the rust-parser branch, installed locally. -->
-        <legend.pure.rust.parser.version>5.105.1-SNAPSHOT</legend.pure.rust.parser.version>
         <!-- Parity-test defaults; override on the command line. Mismatches are counted and reported (see
              -Dlegend.grammar.rust.reportDir) rather than failing tests while known gaps are being closed; pass
              -Dlegend.grammar.rust.failOnMismatch=true for a strict run. -->
@@ -75,13 +74,6 @@
         </dependency>
         <!-- Engine -->
 
-        <!-- Legend Pure: JNI binding for the Rust parser -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-rust-parser</artifactId>
-            <version>${legend.pure.rust.parser.version}</version>
-        </dependency>
-        <!-- Legend Pure -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>

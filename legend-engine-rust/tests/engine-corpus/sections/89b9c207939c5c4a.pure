@@ -1,0 +1,11 @@
+
+Class test::Employee
+{
+   id       : Integer[1];
+   hireDate : Date[1];
+   hireType : String[1];
+   fteFactor: Float[1];
+   firmName : String[0..1];
+}
+function example::testYtd(): Any[*]
+{ test::Employee.all()->groupBy([p|$p.hireDate],[ agg(p | mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],['includedDate',  'calendarAgg'])}

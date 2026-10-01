@@ -1,0 +1,1 @@
+|$this.employees.lastName->sortBy(#/model::Person/lastName#)->joinStrings('')

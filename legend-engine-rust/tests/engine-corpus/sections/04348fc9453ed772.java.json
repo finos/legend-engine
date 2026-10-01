@@ -1,0 +1,463 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::TargetPerson",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 40
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::TargetPerson",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 43
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 43
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 43,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 43
+              },
+              "values" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 43,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 43,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 43
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 43,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 43
+                },
+                "value" : " "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 43,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 43,
+                  "sourceId" : "",
+                  "startColumn" : 43,
+                  "startLine" : 43
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 43,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 43
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 42
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 40
+      },
+      "srcClass" : "model::Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2MSimpleMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 120,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "model::TargetPerson",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 50,
+                  "sourceId" : "model::M2MSimpleMapping",
+                  "startColumn" : 18,
+                  "startLine" : 50
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 50,
+                "sourceId" : "model::M2MSimpleMapping",
+                "startColumn" : 37,
+                "startLine" : 50
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 52,
+                "sourceId" : "model::M2MSimpleMapping",
+                "startColumn" : 5,
+                "startLine" : 52
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "model::TargetPerson",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 52,
+                  "sourceId" : "model::M2MSimpleMapping",
+                  "startColumn" : 5,
+                  "startLine" : 52
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "fullName",
+                  "sourceInformation" : {
+                    "endColumn" : 14,
+                    "endLine" : 53,
+                    "sourceId" : "model::M2MSimpleMapping",
+                    "startColumn" : 7,
+                    "startLine" : 53
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 50,
+              "sourceId" : "model::M2MSimpleMapping",
+              "startColumn" : 45,
+              "startLine" : 50
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 58,
+              "sourceId" : "model::M2MSimpleMapping",
+              "startColumn" : 5,
+              "startLine" : 58
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "model::TargetPerson",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 58,
+                "sourceId" : "model::M2MSimpleMapping",
+                "startColumn" : 5,
+                "startLine" : 58
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 14,
+                  "endLine" : 59,
+                  "sourceId" : "model::M2MSimpleMapping",
+                  "startColumn" : 7,
+                  "startLine" : 59
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 56,
+            "sourceId" : "model::M2MSimpleMapping",
+            "startColumn" : 4,
+            "startLine" : 56
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 1,
+          "endLine" : 62,
+          "sourceId" : "model::M2MSimpleMapping",
+          "startColumn" : 17,
+          "startLine" : 50
+        }
+      },
+      "id" : "graphFetchSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 118,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 48
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 89,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 85
+            }
+          },
+          "id" : "expectedAssertion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 82
+          }
+        } ],
+        "id" : "dataReferenceOnPerson",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 92,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 65
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "modelStore",
+            "modelData" : [ {
+              "_type" : "modelEmbeddedData",
+              "data" : {
+                "_type" : "reference",
+                "dataElement" : {
+                  "path" : "model::PersonData",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 76,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 73
+                  },
+                  "type" : "DATA"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 20,
+                  "endLine" : 76,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 73
+                }
+              },
+              "model" : "model::Person",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 76,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 72
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 77,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 70
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 69
+          },
+          "store" : {
+            "path" : "ModelStore",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 69
+            },
+            "type" : "STORE"
+          }
+        } ]
+      }, {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 109
+            }
+          },
+          "id" : "expectedAssertion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 114,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 106
+          }
+        } ],
+        "id" : "dataReference",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 116,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 93
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "model::ModelStoreRef",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 101,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 98
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 98
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 97
+          },
+          "store" : {
+            "path" : "ModelStore",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 97,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 97
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

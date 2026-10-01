@@ -1,0 +1,19 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "somethingelse",
+    "package" : "anything",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ]
+  } ]
+}

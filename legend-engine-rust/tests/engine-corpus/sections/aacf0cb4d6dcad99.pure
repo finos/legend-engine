@@ -1,0 +1,17 @@
+
+function model::FunctionA(int: Integer[1]): String[1]
+{
+  model::FunctionA($int->toString());
+}
+function model::FunctionA(str: String[1]): String[1]
+{
+  $str;
+}
+function model::FunctionA(float: Float[1]): String[1]
+{
+  model::FunctionA($float->toString());
+}
+function model::FunctionB(int: Integer[1]): String[1]
+{
+  model::FunctionA($int);
+}

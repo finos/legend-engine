@@ -1,0 +1,109 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "TestDB",
+    "package" : "test::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FIRM_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRST_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 9
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "functionJar",
+    "actions" : [ ],
+    "documentation" : "",
+    "function" : {
+      "path" : "model::Firm_QueryFunction():Integer[1]",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "NewActivator",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

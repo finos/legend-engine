@@ -1,0 +1,11 @@
+
+Mapping mappingPackage::myMapping
+(
+  include mapping mappingPackage::baseMapping
+
+  *my::Person[person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    firstName: firstName
+  }
+)

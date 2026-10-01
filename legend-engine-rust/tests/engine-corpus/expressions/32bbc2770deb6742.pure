@@ -1,0 +1,1 @@
+|Person.all()->filter(p|$p.age >= 10)

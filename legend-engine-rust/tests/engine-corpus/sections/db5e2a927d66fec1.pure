@@ -1,0 +1,7 @@
+
+function test::fetch(): Any[1]
+{
+  {cityList:test::LocationEnum[*] | test::Location.all()
+                               ->filter(l:test::Location[1] | $l.city->in($cityList))
+                               ->project([x | $x.id], ['Id'])}
+}

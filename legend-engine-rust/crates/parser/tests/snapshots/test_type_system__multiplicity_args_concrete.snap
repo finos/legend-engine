@@ -1,0 +1,294 @@
+---
+source: crates/parser/tests/test_type_system.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 10,
+                                    end_line: 2,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "test",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 14,
+                                end_line: 2,
+                                end_column: 17,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "a",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "Result",
+                                            type_arguments: [
+                                                TypeArgument {
+                                                    type_spec: Type(
+                                                        TypeReference {
+                                                            package: None,
+                                                            name: "String",
+                                                            type_arguments: [],
+                                                            multiplicity_arguments: [],
+                                                            type_variable_values: [],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 2,
+                                                                start_column: 29,
+                                                                end_line: 2,
+                                                                end_column: 34,
+                                                            },
+                                                        },
+                                                    ),
+                                                    equal_binding: None,
+                                                    algebra_ops: [],
+                                                    subset_bound: None,
+                                                },
+                                            ],
+                                            multiplicity_arguments: [
+                                                Concrete(
+                                                    PureOne,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 36,
+                                                        end_line: 2,
+                                                        end_column: 36,
+                                                    },
+                                                ),
+                                            ],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 22,
+                                                end_line: 2,
+                                                end_column: 37,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    PureOne,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 19,
+                                    end_line: 2,
+                                    end_column: 40,
+                                },
+                            },
+                            Parameter {
+                                name: "b",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "Result",
+                                            type_arguments: [
+                                                TypeArgument {
+                                                    type_spec: Type(
+                                                        TypeReference {
+                                                            package: None,
+                                                            name: "Integer",
+                                                            type_arguments: [],
+                                                            multiplicity_arguments: [],
+                                                            type_variable_values: [],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 2,
+                                                                start_column: 53,
+                                                                end_line: 2,
+                                                                end_column: 59,
+                                                            },
+                                                        },
+                                                    ),
+                                                    equal_binding: None,
+                                                    algebra_ops: [],
+                                                    subset_bound: None,
+                                                },
+                                            ],
+                                            multiplicity_arguments: [
+                                                Concrete(
+                                                    ZeroOrMany,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 61,
+                                                        end_line: 2,
+                                                        end_column: 61,
+                                                    },
+                                                ),
+                                            ],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 46,
+                                                end_line: 2,
+                                                end_column: 62,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 43,
+                                    end_line: 2,
+                                    end_column: 65,
+                                },
+                            },
+                            Parameter {
+                                name: "c",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "Result",
+                                            type_arguments: [
+                                                TypeArgument {
+                                                    type_spec: Type(
+                                                        TypeReference {
+                                                            package: None,
+                                                            name: "Boolean",
+                                                            type_arguments: [],
+                                                            multiplicity_arguments: [],
+                                                            type_variable_values: [],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 2,
+                                                                start_column: 78,
+                                                                end_line: 2,
+                                                                end_column: 84,
+                                                            },
+                                                        },
+                                                    ),
+                                                    equal_binding: None,
+                                                    algebra_ops: [],
+                                                    subset_bound: None,
+                                                },
+                                            ],
+                                            multiplicity_arguments: [
+                                                Concrete(
+                                                    ZeroOrOne,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 86,
+                                                        end_line: 2,
+                                                        end_column: 86,
+                                                    },
+                                                ),
+                                            ],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 71,
+                                                end_line: 2,
+                                                end_column: 90,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrOne,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 68,
+                                    end_line: 2,
+                                    end_column: 96,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "Boolean",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 100,
+                                    end_line: 2,
+                                    end_column: 106,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        constraints: [],
+                        body: [
+                            Literal(
+                                Boolean(
+                                    BooleanLiteral {
+                                        value: true,
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 5,
+                                            end_line: 4,
+                                            end_column: 8,
+                                        },
+                                    },
+                                ),
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 5,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

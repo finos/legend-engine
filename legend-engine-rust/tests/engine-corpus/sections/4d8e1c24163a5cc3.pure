@@ -1,0 +1,10 @@
+
+Data com::model::someDataElement
+{
+  ExternalFormat
+  #{
+    contentType: 'test';
+    data: 'test';
+  }#
+}
+

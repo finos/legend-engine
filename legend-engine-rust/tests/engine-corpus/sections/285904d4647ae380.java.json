@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "SALARY", "IN_Z", "OUT_Z" ],
+        "paths" : [ "default", "TemporalEmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "90000.0", "2024-01-01", "9999-12-31" ]
+        }, {
+          "values" : [ "2", "Bob", "75000.0", "2024-06-01", "9999-12-31" ]
+        }, {
+          "values" : [ "3", "Carol", "60000.0", "2023-01-01", "2024-01-01" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    },
+    "name" : "TemporalEmployeeData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,5 @@
+
+Class <<NoProfile.NoKey>> test::A
+{
+   ok : Integer[0..1];
+}

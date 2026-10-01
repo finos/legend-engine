@@ -1,0 +1,36 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping2",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

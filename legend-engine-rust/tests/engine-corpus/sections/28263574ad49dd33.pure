@@ -1,0 +1,5 @@
+
+Database model::store::db
+(
+   Table myTable(name VARCHAR(200))
+)

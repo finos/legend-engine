@@ -1,0 +1,115 @@
+{
+  "elements" : [ {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ {
+      "databaseName" : "SnowflakeOrgDB",
+      "schemas" : [ {
+        "_type" : "Schema",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 6
+        }
+      }, {
+        "_type" : "Schema",
+        "database" : "test::AccountDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 6
+        }
+      } ]
+    }, {
+      "databaseName" : "SnowflakeOrgDBNew",
+      "schemas" : [ {
+        "_type" : "Schema",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest1",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 7
+        }
+      } ]
+    } ],
+    "name" : "testMapper",
+    "package" : "test",
+    "schemaMappers" : [ {
+      "from" : {
+        "_type" : "Schema",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 11
+        }
+      },
+      "to" : "AlloySchema"
+    }, {
+      "from" : {
+        "_type" : "Schema",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 12
+        }
+      },
+      "to" : "AlloySchemaNew"
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tableMappers" : [ {
+      "from" : {
+        "_type" : "Table",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "table" : "ACCOUNT"
+      },
+      "to" : "AccountTable"
+    }, {
+      "from" : {
+        "_type" : "Table",
+        "database" : "test::AccountDB",
+        "schema" : "alloytest",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 17
+        },
+        "table" : "ACCOUNT1"
+      },
+      "to" : "AccountTableNew"
+    } ]
+  } ],
+  "imports" : [ ]
+}

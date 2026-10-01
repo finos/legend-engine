@@ -1,0 +1,84 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "alphaBetaGamma:",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "alphaBetaGamma;",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

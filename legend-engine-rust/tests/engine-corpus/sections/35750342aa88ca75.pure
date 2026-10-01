@@ -1,0 +1,6 @@
+
+Class demo::routerunion::Product
+{
+  code: String[1];
+  description: String[1];
+}

@@ -1,0 +1,5 @@
+
+Class test::A
+{
+  d : StrictDate[1];
+}

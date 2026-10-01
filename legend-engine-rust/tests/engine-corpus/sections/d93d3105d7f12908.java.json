@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 23,
+          "sourceId" : "connection/h2Connection.pure",
+          "startColumn" : 3,
+          "startLine" : 23
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 22,
+          "sourceId" : "connection/h2Connection.pure",
+          "startColumn" : 3,
+          "startLine" : 20
+        }
+      },
+      "element" : "demo::store::PersonDB",
+      "elementSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 18,
+        "sourceId" : "connection/h2Connection.pure",
+        "startColumn" : 10,
+        "startLine" : 18
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "connection/h2Connection.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "type" : "H2"
+    },
+    "name" : "PersonH2Connection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "connection/h2Connection.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    }
+  } ],
+  "imports" : [ ]
+}

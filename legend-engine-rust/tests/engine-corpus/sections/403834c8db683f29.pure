@@ -1,0 +1,11 @@
+
+Data demo::ssb::data::PersonData
+{
+  Relation
+  #{
+    default.PERSON_TABLE:
+      ID,FIRST_NAME,FIRM_DETAILS
+      1,Alice,"{""legalName"":""Firm X"",""employeeCount"":4,""address"":{""name"":""HQ"",""street"":""1 Main St"",""geo"":{""lat"":40.7,""lon"":-74.0}}}"
+      2,Bob,"{""legalName"":""Firm A"",""employeeCount"":9,""address"":{""name"":""Annex"",""geo"":{""lat"":51.5,""lon"":-0.1}}}";
+  }#
+}

@@ -1,0 +1,4 @@
+
+function test::container():Any[*]{
+  #>{pack::DB.myTab}#
+}

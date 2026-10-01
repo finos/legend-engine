@@ -1,0 +1,31 @@
+
+import other::*;
+import mapping::*;
+Mapping mappingPackage::myMapping
+(
+    Address[a1]: Relational
+    {
+       line1: [db]employeeFirmDenormTable.address1,
+       postcode: [db]employeeFirmDenormTable.postcode
+    }
+    Person[p1]: Relational
+    {
+        name : [db]employeeFirmDenormTable.name,
+        firm
+        (
+            ~primaryKey ([db]employeeFirmDenormTable.legalName)
+            legalName : [db]employeeFirmDenormTable.legalName
+        )
+    }
+    Firm[f1]: Relational
+    {
+         legalName : [db]employeeFirmDenormTable.legalName
+    }
+    Firm_Address: Relational
+    {
+        AssociationMapping
+        (
+           address[p1_firm,a1] : [db]@firmAddress
+        )
+    }
+)

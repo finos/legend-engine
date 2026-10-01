@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'transactionMilestoning' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 42,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

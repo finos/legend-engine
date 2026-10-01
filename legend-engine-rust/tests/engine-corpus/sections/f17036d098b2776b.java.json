@@ -1,0 +1,114 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 220,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 220
+            }
+          } ],
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 220,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 220
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::test::TestClass2",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 220,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 220
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 220,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 220
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 220,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 220
+        }
+      },
+      "mapping" : "meta::myMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 221,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 221
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "meta::myRuntime",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 222,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 222
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 223,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 218
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "test" ],
+    "package" : "test::service",
+    "pattern" : "test",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 224,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 209
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

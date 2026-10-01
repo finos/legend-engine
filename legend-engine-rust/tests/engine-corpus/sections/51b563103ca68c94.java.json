@@ -1,0 +1,626 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::joins::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 22,
+        "sourceId" : "mapping/leftOuterJoinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 28,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 28
+        },
+        "table" : "EMPLOYEE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 26,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 26
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 26,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 26
+          },
+          "table" : "EMPLOYEE"
+        },
+        "tableAlias" : "EMPLOYEE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 29,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 29,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 29
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 29,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 29
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 29,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "department",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 30,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::JoinsDB",
+            "name" : "Emp_Dept",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 30,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 30
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 30,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 17,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 30,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "mapping/leftOuterJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::joins::Department",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 33,
+        "sourceId" : "mapping/leftOuterJoinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 33
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 39,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 39
+        },
+        "table" : "DEPARTMENT"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 37,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 37
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 37,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 37
+          },
+          "table" : "DEPARTMENT"
+        },
+        "tableAlias" : "DEPARTMENT"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Department",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 40,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 40,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 40
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 40,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 40
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 40,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 40
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Department",
+          "property" : "location",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 41,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 41
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LOCATION",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 41,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 41
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 41,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 41
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        },
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 41,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 41
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 42,
+        "sourceId" : "mapping/leftOuterJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 33
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "LeftOuterJoinMapping",
+    "package" : "demo::joins",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "mapping/leftOuterJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::joins::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 48,
+                  "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 48
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 39,
+                "startLine" : 48
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 48,
+                    "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                    "startColumn" : 58,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 48,
+                  "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                  "startColumn" : 61,
+                  "startLine" : 48
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 56,
+                "startLine" : 48
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 48,
+              "sourceId" : "demo::joins::LeftOuterJoinMapping",
+              "startColumn" : 47,
+              "startLine" : 48
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 48,
+              "sourceId" : "demo::joins::LeftOuterJoinMapping",
+              "startColumn" : 76,
+              "startLine" : 48
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 48,
+                    "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                    "startColumn" : 81,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 48,
+                  "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                  "startColumn" : 84,
+                  "startLine" : 48
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 79,
+                "startLine" : 48
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 95,
+                      "endLine" : 48,
+                      "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                      "startColumn" : 94,
+                      "startLine" : 48
+                    }
+                  } ],
+                  "property" : "department",
+                  "sourceInformation" : {
+                    "endColumn" : 106,
+                    "endLine" : 48,
+                    "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                    "startColumn" : 97,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 48,
+                  "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                  "startColumn" : 108,
+                  "startLine" : 48
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 92,
+                "startLine" : 48
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 48,
+              "sourceId" : "demo::joins::LeftOuterJoinMapping",
+              "startColumn" : 115,
+              "startLine" : 48
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 116,
+                "startLine" : 48
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 48,
+                "sourceId" : "demo::joins::LeftOuterJoinMapping",
+                "startColumn" : 124,
+                "startLine" : 48
+              },
+              "value" : "Dept"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 48,
+            "sourceId" : "demo::joins::LeftOuterJoinMapping",
+            "startColumn" : 68,
+            "startLine" : 48
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 48,
+          "sourceId" : "demo::joins::LeftOuterJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 48
+        }
+      },
+      "id" : "leftOuterSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 76,
+        "sourceId" : "mapping/leftOuterJoinMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 46
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Alice\",\"Dept\":\"Engineering\"},{\"Name\":\"Bob\",\"Dept\":\"Sales\"},{\"Name\":\"Carol\",\"Dept\":null}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 71,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 67
+            }
+          },
+          "id" : "shouldKeepEmployeeWithoutDepartment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 72,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 64
+          }
+        } ],
+        "id" : "unmatchedRowSurvives",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 74,
+          "sourceId" : "mapping/leftOuterJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 51
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::joins::data::LeftOuterJoinData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 59,
+                "sourceId" : "mapping/leftOuterJoinMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 56
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 59,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 56
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 59,
+            "sourceId" : "mapping/leftOuterJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 55
+          },
+          "store" : {
+            "path" : "demo::store::JoinsDB",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 55,
+              "sourceId" : "mapping/leftOuterJoinMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 55
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

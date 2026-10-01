@@ -1,0 +1,1 @@
+|model::Person.all()->project(~['Person Name':x|$x.name])

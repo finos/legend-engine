@@ -1,0 +1,125 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ExtendedEmployee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 18,
+            "sourceId" : "model/extendedEmployee.pure",
+            "startColumn" : 18,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "salaryDoubled",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 18,
+        "sourceId" : "model/extendedEmployee.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 19,
+            "sourceId" : "model/extendedEmployee.pure",
+            "startColumn" : 17,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fullGreeting",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 19,
+        "sourceId" : "model/extendedEmployee.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Address",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 20,
+            "sourceId" : "model/extendedEmployee.pure",
+            "startColumn" : 12,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "address",
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 20,
+        "sourceId" : "model/extendedEmployee.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "model/extendedEmployee.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::relation::domain::Employee",
+      "sourceInformation" : {
+        "endColumn" : 87,
+        "endLine" : 16,
+        "sourceId" : "model/extendedEmployee.pure",
+        "startColumn" : 56,
+        "startLine" : 16
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

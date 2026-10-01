@@ -1,0 +1,335 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firmName",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firmId",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Person",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees1",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Person",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees2",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 4
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Address",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "primaryAddress",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 14
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Address",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 15
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "secondaryAddress",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 15
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "street",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Firm",
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "associatedFirm",
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 80,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ "meta::external::store::service::showcase::domain" ]
+}

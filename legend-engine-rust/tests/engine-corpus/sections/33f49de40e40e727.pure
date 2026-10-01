@@ -1,0 +1,12 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: {firstName:String[1], businessDate:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};
+    validations: [
+      {
+         name: 'nonEmptyDataset';
+         description: 'dataset cannot be empty';
+         assertion: {firstName:String[1] | $rel->assertRelationNotEmpty()};
+      }
+    ];
+}

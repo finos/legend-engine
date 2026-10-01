@@ -1,0 +1,52 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "decimal",
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "value" : 1.0
+    } ],
+    "name" : "a__Decimal_1_",
+    "package" : "a",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Decimal",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

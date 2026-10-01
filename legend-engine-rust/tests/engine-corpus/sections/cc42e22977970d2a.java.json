@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'query' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 6
+    }
+  }
+}

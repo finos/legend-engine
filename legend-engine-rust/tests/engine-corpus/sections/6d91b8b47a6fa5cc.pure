@@ -1,0 +1,14 @@
+
+Mapping test::mapping
+(
+  *test::model::A: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup.TestService
+    (
+      ~request
+      (
+        body = ^test::model::B(alpha=$this.alpha , gamma=1)
+      )
+    )
+  }
+)

@@ -1,0 +1,447 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "doc",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "executionParameters" : [ {
+        "key" : "prod",
+        "mapping" : "test::mapping::FirmMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 50
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime::FirmRuntime",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 51
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 48
+        }
+      }, {
+        "key" : "qa",
+        "mapping" : "test::mapping::FirmMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 55
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime::FirmRuntime",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 56
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 57,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 53
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "filter",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "test::model::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 52,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 36,
+                  "startLine" : 46
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 46
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "startsWith",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "f",
+                    "sourceInformation" : {
+                      "endColumn" : 73,
+                      "endLine" : 46,
+                      "sourceId" : "",
+                      "startColumn" : 72,
+                      "startLine" : 46
+                    }
+                  } ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 46,
+                    "sourceId" : "",
+                    "startColumn" : 75,
+                    "startLine" : 46
+                  }
+                }, {
+                  "_type" : "var",
+                  "name" : "nameFilter",
+                  "sourceInformation" : {
+                    "endColumn" : 107,
+                    "endLine" : 46,
+                    "sourceId" : "",
+                    "startColumn" : 97,
+                    "startLine" : 46
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 86,
+                  "startLine" : 46
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "f"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 70,
+                "startLine" : 46
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 46
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 144,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 121,
+              "startLine" : 46
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f",
+                      "sourceInformation" : {
+                        "endColumn" : 133,
+                        "endLine" : 46,
+                        "sourceId" : "",
+                        "startColumn" : 132,
+                        "startLine" : 46
+                      }
+                    } ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 143,
+                      "endLine" : 46,
+                      "sourceId" : "",
+                      "startColumn" : 135,
+                      "startLine" : 46
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "f"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 143,
+                    "endLine" : 46,
+                    "sourceId" : "",
+                    "startColumn" : 130,
+                    "startLine" : 46
+                  }
+                },
+                "name" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 143,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 122,
+                  "startLine" : 46
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "String",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 46
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "nameFilter",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 46
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 145,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 46
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 58,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 44
+      }
+    },
+    "name" : "FirmServiceMulti",
+    "owners" : [ ],
+    "package" : "test::service",
+    "pattern" : "/firm",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 83,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite_1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 61
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 64
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 64
+          }
+        } ],
+        "id" : "test_all_envs",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "nameFilter",
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 63,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 63
+            },
+            "value" : "A"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 68,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 63
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 74,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 70
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 70
+          }
+        } ],
+        "id" : "test_prod_only",
+        "keys" : [ "prod" ],
+        "parameters" : [ {
+          "name" : "nameFilter",
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 69
+            },
+            "value" : "B"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 69
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 76
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 76
+          }
+        } ],
+        "id" : "test_prod_and_qa",
+        "keys" : [ "prod", "qa" ],
+        "parameters" : [ {
+          "name" : "nameFilter",
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 75,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 75
+            },
+            "value" : "C"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 75
+        }
+      } ]
+    } ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

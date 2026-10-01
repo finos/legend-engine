@@ -1,0 +1,38 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    ingestMode: BitemporalSnapshot
+    {
+      transactionMilestoning: BatchIdAndDateTime
+      {
+        batchIdInName: 'batchIdIn';
+        batchIdOutName: 'batchIdOut';
+        dateTimeInName: 'inZ';
+        dateTimeOutName: 'outZ';
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromDateTime
+        {
+          sourceDateTimeFromField: sourceFrom;
+        }
+      }
+    }
+    targetShape: Flat
+    {
+      modelClass: test::ModelClass;
+      targetName: 'TestDataset1';
+    }
+  }
+}

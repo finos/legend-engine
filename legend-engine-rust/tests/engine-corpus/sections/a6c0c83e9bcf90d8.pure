@@ -1,0 +1,6 @@
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+}

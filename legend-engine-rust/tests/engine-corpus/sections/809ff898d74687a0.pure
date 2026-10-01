@@ -1,0 +1,12 @@
+
+Mapping a::createInstancesModelMappingOneMany
+(
+   
+   test::FirmEmployee : Pure
+            {
+               ~src test::Firm
+               firmName : $src.name,
+               fullName* : $src.employees.fullName
+            }
+   
+)

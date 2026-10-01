@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'generationNodes' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 125,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

@@ -1,0 +1,44 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunc():Relation<Any>[1]
+    ~primaryKey: [FIRSTNAME]
+    firstName: FIRSTNAME,
+    age: AGE
+  }
+  testSuites:
+  [
+    personSuite:
+    {
+      function: |my::Person.all()->project(~['First Name': x|$x.firstName, 'Age': x|$x.age]);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            my::db:
+              Relation
+              #{
+                default.personTable:
+                  ID,FIRSTNAME,AGE,FIRMID
+                  1,John,30,100
+                  2,Jane,20,100;
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              Relation
+              #{
+                First Name, Age
+                John      , 30;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

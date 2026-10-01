@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ModelChainConnectionRuntime",
+    "package" : "test::firm::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 86,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 83
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 83
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::firm::connection::modelChainConnection",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 85
+            }
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 85
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::firm::model::M2MMapping",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 80
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 78
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 88,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 78
+    }
+  } ],
+  "imports" : [ ]
+}

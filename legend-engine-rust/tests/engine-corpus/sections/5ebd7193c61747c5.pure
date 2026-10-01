@@ -1,0 +1,13 @@
+
+Runtime test::firm::runtime::ModelChainConnectionRuntime
+{
+   mappings : [test::firm::model::M2MMapping];
+   connections : 
+   [
+       ModelStore:
+       [
+           c1: test::firm::connection::modelChainConnection
+       ]
+   ];
+}
+

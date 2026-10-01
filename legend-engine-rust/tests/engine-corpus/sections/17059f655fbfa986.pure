@@ -1,0 +1,42 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService
+        (
+            ~path $service.response.employees
+        )
+    }
+
+    *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService
+        (
+            ~path $service.response.firms
+        )
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set2]: ServiceStore
+    {
+        +firmId : Integer[1];
+
+        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesServiceByFirmId
+        (
+            ~path $service.response.employees
+
+            ~request
+            (
+               parameters
+               (
+                   firmId = $this.firmId
+               )
+            )
+        )
+    }
+
+    *meta::external::store::service::showcase::domain::Employment: XStore
+    {
+        employees[firm_set, person_set2] : $this.firmId == $that.firmId
+    }
+)

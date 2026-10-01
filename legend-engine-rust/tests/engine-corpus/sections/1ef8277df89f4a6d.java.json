@@ -1,0 +1,58 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "singleConnectionRuntime",
+    "package" : "com::test",
+    "runtimeValue" : {
+      "_type" : "localEngineRuntime",
+      "connectionStores" : [ {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "com::test::someConnection",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 8
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 8
+        },
+        "storePointers" : [ ]
+      } ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

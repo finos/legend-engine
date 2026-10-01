@@ -1,0 +1,18 @@
+
+Mapping test::modelJoinIfMapping
+(
+   test::Person[p]: Pure {
+      ~src test::Person
+      firstName: $src.firstName,
+      tag: $src.tag
+   }
+   test::Firm[f]: Pure {
+      ~src test::Firm
+      id: $src.id
+   }
+
+   test::Firm_Person: ModelJoin {
+      {p:test::Person[1], f:test::Firm[1]|
+         if($p.tag == 'X', |$p.firstName, |$p.tag) == $f.id}
+   }
+)

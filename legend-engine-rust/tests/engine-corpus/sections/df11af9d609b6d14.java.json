@@ -1,0 +1,214 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+      "elementSourceInformation" : {
+        "endColumn" : 87,
+        "endLine" : 456,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 456
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 458,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 454
+      }
+    },
+    "name" : "serviceStoreConnection",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 458,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 454
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore",
+      "elementSourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 462,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 462
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 464,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 460
+      }
+    },
+    "name" : "serviceStoreConnection2",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 464,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 460
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore1",
+      "elementSourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 468,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 468
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 470,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 466
+      }
+    },
+    "name" : "serviceStoreConnection3",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 470,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 466
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore2",
+      "elementSourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 474,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 474
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 476,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 472
+      }
+    },
+    "name" : "serviceStoreConnection4",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 476,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 472
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore3",
+      "elementSourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 480,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 480
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 482,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 478
+      }
+    },
+    "name" : "serviceStoreConnection5",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 482,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 478
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore4",
+      "elementSourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 486,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 486
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 488,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 484
+      }
+    },
+    "name" : "serviceStoreConnection6",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 488,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 484
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55035",
+      "element" : "meta::external::store::service::showcase::store::EmployeeServiceStore5",
+      "elementSourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 492,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 492
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 494,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 490
+      }
+    },
+    "name" : "serviceStoreConnection7",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 494,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 490
+    }
+  } ],
+  "imports" : [ ]
+}

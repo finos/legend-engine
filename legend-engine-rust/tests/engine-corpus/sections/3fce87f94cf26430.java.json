@@ -1,0 +1,98 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "nontemporalDelta",
+        "auditing" : {
+          "_type" : "noAuditing"
+        },
+        "mergeStrategy" : {
+          "_type" : "deleteIndicatorMergeStrategy",
+          "deleteField" : "deleted",
+          "deleteValues" : [ "Y", "true" ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 53
+        }
+      },
+      "sink" : {
+        "_type" : "objectStorageSink",
+        "binding" : {
+          "path" : "test::Binding",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 51
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 49
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 47
+      },
+      "targetShape" : {
+        "_type" : "flatTarget",
+        "deduplicationStrategy" : {
+          "_type" : "noDeduplicationStrategy"
+        },
+        "modelClass" : "test::ServiceResult",
+        "partitionFields" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 62
+        },
+        "targetName" : "TestDataset1"
+      }
+    },
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 46
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 68,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

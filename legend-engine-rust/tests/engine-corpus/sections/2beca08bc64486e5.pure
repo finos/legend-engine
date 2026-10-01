@@ -1,0 +1,11 @@
+
+Data demo::data::InlineEmbeddedEmployeeData
+{
+  Relational
+  #{
+    default.EmployeeTable:
+      'id,name,addressLine1,addressPostcode\n' +
+      '1,John Doe,1 Main St,10001\n' +
+      '2,Jane Smith,2 High St,20002\n';
+  }#
+}

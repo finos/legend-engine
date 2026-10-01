@@ -1,0 +1,141 @@
+{
+  "elements" : [ {
+    "_type" : "dataQualityValidation",
+    "context" : {
+      "_type" : "mappingAndRuntimeDataQualityExecutionContext",
+      "_type" : "mappingAndRuntimeDataQualityExecutionContext",
+      "mapping" : {
+        "path" : "meta::dataquality::dataquality::Mapping",
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 106
+        },
+        "type" : "MAPPING"
+      },
+      "runtime" : {
+        "path" : "meta::dataquality::DataQualityRuntime",
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 77,
+          "startLine" : 106
+        },
+        "type" : "RUNTIME"
+      }
+    },
+    "dataQualityRootGraphFetchTree" : {
+      "_type" : "dataQualityRootGraphFetchTree",
+      "_type" : "dataQualityRootGraphFetchTree",
+      "class" : "meta::dataquality::Person",
+      "constraints" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 109,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 109
+      },
+      "subTrees" : [ ],
+      "subTypeTrees" : [ ]
+    },
+    "filter" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "equal",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "p",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 107,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 107
+            }
+          } ],
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 49,
+            "startLine" : 107
+          }
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 55,
+            "startLine" : 107
+          },
+          "value" : "John"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 107,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 107
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::dataquality::Person",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 107,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 107
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "p",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 107,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 107
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 44,
+        "startLine" : 107
+      }
+    },
+    "name" : "PersonDataQualityValidation",
+    "package" : "meta::dataquality",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 112,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

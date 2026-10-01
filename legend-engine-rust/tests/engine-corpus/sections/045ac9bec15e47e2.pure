@@ -1,0 +1,2 @@
+
+Class test::Person{lastName:String[1];} Class test::OtherPerson{lastName:String[1];} Class test::Firm{employees: test::Person[*];} Class test::SrcPerson{} Class test::SrcFirm{empl: test::SrcPerson[*];}

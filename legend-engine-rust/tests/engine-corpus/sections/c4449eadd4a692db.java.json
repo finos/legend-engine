@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Query Param : 'name' value should be defined only once",
+    "sourceInformation" : {
+      "endColumn" : 16,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 19
+    }
+  }
+}

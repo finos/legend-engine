@@ -1,0 +1,636 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::embedded::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 18,
+        "sourceId" : "mapping/employeeMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::EmbeddedDB",
+        "mainTableDb" : "demo::store::EmbeddedDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 24,
+          "sourceId" : "mapping/employeeMapping.pure",
+          "startColumn" : 41,
+          "startLine" : 24
+        },
+        "table" : "EmployeeTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 22,
+          "sourceId" : "mapping/employeeMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::EmbeddedDB",
+          "mainTableDb" : "demo::store::EmbeddedDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 22,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 32,
+            "startLine" : 22
+          },
+          "table" : "EmployeeTable"
+        },
+        "tableAlias" : "EmployeeTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::embedded::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 25,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::EmbeddedDB",
+            "mainTableDb" : "demo::store::EmbeddedDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 25,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 25
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 25,
+          "sourceId" : "mapping/employeeMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "embeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ {
+            "_type" : "column",
+            "column" : "addressPostcode",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 30,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 9,
+              "startLine" : 30
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::EmbeddedDB",
+              "mainTableDb" : "demo::store::EmbeddedDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 30,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 34,
+                "startLine" : 30
+              },
+              "table" : "EmployeeTable"
+            },
+            "tableAlias" : "EmployeeTable"
+          } ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "line1",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 32,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 7,
+                "startLine" : 32
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "addressLine1",
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 32,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 14,
+                "startLine" : 32
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::EmbeddedDB",
+                "mainTableDb" : "demo::store::EmbeddedDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/employeeMapping.pure",
+                  "startColumn" : 39,
+                  "startLine" : 32
+                },
+                "table" : "EmployeeTable"
+              },
+              "tableAlias" : "EmployeeTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 32,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 12,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "postcode",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 33,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 7,
+                "startLine" : 33
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "addressPostcode",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 33,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 17,
+                "startLine" : 33
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::EmbeddedDB",
+                "mainTableDb" : "demo::store::EmbeddedDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/employeeMapping.pure",
+                  "startColumn" : 42,
+                  "startLine" : 33
+                },
+                "table" : "EmployeeTable"
+              },
+              "tableAlias" : "EmployeeTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 33,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 33
+            }
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 34,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "property" : {
+          "class" : "demo::embedded::Employee",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 26,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 34,
+          "sourceId" : "mapping/employeeMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "mapping/employeeMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "EmbeddedEmployeeMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 71,
+      "sourceId" : "mapping/employeeMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::embedded::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 41,
+                  "sourceId" : "demo::EmbeddedEmployeeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 41
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 42,
+                "startLine" : 41
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 60,
+                    "endLine" : 41,
+                    "sourceId" : "demo::EmbeddedEmployeeMapping",
+                    "startColumn" : 59,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 41,
+                  "sourceId" : "demo::EmbeddedEmployeeMapping",
+                  "startColumn" : 62,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 58,
+                "startLine" : 41
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 41,
+              "sourceId" : "demo::EmbeddedEmployeeMapping",
+              "startColumn" : 50,
+              "startLine" : 41
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 41,
+              "sourceId" : "demo::EmbeddedEmployeeMapping",
+              "startColumn" : 77,
+              "startLine" : 41
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 41,
+                    "sourceId" : "demo::EmbeddedEmployeeMapping",
+                    "startColumn" : 80,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 41,
+                  "sourceId" : "demo::EmbeddedEmployeeMapping",
+                  "startColumn" : 83,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 79,
+                "startLine" : 41
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 41,
+                      "sourceId" : "demo::EmbeddedEmployeeMapping",
+                      "startColumn" : 91,
+                      "startLine" : 41
+                    }
+                  } ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 100,
+                    "endLine" : 41,
+                    "sourceId" : "demo::EmbeddedEmployeeMapping",
+                    "startColumn" : 94,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "line1",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 41,
+                  "sourceId" : "demo::EmbeddedEmployeeMapping",
+                  "startColumn" : 102,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 90,
+                "startLine" : 41
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 112,
+                      "endLine" : 41,
+                      "sourceId" : "demo::EmbeddedEmployeeMapping",
+                      "startColumn" : 111,
+                      "startLine" : 41
+                    }
+                  } ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 120,
+                    "endLine" : 41,
+                    "sourceId" : "demo::EmbeddedEmployeeMapping",
+                    "startColumn" : 114,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "postcode",
+                "sourceInformation" : {
+                  "endColumn" : 129,
+                  "endLine" : 41,
+                  "sourceId" : "demo::EmbeddedEmployeeMapping",
+                  "startColumn" : 122,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 110,
+                "startLine" : 41
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 161,
+              "endLine" : 41,
+              "sourceId" : "demo::EmbeddedEmployeeMapping",
+              "startColumn" : 133,
+              "startLine" : 41
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 139,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 134,
+                "startLine" : 41
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 148,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 142,
+                "startLine" : 41
+              },
+              "value" : "Line1"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 160,
+                "endLine" : 41,
+                "sourceId" : "demo::EmbeddedEmployeeMapping",
+                "startColumn" : 151,
+                "startLine" : 41
+              },
+              "value" : "Postcode"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 41,
+            "sourceId" : "demo::EmbeddedEmployeeMapping",
+            "startColumn" : 69,
+            "startLine" : 41
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 162,
+          "endLine" : 41,
+          "sourceId" : "demo::EmbeddedEmployeeMapping",
+          "startColumn" : 17,
+          "startLine" : 41
+        }
+      },
+      "id" : "embeddedSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 69,
+        "sourceId" : "mapping/employeeMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 39
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Jane Smith\",\"Line1\":\"2 High St\",\"Postcode\":\"20002\"},{\"Name\":\"John Doe\",\"Line1\":\"1 Main St\",\"Postcode\":\"10001\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 64,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 60
+            }
+          },
+          "id" : "shouldEmbed",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 65,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 57
+          }
+        } ],
+        "id" : "embeddedAddress",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 67,
+          "sourceId" : "mapping/employeeMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 44
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::EmbeddedEmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 52,
+                "sourceId" : "mapping/employeeMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 49
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 52,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 49
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 52,
+            "sourceId" : "mapping/employeeMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 48
+          },
+          "store" : {
+            "path" : "demo::store::EmbeddedDB",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 48,
+              "sourceId" : "mapping/employeeMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 48
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

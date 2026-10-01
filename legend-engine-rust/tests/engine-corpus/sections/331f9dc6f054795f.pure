@@ -1,0 +1,35 @@
+
+Database store::relational::db
+(
+  Schema mySchema
+  (
+    Table Firm
+    (
+      id INTEGER PRIMARY KEY
+    )
+    
+    Table Firm1
+    (
+      id INTEGER PRIMARY KEY
+    )
+  )
+)
+
+Database store::relational::db1
+(
+  include store::relational::db
+  Schema mySchema
+  (
+    Table Firm
+    (
+      id INTEGER PRIMARY KEY
+    )
+  )
+)
+
+Database store::relational::db2
+(
+  include store::relational::db1
+
+  Join Firm_Person([store::relational::db1]mySchema.Firm.id = [store::relational::db1]mySchema.Firm1.id)
+)

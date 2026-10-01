@@ -1,0 +1,23 @@
+
+Mapping test::includedRelationalMapping
+(
+  simple::Person[simple_Person]: Relational
+  {
+    ~mainTable [dbInc]personTable
+    firstName: [dbInc]personTable.FIRSTNAME,
+    lastName: [dbInc]personTable.LASTNAME,
+    age: [dbInc]personTable.AGE
+  }
+)
+
+Mapping test::simpleRelationalMapping
+(
+  include mapping test::includedRelationalMapping[dbInc->db]
+
+  simple::Firm[simple_Firm]: Relational
+  {
+    ~mainTable [db]firmTable
+    legalName: [db]firmTable.LEGALNAME,
+    employees: [db]@Firm_Person
+  }
+)

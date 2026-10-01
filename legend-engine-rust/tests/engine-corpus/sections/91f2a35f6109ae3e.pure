@@ -1,0 +1,9 @@
+
+Class my::IntegerThing
+{
+  amount: Integer[1];
+}
+function my::numericColumnFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(VAL:Number[1])>);
+}

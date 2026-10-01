@@ -1,0 +1,59 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::model::A",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 62
+      },
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "TestService",
+          "serviceStore" : "test::ServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 64
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 64
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 65,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 62
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 66,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 60
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

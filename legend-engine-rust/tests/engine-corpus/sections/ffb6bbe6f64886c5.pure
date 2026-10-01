@@ -1,0 +1,79 @@
+
+ServiceStore meta::external::store::service::showcase::store::ServiceStoreWithPostServices
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service ProductBySynonymService
+      (
+         path : '/getProductBySynonym';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::Synonym <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup TradeServices
+   (
+       path : '/trades';
+
+       Service TradesByDetailsService
+       (
+          path : '/getTradesByDetails';
+          method : POST;
+          requestBody : meta::external::store::service::showcase::domain::TradeDetails <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding;
+          security : [];
+          response : [meta::external::store::service::showcase::domain::Trade <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+       )
+   )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmDetailsByName
+      (
+         path : '/firmDetailsByName';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::FirmSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup EmployeeServices
+   (
+      path : '/employees';
+
+      Service EmployeeDetailsById
+      (
+         path : '/employeeDetailsById';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::EmployeeSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+
+      Service EmployeeDetailsByFilters
+      (
+         path : '/employeeDetailsByFilters';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::EmployeeSearchByFilters <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+
+      Service EmployeeDetailsByFirm
+      (
+         path : '/employeeDetailsByFirm';
+         method : POST;
+         requestBody : meta::external::store::service::showcase::domain::FirmSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Employee <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      )
+   )
+)

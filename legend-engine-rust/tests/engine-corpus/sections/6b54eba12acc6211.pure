@@ -1,0 +1,12 @@
+
+Class test::b
+{
+   names : String[*];
+}
+Class test::A
+[
+   test::b
+]
+{
+   names : String[*];
+}

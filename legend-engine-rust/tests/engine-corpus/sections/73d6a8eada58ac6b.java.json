@@ -1,0 +1,81 @@
+{
+  "elements" : [ {
+    "_type" : "association",
+    "name" : "EmployeeDepartment",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Department",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 33,
+            "sourceId" : "mapping/mixedChainMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "department",
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 33,
+        "sourceId" : "mapping/mixedChainMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Employee",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 34,
+            "sourceId" : "mapping/mixedChainMapping.pure",
+            "startColumn" : 20,
+            "startLine" : 34
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employeesInDept",
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 34,
+        "sourceId" : "mapping/mixedChainMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "mapping/mixedChainMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 31
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

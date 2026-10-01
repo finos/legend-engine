@@ -1,0 +1,17 @@
+
+Text meta::pure::myText
+{
+  type: STRING;
+  content: 'this is just for context';
+}
+
+Text meta::pure::anotherText
+{
+  type: HTML;
+  content: '<div>Inside Div</div>';
+}
+
+Text meta::pure::anotherText2
+{
+  content: '<div>Inside Div</div>';
+}

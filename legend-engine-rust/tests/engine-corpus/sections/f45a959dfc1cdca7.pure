@@ -1,0 +1,5 @@
+
+function a::a(): String[*]
+{
+  [1, 2]
+}

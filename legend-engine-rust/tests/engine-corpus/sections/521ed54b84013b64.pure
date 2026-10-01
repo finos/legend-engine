@@ -1,0 +1,13 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->projectWithColumnSubset([col(a|$a.name, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+   y(){test::A.all()->projectWithColumnSubset(col(a|$a.name, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+   h(){test::A.all()->projectWithColumnSubset([a|$a.name], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+   j(){test::A.all()->projectWithColumnSubset(a|$a.name, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+}

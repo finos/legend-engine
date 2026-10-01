@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB2",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 47
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "addressName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 51
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTable",
+        "primaryKey" : [ "name" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 49
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 47
+    },
+    "stereotypes" : [ ]
+  } ]
+}

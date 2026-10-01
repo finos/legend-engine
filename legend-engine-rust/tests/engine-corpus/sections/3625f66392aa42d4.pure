@@ -1,0 +1,28 @@
+
+Class test::Sales
+{
+  id: Integer[1];
+  salesDate: test::FiscalCalendar[1];
+  revenue: Float[1];
+}
+
+Class test::FiscalCalendar
+{
+  date: Date[1];
+  fiscalYear: Integer[1];
+  fiscalMonth: Integer[1];
+  fiscalQtr: Integer[1];
+}
+
+Class test::Sales_By_Date
+{
+  salesDate: test::FiscalCalendar[1];
+  netRevenue: Float[1];
+}
+
+Class test::Sales_By_Qtr
+{
+  salesQtrFirstDate: test::FiscalCalendar[1];
+  netRevenue: Float[1];
+}
+

@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "BloombergSingleFileSchemaSet",
+    "package" : "demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet",
+    "schemas" : [ {
+      "content" : "section FltCpnHistRecordRecord: BloombergData\n{\n  filter: 'DATA=FLT_CPN_HIST';\n\n  Record\n  {\n    SECURITY: STRING;\n    ERROR_COUNT: INTEGER;\n    FIELD_COUNT: INTEGER;\n    ID_BB_UNIQUE: STRING;\n    ID_BB_COMPANY: INTEGER;\n    ID_BB_SECURITY: INTEGER;\n    ID_BB_GLOBAL: STRING;\n    ID_ISIN: STRING(optional);\n    ID_BB_SEC_NUM_DES: STRING(optional);\n    FEED_SOURCE: STRING(optional);\n    FLT_CPN_HIST_DT: DATE;\n    FLT_CPN_HIST_RT: DECIMAL(optional);\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 494,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 35
+      },
+      "id" : "default.flatdata",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 33
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "demo::externalFormat::flatdata::bloomberg::singleFile::models::FltCpnHistRecordRecord" ]
+    },
+    "name" : "BloombergSingleFileBinding",
+    "package" : "demo::externalFormat::flatdata::bloomberg::singleFile::binding",
+    "schemaSet" : "demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet::BloombergSingleFileSchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    }
+  } ],
+  "imports" : [ ]
+}

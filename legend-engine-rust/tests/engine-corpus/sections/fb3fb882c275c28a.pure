@@ -1,0 +1,30 @@
+
+Class my::exampleRootType
+{
+}
+
+Class my::exampleSubType extends my::exampleRootType
+{
+}
+
+Enum test::EnumWithDefault
+{
+  DefaultValue,
+  AnotherValue
+}
+
+Class test::A
+{
+  stringProperty: String[1] = 'default';
+  classProperty: my::exampleRootType[1] = ^my::exampleRootType();
+  enumProperty: test::EnumWithDefault[1] = test::EnumWithDefault.DefaultValue;
+  floatProperty: Float[1] = 0.12;
+  inheritProperty: Number[1] = 0.12;
+  booleanProperty: Boolean[1] = false;
+  integerProperty: Integer[1] = 0;
+  collectionProperty: String[1..*] = ['one', 'two'];
+  enumCollection: EnumWithDefault[1..*] = [EnumWithDefault.DefaultValue, EnumWithDefault.AnotherValue];
+  classCollection: my::exampleRootType[1..4] = [^my::exampleRootType(), ^my::exampleSubType()];
+  singleProperty: String[1] = ['one'];
+  anyProperty: Any[1] = 'anyString';
+}

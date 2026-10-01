@@ -1,0 +1,2281 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "SampleClass",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::pure::changetoken::tests",
+    "properties" : [ {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 4
+        },
+        "value" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 4
+          },
+          "value" : "Example"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "nameDefault",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 6
+        },
+        "value" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 6
+          },
+          "value" : "Ignored"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "nameOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "optionalDefault",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "optionalOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "optionalOverwriteNull",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 10
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "arrayDefault",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 11
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "arrayOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 12
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "arrayOverwriteEmpty",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 13
+        },
+        "value" : {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 13
+          },
+          "value" : true
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "booleanTrue",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 14
+        },
+        "value" : {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 14
+          },
+          "value" : false
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "booleanFalse",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 15
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "booleanDefault",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 15
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "booleanOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 17
+        },
+        "value" : {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 17
+          },
+          "value" : 1.1
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Number",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 17
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "number",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Number",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "numberDefault",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Number",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "numberOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 20
+        },
+        "value" : {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 20
+          },
+          "value" : 3
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "integer",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "integerDefault",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 22
+        },
+        "value" : {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 22
+          },
+          "value" : 8
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 22
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "integerOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 23
+        },
+        "value" : {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 23
+          },
+          "values" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 23
+            },
+            "value" : 1
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 23
+            },
+            "value" : 2
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "integers",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "integersDefault",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 25
+        },
+        "value" : {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 25
+          },
+          "values" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 25
+            },
+            "value" : 3
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 25
+            },
+            "value" : 4
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "integersOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 41,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 26
+        },
+        "value" : {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 26
+          },
+          "value" : 4.2
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "value",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "valueDefault",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 28
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "valueOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 29
+        },
+        "value" : {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 3,
+            "upperBound" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 29
+          },
+          "values" : [ {
+            "_type" : "float",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 29
+            },
+            "value" : 1.0
+          }, {
+            "_type" : "float",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 29
+            },
+            "value" : 2.0
+          }, {
+            "_type" : "float",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 29
+            },
+            "value" : 3.0
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "name" : "values",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "name" : "valuesDefault",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 31
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "name" : "valuesOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 32
+        },
+        "value" : {
+          "_type" : "dateTime",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 32
+          },
+          "value" : "2024-01-15T17:30:00"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Date",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 32
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "date",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 33
+        },
+        "value" : {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 33
+          },
+          "value" : "2024-01-15"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "strictDate",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 34
+        },
+        "value" : {
+          "_type" : "dateTime",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 34
+          },
+          "value" : "2024-01-15T19:30:00"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "DateTime",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 34
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "dateTime",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "DateTime",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 35
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "dateTimeDefault",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "DateTime",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 36
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "dateTimeOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 273,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 74,
+          "startLine" : 37
+        },
+        "value" : {
+          "_type" : "func",
+          "function" : "new",
+          "parameters" : [ {
+            "_type" : "genericTypeInstance",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "meta::pure::metamodel::type::Class"
+              },
+              "typeArguments" : [ {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest"
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              } ],
+              "typeVariableValues" : [ ]
+            }
+          }, {
+            "_type" : "string",
+            "value" : ""
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "values" : [ {
+              "_type" : "keyExpression",
+              "add" : false,
+              "expression" : {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 146,
+                  "endLine" : 37,
+                  "sourceId" : "",
+                  "startColumn" : 139,
+                  "startLine" : 37
+                },
+                "value" : "London"
+              },
+              "key" : {
+                "_type" : "string",
+                "value" : "name"
+              }
+            }, {
+              "_type" : "keyExpression",
+              "add" : false,
+              "expression" : {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "model::pure::changetoken::tests::distance::GeographicCoordinate"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "float",
+                      "sourceInformation" : {
+                        "endColumn" : 242,
+                        "endLine" : 37,
+                        "sourceId" : "",
+                        "startColumn" : 234,
+                        "startLine" : 37
+                      },
+                      "value" : 51.507356
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "latitude"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "minus",
+                      "parameters" : [ {
+                        "_type" : "float",
+                        "sourceInformation" : {
+                          "endColumn" : 270,
+                          "endLine" : 37,
+                          "sourceId" : "",
+                          "startColumn" : 263,
+                          "startLine" : 37
+                        },
+                        "value" : 0.127706
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 261,
+                        "endLine" : 37,
+                        "sourceId" : "",
+                        "startColumn" : 257,
+                        "startLine" : 37
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "longitude"
+                    }
+                  } ]
+                } ]
+              },
+              "key" : {
+                "_type" : "string",
+                "value" : "location"
+              }
+            } ]
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 37
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "point",
+      "sourceInformation" : {
+        "endColumn" : 274,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 37
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 38
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "pointDefault",
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "pointOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 479,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 75,
+          "startLine" : 40
+        },
+        "value" : {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 479,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 75,
+            "startLine" : 40
+          },
+          "values" : [ {
+            "_type" : "func",
+            "function" : "new",
+            "parameters" : [ {
+              "_type" : "genericTypeInstance",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "meta::pure::metamodel::type::Class"
+                },
+                "typeArguments" : [ {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest"
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                } ],
+                "typeVariableValues" : [ ]
+              }
+            }, {
+              "_type" : "string",
+              "value" : ""
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "values" : [ {
+                "_type" : "keyExpression",
+                "add" : false,
+                "expression" : {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 149,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 141,
+                    "startLine" : 40
+                  },
+                  "value" : "Beijing"
+                },
+                "key" : {
+                  "_type" : "string",
+                  "value" : "name"
+                }
+              }, {
+                "_type" : "keyExpression",
+                "add" : false,
+                "expression" : {
+                  "_type" : "func",
+                  "function" : "new",
+                  "parameters" : [ {
+                    "_type" : "genericTypeInstance",
+                    "genericType" : {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "meta::pure::metamodel::type::Class"
+                      },
+                      "typeArguments" : [ {
+                        "multiplicityArguments" : [ ],
+                        "rawType" : {
+                          "_type" : "packageableType",
+                          "fullPath" : "model::pure::changetoken::tests::distance::GeographicCoordinate"
+                        },
+                        "typeArguments" : [ ],
+                        "typeVariableValues" : [ ]
+                      } ],
+                      "typeVariableValues" : [ ]
+                    }
+                  }, {
+                    "_type" : "string",
+                    "value" : ""
+                  }, {
+                    "_type" : "collection",
+                    "multiplicity" : {
+                      "lowerBound" : 2,
+                      "upperBound" : 2
+                    },
+                    "values" : [ {
+                      "_type" : "keyExpression",
+                      "add" : false,
+                      "expression" : {
+                        "_type" : "float",
+                        "sourceInformation" : {
+                          "endColumn" : 245,
+                          "endLine" : 40,
+                          "sourceId" : "",
+                          "startColumn" : 237,
+                          "startLine" : 40
+                        },
+                        "value" : 39.905489
+                      },
+                      "key" : {
+                        "_type" : "string",
+                        "value" : "latitude"
+                      }
+                    }, {
+                      "_type" : "keyExpression",
+                      "add" : false,
+                      "expression" : {
+                        "_type" : "float",
+                        "sourceInformation" : {
+                          "endColumn" : 269,
+                          "endLine" : 40,
+                          "sourceId" : "",
+                          "startColumn" : 260,
+                          "startLine" : 40
+                        },
+                        "value" : 116.397771
+                      },
+                      "key" : {
+                        "_type" : "string",
+                        "value" : "longitude"
+                      }
+                    } ]
+                  } ]
+                },
+                "key" : {
+                  "_type" : "string",
+                  "value" : "location"
+                }
+              } ]
+            } ]
+          }, {
+            "_type" : "func",
+            "function" : "new",
+            "parameters" : [ {
+              "_type" : "genericTypeInstance",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "meta::pure::metamodel::type::Class"
+                },
+                "typeArguments" : [ {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest"
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                } ],
+                "typeVariableValues" : [ ]
+              }
+            }, {
+              "_type" : "string",
+              "value" : ""
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "values" : [ {
+                "_type" : "keyExpression",
+                "add" : false,
+                "expression" : {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 356,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 342,
+                    "startLine" : 40
+                  },
+                  "value" : "San Francisco"
+                },
+                "key" : {
+                  "_type" : "string",
+                  "value" : "name"
+                }
+              }, {
+                "_type" : "keyExpression",
+                "add" : false,
+                "expression" : {
+                  "_type" : "func",
+                  "function" : "new",
+                  "parameters" : [ {
+                    "_type" : "genericTypeInstance",
+                    "genericType" : {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "meta::pure::metamodel::type::Class"
+                      },
+                      "typeArguments" : [ {
+                        "multiplicityArguments" : [ ],
+                        "rawType" : {
+                          "_type" : "packageableType",
+                          "fullPath" : "model::pure::changetoken::tests::distance::GeographicCoordinate"
+                        },
+                        "typeArguments" : [ ],
+                        "typeVariableValues" : [ ]
+                      } ],
+                      "typeVariableValues" : [ ]
+                    }
+                  }, {
+                    "_type" : "string",
+                    "value" : ""
+                  }, {
+                    "_type" : "collection",
+                    "multiplicity" : {
+                      "lowerBound" : 2,
+                      "upperBound" : 2
+                    },
+                    "values" : [ {
+                      "_type" : "keyExpression",
+                      "add" : false,
+                      "expression" : {
+                        "_type" : "float",
+                        "sourceInformation" : {
+                          "endColumn" : 451,
+                          "endLine" : 40,
+                          "sourceId" : "",
+                          "startColumn" : 444,
+                          "startLine" : 40
+                        },
+                        "value" : 37.77493
+                      },
+                      "key" : {
+                        "_type" : "string",
+                        "value" : "latitude"
+                      }
+                    }, {
+                      "_type" : "keyExpression",
+                      "add" : false,
+                      "expression" : {
+                        "_type" : "func",
+                        "function" : "minus",
+                        "parameters" : [ {
+                          "_type" : "float",
+                          "sourceInformation" : {
+                            "endColumn" : 476,
+                            "endLine" : 40,
+                            "sourceId" : "",
+                            "startColumn" : 467,
+                            "startLine" : 40
+                          },
+                          "value" : 122.419416
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 466,
+                          "endLine" : 40,
+                          "sourceId" : "",
+                          "startColumn" : 466,
+                          "startLine" : 40
+                        }
+                      },
+                      "key" : {
+                        "_type" : "string",
+                        "value" : "longitude"
+                      }
+                    } ]
+                  } ]
+                },
+                "key" : {
+                  "_type" : "string",
+                  "value" : "location"
+                }
+              } ]
+            } ]
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 40
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "points",
+      "sourceInformation" : {
+        "endColumn" : 480,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 40
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 41
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "pointsDefault",
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::distance::PointOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 42
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "pointsOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 43
+        },
+        "value" : {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::pure::changetoken::tests::trade::Side",
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 43,
+              "sourceId" : "",
+              "startColumn" : 59,
+              "startLine" : 43
+            }
+          } ],
+          "property" : "Buy",
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 104,
+            "startLine" : 43
+          }
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::trade::Side",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 43
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "side",
+      "sourceInformation" : {
+        "endColumn" : 107,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::trade::Side",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 44
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "sideDefault",
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::trade::Side",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 45
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "sideOverwrite",
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 165,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 46
+        },
+        "value" : {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 165,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 46
+          },
+          "values" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::pure::changetoken::tests::trade::Side",
+              "sourceInformation" : {
+                "endColumn" : 109,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 46
+              }
+            } ],
+            "property" : "Buy",
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 111,
+              "startLine" : 46
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::pure::changetoken::tests::trade::Side",
+              "sourceInformation" : {
+                "endColumn" : 159,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 116,
+                "startLine" : 46
+              }
+            } ],
+            "property" : "Sell",
+            "sourceInformation" : {
+              "endColumn" : 164,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 161,
+              "startLine" : 46
+            }
+          } ]
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::trade::Side",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 46
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "sidesValid",
+      "sourceInformation" : {
+        "endColumn" : 166,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 46
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::pure::changetoken::tests::trade::Side",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 47
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "sidesUnknown",
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 47
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

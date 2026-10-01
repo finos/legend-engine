@@ -1,0 +1,5 @@
+
+function abc::cast(): String[1]
+{
+  1->cast('String')
+}

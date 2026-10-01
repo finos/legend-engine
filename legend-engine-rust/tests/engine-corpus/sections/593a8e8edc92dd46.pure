@@ -1,0 +1,8 @@
+
+'''
+Answers everything.
+'''
+function model::f(): Integer[1]
+{
+  42
+}

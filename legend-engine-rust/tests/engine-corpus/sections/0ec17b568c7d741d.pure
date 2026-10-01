@@ -1,0 +1,8 @@
+
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY
+  )
+)

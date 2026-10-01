@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "PersonKeyDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "firstName",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "lastName",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "title",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 50
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PersonTable",
+        "primaryKey" : [ "firstName", "lastName" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 23,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

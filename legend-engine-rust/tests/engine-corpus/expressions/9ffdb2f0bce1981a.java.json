@@ -1,0 +1,135 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "from",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "project",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "demo::SampleData",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 2,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 1
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 46,
+                    "startLine" : 1
+                  }
+                } ],
+                "property" : "strCol",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 1
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 1
+              }
+            },
+            "name" : "strCol",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 1
+            }
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 26,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "packageableElementPtr",
+      "fullPath" : "demo::PersonMap",
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 64,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "packageableElementPtr",
+      "fullPath" : "demo::PersonRuntime",
+      "sourceInformation" : {
+        "endColumn" : 99,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 81,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 62,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 59,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 100,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

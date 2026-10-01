@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "H2Runtime",
+    "package" : "runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 154,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 151
+        },
+        "store" : {
+          "path" : "store::CovidDataStore",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 151,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 151
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "runtime::connection::H2Connection",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 153,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 153
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 153,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 153
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 147
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 156,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 143
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 156,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 143
+    }
+  } ],
+  "imports" : [ ]
+}

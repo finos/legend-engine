@@ -1,0 +1,80 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 30
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      },
+      "element" : "test::AccountDB",
+      "elementSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 25
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ {
+        "_type" : "relationalMapper",
+        "relationalMappers" : [ {
+          "path" : "test::testMapper",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 34
+          },
+          "type" : "QUERYPOSTPROCESSOR"
+        }, {
+          "path" : "test::testMapper",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 34
+          },
+          "type" : "QUERYPOSTPROCESSOR"
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 23
+      },
+      "type" : "H2"
+    },
+    "name" : "MapperConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    }
+  } ],
+  "imports" : [ ]
+}

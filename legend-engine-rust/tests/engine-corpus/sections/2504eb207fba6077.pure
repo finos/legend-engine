@@ -1,0 +1,13 @@
+
+DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.nonExistentTag = 'value'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

@@ -1,0 +1,31 @@
+
+Enum test::Simple::AddressType
+{
+  HOME,
+  OFFICE,
+  WORKSHOP
+}
+
+Class test::Simple::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  middleName: String[0..1];
+  age: Integer[0..1];
+  addresses: test::Simple::Address[*];
+  firm: test::Simple::Firm[1];
+}
+
+Class test::Simple::Address
+{
+  addressType: test::Simple::AddressType[1];
+  addressLine1: String[1];
+  addressLine2: String[0..1];
+  addressLine3: String[0..1];
+}
+
+Class test::Simple::Firm
+{
+  legalName: String[1];
+  addresses: test::Simple::Address[*];
+}

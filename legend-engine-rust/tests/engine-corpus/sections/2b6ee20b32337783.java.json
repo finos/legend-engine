@@ -1,0 +1,601 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::DataTypesClass",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 100,
+                "sourceId" : "",
+                "startColumn" : 4,
+                "startLine" : 100
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 100
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 102,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 102
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "test::DataTypesClass",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 102,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 102
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "tinyInt",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 103,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 103
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "smallInt",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 104,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 104
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 105,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 105
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "bigInt",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 106,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 106
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "varchar",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 107,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 107
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "char",
+                "sourceInformation" : {
+                  "endColumn" : 13,
+                  "endLine" : 108,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 108
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "date",
+                "sourceInformation" : {
+                  "endColumn" : 13,
+                  "endLine" : 109,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 109
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "timestamp",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 110,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 110
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "float",
+                "sourceInformation" : {
+                  "endColumn" : 14,
+                  "endLine" : 111,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 111
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "double",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 112,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 112
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "decimalAsFloat",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 113,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 113
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "numericAsFloat",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 115,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 115
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "bit",
+                "sourceInformation" : {
+                  "endColumn" : 12,
+                  "endLine" : 116,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 116
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "decimal",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 117,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 117
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "numeric",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 118,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 118
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "floatAsDecimal",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 119,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 119
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 121,
+              "sourceId" : "",
+              "startColumn" : 8,
+              "startLine" : 121
+            },
+            "value" : 1
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 101
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 123
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "test::DataTypesClass",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 123,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 123
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "tinyInt",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 124,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 124
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "smallInt",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 125,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 125
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 126,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 126
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "bigInt",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 127,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 127
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "varchar",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 128,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 128
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "char",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 129,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 129
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "date",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 130,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 130
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "timestamp",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 131,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 131
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "float",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 132,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 132
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "double",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 133,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 133
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "decimalAsFloat",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 134,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 134
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "numericAsFloat",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 136,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 136
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "bit",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 137,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 137
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "decimal",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 138,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 138
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "numeric",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 139,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 139
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "floatAsDecimal",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 140,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 140
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 122,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 122
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 142,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 100
+      }
+    } ],
+    "name" : "fetch__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 98,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 98
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 143,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 98
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

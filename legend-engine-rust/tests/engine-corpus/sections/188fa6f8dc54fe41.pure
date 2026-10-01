@@ -1,0 +1,13 @@
+
+Data meta::data::MyData
+{
+   ModelStore
+   #{
+     meta::Demo:
+       [
+       ],
+     meta::Demo:
+       [
+       ]
+   }#
+}

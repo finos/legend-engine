@@ -1,0 +1,13 @@
+
+DataSpace { NoProfile.NoKey = 'something' } model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

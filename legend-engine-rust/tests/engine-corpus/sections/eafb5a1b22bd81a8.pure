@@ -1,0 +1,9 @@
+
+Database relational::graphFetch::dbInc
+(
+  Table firmTable
+  (
+    FirmCode INTEGER PRIMARY KEY,
+    FirmName VARCHAR(200)
+  )
+)

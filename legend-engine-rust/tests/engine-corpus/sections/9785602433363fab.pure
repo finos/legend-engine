@@ -1,0 +1,24 @@
+
+Data data::RelationalData
+{
+store::TestDB:
+  Relation
+  #{
+    default.PersonTable:
+      id,firstName,lastName
+      1,John,Doe
+      2,Jane,Doe;
+  }#;
+}
+Data data::RelationalData2
+{
+  data::RelationalData;
+store::TestDB:
+  Relation
+  #{
+    default.FirmTable:
+      id,legalname
+      1,financeInc
+      2,devCorp;
+  }#;
+}

@@ -1,0 +1,12 @@
+
+Binding test::gen::TestBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::firm::model::Person,
+    test::firm::model::Address,
+    test::firm::model::AddressUse,
+    test::firm::model::GeographicPosition,
+    test::firm::model::TargetPerson2
+  ];
+}

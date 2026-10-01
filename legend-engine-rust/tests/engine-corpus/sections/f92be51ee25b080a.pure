@@ -1,0 +1,23 @@
+
+Class domain::Demographics
+{
+  fips: String[0..1];
+  state: String[0..1];
+}
+Class domain::COVIDData
+{
+  id: Integer[1];
+  fips: String[0..1];
+  date: StrictDate[0..1];
+  caseType: String[0..1];
+  cases: Float[0..1];
+  lastReportedFlag: Boolean[0..1];
+  demographics: domain::Demographics[0..1];
+}
+function domain::COVIDData_QueryFunctionRelation(): meta::pure::metamodel::relation::Relation<(Cases:Float)>[1]
+{
+   domain::COVIDData.all()->project(~[Cases: x|$x.cases])->from(
+    mapping::CovidDataMapping,
+    runtime::H2Runtime
+  )
+}

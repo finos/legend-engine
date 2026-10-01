@@ -1,0 +1,8 @@
+
+'''
+\d+ and \* and C:\temp and a quote's worth
+on more than one line
+'''
+Class model::A
+{
+}

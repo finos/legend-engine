@@ -1,0 +1,164 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Employee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssj",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 18,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 18,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssj::Firm",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 19,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 19,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssj",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 24,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 24,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 25,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 25,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

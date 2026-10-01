@@ -1,0 +1,13 @@
+
+Class A
+{
+  unitOne: NewMeasure~UnitOne[0..1];
+  unitTwo: NewMeasure~UnitTwo[0..1];
+}
+
+Measure NewMeasure
+{
+  *UnitOne: x -> $x;
+  UnitTwo: x -> $x * 1000;
+  UnitThree: x -> $x * 400;
+}

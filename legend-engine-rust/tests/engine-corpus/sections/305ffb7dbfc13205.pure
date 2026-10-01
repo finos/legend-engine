@@ -1,0 +1,16 @@
+
+Class demo::payment::Payment
+{
+  reference: String[1];
+  amount: Integer[1];
+}
+
+Class demo::payment::CardPayment extends demo::payment::Payment
+{
+  cardLast4: String[1];
+}
+
+Class demo::payment::BankTransfer extends demo::payment::Payment
+{
+  sortCode: String[1];
+}

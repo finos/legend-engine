@@ -1,0 +1,13 @@
+
+Mapping simple::ItemMapping
+(
+simple::Item: Relational
+  {
+    ~primaryKey
+    (
+       [simple::DB]"tableNameInQuotes.With.Dots".ID
+    )
+    ~mainTable [simple::DB]"tableNameInQuotes.With.Dots"
+    id: [simple::DB]"tableNameInQuotes.With.Dots".ID
+  }
+)

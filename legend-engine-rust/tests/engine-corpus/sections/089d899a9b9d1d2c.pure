@@ -1,0 +1,27 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::S_Product.all()
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description,
+               s_synonyms {
+                   s_name,
+                   s_type
+               }
+           }
+         }#)
+       ->serialize(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description,
+               s_synonyms {
+                   s_name,
+                   s_type
+               }
+           }
+        }#)};
+}

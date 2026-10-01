@@ -1,0 +1,118 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "C1",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "C2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::C1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 44
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "c1",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::C2",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 45
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "c2",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

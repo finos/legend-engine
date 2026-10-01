@@ -1,0 +1,17 @@
+
+Runtime modelToModel::test::DemoM2MModelChainConnectionRuntime
+{
+  mappings:
+  [
+    modelToModel::test::BridgeToDestMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: modelToModel::test::OneMappingConnection,
+      connection_2: modelToModel::test::JsonConnection,
+      connection_3: modelToModel::test::XmlConnection
+    ]
+  ];
+}

@@ -1,0 +1,202 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Payment",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::payment",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 18,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 14,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "reference",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 18,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 19,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 11,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "amount",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 19,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "CardPayment",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::payment",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 24,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 14,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "cardLast4",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 24,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::payment::Payment",
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 22,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 42,
+        "startLine" : 22
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "BankTransfer",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::payment",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 29,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 13,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "sortCode",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 29,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::payment::Payment",
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 27,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 43,
+        "startLine" : 27
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

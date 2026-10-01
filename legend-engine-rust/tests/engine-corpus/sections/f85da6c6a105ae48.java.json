@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "missing",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 25
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "model::element",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 25
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 25
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

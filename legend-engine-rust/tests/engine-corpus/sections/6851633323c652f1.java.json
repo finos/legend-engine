@@ -1,0 +1,1070 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "AddressType",
+    "package" : "test::firm::model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "Headquarters"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "RegionalOffice"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "Home"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "Holiday"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 12
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 12
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "ranking",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 13
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::AddressUse",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "addresses",
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 14
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstLine",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "secondLine",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "city",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 22
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "region",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "country",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::GeographicPosition",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "position",
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ {
+      "functionDefinition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "and",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "greaterThanEqual",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 24,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 29
+                }
+              } ],
+              "property" : "latitude",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 29
+              }
+            }, {
+              "_type" : "func",
+              "function" : "minus",
+              "parameters" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 39,
+                  "startLine" : 29
+                },
+                "value" : 90
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 38,
+                "startLine" : 29
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "func",
+            "function" : "lessThanEqual",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 29
+                }
+              } ],
+              "property" : "latitude",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 29
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 29
+              },
+              "value" : 90
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 29
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "this"
+        } ]
+      },
+      "name" : "validLatitude",
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 29
+      }
+    }, {
+      "functionDefinition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "and",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "greaterThanEqual",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 30
+                }
+              } ],
+              "property" : "longitude",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "func",
+              "function" : "minus",
+              "parameters" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 30
+                },
+                "value" : 180
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 30
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 30
+            }
+          }, {
+            "_type" : "func",
+            "function" : "lessThanEqual",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 50,
+                  "startLine" : 30
+                }
+              } ],
+              "property" : "longitude",
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 69,
+                "startLine" : 30
+              },
+              "value" : 180
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 30
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 30
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "this"
+        } ]
+      },
+      "name" : "validLongitude",
+      "sourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 30
+      }
+    } ],
+    "name" : "GeographicPosition",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Decimal",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "latitude",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Decimal",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 34
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "longitude",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 34
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "AddressUse",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::AddressType",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "addressType",
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::Address",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 40
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "address",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 40
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 45
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 45
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 46
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "lastName",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 46
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 47
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "dateOfBirth",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 47
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::AddressUse",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 48
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "addresses",
+      "sourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 48
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "isAlive",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 50
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "heightInMeters",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 50
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 43
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Firm_Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test::firm::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::Firm",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 55
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 55
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::firm::model::Person",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 56
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 56
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 57,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

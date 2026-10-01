@@ -1,0 +1,2394 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ss::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "filter" : {
+        "filter" : {
+          "db" : "demo::ss::store::FirmDB",
+          "name" : "LargeFirmFilter"
+        },
+        "joins" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 20,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      },
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ss::store::FirmDB",
+        "mainTableDb" : "demo::ss::store::FirmDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 41,
+          "startLine" : 25
+        },
+        "table" : "FIRM_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 23,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ss::store::FirmDB",
+          "mainTableDb" : "demo::ss::store::FirmDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 23,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 32,
+            "startLine" : 23
+          },
+          "table" : "FIRM_TABLE"
+        },
+        "tableAlias" : "FIRM_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ss::store::FirmDB",
+            "mainTableDb" : "demo::ss::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 34,
+              "startLine" : 26
+            },
+            "table" : "FIRM_TABLE"
+          },
+          "tableAlias" : "FIRM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 42,
+              "startLine" : 30
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 67,
+                "startLine" : 30
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 92,
+              "startLine" : 30
+            },
+            "value" : "legalName"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 105,
+              "startLine" : 30
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 30,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "ticker",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 31
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 31,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 64,
+                "startLine" : 31
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 89,
+              "startLine" : 31
+            },
+            "value" : "ticker"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 99,
+              "startLine" : 31
+            },
+            "value" : "CHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 31,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "sector",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 32
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 32,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 64,
+                "startLine" : 32
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 89,
+              "startLine" : 32
+            },
+            "value" : "sector"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 99,
+              "startLine" : 32
+            },
+            "value" : "STRING"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 107,
+          "endLine" : 32,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "employeeCount",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 93,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 33
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 71,
+                "startLine" : 33
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 96,
+              "startLine" : 33
+            },
+            "value" : "employeeCount"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 121,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 113,
+              "startLine" : 33
+            },
+            "value" : "INTEGER"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 122,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 20,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 122,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 18,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "isMnc",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 38,
+              "startLine" : 34
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 72,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 63,
+                "startLine" : 34
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 94,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 88,
+              "startLine" : 34
+            },
+            "value" : "isMnc"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 105,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 97,
+              "startLine" : 34
+            },
+            "value" : "BOOLEAN"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 12,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 10,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "revenue",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 35,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 35,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 40,
+              "startLine" : 35
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 35,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 65,
+                "startLine" : 35
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 35,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 90,
+              "startLine" : 35
+            },
+            "value" : "revenue"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 35,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 101,
+              "startLine" : 35
+            },
+            "value" : "FLOAT"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 108,
+            "endLine" : 35,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 35
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 108,
+          "endLine" : 35,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "marketCap",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 42,
+              "startLine" : 36
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 67,
+                "startLine" : 36
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 92,
+              "startLine" : 36
+            },
+            "value" : "marketCap"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 105,
+              "startLine" : 36
+            },
+            "value" : "DECIMAL"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "estDate",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 37,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 40,
+              "startLine" : 37
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 37,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 65,
+                "startLine" : 37
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 37,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 90,
+              "startLine" : 37
+            },
+            "value" : "dates.estDate"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 37,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 107,
+              "startLine" : 37
+            },
+            "value" : "DATE"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 113,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 37,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "lastUpdate",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 38,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 43,
+              "startLine" : 38
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 38,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 68,
+                "startLine" : 38
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 93,
+              "startLine" : 38
+            },
+            "value" : "dates.lastUpdate"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 113,
+              "startLine" : 38
+            },
+            "value" : "DATETIME"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 123,
+            "endLine" : 38,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 123,
+          "endLine" : 38,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "auditStamp",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 39,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 43,
+              "startLine" : 39
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 39,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 68,
+                "startLine" : 39
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 39,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 93,
+              "startLine" : 39
+            },
+            "value" : "dates.auditStamp"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 123,
+              "endLine" : 39,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 113,
+              "startLine" : 39
+            },
+            "value" : "TIMESTAMP"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 124,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 39
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 124,
+          "endLine" : 39,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 39
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "firstOrderPrice",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 42
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 95,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 48,
+              "startLine" : 42
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 42,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 73,
+                "startLine" : 42
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 114,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 98,
+              "startLine" : 42
+            },
+            "value" : "orders[0].price"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 125,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 117,
+              "startLine" : 42
+            },
+            "value" : "INTEGER"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 22,
+            "startLine" : 42
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 126,
+          "endLine" : 42,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 20,
+          "startLine" : 42
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "nestedCell",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 44,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 44,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 43,
+              "startLine" : 44
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 44,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 68,
+                "startLine" : 44
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 44,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 93,
+              "startLine" : 44
+            },
+            "value" : "matrix[0][1]"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 44,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 109,
+              "startLine" : 44
+            },
+            "value" : "INTEGER"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 44,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 44
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 118,
+          "endLine" : 44,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "nestedTag",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 46,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 46,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 42,
+              "startLine" : 46
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 46,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 67,
+                "startLine" : 46
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 46,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 92,
+              "startLine" : 46
+            },
+            "value" : "items[0].tags[1]"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 120,
+              "endLine" : 46,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 112,
+              "startLine" : 46
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 46,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 46
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 121,
+          "endLine" : 46,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "quotedKey",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 42,
+              "startLine" : 48
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 48,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 67,
+                "startLine" : 48
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 114,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 92,
+              "startLine" : 48
+            },
+            "value" : "[\"odd keys\"][\"a.b c\"]"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 125,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 117,
+              "startLine" : 48
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 48
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 126,
+          "endLine" : 48,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 48
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "firstTag",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 50,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_TAGS",
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 50,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 50
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 75,
+                "endLine" : 50,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 66,
+                "startLine" : 50
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 50,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 88,
+              "startLine" : 50
+            },
+            "value" : "[0]"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 50,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 95,
+              "startLine" : 50
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 104,
+            "endLine" : 50,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 50
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 104,
+          "endLine" : 50,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 50
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "secondTagLabel",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 51,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_TAGS",
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 51,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 51
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 51,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 72,
+                "startLine" : 51
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 51,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 94,
+              "startLine" : 51
+            },
+            "value" : "[1].label"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 115,
+              "endLine" : 51,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 107,
+              "startLine" : 51
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 116,
+            "endLine" : 51,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 21,
+            "startLine" : 51
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 116,
+          "endLine" : 51,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ss::Firm",
+          "property" : "detailsJson",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 53,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 53
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "toJson",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 53,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 53
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 53,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 50,
+                "startLine" : 53
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 53,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 53
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 53,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 53
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 54,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "FirmMapping",
+    "package" : "demo::ss",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 96,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ss::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 64,
+                  "sourceId" : "demo::ss::FirmMapping",
+                  "startColumn" : 18,
+                  "startLine" : 64
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 64,
+                "sourceId" : "demo::ss::FirmMapping",
+                "startColumn" : 32,
+                "startLine" : 64
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 532,
+                "endLine" : 65,
+                "sourceId" : "demo::ss::FirmMapping",
+                "startColumn" : 30,
+                "startLine" : 65
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 46,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 49,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 44,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 31,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 72,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "ticker",
+                      "sourceInformation" : {
+                        "endColumn" : 80,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 75,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 70,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "ticker",
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 60,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 96,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 95,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "sector",
+                      "sourceInformation" : {
+                        "endColumn" : 103,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 98,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 103,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 93,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "sector",
+                  "sourceInformation" : {
+                    "endColumn" : 103,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 83,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 126,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 125,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "employeeCount",
+                      "sourceInformation" : {
+                        "endColumn" : 140,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 128,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 140,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 123,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "employeeCount",
+                  "sourceInformation" : {
+                    "endColumn" : 140,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 106,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 155,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 154,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "isMnc",
+                      "sourceInformation" : {
+                        "endColumn" : 161,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 157,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 161,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 152,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "isMnc",
+                  "sourceInformation" : {
+                    "endColumn" : 161,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 143,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 178,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 177,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "revenue",
+                      "sourceInformation" : {
+                        "endColumn" : 186,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 180,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 186,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 175,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "revenue",
+                  "sourceInformation" : {
+                    "endColumn" : 186,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 164,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 205,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 204,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "marketCap",
+                      "sourceInformation" : {
+                        "endColumn" : 215,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 207,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 215,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 202,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "marketCap",
+                  "sourceInformation" : {
+                    "endColumn" : 215,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 189,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 232,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 231,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "estDate",
+                      "sourceInformation" : {
+                        "endColumn" : 240,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 234,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 240,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 229,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "estDate",
+                  "sourceInformation" : {
+                    "endColumn" : 240,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 218,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 260,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 259,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "lastUpdate",
+                      "sourceInformation" : {
+                        "endColumn" : 271,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 262,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 271,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 257,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "lastUpdate",
+                  "sourceInformation" : {
+                    "endColumn" : 271,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 243,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 291,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 290,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "auditStamp",
+                      "sourceInformation" : {
+                        "endColumn" : 302,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 293,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 302,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 288,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "auditStamp",
+                  "sourceInformation" : {
+                    "endColumn" : 302,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 274,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 327,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 326,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "firstOrderPrice",
+                      "sourceInformation" : {
+                        "endColumn" : 343,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 329,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 343,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 324,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "firstOrderPrice",
+                  "sourceInformation" : {
+                    "endColumn" : 343,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 305,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 363,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 362,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "nestedCell",
+                      "sourceInformation" : {
+                        "endColumn" : 374,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 365,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 374,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 360,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "nestedCell",
+                  "sourceInformation" : {
+                    "endColumn" : 374,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 346,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 393,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 392,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "nestedTag",
+                      "sourceInformation" : {
+                        "endColumn" : 403,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 395,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 403,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 390,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "nestedTag",
+                  "sourceInformation" : {
+                    "endColumn" : 403,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 377,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 422,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 421,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "quotedKey",
+                      "sourceInformation" : {
+                        "endColumn" : 432,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 424,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 432,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 419,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "quotedKey",
+                  "sourceInformation" : {
+                    "endColumn" : 432,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 406,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 450,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 449,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "firstTag",
+                      "sourceInformation" : {
+                        "endColumn" : 459,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 452,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 459,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 447,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "firstTag",
+                  "sourceInformation" : {
+                    "endColumn" : 459,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 435,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 483,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 482,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "secondTagLabel",
+                      "sourceInformation" : {
+                        "endColumn" : 498,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 485,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 498,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 480,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "secondTagLabel",
+                  "sourceInformation" : {
+                    "endColumn" : 498,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 462,
+                    "startLine" : 65
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "f",
+                        "sourceInformation" : {
+                          "endColumn" : 519,
+                          "endLine" : 65,
+                          "sourceId" : "demo::ss::FirmMapping",
+                          "startColumn" : 518,
+                          "startLine" : 65
+                        }
+                      } ],
+                      "property" : "detailsJson",
+                      "sourceInformation" : {
+                        "endColumn" : 531,
+                        "endLine" : 65,
+                        "sourceId" : "demo::ss::FirmMapping",
+                        "startColumn" : 521,
+                        "startLine" : 65
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "f"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 531,
+                      "endLine" : 65,
+                      "sourceId" : "demo::ss::FirmMapping",
+                      "startColumn" : 516,
+                      "startLine" : 65
+                    }
+                  },
+                  "name" : "detailsJson",
+                  "sourceInformation" : {
+                    "endColumn" : 531,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 501,
+                    "startLine" : 65
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 65,
+              "sourceId" : "demo::ss::FirmMapping",
+              "startColumn" : 21,
+              "startLine" : 65
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 66,
+              "sourceId" : "demo::ss::FirmMapping",
+              "startColumn" : 26,
+              "startLine" : 66
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 66,
+                  "sourceId" : "demo::ss::FirmMapping",
+                  "startColumn" : 28,
+                  "startLine" : 66
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 66,
+                    "sourceId" : "demo::ss::FirmMapping",
+                    "startColumn" : 28,
+                    "startLine" : 66
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 66,
+                "sourceId" : "demo::ss::FirmMapping",
+                "startColumn" : 39,
+                "startLine" : 66
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 66,
+            "sourceId" : "demo::ss::FirmMapping",
+            "startColumn" : 21,
+            "startLine" : 66
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 66,
+          "sourceId" : "demo::ss::FirmMapping",
+          "startColumn" : 17,
+          "startLine" : 64
+        }
+      },
+      "id" : "semiStructuredSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 94,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 58
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Firm X\",\"ticker\":\"FX\",\"sector\":\"Tech\",\"employeeCount\":4,\"isMnc\":true,\"revenue\":1234.5,\"marketCap\":\"9876.54\",\"estDate\":\"2020-01-15\",\"lastUpdate\":\"2024-03-02T10:15:30.000000000+0000\",\"auditStamp\":\"2024-03-02T10:15:30.000000000+0000\",\"firstOrderPrice\":100,\"nestedCell\":2,\"nestedTag\":\"b\",\"quotedKey\":\"quoted-hit\",\"firstTag\":\"alpha\",\"secondTagLabel\":\"beta\",\"detailsJson\":\"{\\\"legalName\\\":\\\"Firm X\\\",\\\"employeeCount\\\":4,\\\"isMnc\\\":true,\\\"ticker\\\":\\\"FX\\\",\\\"sector\\\":\\\"Tech\\\",\\\"revenue\\\":1234.5,\\\"marketCap\\\":9876.54,\\\"dates\\\":{\\\"estDate\\\":\\\"2020-01-15\\\",\\\"lastUpdate\\\":\\\"2024-03-02T10:15:30\\\",\\\"auditStamp\\\":\\\"2024-03-02T10:15:30\\\"},\\\"odd keys\\\":{\\\"a.b c\\\":\\\"quoted-hit\\\"},\\\"orders\\\":[{\\\"price\\\":100},{\\\"price\\\":250}],\\\"matrix\\\":[[1,2],[3,4]],\\\"items\\\":[{\\\"tags\\\":[\\\"a\\\",\\\"b\\\"]}]}\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 89,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 85
+            }
+          },
+          "id" : "shouldExtractScalarsAndIndexedArrayElement",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 90,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 82
+          }
+        } ],
+        "id" : "extractAndNavigate",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 92,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 69
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ss::data::FirmData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 77,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 74
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 77,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 74
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 77,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 73
+          },
+          "store" : {
+            "path" : "demo::ss::store::FirmDB",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 73,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 73
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

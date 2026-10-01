@@ -1,0 +1,412 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 115
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 115,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 115
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 116,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 116
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fullName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 116
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 117,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 117
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 117,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 117
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 118
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "emailAddress",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 118,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 118
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 119
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "annualSalary",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 119,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 119
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 120
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "dateOfBirth",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 120,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 120
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 121,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 113
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "SampleData",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 125
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 125,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 125
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 126
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "strCol",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 126,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 126
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 127,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 127
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "intCol",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 127,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 127
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 128,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 128
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "floatCol",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 128,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 128
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 129,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 129
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "dateCol",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 129,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 129
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 130,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 130
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "boolCol",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 130,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 130
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 131,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 123
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

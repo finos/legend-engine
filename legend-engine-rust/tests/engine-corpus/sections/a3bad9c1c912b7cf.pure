@@ -1,0 +1,35 @@
+
+ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
+(
+   description : 'Service Store Batching Example';
+
+   ServiceGroup TradeServices
+   (
+      path : '/trades';
+
+      Service AllTradeService
+      (
+         path : '/allTradesService';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service ProductsByIdWithQuantityService
+      (
+         path : '/getProductsByIdWithQuantity';
+         method : GET;
+         parameters :
+         (
+            idWithQuantity : [ String ] (location = query, style = form, explode = false)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+)

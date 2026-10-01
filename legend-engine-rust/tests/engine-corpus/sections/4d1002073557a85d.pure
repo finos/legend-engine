@@ -1,0 +1,19 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::class.all()->graphFetch(#{test::class{prop1}}#)->from(test::mapping, test::mapping);
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

@@ -1,0 +1,7 @@
+
+Avro FileGeneration::import::scopeElements::generationOutputPath
+{
+  scopeElements: [model::MyClass, model];
+  includeNamespace: true;
+  propertyProfile: ['model::myProfile', 'model::nextProfile'];
+}

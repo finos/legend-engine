@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "serviceStore",
+      "serviceStubMappings" : [ {
+        "requestPattern" : {
+          "method" : "GET",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          },
+          "url" : "/employees",
+          "urlPath" : "/employees"
+        },
+        "responseDefinition" : {
+          "body" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[\n                       {\n                           \"firstName\": \"FirstName A\",\n                           \"lastName\": \"LastName A\",\n                           \"firmId\": \"A\"\n                       },\n                       {\n                           \"firstName\": \"FirstName B\",\n                           \"lastName\": \"LastName B\",\n                           \"firmId\": \"B\"\n                       }\n                     ]\n",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 14
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 7
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "MyData",
+    "package" : "meta::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,9 @@
+
+Diagram meta::pure::MyDiagram
+{
+  generalizationView
+  {
+    points: [(123.123,23.23),(123.123,23.23)];
+    source: sourceId;
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "TradeDatabase",
+    "package" : "com::trade",
+    "schemas" : [ {
+      "name" : "Trade",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        }, {
+          "name" : "value",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ENTITY_ID_FK",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Trade",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "EntityDatabase",
+    "package" : "com::entity",
+    "schemas" : [ {
+      "name" : "Entity",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ENTITY_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        }, {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "LegalEntity",
+        "primaryKey" : [ "ENTITY_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "ENTITY_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ENTITY_ID",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 27
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "com::entity::EntityDatabase",
+              "mainTableDb" : "com::entity::EntityDatabase",
+              "schema" : "Entity",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 27
+              },
+              "table" : "LegalEntity"
+            },
+            "tableAlias" : "LegalEntity"
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 27
+          }
+        }, {
+          "name" : "ENTITY_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ENTITY_ID",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 28
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "com::entity::EntityDatabase",
+              "mainTableDb" : "com::entity::EntityDatabase",
+              "schema" : "Entity",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 28
+              },
+              "table" : "LegalEntity"
+            },
+            "tableAlias" : "LegalEntity"
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 28
+          }
+        }, {
+          "name" : "name",
+          "operation" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 29
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "com::entity::EntityDatabase",
+              "mainTableDb" : "com::entity::EntityDatabase",
+              "schema" : "Entity",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 29
+              },
+              "table" : "LegalEntity"
+            },
+            "tableAlias" : "LegalEntity"
+          },
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 29
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "LegalEntity_View",
+        "primaryKey" : [ "ENTITY_ID", "ENTITY_ID", "name" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    },
+    "stereotypes" : [ ]
+  } ]
+}

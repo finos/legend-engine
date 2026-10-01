@@ -1,0 +1,60 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "2" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 15
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 12
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 12
+      }
+    } ],
+    "name" : "RelationalData",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

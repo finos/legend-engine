@@ -1,0 +1,18 @@
+
+Database demo::store::ProductDB
+(
+  Table PRODUCT
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    QTY INTEGER,
+    PRICE INTEGER
+  )
+
+  View ProductView
+  (
+    id: PRODUCT.ID PRIMARY KEY,
+    label: concat('P-', PRODUCT.NAME),
+    total: plus(PRODUCT.QTY, PRODUCT.PRICE)
+  )
+)

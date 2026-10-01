@@ -1,0 +1,138 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ModelChainConnectionRuntime",
+    "package" : "relational::graphFetch",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 97
+        },
+        "store" : {
+          "path" : "relational::graphFetch::dbInc",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 97
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "relational::graphFetch::RelationalConnection",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 99,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 99
+            }
+          },
+          "id" : "connection_2",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 99,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 99
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "relational::graphFetch::SecondRelationalConnection",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 100
+            }
+          },
+          "id" : "connection_3",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 100
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 105,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 102
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 102
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "relational::graphFetch::OneMappingConnection",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 104,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 104
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 104,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 104
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "relational::graphFetch::M2M_Mapping",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 93,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 93
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 89
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 107,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 89
+    }
+  } ],
+  "imports" : [ ]
+}

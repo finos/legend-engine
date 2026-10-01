@@ -1,0 +1,120 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "var",
+    "name" : "r",
+    "sourceInformation" : {
+      "endColumn" : 86,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 85,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "genericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "relationType",
+          "columns" : [ {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Integer",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 1
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "a",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 1
+            }
+          }, {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Integer",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 1
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "b",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 1
+            }
+          } ]
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "multiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "name" : "r",
+    "sourceInformation" : {
+      "endColumn" : 83,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 86,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 84,
+    "startLine" : 1
+  }
+}
+}

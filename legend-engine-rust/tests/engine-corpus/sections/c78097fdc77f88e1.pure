@@ -1,0 +1,8 @@
+
+Database pack::DB
+(
+  Table myTab
+  (
+    a VARCHAR(200)
+  )
+)

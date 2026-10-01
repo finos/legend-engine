@@ -1,0 +1,11 @@
+
+Mapping my::map
+(
+  my::Class1 : Relational {
+    ~mainTable [my::db]temporalTable
+    prop1  : [my::db]temporalTable.col1,
+    temporalProp(
+      prop2 : [my::db]temporalTable.col2
+    )
+  }
+) 

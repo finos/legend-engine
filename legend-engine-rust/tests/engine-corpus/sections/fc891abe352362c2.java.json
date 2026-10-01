@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 25,
+            "sourceId" : "source.pure",
+            "startColumn" : 9,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 25,
+        "sourceId" : "source.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "source.pure",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

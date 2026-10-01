@@ -1,0 +1,6 @@
+
+BigQueryFunction x::A
+{
+   functionName : 'MyApp';
+   ownership : Deployment {identifier: 'pierre'};
+}

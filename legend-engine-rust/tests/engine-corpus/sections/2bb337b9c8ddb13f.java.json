@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 29,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "PersonTable",
+        "values" : "id,firmId,firstName,lastName\n1,1,John,Doe\n2,1,Jane,Smith\n3,2,Bob,Jones\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 28,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "table" : "FirmTable",
+        "values" : "id,legalName\n1,Finos\n2,Goldman\n"
+      } ]
+    },
+    "name" : "FirmData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

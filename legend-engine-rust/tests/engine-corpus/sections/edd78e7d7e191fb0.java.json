@@ -1,0 +1,59 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "SALARY", "IN_Z", "OUT_Z" ],
+        "paths" : [ "default", "TemporalEmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "90000.0", "2024-01-01", "9999-12-31" ]
+        }, {
+          "values" : [ "2", "Bob", "75000.0", "2024-01-01", "9999-12-31" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 39,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      }, {
+        "columns" : [ "ID", "NAME", "EMPLOYEE_ID", "IN_Z", "OUT_Z" ],
+        "paths" : [ "default", "TemporalDepartmentTable" ],
+        "rows" : [ {
+          "values" : [ "10", "Engineering", "1", "2024-01-01", "2025-03-01" ]
+        }, {
+          "values" : [ "11", "Platform Engineering", "1", "2025-03-01", "9999-12-31" ]
+        }, {
+          "values" : [ "20", "Marketing", "2", "2024-01-01", "9999-12-31" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 44,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 40
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 45,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 36
+      }
+    },
+    "name" : "SameSchemeMilestoningData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

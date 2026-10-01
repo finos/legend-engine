@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'body' is required",
+    "sourceInformation" : {
+      "endColumn" : 10,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 13
+    }
+  }
+}

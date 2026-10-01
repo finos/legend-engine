@@ -1,0 +1,345 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "EmployeeType",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CONTRACT"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "FULL_TIME"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "PersonWithEmployeeType",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 10
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "my::EmployeeType",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 11
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "employeeType",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "cast",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        },
+        "value" : 1
+      }, {
+        "_type" : "genericTypeInstance",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::pure::metamodel::relation::Relation",
+            "sourceInformation" : {
+              "endColumn" : 116,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 15
+            }
+          },
+          "typeArguments" : [ {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "relationType",
+              "columns" : [ {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "String",
+                    "sourceInformation" : {
+                      "endColumn" : 70,
+                      "endLine" : 15,
+                      "sourceId" : "",
+                      "startColumn" : 65,
+                      "startLine" : 15
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "FIRSTNAME",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 55,
+                  "startLine" : 15
+                }
+              }, {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "Integer",
+                    "sourceInformation" : {
+                      "endColumn" : 86,
+                      "endLine" : 15,
+                      "sourceId" : "",
+                      "startColumn" : 80,
+                      "startLine" : 15
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "AGE",
+                "sourceInformation" : {
+                  "endColumn" : 89,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 76,
+                  "startLine" : 15
+                }
+              }, {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "String",
+                    "sourceInformation" : {
+                      "endColumn" : 111,
+                      "endLine" : 15,
+                      "sourceId" : "",
+                      "startColumn" : 106,
+                      "startLine" : 15
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "EMPLOYEE_TYPE",
+                "sourceInformation" : {
+                  "endColumn" : 114,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 92,
+                  "startLine" : 15
+                }
+              } ]
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          } ],
+          "typeVariableValues" : [ ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 116,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 15
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 15
+      }
+    } ],
+    "name" : "personWithEnumFunction__Relation_1_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 84,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 13
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 81,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

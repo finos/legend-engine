@@ -1,0 +1,221 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "EmployeeFirmJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 25,
+            "startLine" : 32
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::OtherwiseDB",
+            "mainTableDb" : "demo::store::OtherwiseDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 32,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 25,
+              "startLine" : 32
+            },
+            "table" : "EmployeeFirmDenormTable"
+          },
+          "tableAlias" : "EmployeeFirmDenormTable"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 58,
+            "startLine" : 32
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::OtherwiseDB",
+            "mainTableDb" : "demo::store::OtherwiseDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 32,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 58,
+              "startLine" : 32
+            },
+            "table" : "FirmInfoTable"
+          },
+          "tableAlias" : "FirmInfoTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 32,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 56,
+          "startLine" : 32
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 32,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "name" : "OtherwiseDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 33,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firmId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "legalName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 23,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EmployeeFirmDenormTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 24,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "other",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 29,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FirmInfoTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 30,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 25
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

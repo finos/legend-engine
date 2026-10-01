@@ -1,0 +1,19 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Person: Relational
+  {
+    name: [model::relational::tests::dbInc]personTable.FIRSTNAME
+  }
+  model::Firm: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+  model::Employment : Relational
+  {
+     AssociationMapping
+     (
+        employees : [model::relational::tests::dbInc]@Firm_Person,
+        firm : [model::relational::tests::dbInc]@Firm_Person
+     )
+  })

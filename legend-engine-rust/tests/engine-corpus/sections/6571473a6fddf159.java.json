@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'firstName'. Valid alternatives: [',']",
+    "sourceInformation" : {
+      "endColumn" : 13,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 9
+    }
+  }
+}

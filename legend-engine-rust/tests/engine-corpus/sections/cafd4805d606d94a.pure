@@ -1,0 +1,8 @@
+
+RelationalMapper test::testMapper
+(
+   SchemaMappers:
+   [
+      test::OrganizationsDB.Productt -> 'ProductSchema'
+   ];
+)

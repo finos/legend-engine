@@ -1,0 +1,5 @@
+
+function test::new(): Any[1]
+{
+  ^BasicColumnSpecification(func=r: TDSRow[1]|1, name='hello')
+}

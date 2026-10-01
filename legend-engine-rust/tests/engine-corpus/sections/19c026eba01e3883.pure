@@ -1,0 +1,91 @@
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person
+    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      doc: 'myDoc';
+      function: src: meta::pure::mapping::modelToModel::test::shared::src::_S_Person[1]|$src.a;
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                meta::pure::mapping::modelToModel::test::shared::src::_S_Firm:
+                  Reference
+                  #{
+                    testMapping::Firm::TestData
+                  }#,
+                meta::pure::mapping::modelToModel::test::shared::src::_S_Person:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" }';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" }';
+                  }#;
+              }#
+          ];
+        },
+        test2:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                meta::pure::mapping::modelToModel::test::shared::src::_S_Firm:
+                  Reference
+                  #{
+                    testMapping::Firm::TestData
+                  }#,
+                meta::pure::mapping::modelToModel::test::shared::src::_S_Person:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" }';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" }';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

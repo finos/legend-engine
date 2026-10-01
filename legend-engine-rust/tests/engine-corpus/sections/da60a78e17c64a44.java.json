@@ -1,0 +1,17 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ ],
+    "includedStores" : [ ],
+    "name" : "MongoDBMapping",
+    "package" : "mongo::test::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "views" : [ ]
+  } ]
+}

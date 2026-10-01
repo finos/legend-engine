@@ -1,0 +1,487 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Row",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssv",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 20,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "lastVal",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 21,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 22
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "initVals",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 22,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 23,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "tailVals",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 23,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 24,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 15,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "sortedVals",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 24,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 25,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "reversedVals",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 25,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "appendedVals",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 26,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 18,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "positionOfTwo",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 27,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 15,
+            "startLine" : 28
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "slicedVals",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 28,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 29,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "droppedVals",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 29,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "takenVals",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 31
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "containsTwo",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 31,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 32
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "distinctVals",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 32,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "concatenated",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 33,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 34,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 34
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "sumVals",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 34,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

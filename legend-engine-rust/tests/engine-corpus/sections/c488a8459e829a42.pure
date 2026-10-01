@@ -1,0 +1,12 @@
+
+Diagram meta::pure::MyDiagram
+{
+  propertyView
+  {
+    source: 86a8a6a1-5353-48f1-b058-199ddd7cbe5a;
+    target: 86a8a6a1-5353-48f1-b058-199ddd7cbe5a;
+    target: 86a8a6a1-5353-48f1-b058-199ddd7cbe5a;
+    property: anything::goes.milk;
+    points: [(0.3,2.23E-8),(2.23E10,23.23)];
+  }
+}

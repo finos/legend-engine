@@ -1,0 +1,384 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "B",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "groupBy",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::A",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 8,
+                "startLine" : 8
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 8
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 8
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "col",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "a",
+                    "sourceInformation" : {
+                      "endColumn" : 39,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 38,
+                      "startLine" : 8
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 41,
+                    "startLine" : 8
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 8
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 8
+                },
+                "value" : "Account_No"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 8
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 8
+          }
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 8
+          },
+          "value" : "prodName"
+        }, {
+          "_type" : "func",
+          "function" : "agg",
+          "parameters" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 88,
+              "startLine" : 8
+            },
+            "value" : "sum"
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "times",
+              "parameters" : [ {
+                "_type" : "collection",
+                "multiplicity" : {
+                  "lowerBound" : 2,
+                  "upperBound" : 2
+                },
+                "sourceInformation" : {
+                  "endColumn" : 146,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 121,
+                  "startLine" : 8
+                },
+                "values" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 98,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 97,
+                      "startLine" : 8
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 119,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 110,
+                      "startLine" : 8
+                    },
+                    "value" : "quantity"
+                  } ],
+                  "property" : "getwFloat",
+                  "sourceInformation" : {
+                    "endColumn" : 108,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 100,
+                    "startLine" : 8
+                  }
+                }, {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 123,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 122,
+                      "startLine" : 8
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 145,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 136,
+                      "startLine" : 8
+                    },
+                    "value" : "quantity"
+                  } ],
+                  "property" : "getInteger",
+                  "sourceInformation" : {
+                    "endColumn" : 134,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 125,
+                    "startLine" : 8
+                  }
+                } ]
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 146,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 121,
+                "startLine" : 8
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 146,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 96,
+              "startLine" : 8
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "sum",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "y",
+                "sourceInformation" : {
+                  "endColumn" : 153,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 152,
+                  "startLine" : 8
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 158,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 156,
+                "startLine" : 8
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 160,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 150,
+              "startLine" : 8
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 84,
+            "startLine" : 8
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 64,
+          "startLine" : 8
+        }
+      } ],
+      "name" : "z",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::tds::TabularDataSet",
+          "sourceInformation" : {
+            "endColumn" : 195,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 165,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 199,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,690 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "dbInc",
+    "package" : "model::relational::tests",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 93,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 137,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 117,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 160,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 140,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 169,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 163,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 184,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 172,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 196,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 187,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 211,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 199,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 212,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 100,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 109,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 124,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 136,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "differentPersonTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 149,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 5
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 110,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 89,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 113,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 140,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 128,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "CEOID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 151,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 143,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 152,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        }
+      }, {
+        "columns" : [ {
+          "name" : "PERSONID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 50,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PersonToFirm",
+        "primaryKey" : [ "PERSONID", "FIRMID" ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 70,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 94,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherFirmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 107,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "TYPE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "STREET",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 73,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "COMMENTS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 94,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "addressTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 115,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PERSONID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PLACE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 59,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "date",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 78,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "locationTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "locationID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 79,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "placeOfInterestTable",
+        "primaryKey" : [ "ID", "locationID" ],
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 13
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

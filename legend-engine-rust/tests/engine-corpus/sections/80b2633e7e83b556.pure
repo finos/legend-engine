@@ -1,0 +1,6 @@
+
+Association demo::Employment
+{
+  firm: demo::Firm[1];
+  employees: demo::Person[*];
+}

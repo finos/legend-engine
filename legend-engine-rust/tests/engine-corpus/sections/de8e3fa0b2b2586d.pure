@@ -1,0 +1,18 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::S_Trade.all()       ->filter(p | $p.s_traderDetails == 'abc:F_Name_1:L_Name_1')
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::S_Trade {
+               s_tradeId,
+               s_traderDetails,
+               s_tradeDetails
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::S_Trade {
+               s_tradeId,
+               s_traderDetails,
+               s_tradeDetails
+           }
+        }#)};
+}

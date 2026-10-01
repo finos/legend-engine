@@ -1,0 +1,2 @@
+
+Class test::Firm{incType:test::IncType[1];} Enum test::IncType{CORP, LLC}

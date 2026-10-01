@@ -1,0 +1,9 @@
+
+Class test::A
+{
+   prop : String[1];
+}
+Class test::B
+{
+   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];
+}

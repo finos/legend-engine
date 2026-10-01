@@ -1,0 +1,24 @@
+
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Services rather than Mapping test suites because only a Service carries an explicit Runtime, and
+// the chain lives in the runtime: MappingTestRunner builds its runtime purely from the test's
+// store-test-data bindings, so a mapping testSuites block cannot name a ModelChainConnection.
+//
+// One route over the model and fixture: the relation projection, which is also the only form that
+// reaches DuckDB here (RelationalConnectionFactory picks DuckDB when the query returns a Relation
+// and H2 otherwise). Why the other two routes are not services is explained at the foot of this
+// file. Wider coverage lives in meta::relational::tests::semistructured::modelChain, which injects
+// the dialect connection directly.

@@ -1,0 +1,180 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "PartyOrganisation",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 29,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 26,
+            "startLine" : 29
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PartyDB",
+            "mainTableDb" : "demo::store::PartyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 29,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 26,
+              "startLine" : 29
+            },
+            "table" : "PartyTable"
+          },
+          "tableAlias" : "PartyTable"
+        }, {
+          "_type" : "column",
+          "column" : "partyId",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 29,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 42,
+            "startLine" : 29
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PartyDB",
+            "mainTableDb" : "demo::store::PartyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 29,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 42,
+              "startLine" : 29
+            },
+            "table" : "OrganisationTable"
+          },
+          "tableAlias" : "OrganisationTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 29,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 40,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 29,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "name" : "PartyDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PartyTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 22,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "partyId",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 25,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "registrationNumber",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 50
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "OrganisationTable",
+        "primaryKey" : [ "partyId" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 27,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 23
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

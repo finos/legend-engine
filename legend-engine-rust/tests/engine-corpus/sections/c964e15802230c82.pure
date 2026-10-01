@@ -1,0 +1,23 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: store::Store;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehousename';
+    region: 'us-east-1';
+    quotedIdentifiersIgnoreCase: false;
+    enableQueryTags: true;
+    tempTableDb: 'temp_table_db';
+    tempTableSchema: 'temp_table_schema';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}

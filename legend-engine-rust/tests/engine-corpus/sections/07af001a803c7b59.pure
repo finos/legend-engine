@@ -1,0 +1,19 @@
+
+Enum test::PriceExpressionEnum {
+   AbsoluteTerms,
+   ParcentageOfNotional
+}
+
+Class ui::String {
+  prop1: String[1];
+}
+
+Class ui::b extends ui::String
+{
+  priceExpression: test::PriceExpressionEnum[1];
+  currency: String[*];
+  clingy() {
+    test::PriceExpressionEnum.PercetateOfNotionall;
+    'sad';
+  }: String[*];
+}

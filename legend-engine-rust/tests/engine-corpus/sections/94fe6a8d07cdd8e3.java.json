@@ -1,0 +1,694 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 136,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 136
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::PersonDB",
+        "mainTableDb" : "demo::PersonDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 142,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 142
+        },
+        "table" : "PERSON_TBL"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 140,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 140
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::PersonDB",
+          "mainTableDb" : "demo::PersonDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 140,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 140
+          },
+          "table" : "PERSON_TBL"
+        },
+        "tableAlias" : "PERSON_TBL"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 143,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 143
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 143,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 143
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 143,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 143
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 143,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 143
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 144,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 144
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FULL_NAME",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 144,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 144
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 144,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 144
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 144
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 145,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 145
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AGE",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 145,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 145
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 145,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 145
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 145,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 145
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "emailAddress",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 146
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "EMAIL",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 146
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 146
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 146,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 146
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "annualSalary",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 147,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 147
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "SALARY",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 147,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 147
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 147,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 147
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 147
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "dateOfBirth",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 148,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 148
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "DOB",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 148,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 148
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 148,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 148
+            },
+            "table" : "PERSON_TBL"
+          },
+          "tableAlias" : "PERSON_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 148,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 148
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 149,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 136
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::SampleData",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 151,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 151
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::PersonDB",
+        "mainTableDb" : "demo::PersonDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 157,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 157
+        },
+        "table" : "SAMPLE_VAL_TBL"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 155,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 155
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::PersonDB",
+          "mainTableDb" : "demo::PersonDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 155,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 155
+          },
+          "table" : "SAMPLE_VAL_TBL"
+        },
+        "tableAlias" : "SAMPLE_VAL_TBL"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 158,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 158
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 158,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 158
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 158,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 158
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 158,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 158
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "strCol",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 159,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 159
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "STR_COL",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 159,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 159
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 159,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 159
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 159,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 159
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "intCol",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 160,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 160
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "INT_COL",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 160,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 160
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 160,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 160
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 160,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 160
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "floatCol",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 161,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 161
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FLOAT_COL",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 161,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 161
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 161,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 161
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 161,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 161
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "dateCol",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 162,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 162
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "DATE_COL",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 162,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 162
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 162,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 162
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 162,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 162
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::SampleData",
+          "property" : "boolCol",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 163,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 163
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "BOOL_COL",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 163,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 163
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::PersonDB",
+            "mainTableDb" : "demo::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 163,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 163
+            },
+            "table" : "SAMPLE_VAL_TBL"
+          },
+          "tableAlias" : "SAMPLE_VAL_TBL"
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 163,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 163
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 164,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 151
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PersonMap",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 165,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 134
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

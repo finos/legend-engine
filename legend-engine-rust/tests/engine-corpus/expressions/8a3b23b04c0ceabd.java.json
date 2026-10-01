@@ -1,0 +1,83 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 104,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 52,
+      "startLine" : 1
+    },
+    "type" : "path",
+    "value" : {
+      "path" : [ {
+        "_type" : "propertyPath",
+        "parameters" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 84,
+            "startLine" : 1
+          },
+          "value" : "a"
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 90,
+              "startLine" : 1
+            },
+            "value" : "a"
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 97,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 1
+            },
+            "value" : "b"
+          } ]
+        } ],
+        "property" : "nameWithPrefixAndSuffix",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 104,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 52,
+        "startLine" : 1
+      },
+      "startType" : "Person"
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 51,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

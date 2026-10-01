@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "doc",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 7
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 7
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 7
+        },
+        "value" : "doc"
+      },
+      "value" : "test"
+    } ]
+  } ],
+  "imports" : [ "meta::pure::profiles", "meta::pure::profiles", "meta::pure::profiles", "random::path", "random::path" ]
+}

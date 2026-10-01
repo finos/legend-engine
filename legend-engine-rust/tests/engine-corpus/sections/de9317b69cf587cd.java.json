@@ -1,0 +1,362 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 18,
+        "sourceId" : "mapping/joinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::FirmDB",
+        "mainTableDb" : "demo::store::FirmDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 24,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 37,
+          "startLine" : 24
+        },
+        "table" : "PersonTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 22,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::FirmDB",
+          "mainTableDb" : "demo::store::FirmDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 22,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 28,
+            "startLine" : 22
+          },
+          "table" : "PersonTable"
+        },
+        "tableAlias" : "PersonTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 25,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 25,
+              "sourceId" : "mapping/joinMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 25
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 25,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 26,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 26,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 26,
+              "sourceId" : "mapping/joinMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 26
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 26,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 27,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::FirmDB",
+            "name" : "PersonFirm",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 27,
+              "sourceId" : "mapping/joinMapping.pure",
+              "startColumn" : 32,
+              "startLine" : 27
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 27,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 27
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 27,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 27
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "mapping/joinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 30,
+        "sourceId" : "mapping/joinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 30
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::FirmDB",
+        "mainTableDb" : "demo::store::FirmDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 36,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 37,
+          "startLine" : 36
+        },
+        "table" : "FirmTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 34,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 34
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::FirmDB",
+          "mainTableDb" : "demo::store::FirmDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 34,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 28,
+            "startLine" : 34
+          },
+          "table" : "FirmTable"
+        },
+        "tableAlias" : "FirmTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 37,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 37,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 37,
+              "sourceId" : "mapping/joinMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 37
+            },
+            "table" : "FirmTable"
+          },
+          "tableAlias" : "FirmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 37,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Firm",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 38,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::FirmDB",
+            "name" : "PersonFirm",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 38,
+              "sourceId" : "mapping/joinMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 38
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 38,
+            "sourceId" : "mapping/joinMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 38,
+          "sourceId" : "mapping/joinMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 38
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "mapping/joinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "FirmMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "mapping/joinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

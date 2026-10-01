@@ -1,0 +1,233 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : false,
+    "documentation" : "Showcase service with binding",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "externalize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "internalize",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Address",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::InternalizeBinding",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "var",
+              "name" : "data",
+              "sourceInformation" : {
+                "endColumn" : 83,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 79,
+                "startLine" : 9
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 41,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "demo::ExternalizeBinding",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 139,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 127,
+              "startLine" : 9
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::Address",
+              "sourceInformation" : {
+                "endColumn" : 139,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 127,
+                "startLine" : 9
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "street",
+                "sourceInformation" : {
+                  "endColumn" : 146,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 141,
+                  "startLine" : 9
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 87,
+            "startLine" : 9
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "Byte",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 9
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 0
+          },
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 9
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 150,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      }
+    },
+    "name" : "myServiceSingle",
+    "owners" : [ ],
+    "package" : "meta::pure",
+    "pattern" : "/showcase/binding",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"street\":\"street A\"},\n{\"street\":\"street$B\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 29
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 26
+          }
+        } ],
+        "id" : "test1",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "data",
+          "value" : {
+            "_type" : "byteArray",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 21
+            },
+            "value" : "c3RyZWV0ClN0cmVldCBBClN0cmVldCRC"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 17
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

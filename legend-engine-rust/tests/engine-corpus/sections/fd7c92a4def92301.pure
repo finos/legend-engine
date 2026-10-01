@@ -1,0 +1,14 @@
+
+Mapping test::child (
+  test::Target: Pure {
+    ~src test::TargetSrcA
+    name: $src.name
+  }
+)
+Mapping test::parent (
+  include test::child
+  *test::Target: Pure {
+    ~src test::TargetSrcB
+    name: $src.name
+  }
+)

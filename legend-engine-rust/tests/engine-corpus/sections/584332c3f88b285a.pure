@@ -1,0 +1,18 @@
+
+Class <<temporal.bitemporal>> test::Firm_Milestoned
+{
+  id: Integer[1];
+  legalName: String[1];
+}
+
+Class <<temporal.bitemporal>> test::Person_Milestoned
+{
+  name: String[1];
+}
+
+Association test::Firm_Person_Milestoned
+{
+  employees: test::Person_Milestoned[*];
+  employer: test::Firm_Milestoned[1];
+}
+

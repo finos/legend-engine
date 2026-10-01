@@ -1,0 +1,13 @@
+
+Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B
+{
+  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];
+  {doc.doc = 'bla'} ok: Integer[1..2];
+  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];
+  {doc.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];
+}
+
+Class z::k::B
+{
+  z: String[1];
+}

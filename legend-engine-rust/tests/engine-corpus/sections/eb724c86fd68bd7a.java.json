@@ -1,0 +1,22 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ModelClass",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 25,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

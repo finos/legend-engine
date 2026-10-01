@@ -1,0 +1,43 @@
+
+Database demo::ssn::store::PersonDB
+(
+  Schema PERSON_SCHEMA
+  (
+    // Firm sits one level down, under "employment".
+    Table PERSON_NESTED
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE SEMISTRUCTURED
+    )
+    // Firm is the whole document.
+    Table PERSON_ROOT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE SEMISTRUCTURED
+    )
+    // JSON held in an ordinary VARCHAR, with no semi-structured column type.
+    Table PERSON_TEXT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE_JSON VARCHAR(1000)
+    )
+    Table STAFF
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      MANAGER_ID INTEGER,
+      PROFILE SEMISTRUCTURED
+    )
+    Table RECORD_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      REFERENCE VARCHAR(100),
+      CONTENT SEMISTRUCTURED
+    )
+  )
+
+  Join Manager(PERSON_SCHEMA.STAFF.MANAGER_ID = {target}.ID)
+)

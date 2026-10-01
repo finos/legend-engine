@@ -1,0 +1,11 @@
+
+Runtime main::dummyRuntime
+{
+  mappings:
+  [
+    main::dummyMapping
+  ];
+  connections:
+  [
+  ];
+}

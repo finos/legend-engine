@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "externalFormat",
+      "contentType" : "test",
+      "data" : "test",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      }
+    },
+    "name" : "Data",
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

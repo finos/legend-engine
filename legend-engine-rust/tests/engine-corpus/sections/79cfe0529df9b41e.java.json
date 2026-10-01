@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'funcName'. Valid alternatives: ['functionName', 'description', 'function', 'ownership', 'activationConfiguration']",
+    "sourceInformation" : {
+      "endColumn" : 11,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 4
+    }
+  }
+}

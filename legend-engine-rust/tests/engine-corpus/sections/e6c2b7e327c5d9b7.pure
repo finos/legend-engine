@@ -1,0 +1,6 @@
+
+Class meta::mySimpleClass
+{
+  name: String[1];
+}
+

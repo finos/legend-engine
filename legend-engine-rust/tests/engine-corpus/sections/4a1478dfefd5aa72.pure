@@ -1,0 +1,13 @@
+
+DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorLicenseStatus = 'ACTIVE', meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorRelationshipOwner = 'jane.doe@example.org', meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorProviderName = 'Acme Data Co.'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

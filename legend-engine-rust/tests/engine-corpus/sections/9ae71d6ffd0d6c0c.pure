@@ -1,0 +1,6 @@
+
+Database model::store::db
+(
+   Table myTable(name VARCHAR(200))
+   Filter myFilter(myTable.name = 'A')
+)

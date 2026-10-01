@@ -1,0 +1,80 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Documented."
+      }
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 4
+      },
+      "tag" : {
+        "profile" : "my::pkg::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 4
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 4
+        },
+        "value" : "doc"
+      },
+      "value" : "Not the doc profile."
+    } ]
+  } ],
+  "imports" : [ ]
+}

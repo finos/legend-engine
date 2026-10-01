@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "->subType() is supported only at root level",
+    "sourceInformation" : {
+      "endColumn" : 65,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 34,
+      "startLine" : 3
+    }
+  }
+}

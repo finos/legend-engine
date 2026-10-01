@@ -1,0 +1,46 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "LAST_NAME", "FIRM_ID", "EMP_TYPE", "ACTIVE", "HIRE_DATE", "SALARY", "STREET", "CITY" ],
+        "paths" : [ "default", "EmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "Green", "1", "CONTRACT", "1", "2020-01-15 00:00:00", "90000.0", "Main St", "London" ]
+        }, {
+          "values" : [ "2", "Bob", "Smith", "2", "CONTRACT", "1", "2021-06-01 00:00:00", "75000.0", "Oak Ave", "Paris" ]
+        }, {
+          "values" : [ "3", "Carol", "White", "1", "FULL_TIME", "1", "2019-03-10 00:00:00", "60000.0", "Pine Rd", "Berlin" ]
+        }, {
+          "values" : [ "4", "David", "Jones", "2", "FULL_TIME", "1", "2018-05-20 00:00:00", "110000.0", "High St", "London" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 26,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    },
+    "name" : "EmployeeUnionEnumData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

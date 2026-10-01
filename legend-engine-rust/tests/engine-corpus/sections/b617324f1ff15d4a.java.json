@@ -1,0 +1,850 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Position",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "GSN",
+        "property" : {
+          "class" : "demo::relation::domain::Position",
+          "property" : "gsn",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 37,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 37,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "PRODUCT_ID",
+        "property" : {
+          "class" : "demo::relation::domain::Position",
+          "property" : "productId",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 38,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 38,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "TOTAL_QTY",
+        "property" : {
+          "class" : "demo::relation::domain::Position",
+          "property" : "totalQty",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 39,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 39,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 39
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AVG_QTY",
+        "property" : {
+          "class" : "demo::relation::domain::Position",
+          "property" : "avgQty",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 40,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 40,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 40
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::positions():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 36,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 36
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "mapping/groupByMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 34
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PositionGroupByMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 118,
+      "sourceId" : "mapping/groupByMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Position",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 47,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 18,
+                  "startLine" : 47
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 47,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 50,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 48,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 32,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "gsn",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 48,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 35,
+                  "startLine" : 48
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 48,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 30,
+                "startLine" : 48
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 48,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 48
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 50,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 50
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 50,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 26,
+                    "startLine" : 50
+                  }
+                } ],
+                "property" : "gsn",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 50,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 29,
+                  "startLine" : 50
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 50,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 24,
+                "startLine" : 50
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 50,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 38,
+                    "startLine" : 50
+                  }
+                } ],
+                "property" : "productId",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 50,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 41,
+                  "startLine" : 50
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 50,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 36,
+                "startLine" : 50
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 50,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 56,
+                    "startLine" : 50
+                  }
+                } ],
+                "property" : "totalQty",
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 50,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 59,
+                  "startLine" : 50
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 50,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 54,
+                "startLine" : 50
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 51,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 51
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 51,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 22,
+                "startLine" : 51
+              },
+              "value" : "GSN"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 51,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 29,
+                "startLine" : 51
+              },
+              "value" : "Product ID"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 51,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 43,
+                "startLine" : 51
+              },
+              "value" : "Total Qty"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 49,
+            "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+            "startColumn" : 21,
+            "startLine" : 49
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 52,
+          "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+          "startColumn" : 17,
+          "startLine" : 47
+        }
+      },
+      "id" : "groupBySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 80,
+        "sourceId" : "mapping/groupByMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 45
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"GSN\":\"EA4GNY\",\"Product ID\":2,\"Total Qty\":300},{\"GSN\":\"YU2EF5\",\"Product ID\":1,\"Total Qty\":8}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 75,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 71
+            }
+          },
+          "id" : "shouldAggregate",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 76,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 68
+          }
+        } ],
+        "id" : "aggregatedTotals",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 78,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 55
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::PositionData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 63,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 60
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 63,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 60
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 63,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 59
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 59,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 59
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Position",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 83,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 18,
+                  "startLine" : 83
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 83,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 50,
+                "startLine" : 83
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 84,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 32,
+                    "startLine" : 84
+                  }
+                } ],
+                "property" : "gsn",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 84,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 35,
+                  "startLine" : 84
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 84,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 30,
+                "startLine" : 84
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 84,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 84
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 4,
+              "upperBound" : 4
+            },
+            "sourceInformation" : {
+              "endColumn" : 82,
+              "endLine" : 86,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 86
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 86,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 26,
+                    "startLine" : 86
+                  }
+                } ],
+                "property" : "gsn",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 86,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 29,
+                  "startLine" : 86
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 86,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 24,
+                "startLine" : 86
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 86,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 38,
+                    "startLine" : 86
+                  }
+                } ],
+                "property" : "productId",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 86,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 41,
+                  "startLine" : 86
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 86,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 36,
+                "startLine" : 86
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 86,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 56,
+                    "startLine" : 86
+                  }
+                } ],
+                "property" : "totalQty",
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 86,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 59,
+                  "startLine" : 86
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 86,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 54,
+                "startLine" : 86
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 74,
+                    "endLine" : 86,
+                    "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                    "startColumn" : 73,
+                    "startLine" : 86
+                  }
+                } ],
+                "property" : "avgQty",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 86,
+                  "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                  "startColumn" : 76,
+                  "startLine" : 86
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 86,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 71,
+                "startLine" : 86
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 4,
+              "upperBound" : 4
+            },
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 87,
+              "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+              "startColumn" : 21,
+              "startLine" : 87
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 87,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 22,
+                "startLine" : 87
+              },
+              "value" : "GSN"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 87,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 29,
+                "startLine" : 87
+              },
+              "value" : "Product ID"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 87,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 43,
+                "startLine" : 87
+              },
+              "value" : "Total Qty"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 87,
+                "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+                "startColumn" : 56,
+                "startLine" : 87
+              },
+              "value" : "Avg Qty"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 85,
+            "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+            "startColumn" : 21,
+            "startLine" : 85
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 88,
+          "sourceId" : "demo::relation::mapping::PositionGroupByMapping",
+          "startColumn" : 17,
+          "startLine" : 83
+        }
+      },
+      "id" : "multiAggregateSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 116,
+        "sourceId" : "mapping/groupByMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 81
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"GSN\":\"EA4GNY\",\"Product ID\":2,\"Total Qty\":300,\"Avg Qty\":150.0},{\"GSN\":\"YU2EF5\",\"Product ID\":1,\"Total Qty\":8,\"Avg Qty\":4.0}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 111,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 107
+            }
+          },
+          "id" : "shouldAggregateWithAverageAndExcludeZeroQty",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 112,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 104
+          }
+        } ],
+        "id" : "multipleAggregatesWithPreFilter",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 114,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 91
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::PositionData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 99,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 96
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 99,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 96
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 99,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 95
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 95,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 95
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

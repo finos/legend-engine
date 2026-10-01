@@ -1,0 +1,12 @@
+
+DataQualityRelationComparison meta::dataquality::TestRelationComparison
+{
+    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);
+    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);
+    keys: ['FIRSTNAME'];
+    strategy: MD5Hash
+    {
+       sourceHashColumn: 'MISSING_SRC_HASH';
+       targetHashColumn: 'LASTNAME';
+    };
+}

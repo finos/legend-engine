@@ -1,0 +1,5 @@
+
+Class my::Class
+{
+  prop1: Result<String>[1];
+}

@@ -1,0 +1,23 @@
+
+Service stereotypes::tags::Service::import::Single::Multi::pattern::owners::documentation::autoActivateUpdates::ownership::DID::identifier::UserList::users::execution::executions::query::key::mapping::runtime::binding::class::runtimeComponents::testSuites::data::connections::tests::asserts::serializationFormat::parameters::keys::list::title::postValidations::description::params::assertions::mcpServer::test::ExecutionEnvironment::all::let::allVersions::allVersionsInRange::toBytes
+{
+  pattern : 'test';
+  owners : ['test'];
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: test;
+    runtime: test;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}

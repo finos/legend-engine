@@ -1,0 +1,96 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "modelToModel::test::SrcToBridgeMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 39
+      }
+    },
+    "name" : "OneMappingConnection",
+    "package" : "modelToModel::test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 39
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "XmlModelConnection",
+      "class" : "modelToModel::test::__Firm",
+      "classSourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 48
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 46
+      },
+      "url" : "data:application/xml,<__Firm><name>FirmB</name></__Firm>"
+    },
+    "name" : "XmlConnection",
+    "package" : "modelToModel::test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 46
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "modelToModel::test::__Firm",
+      "classSourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 54
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 52
+      },
+      "url" : "data:application/json,{\"name\":\"FirmA\"}"
+    },
+    "name" : "JsonConnection",
+    "package" : "modelToModel::test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    }
+  } ],
+  "imports" : [ ]
+}

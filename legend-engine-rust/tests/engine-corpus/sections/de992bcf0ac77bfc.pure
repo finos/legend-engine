@@ -1,0 +1,8 @@
+
+Database a::A
+(
+  Table tb
+  (
+    id {test::SampleProfile.doc = 'This is a documentation', test::SampleProfile.version = '1.0'} Integer
+  )
+)

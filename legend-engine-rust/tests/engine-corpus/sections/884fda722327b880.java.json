@@ -1,0 +1,122 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "dummyMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 21
+      },
+      "id" : "1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::A",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 23
+          }
+        },
+        "source" : "1",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 23
+              }
+            } ],
+            "property" : "prop1",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 23
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 22
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 21
+      },
+      "srcClass" : "test::S_A"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeDataSpace",
+      "includedDataSpace" : "model::dataSpace",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 20
+      }
+    } ],
+    "name" : "M1",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

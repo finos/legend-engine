@@ -1,0 +1,9 @@
+
+Database test::store::TestDB
+(
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)

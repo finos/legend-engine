@@ -1,0 +1,306 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "plus",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 3
+        },
+        "values" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 3
+          },
+          "value" : "Hello "
+        }, {
+          "_type" : "var",
+          "name" : "name",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 3
+          }
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "Hello_String_1__String_1_",
+    "package" : "my",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ {
+      "_type" : "functionTestSuite",
+      "id" : "MySuite2",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "testData" : [ {
+        "data" : {
+          "_type" : "externalFormat",
+          "contentType" : "application/json",
+          "data" : "[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\n",
+          "sourceInformation" : {
+            "endColumn" : 277,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 8
+          }
+        },
+        "packageableElementPointer" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 278,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        }
+      }, {
+        "data" : {
+          "_type" : "reference",
+          "dataElement" : {
+            "path" : "testing::MyReference",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 9
+            },
+            "type" : "DATA"
+          },
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 9
+          }
+        },
+        "packageableElementPointer" : {
+          "path" : "store::MyStore",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      } ],
+      "tests" : [ {
+        "_type" : "functionTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/xml",
+            "data" : "Hello John!",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 10
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 10
+          }
+        } ],
+        "id" : "myTest",
+        "parameters" : [ {
+          "name" : "name",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 10
+          },
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 10
+            },
+            "value" : "John"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        }
+      }, {
+        "_type" : "functionTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\n",
+            "sourceInformation" : {
+              "endColumn" : 293,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 11
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 293,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 11
+          }
+        } ],
+        "id" : "myTest",
+        "parameters" : [ {
+          "name" : "name",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 11
+          },
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 11
+            },
+            "value" : "Nicole"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 294,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

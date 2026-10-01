@@ -1,0 +1,5 @@
+
+function abc::to(): Float[1]
+{
+  toVariant(1)->to(1.0)
+}

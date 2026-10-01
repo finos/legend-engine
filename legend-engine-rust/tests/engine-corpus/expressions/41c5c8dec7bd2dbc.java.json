@@ -1,0 +1,187 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "serialize",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "graphFetch",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 2,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 3
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "Id",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 4
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ {
+            "_type" : "subTypeGraphFetchTree",
+            "_type" : "subTypeGraphFetchTree",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 5
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "street",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 6
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeClass" : "test::Street",
+            "subTypeTrees" : [ ]
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Address",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "Id",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 14
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 15
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::Street",
+          "subTypeTrees" : [ ]
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 10
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 1,
+    "endLine" : 19,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

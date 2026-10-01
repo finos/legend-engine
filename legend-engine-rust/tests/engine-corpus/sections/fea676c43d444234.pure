@@ -1,0 +1,11 @@
+
+Class test::Firm
+{
+   employees:test::Person[*];
+   emp(){$this.employees->first().lastName}:String[0..1];
+}
+
+Class test::Person
+{
+   lastName : String[1];
+}

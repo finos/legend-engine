@@ -1,0 +1,223 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "model::animal::reptile::Reptile",
+      "classSourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "id" : "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+      "position" : {
+        "x" : 568.0,
+        "y" : 404.0
+      },
+      "rectangle" : {
+        "height" : 58.0,
+        "width" : 120.84765625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "class" : "model::animal::Animal",
+      "classSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "id" : "902bf14e-e7ff-40e7-92e4-8780f91bfa29",
+      "position" : {
+        "x" : 809.0,
+        "y" : 187.0
+      },
+      "rectangle" : {
+        "height" : 44.0,
+        "width" : 108.64453125
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    } ],
+    "generalizationViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 628.423828125,
+          "y" : 433.0
+        }, {
+          "x" : 863.322265625,
+          "y" : 209.0
+        } ]
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "sourceView" : "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 18
+      },
+      "targetView" : "902bf14e-e7ff-40e7-92e4-8780f91bfa29",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 19
+      }
+    } ],
+    "name" : "GeneralDiagram",
+    "package" : "model",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "model::animal::mammal::Mammal",
+      "classSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 28
+      },
+      "id" : "641a0336-d4b5-418c-b656-2f52461264e2",
+      "position" : {
+        "x" : 427.0,
+        "y" : 210.0
+      },
+      "rectangle" : {
+        "height" : 44.0,
+        "width" : 125.1123046875
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    }, {
+      "class" : "model::animal::reptile::Reptile",
+      "classSourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 34
+      },
+      "id" : "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+      "position" : {
+        "x" : 787.0,
+        "y" : 216.0
+      },
+      "rectangle" : {
+        "height" : 58.0,
+        "width" : 120.84765625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    }, {
+      "class" : "model::animal::Animal",
+      "classSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 40
+      },
+      "id" : "7a992cfc-c888-4091-aa00-ab430915aced",
+      "position" : {
+        "x" : 515.423828125,
+        "y" : -7.5
+      },
+      "rectangle" : {
+        "height" : 100.0,
+        "width" : 199.716796875
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      }
+    } ],
+    "generalizationViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 847.423828125,
+          "y" : 245.0
+        }, {
+          "x" : 615.2822265625,
+          "y" : 42.5
+        } ]
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "sourceView" : "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 46
+      },
+      "targetView" : "7a992cfc-c888-4091-aa00-ab430915aced",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 47
+      }
+    } ],
+    "name" : "AnimalDiagram",
+    "package" : "model::animal",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    }
+  } ],
+  "imports" : [ ]
+}

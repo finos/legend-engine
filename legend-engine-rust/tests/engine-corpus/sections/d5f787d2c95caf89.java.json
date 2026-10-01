@@ -1,0 +1,903 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 61
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 60
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 58
+      }
+    } ],
+    "name" : "Mammal1",
+    "package" : "model::animal::mammal",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 54
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 54
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::enterprise",
+        "profileSourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 54
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 54
+        },
+        "value" : "taxonomyNodes"
+      },
+      "value" : "abcdxyz003,abcdxyz002"
+    } ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "A simple data space with not much info and no diagram",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 74
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 73
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 71
+      }
+    } ],
+    "name" : "NoDiagram",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 67
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 88
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 87,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 87
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 85
+      }
+    } ],
+    "name" : "Reptile1",
+    "package" : "model::animal::reptile",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 95,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 81
+    },
+    "stereotypes" : [ ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "someEmail@test.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 94,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 92
+      }
+    },
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 81
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::enterprise",
+        "profileSourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 81
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 81
+        },
+        "value" : "taxonomyNodes"
+      },
+      "value" : "abcdxyz006"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 97,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 75,
+        "startLine" : 81
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 75,
+          "startLine" : 81
+        },
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 79,
+          "startLine" : 81
+        },
+        "value" : "doc"
+      },
+      "value" : "Lorem ipsum"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 123,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 100,
+        "startLine" : 81
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 100,
+          "startLine" : 81
+        },
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 104,
+          "startLine" : 81
+        },
+        "value" : "doc"
+      },
+      "value" : "Lorem ipsum2"
+    } ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "diagrams" : [ {
+      "diagram" : {
+        "path" : "model::animal::AnimalDiagram",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 124,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 124
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 125,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 122
+      },
+      "title" : ""
+    }, {
+      "diagram" : {
+        "path" : "model::GeneralDiagram",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 128,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 128
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 129,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 126
+      },
+      "title" : ""
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 105,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 105
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "An important execution context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 104,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 104
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 101
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 110
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 109,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 109
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 111,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 107
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime2",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 115,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 115
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 114,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 114
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext3",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 112
+      }
+    } ],
+    "name" : "AnimalDS_Old",
+    "package" : "model::animal",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 134,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 97
+    },
+    "stereotypes" : [ {
+      "profile" : "doc",
+      "profileSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 97
+      },
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 97
+      },
+      "value" : "deprecated"
+    } ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "someEmail@test.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 133,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 131
+      }
+    },
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 91,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 31,
+        "startLine" : 97
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::enterprise",
+        "profileSourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 97
+        },
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 64,
+          "startLine" : 97
+        },
+        "value" : "taxonomyNodes"
+      },
+      "value" : "abcdxyz005"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 116,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 94,
+        "startLine" : 97
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 94,
+          "startLine" : 97
+        },
+        "sourceInformation" : {
+          "endColumn" : 100,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 98,
+          "startLine" : 97
+        },
+        "value" : "doc"
+      },
+      "value" : "Lorem ipsum"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 142,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 119,
+        "startLine" : 97
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 121,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 119,
+          "startLine" : 97
+        },
+        "sourceInformation" : {
+          "endColumn" : 125,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 123,
+          "startLine" : 97
+        },
+        "value" : "doc"
+      },
+      "value" : "Lorem ipsum2"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 277,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 145,
+        "startLine" : 97
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 201,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 145,
+          "startLine" : 97
+        },
+        "sourceInformation" : {
+          "endColumn" : 219,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 203,
+          "startLine" : 97
+        },
+        "value" : "deprecationNotice"
+      },
+      "value" : "Please use AnimalDS dataspace instead - link provided"
+    } ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "diagrams" : [ {
+      "diagram" : {
+        "path" : "model::animal::AnimalDiagram",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 163,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 163
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 164,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 161
+      },
+      "title" : ""
+    }, {
+      "diagram" : {
+        "path" : "model::GeneralDiagram",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 167,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 167
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 168,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 165
+      },
+      "title" : ""
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 144
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "An important execution context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 143,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 143
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 145,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 140
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 149,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 149
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 148,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 148
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 150,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 146
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime2",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 154,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 154
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 153,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 153
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext3",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 155,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 151
+      }
+    } ],
+    "name" : "AnimalDS2",
+    "package" : "model::animal",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 173,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 136
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+      "profileSourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 136,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 136
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 136,
+        "sourceId" : "",
+        "startColumn" : 71,
+        "startLine" : 136
+      },
+      "value" : "Verified"
+    } ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "someEmail@test.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 172,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 170
+      }
+    },
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "diagrams" : [ {
+      "description" : "Some diagram description",
+      "diagram" : {
+        "path" : "model::animal::AnimalDiagram",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 204,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 204
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 205,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 201
+      },
+      "title" : "Diag 1"
+    }, {
+      "description" : "Some more diagram description",
+      "diagram" : {
+        "path" : "model::GeneralDiagram",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 209,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 209
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 210,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 206
+      },
+      "title" : "Diag 2"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 184,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 184
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "An important execution context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 183,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 183
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 185,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 179
+      },
+      "title" : "Haha Nice"
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 189,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 189
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 188,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 188
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 190,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 186
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime2",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 194,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 194
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 193,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 193
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext3",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 195,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 191
+      }
+    } ],
+    "name" : "AnimalDS",
+    "package" : "model::animal",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 215,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 175
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+      "profileSourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 175,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 175
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 175,
+        "sourceId" : "",
+        "startColumn" : 71,
+        "startLine" : 175
+      },
+      "value" : "Verified"
+    } ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "someEmail@test.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 214,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 212
+      }
+    },
+    "taggedValues" : [ ]
+  } ]
+}

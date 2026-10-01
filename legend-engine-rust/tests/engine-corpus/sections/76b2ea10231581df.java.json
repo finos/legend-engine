@@ -1,0 +1,185 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 56
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 52
+        },
+        "testDataSetupSqls" : [ ]
+      },
+      "element" : "store::CustomerDataStore",
+      "elementSourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 50
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 48
+      },
+      "type" : "H2"
+    },
+    "name" : "dummyConnection",
+    "package" : "runtime::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 57,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 48
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "test",
+        "privateKeyVaultReference" : "test",
+        "publicUserName" : "test",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 72
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "accountType" : "VPS",
+        "databaseName" : "dummyDB",
+        "enableQueryTags" : true,
+        "region" : "us-east-1",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 63
+        },
+        "warehouseName" : "warehouse"
+      },
+      "element" : "store::CustomerDataStore",
+      "elementSourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 61
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 78,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 59
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "snowflakeConnectionWithoutRole",
+    "package" : "runtime::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 59
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "test",
+        "privateKeyVaultReference" : "test",
+        "publicUserName" : "test",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 96
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "accountType" : "VPS",
+        "cloudType" : "cloudType",
+        "databaseName" : "name",
+        "enableQueryTags" : true,
+        "organization" : "organization",
+        "region" : "region",
+        "role" : "role",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 95,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 84
+        },
+        "warehouseName" : "warehouse"
+      },
+      "element" : "store::CustomerDataStore",
+      "elementSourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 82
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 80
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "snowflakeConnection",
+    "package" : "runtime::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 102,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 80
+    }
+  } ],
+  "imports" : [ ]
+}

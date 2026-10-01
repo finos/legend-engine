@@ -1,0 +1,14 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[parent]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    firstName: firstName
+  }
+  *my::Person[child] extends [parent]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    lastName: lastName
+  }
+)

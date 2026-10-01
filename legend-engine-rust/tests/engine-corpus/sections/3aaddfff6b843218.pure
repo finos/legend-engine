@@ -1,0 +1,20 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  executables:
+  [
+    {
+      title: 'Exec 1';
+      title: 'Exec 1';
+      executable: model::MyExecutable;
+    }
+  ];
+}

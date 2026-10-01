@@ -1,0 +1,9 @@
+
+import test::*;
+Class test::A
+{
+  stringProperty: String[1];
+  latestProduct(){
+         $this.stringProperty(%latest)
+   }:String[*];
+}

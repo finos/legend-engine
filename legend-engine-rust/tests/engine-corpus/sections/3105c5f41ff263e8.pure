@@ -1,0 +1,26 @@
+
+Mapping  example::MergeModelMappingSourceWithMatch
+(
+   *example::Person : Operation
+           {
+             meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2,p3],{p1:example::SourcePersonWithFirstName[1], p2:example::SourcePersonWithLastName[1],p4:example::SourcePersonWithLastName[1] | $p1.id ==  $p2.id })
+           }
+
+   example::Person[p1] : Pure
+            {
+               ~src example::SourcePersonWithFirstName
+               firstName : $src.firstName
+            }
+
+   example::Person[p2] : Pure
+            {
+               ~src example::SourcePersonWithLastName
+        lastName :  $src.lastName
+            }
+   example::Person[p3] : Pure
+            {
+               ~src example::SourcePersonWithLastName
+        lastName :  $src.lastName
+            }
+
+)

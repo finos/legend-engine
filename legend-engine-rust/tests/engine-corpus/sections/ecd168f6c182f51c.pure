@@ -1,0 +1,11 @@
+
+RelationalDatabaseConnection test::TestConnection
+{
+  store: test::TestDatabase;
+  type: Snowflake;
+  specification: LocalH2
+  {
+  };
+  auth: Test;
+}
+

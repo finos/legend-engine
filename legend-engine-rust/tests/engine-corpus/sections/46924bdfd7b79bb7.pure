@@ -1,0 +1,6 @@
+
+Class anything::goes
+{
+  name: String[*];
+}
+

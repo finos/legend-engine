@@ -1,0 +1,285 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "Gender",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 32,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "MALE"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 25,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "FEMALE"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "PersonWithGender",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 28
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "my::Gender",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "gender",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 26
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "cast",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 33
+        },
+        "value" : 1
+      }, {
+        "_type" : "genericTypeInstance",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::pure::metamodel::relation::Relation",
+            "sourceInformation" : {
+              "endColumn" : 93,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 33
+            }
+          },
+          "typeArguments" : [ {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "relationType",
+              "columns" : [ {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "String",
+                    "sourceInformation" : {
+                      "endColumn" : 70,
+                      "endLine" : 33,
+                      "sourceId" : "",
+                      "startColumn" : 65,
+                      "startLine" : 33
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "FIRSTNAME",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 55,
+                  "startLine" : 33
+                }
+              }, {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "String",
+                    "sourceInformation" : {
+                      "endColumn" : 88,
+                      "endLine" : 33,
+                      "sourceId" : "",
+                      "startColumn" : 83,
+                      "startLine" : 33
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "GENDER",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 76,
+                  "startLine" : 33
+                }
+              } ]
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          } ],
+          "typeVariableValues" : [ ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 93,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 33
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 33
+      }
+    } ],
+    "name" : "personWithGenderFunction__Relation_1_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 31
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 84,
+            "startLine" : 31
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 31
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+Enum test::A
+{
+   A, B , C
+}
+
+Class test::B extends test::A
+{
+}

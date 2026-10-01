@@ -1,0 +1,6 @@
+
+Database model::myDb
+(
+    include model::relational::tests::dbInc
+    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)
+)

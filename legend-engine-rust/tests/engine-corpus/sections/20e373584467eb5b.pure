@@ -1,0 +1,15 @@
+
+DataQualityValidation meta::external::dataquality::PersonDataQualityValidation
+{
+   validationTree: $[
+      Person{
+        lastName,
+        name,
+        age,
+        addresses{
+          addressId
+        }
+      }
+    ]$;
+   filter: p: Person[1]|$p.age >= 18;
+}

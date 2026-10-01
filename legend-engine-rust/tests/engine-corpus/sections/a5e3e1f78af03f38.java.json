@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ServiceStoreRuntime",
+    "package" : "meta::external::store::service::showcase::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 239,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 236
+        },
+        "store" : {
+          "path" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 236,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 236
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "meta::external::store::service::showcase::connection::serviceStoreConnection",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 238,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 238
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 238,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 238
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "meta::external::store::service::showcase::mapping::ServiceStoreMapping",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 232,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 232
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 241,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 228
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 241,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 228
+    }
+  } ],
+  "imports" : [ ]
+}

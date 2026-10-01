@@ -1,0 +1,66 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 90,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 45,
+      "startLine" : 1
+    },
+    "type" : "path",
+    "value" : {
+      "path" : [ {
+        "_type" : "propertyPath",
+        "parameters" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 1
+          },
+          "value" : "a"
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 82,
+            "startLine" : 1
+          },
+          "value" : "b"
+        } ],
+        "property" : "nameWithPrefixAndSuffix",
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 52,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 90,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 45,
+        "startLine" : 1
+      },
+      "startType" : "Person"
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 44,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

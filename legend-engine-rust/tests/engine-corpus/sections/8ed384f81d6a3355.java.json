@@ -1,0 +1,221 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "this is just for context",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "executionParameters" : [ {
+        "key" : "QA",
+        "mapping" : "meta::myMapping1",
+        "mappingSourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 17
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 18
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        }
+      }, {
+        "key" : "UAT",
+        "mapping" : "meta::myMapping2",
+        "mappingSourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 22
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "meta::myRuntime",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 23
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetchChecked",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "model::pure::mapping::modelToModel::test::shared::dest::Product",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 13
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 76,
+                "startLine" : 13
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 166,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 104,
+                "startLine" : 13
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "model::pure::mapping::modelToModel::test::shared::dest::Product",
+                "sourceInformation" : {
+                  "endColumn" : 166,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 104,
+                  "startLine" : 13
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 171,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 168,
+                    "startLine" : 13
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 100,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 84,
+              "startLine" : 13
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 252,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 190,
+              "startLine" : 13
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "model::pure::mapping::modelToModel::test::shared::dest::Product",
+              "sourceInformation" : {
+                "endColumn" : 252,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 190,
+                "startLine" : 13
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 257,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 254,
+                  "startLine" : 13
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 186,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 178,
+            "startLine" : 13
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 261,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 13
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 11
+      }
+    },
+    "name" : "myServiceMulti",
+    "owners" : [ "ownerName" ],
+    "package" : "meta::pure",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,67 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "pack::func3",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::lang::eval",
+      "parameters" : [ {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 1
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "pack::DB", "myTab" ],
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 1
+            }
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 69,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 59,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 71,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

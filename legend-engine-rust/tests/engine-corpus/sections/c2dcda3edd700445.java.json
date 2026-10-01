@@ -1,0 +1,70 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "simple",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        }, {
+          "name" : "FIRM",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

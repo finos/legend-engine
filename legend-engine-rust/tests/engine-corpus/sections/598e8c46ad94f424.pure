@@ -1,0 +1,16 @@
+
+
+Class model::Firm
+{
+   legalName: String[1];
+}
+
+Class <<temporal.businesstemporal>> model::Person 
+{
+    name : String[1];
+}
+Association model::Employment
+{
+    firm : model::Firm[0..1];
+    employees : model::Person[*];
+}

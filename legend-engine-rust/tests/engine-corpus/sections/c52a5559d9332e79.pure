@@ -1,0 +1,5 @@
+
+function model::FunctionA(int: Integer[1]): String[1]
+{
+  if($int == 0, |$int->toString(), |model::FunctionA($int - 1));
+}

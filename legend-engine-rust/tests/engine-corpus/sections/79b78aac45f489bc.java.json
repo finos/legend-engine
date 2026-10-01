@@ -1,0 +1,231 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 29
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 29
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "col",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 47,
+                      "endLine" : 29,
+                      "sourceId" : "",
+                      "startColumn" : 46,
+                      "startLine" : 29
+                    }
+                  } ],
+                  "property" : "prop1",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 29
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 53,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 29
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 56,
+                  "startLine" : 29
+                },
+                "value" : "prop1"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 29
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ ]
+      },
+      "mapping" : "test::mapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 30
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::runtime",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 31
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 27
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ {
+      "assertions" : [ {
+        "assertion" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 39
+            },
+            "value" : true
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Integer",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 39,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 39
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "var",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 39
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 39
+          }
+        },
+        "id" : "testAssert",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 39
+        }
+      } ],
+      "description" : "A good description of the validation",
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 35
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

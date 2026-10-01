@@ -1,0 +1,50 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "Example",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "example",
+      "contentSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 21
+      },
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 21
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "text/example",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Person" ]
+    },
+    "name" : "TestBinding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    }
+  } ],
+  "imports" : [ ]
+}

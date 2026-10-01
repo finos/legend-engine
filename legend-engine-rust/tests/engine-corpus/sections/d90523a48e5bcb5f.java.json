@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "value1",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "VALUE_1"
+        } ]
+      }, {
+        "enumValue" : "value2",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "VALUE_2"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "model::someEnum",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "SomeEnumMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "someMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

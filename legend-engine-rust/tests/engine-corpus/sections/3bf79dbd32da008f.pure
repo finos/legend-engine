@@ -1,0 +1,8 @@
+
+Class test::firm::model::Shift
+{
+   id        : Integer[1];
+   startedOn : StrictDate[1];
+   startedAt : DateTime[1];
+   endedAt   : DateTime[0..1];
+}

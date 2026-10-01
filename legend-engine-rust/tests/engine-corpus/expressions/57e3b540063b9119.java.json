@@ -1,0 +1,329 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "project",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "Customer",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 197,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 27,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "companyName",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 1
+            }
+          },
+          "name" : "Company Name",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 1
+          }
+        }, {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 76,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "companyTitle",
+              "sourceInformation" : {
+                "endColumn" : 90,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 79,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 75,
+              "startLine" : 1
+            }
+          },
+          "name" : "companyTitle",
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 61,
+            "startLine" : 1
+          }
+        }, {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 107,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "contactName",
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 110,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 120,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 106,
+              "startLine" : 1
+            }
+          },
+          "name" : "contactName",
+          "sourceInformation" : {
+            "endColumn" : 120,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 93,
+            "startLine" : 1
+          }
+        }, {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 136,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 135,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "faxNumber",
+              "sourceInformation" : {
+                "endColumn" : 146,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 138,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 146,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 134,
+              "startLine" : 1
+            }
+          },
+          "name" : "faxNumber",
+          "sourceInformation" : {
+            "endColumn" : 146,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 123,
+            "startLine" : 1
+          }
+        }, {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 155,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 154,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 158,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 157,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 158,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 153,
+              "startLine" : 1
+            }
+          },
+          "name" : "id",
+          "sourceInformation" : {
+            "endColumn" : 158,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 149,
+            "startLine" : 1
+          }
+        }, {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 180,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 179,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "telephoneNumber",
+              "sourceInformation" : {
+                "endColumn" : 196,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 182,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 196,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 178,
+              "startLine" : 1
+            }
+          },
+          "name" : "telephoneNumber",
+          "sourceInformation" : {
+            "endColumn" : 196,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 161,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 24,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 18,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 198,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

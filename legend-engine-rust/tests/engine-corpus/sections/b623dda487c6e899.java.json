@@ -1,0 +1,361 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "groupBy",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 21,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 3,
+            "startLine" : 21
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "demo::relation::db::EmployeeDB", "PositionTable" ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 21,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 3,
+              "startLine" : 21
+            }
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "greaterThan",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 22,
+                  "sourceId" : "mapping/groupByMapping.pure",
+                  "startColumn" : 18,
+                  "startLine" : 22
+                }
+              } ],
+              "property" : "QTY",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 22,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 21,
+                "startLine" : 22
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 22,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 27,
+                "startLine" : 22
+              },
+              "value" : 0
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 22,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 22
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "r"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 22,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 22
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 22,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 23,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 16,
+          "startLine" : 23
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "name" : "GSN",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 23,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 17,
+              "startLine" : 23
+            }
+          }, {
+            "name" : "PRODUCT_ID",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 23,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 22,
+              "startLine" : 23
+            }
+          } ]
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 26,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 36,
+          "startLine" : 23
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 24,
+                    "sourceId" : "mapping/groupByMapping.pure",
+                    "startColumn" : 22,
+                    "startLine" : 24
+                  }
+                } ],
+                "property" : "QTY",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/groupByMapping.pure",
+                  "startColumn" : 25,
+                  "startLine" : 24
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 24,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 20,
+                "startLine" : 24
+              }
+            },
+            "function2" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "sum",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 24,
+                    "sourceId" : "mapping/groupByMapping.pure",
+                    "startColumn" : 35,
+                    "startLine" : 24
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/groupByMapping.pure",
+                  "startColumn" : 39,
+                  "startLine" : 24
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "y"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 24,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 33,
+                "startLine" : 24
+              }
+            },
+            "name" : "TOTAL_QTY",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 24,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 24
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 21,
+                    "endLine" : 25,
+                    "sourceId" : "mapping/groupByMapping.pure",
+                    "startColumn" : 20,
+                    "startLine" : 25
+                  }
+                } ],
+                "property" : "QTY",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/groupByMapping.pure",
+                  "startColumn" : 23,
+                  "startLine" : 25
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 25,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 25
+              }
+            },
+            "function2" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "average",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 25,
+                    "sourceId" : "mapping/groupByMapping.pure",
+                    "startColumn" : 33,
+                    "startLine" : 25
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/groupByMapping.pure",
+                  "startColumn" : 37,
+                  "startLine" : 25
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "y"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 25,
+                "sourceId" : "mapping/groupByMapping.pure",
+                "startColumn" : 31,
+                "startLine" : 25
+              }
+            },
+            "name" : "AVG_QTY",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 25,
+              "sourceId" : "mapping/groupByMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 25
+            }
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 23,
+        "sourceId" : "mapping/groupByMapping.pure",
+        "startColumn" : 7,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "positions__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 19,
+          "sourceId" : "mapping/groupByMapping.pure",
+          "startColumn" : 45,
+          "startLine" : 19
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 19,
+            "sourceId" : "mapping/groupByMapping.pure",
+            "startColumn" : 87,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "mapping/groupByMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::functions::relation", "meta::pure::metamodel::relation" ]
+}

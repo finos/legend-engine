@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported join type 'inner'. The supported join types are: [INNER, OUTER]",
+    "sourceInformation" : {
+      "endColumn" : 36,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 32,
+      "startLine" : 43
+    }
+  }
+}

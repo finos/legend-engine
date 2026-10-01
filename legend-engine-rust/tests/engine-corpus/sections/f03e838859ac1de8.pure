@@ -1,0 +1,5 @@
+
+BigQueryFunction BigQueryFunction::functionName::description::function::ownership::Deployment::identifier::activationConfiguration::BigQueryFunctionDeploymentConfiguration::activationConnection::stage::all::let::allVersions::allVersionsInRange::toBytes
+{
+   function : a::f():String[1];   functionName : 'sass';
+}

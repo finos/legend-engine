@@ -1,0 +1,135 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "VehicleDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "registration",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "doors",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "CarTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 23,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "registration",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "payloadTonnes",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TruckTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 29,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 24
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,6 @@
+
+Class test::Person
+{
+  firstName:String[1];
+  age: Integer[1] = 5;
+}

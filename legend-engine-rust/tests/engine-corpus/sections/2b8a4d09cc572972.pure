@@ -1,0 +1,6 @@
+
+DataSpace DataSpace::stereotypes::tags::name::title::description::query::id::executionContextKey::executionContexts::defaultExecutionContext::mapping::mappingProvider::defaultRuntime::testData::diagrams::diagram::elements::executables::executable::sampleValues::supportInfo::documentationUrl::Email::address::Combined::emails::website::faqUrl::supportUrl::documentation::label::url::expertise::expertIds::operationalMetadata::coverageRegions::updateFrequency::groupId::artifactId::versionId::featuredDiagrams::all::let::allVersions::allVersionsInRange::toBytes
+{
+  executionContexts: [];
+  defaultExecutionContext: '';
+}

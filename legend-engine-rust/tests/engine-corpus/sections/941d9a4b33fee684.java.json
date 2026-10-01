@@ -1,0 +1,65 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 7
+      },
+      "type" : "SQL",
+      "value" : {
+        "sql" : "select a from tb('pack::DB.myTab')"
+      }
+    }, {
+      "_type" : "boolean",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 49,
+        "startLine" : 7
+      },
+      "value" : true
+    } ],
+    "name" : "f__Boolean_1_",
+    "package" : "pack",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Boolean",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 5
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 54,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

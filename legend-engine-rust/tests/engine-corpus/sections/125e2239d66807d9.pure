@@ -1,0 +1,13 @@
+
+Class model::B
+{
+}
+
+'''
+Links a B to a B.
+'''
+Association model::A
+{
+  left: model::B[1];
+  right: model::B[1];
+}

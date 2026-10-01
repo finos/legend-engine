@@ -1,0 +1,5 @@
+
+function my::test(): Any[*]
+{
+   #{test::Address{zipCode,->subType(@test::Street){}}}#
+}

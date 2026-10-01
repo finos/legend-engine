@@ -1,0 +1,102 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "prod",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::MyMapping",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "prod",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "supportInfo" : {
+      "_type" : "full",
+      "documentation" : {
+        "label" : "Docs",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 21
+        },
+        "url" : "https://docs.example.org"
+      },
+      "emails" : [ {
+        "address" : "steward@example.org",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 25
+        },
+        "title" : "Data Steward"
+      } ],
+      "expertise" : [ {
+        "description" : "Fixed Income SMEs",
+        "expertIds" : [ "jdoe", "asmith" ],
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 29
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 20
+      },
+      "website" : {
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 22
+        },
+        "url" : "https://example.org"
+      }
+    },
+    "taggedValues" : [ ]
+  } ]
+}

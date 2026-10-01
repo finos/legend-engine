@@ -1,0 +1,166 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::Person",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 10
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 8
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 8
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

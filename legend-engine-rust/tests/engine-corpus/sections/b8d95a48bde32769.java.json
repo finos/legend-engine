@@ -1,0 +1,741 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "EmbeddedCM",
+      "classSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "dummy",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "inlineEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "EmbeddedCM",
+          "property" : "something",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "setImplementationId" : "TEST_Id",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 6
+        }
+      }, {
+        "_type" : "embeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ ],
+          "propertyMappings" : [ {
+            "_type" : "embeddedPropertyMapping",
+            "classMapping" : {
+              "_type" : "embedded",
+              "primaryKey" : [ ],
+              "propertyMappings" : [ {
+                "_type" : "relationalPropertyMapping",
+                "property" : {
+                  "property" : "size",
+                  "sourceInformation" : {
+                    "endColumn" : 12,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 11
+                  }
+                },
+                "relationalOperation" : {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 15,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 11
+                  },
+                  "value" : 1
+                },
+                "source" : "dummy",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 11
+                }
+              }, {
+                "_type" : "embeddedPropertyMapping",
+                "classMapping" : {
+                  "_type" : "embedded",
+                  "primaryKey" : [ ],
+                  "propertyMappings" : [ {
+                    "_type" : "relationalPropertyMapping",
+                    "property" : {
+                      "property" : "size",
+                      "sourceInformation" : {
+                        "endColumn" : 14,
+                        "endLine" : 14,
+                        "sourceId" : "",
+                        "startColumn" : 11,
+                        "startLine" : 14
+                      }
+                    },
+                    "relationalOperation" : {
+                      "_type" : "literal",
+                      "sourceInformation" : {
+                        "endColumn" : 17,
+                        "endLine" : 14,
+                        "sourceId" : "",
+                        "startColumn" : 17,
+                        "startLine" : 14
+                      },
+                      "value" : 1
+                    },
+                    "source" : "dummy",
+                    "sourceInformation" : {
+                      "endColumn" : 17,
+                      "endLine" : 14,
+                      "sourceId" : "",
+                      "startColumn" : 15,
+                      "startLine" : 14
+                    }
+                  }, {
+                    "_type" : "embeddedPropertyMapping",
+                    "classMapping" : {
+                      "_type" : "embedded",
+                      "primaryKey" : [ ],
+                      "propertyMappings" : [ {
+                        "_type" : "relationalPropertyMapping",
+                        "property" : {
+                          "property" : "size",
+                          "sourceInformation" : {
+                            "endColumn" : 16,
+                            "endLine" : 17,
+                            "sourceId" : "",
+                            "startColumn" : 13,
+                            "startLine" : 17
+                          }
+                        },
+                        "relationalOperation" : {
+                          "_type" : "literal",
+                          "sourceInformation" : {
+                            "endColumn" : 19,
+                            "endLine" : 17,
+                            "sourceId" : "",
+                            "startColumn" : 19,
+                            "startLine" : 17
+                          },
+                          "value" : 1
+                        },
+                        "source" : "dummy",
+                        "sourceInformation" : {
+                          "endColumn" : 19,
+                          "endLine" : 17,
+                          "sourceId" : "",
+                          "startColumn" : 17,
+                          "startLine" : 17
+                        }
+                      } ],
+                      "root" : false,
+                      "sourceInformation" : {
+                        "endColumn" : 11,
+                        "endLine" : 18,
+                        "sourceId" : "",
+                        "startColumn" : 11,
+                        "startLine" : 16
+                      }
+                    },
+                    "property" : {
+                      "property" : "testProp2",
+                      "sourceInformation" : {
+                        "endColumn" : 19,
+                        "endLine" : 15,
+                        "sourceId" : "",
+                        "startColumn" : 11,
+                        "startLine" : 15
+                      }
+                    },
+                    "sourceInformation" : {
+                      "endColumn" : 11,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 11,
+                      "startLine" : 16
+                    }
+                  }, {
+                    "_type" : "relationalPropertyMapping",
+                    "property" : {
+                      "property" : "size",
+                      "sourceInformation" : {
+                        "endColumn" : 14,
+                        "endLine" : 19,
+                        "sourceId" : "",
+                        "startColumn" : 11,
+                        "startLine" : 19
+                      }
+                    },
+                    "relationalOperation" : {
+                      "_type" : "literal",
+                      "sourceInformation" : {
+                        "endColumn" : 17,
+                        "endLine" : 19,
+                        "sourceId" : "",
+                        "startColumn" : 17,
+                        "startLine" : 19
+                      },
+                      "value" : 1
+                    },
+                    "source" : "dummy",
+                    "sourceInformation" : {
+                      "endColumn" : 17,
+                      "endLine" : 19,
+                      "sourceId" : "",
+                      "startColumn" : 15,
+                      "startLine" : 19
+                    }
+                  } ],
+                  "root" : false,
+                  "sourceInformation" : {
+                    "endColumn" : 9,
+                    "endLine" : 20,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 13
+                  }
+                },
+                "property" : {
+                  "property" : "testProp2",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 12
+                  }
+                },
+                "sourceInformation" : {
+                  "endColumn" : 9,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 13
+                }
+              } ],
+              "root" : false,
+              "sourceInformation" : {
+                "endColumn" : 7,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 10
+              }
+            },
+            "property" : {
+              "property" : "testProp2",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 9
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 10
+            }
+          }, {
+            "_type" : "inlineEmbeddedPropertyMapping",
+            "property" : {
+              "property" : "contractId",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 22
+              }
+            },
+            "setImplementationId" : "TEST_Id",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 22
+            }
+          }, {
+            "_type" : "inlineEmbeddedPropertyMapping",
+            "property" : {
+              "property" : "something",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 23
+              }
+            },
+            "setImplementationId" : "TEST_Id",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 23
+            }
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "enumMappingId" : "testEnumerationMapping",
+            "property" : {
+              "property" : "prop6",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 24,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 24
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 24,
+                "sourceId" : "",
+                "startColumn" : 57,
+                "startLine" : 24
+              },
+              "value" : "SOME_CONSTANT"
+            },
+            "source" : "dummy",
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 24
+            }
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "prop3",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 25
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "TEST_Store",
+                "name" : "SOME_JOIN1",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 25
+                }
+              }, {
+                "db" : "TEST_Store",
+                "name" : "SOME_JOIN2",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 25
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 25
+              }
+            },
+            "source" : "dummy",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 25
+            },
+            "target" : "id1"
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "prop4",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 26
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "TEST_Store",
+                "name" : "SOME_JOIN",
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 26
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 26
+              }
+            },
+            "source" : "dummy",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 26
+            },
+            "target" : "id2"
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          }
+        },
+        "property" : {
+          "class" : "EmbeddedCM",
+          "property" : "prop1WithEmbedded",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "inlineEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "EmbeddedCM",
+          "property" : "something",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "setImplementationId" : "TEST_Id",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "inlineEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "EmbeddedCM",
+          "property" : "something",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "setImplementationId" : "TEST_Id",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "otherwiseEmbeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 8,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 32
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "CLIENT_ID",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 32
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "DummyStore",
+                "mainTableDb" : "DummyStore",
+                "schema" : "test",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 32,
+                  "sourceId" : "",
+                  "startColumn" : 23,
+                  "startLine" : 32
+                },
+                "table" : "RESULT"
+              },
+              "tableAlias" : "RESULT"
+            },
+            "source" : "dummy",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "size",
+              "sourceInformation" : {
+                "endColumn" : 10,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 33
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 33
+              },
+              "value" : 1
+            },
+            "source" : "dummy",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "embeddedPropertyMapping",
+            "classMapping" : {
+              "_type" : "embedded",
+              "primaryKey" : [ ],
+              "propertyMappings" : [ {
+                "_type" : "relationalPropertyMapping",
+                "property" : {
+                  "property" : "size",
+                  "sourceInformation" : {
+                    "endColumn" : 12,
+                    "endLine" : 36,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 36
+                  }
+                },
+                "relationalOperation" : {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 15,
+                    "endLine" : 36,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 36
+                  },
+                  "value" : 1
+                },
+                "source" : "dummy",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 36,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 36
+                }
+              } ],
+              "root" : false,
+              "sourceInformation" : {
+                "endColumn" : 7,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 35
+              }
+            },
+            "property" : {
+              "property" : "testProp2",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 34
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 35
+            }
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "otherwisePropertyMapping" : {
+          "_type" : "relationalPropertyMapping",
+          "property" : {
+            "class" : "EmbeddedCM",
+            "property" : "client",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 30
+            }
+          },
+          "relationalOperation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "DummyStore",
+              "name" : "Testing",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 38
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 38
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 38
+          },
+          "target" : "part_TEST"
+        },
+        "property" : {
+          "class" : "EmbeddedCM",
+          "property" : "client",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 38
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

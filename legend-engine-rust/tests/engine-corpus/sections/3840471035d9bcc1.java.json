@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "A",
+    "package" : "a",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "amount",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Decimal",
+            "precision" : 18,
+            "scale" : 6
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "oamount",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Decimal",
+            "precision" : 20,
+            "scale" : 2
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "other",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 5
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

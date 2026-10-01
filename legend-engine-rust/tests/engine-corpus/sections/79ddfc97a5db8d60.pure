@@ -1,0 +1,81 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    #/test::example::MyType/hello#
+    {
+      keys:
+      [
+        #/test::example::MyType/hello/key1#, #/test::example::MyType/hello/key2#
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: None;
+    }
+    ->
+    {
+    },
+    #/test::example::MyType/prop#
+    {
+      keys:
+      [
+        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    {
+    }
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"Age":12, "Name":"dummy"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+      graphFetchPath: #/test::example::MyType/hello#;
+    }
+  ]
+}

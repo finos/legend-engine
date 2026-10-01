@@ -1,0 +1,13 @@
+
+Database demo::stores::Db
+(
+  Schema First
+  (
+    Table Source
+    (
+      accountNumber INTEGER PRIMARY KEY,
+      name VARCHAR(200)
+    )
+  )
+)
+

@@ -1,0 +1,8 @@
+
+Mapping milestoning::map
+(
+  *my::class: Relational
+  {
+    cusipRegion: EnumerationMapping RegionMapping: case(or(equal([test::db]@joinName | [test::db]Table.region, 'Y'), equal([test::db]@joinName | [test::db]Table.region, 'N')), [test::db]@joinName | [milestoning::db]Table.region, 'UNKNOWN')
+  }
+)

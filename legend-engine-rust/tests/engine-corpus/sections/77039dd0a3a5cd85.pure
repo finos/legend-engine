@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   ok : Integer[0..1];
+   test : Integer[0..1];
+}
+Class test::B 
+{
+ good : Integer[0..1];
+}

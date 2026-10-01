@@ -1,0 +1,224 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "ui::meta::something::tests::mapping::enumeration::model::domain::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 76,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "id" : "ui_meta_something_tests_mapping_enumeration_model_domain_Employee",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "enumMappingId" : "Foo",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "ui::meta::something::tests::mapping::enumeration::model::domain::Employee",
+          "property" : "type",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "source" : "ui_meta_something_tests_mapping_enumeration_model_domain_Employee",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "toString",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 35,
+                  "startLine" : 7
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 7
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "ui::meta::something::tests::mapping::enumeration::model::domain::Employee",
+          "property" : "dateOfHire",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          }
+        },
+        "source" : "ui_meta_something_tests_mapping_enumeration_model_domain_Employee",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 8
+              }
+            } ],
+            "property" : "active",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 8
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 88,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "srcClass" : "ui::meta::something::tests::mapping::enumeration::model::domain::EmployeeSource"
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FTC"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "FTO"
+        } ]
+      }, {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "A"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "ui::meta::something::tests::mapping::enumeration::model::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "YES",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 1
+        } ]
+      }, {
+        "enumValue" : "NO",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 0
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "ui::meta::something::tests::mapping::enumeration::model::domain::YesNo",
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 16
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "YesNoEnumerationMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "employeeTestMapping",
+    "package" : "ui::meta::something::tests::mapping::enumeration::model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

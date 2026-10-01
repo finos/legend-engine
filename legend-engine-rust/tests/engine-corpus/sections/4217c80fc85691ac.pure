@@ -1,0 +1,67 @@
+
+Mapping demo::ShapeSingleTableMapping
+(
+  *demo::shape::Circle[circle]: Relational
+  {
+    ~filter [demo::store::ShapeSingleDB] CircleFilter
+    ~primaryKey
+    (
+      [demo::store::ShapeSingleDB]ShapeTable.id
+    )
+    ~mainTable [demo::store::ShapeSingleDB]ShapeTable
+    name: [demo::store::ShapeSingleDB]ShapeTable.name,
+    radius: [demo::store::ShapeSingleDB]ShapeTable.radius
+  }
+
+  *demo::shape::Square[square]: Relational
+  {
+    ~filter [demo::store::ShapeSingleDB] SquareFilter
+    ~primaryKey
+    (
+      [demo::store::ShapeSingleDB]ShapeTable.id
+    )
+    ~mainTable [demo::store::ShapeSingleDB]ShapeTable
+    name: [demo::store::ShapeSingleDB]ShapeTable.name,
+    side: [demo::store::ShapeSingleDB]ShapeTable.side
+  }
+
+  *demo::shape::Shape: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+
+  testSuites:
+  [
+    singleTableInheritanceSuite:
+    {
+      function: |demo::shape::Shape.all()->sortBy(x|$x.name)->project([x|$x.name], ['Name']);
+      tests:
+      [
+        dispatchesToBothSubtypes:
+        {
+          data:
+          [
+            demo::store::ShapeSingleDB:
+              Reference
+              #{
+                demo::data::ShapeSingleData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnAllShapes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Big Circle"},{"Name":"Small Circle"},{"Name":"Small Square"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

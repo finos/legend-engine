@@ -1,0 +1,14 @@
+
+'''
+A currency.
+ISO 4217 codes.
+'''
+Enum model::Currency
+{
+  '''
+  US dollar.
+  The world's reserve currency.
+  '''
+  USD,
+  EUR
+}

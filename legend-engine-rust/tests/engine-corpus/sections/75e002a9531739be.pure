@@ -1,0 +1,17 @@
+
+DataSpace model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+  operationalMetadata: {
+    coverageRegions: [APAC, EMEA, NAMR];
+    updateFrequency: DAILY;
+  };
+}

@@ -1,0 +1,16 @@
+
+Database demo::store::PartyDB
+(
+  Table PartyTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200)
+  )
+  Table OrganisationTable
+  (
+    partyId INTEGER PRIMARY KEY,
+    registrationNumber VARCHAR(50)
+  )
+
+  Join PartyOrganisation(PartyTable.id = OrganisationTable.partyId)
+)

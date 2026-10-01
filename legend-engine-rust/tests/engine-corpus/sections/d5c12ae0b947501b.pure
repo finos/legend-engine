@@ -1,0 +1,34 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  elements: [model::element, model, model::sub];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      executable: model::templateFunc():TabularDataSet[1];
+      executionContextKey: 'Context 1';
+    },
+    {
+      id: 2;
+      title: 'Template 2';
+      executable: model::templateFunc():TabularDataSet[1];
+    },
+    {
+      id: 3;
+      title: 'Template 3';
+      description: 'an example of a template query';
+      executable: model::templateFunc():TabularDataSet[1];
+    }
+  ];
+}

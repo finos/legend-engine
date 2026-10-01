@@ -1,0 +1,9 @@
+
+Database demo::store::ShiftDB
+(
+  Table shiftTable
+  (
+    id INTEGER PRIMARY KEY,
+    startedAt TIMESTAMP
+  )
+)

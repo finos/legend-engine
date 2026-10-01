@@ -1,0 +1,161 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "id" : "true",
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "id" : "false",
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "id" : "1",
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "Person",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 13
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "1",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "Person",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 17
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "true",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "Person",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 21
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "false",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

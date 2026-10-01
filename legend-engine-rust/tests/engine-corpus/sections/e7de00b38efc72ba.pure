@@ -1,0 +1,6 @@
+
+function test::joinOnSQLAccessor():Boolean[1]
+{
+ #SQL{select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable') as t }#->join( #SQL{select FIRM_ID, NAME from tb('meta::analytics::lineage::tests::db.firmTable')}#, JoinKind.INNER, {x,y| $x.FIRMID == $y.FIRM_ID}) ;
+true;
+}

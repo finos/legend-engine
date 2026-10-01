@@ -1,0 +1,11 @@
+
+import meta::pure::profiles::*;
+import meta::pure::profiles::*;
+import meta::pure::profiles::*;
+import random::path::*;
+import random::path::*;
+
+Class {doc.doc = 'test'} test::doc {
+
+}
+

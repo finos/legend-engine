@@ -1,0 +1,159 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "id" : "addressSet",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          }
+        },
+        "propertyMappings" : [ ],
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 8
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Address",
+      "id" : "addressSet",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "STREET",
+        "property" : {
+          "class" : "my::Address",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 14
+          }
+        },
+        "source" : "addressSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 14
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "CITY",
+        "property" : {
+          "class" : "my::Address",
+          "property" : "city",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 15
+          }
+        },
+        "source" : "addressSet",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 15
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 13
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

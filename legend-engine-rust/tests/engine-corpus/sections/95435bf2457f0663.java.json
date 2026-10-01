@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token ']'. Valid alternatives: [',']",
+    "sourceInformation" : {
+      "endColumn" : 9,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 6
+    }
+  }
+}

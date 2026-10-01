@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'mapping' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 10
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "description" : "some description",
+    "diagrams" : [ {
+      "diagram" : {
+        "path" : "model::Diagram",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 23
+      },
+      "title" : ""
+    }, {
+      "diagram" : {
+        "path" : "model::Diagram2",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 27
+      },
+      "title" : ""
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 10
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::typemodifiers",
+      "profileSourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 49,
+        "startLine" : 2
+      },
+      "value" : "abstract"
+    } ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "someEmail@test.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 32
+      }
+    },
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 61,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 61,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ]
+  } ]
+}

@@ -1,0 +1,5 @@
+
+Class test::'p a c k a g e'::A
+{
+  's t r i n g': String[1];
+}

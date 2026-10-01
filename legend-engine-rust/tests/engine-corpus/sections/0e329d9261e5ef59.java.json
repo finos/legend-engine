@@ -1,0 +1,372 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "TP1",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "MP1"
+        } ]
+      }, {
+        "enumValue" : "TP2",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "MP2"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "MP3"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetProductType",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "TargetProductTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "TP3",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "MP21"
+        } ]
+      }, {
+        "enumValue" : "TP4",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "MP22"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "MP23"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetProductType",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 9
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "TargetProductTypeMapping2",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "TT1",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "Enum",
+          "value" : "MT1"
+        } ]
+      }, {
+        "enumValue" : "TT2",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "Enum",
+          "value" : "MT2"
+        }, {
+          "_type" : "enumSourceValue",
+          "enumeration" : "Enum",
+          "value" : "MT3"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetTradeType",
+        "sourceInformation" : {
+          "endColumn" : 97,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "TargetTradeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "TT3",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "My::Enum",
+          "value" : "MT21"
+        } ]
+      }, {
+        "enumValue" : "TT4",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "My::Enum",
+          "value" : "MT22"
+        }, {
+          "_type" : "enumSourceValue",
+          "enumeration" : "My::Enum",
+          "value" : "MT23"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetTradeType",
+        "sourceInformation" : {
+          "endColumn" : 97,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 19
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "TargetTradeTypeMapping2",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "MP1",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 10
+        } ]
+      }, {
+        "enumValue" : "MP2",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 20
+        } ]
+      }, {
+        "enumValue" : "MP3",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 30
+        }, {
+          "_type" : "integerSourceValue",
+          "value" : 40
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 24
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "MiddleProductTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "MT1",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 100
+        } ]
+      }, {
+        "enumValue" : "MT2",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 200
+        } ]
+      }, {
+        "enumValue" : "MT3",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 300
+        }, {
+          "_type" : "integerSourceValue",
+          "value" : 400
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType",
+        "sourceInformation" : {
+          "endColumn" : 97,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 30
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "MiddleTradeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "MP21",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 10
+        } ]
+      }, {
+        "enumValue" : "MP22",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 20
+        } ]
+      }, {
+        "enumValue" : "MP23",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 30
+        }, {
+          "_type" : "integerSourceValue",
+          "value" : 40
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType2",
+        "sourceInformation" : {
+          "endColumn" : 100,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 36
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "MiddleProductType2Mapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "MT21",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 100
+        } ]
+      }, {
+        "enumValue" : "MT22",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 200
+        } ]
+      }, {
+        "enumValue" : "MT23",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 300
+        }, {
+          "_type" : "integerSourceValue",
+          "value" : 400
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType2",
+        "sourceInformation" : {
+          "endColumn" : 98,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 42
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "MiddleTradeType2Mapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "30_ACT",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "My::DayCount",
+          "value" : "30_ACT"
+        } ]
+      }, {
+        "enumValue" : "30_360",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "My::DayCount",
+          "value" : "30_360"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::DayCount",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 48
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 48
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "enumerationMapping",
+    "package" : "meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

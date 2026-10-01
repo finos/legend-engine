@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n  \"title\": \"test::model::A\",\n  \"type\": \"object\",\n  \"properties\":   {\n    \"name\":     {\n      \"type\": \"string\"\n    },\n    \"employed\":     {\n      \"type\": \"boolean\"\n    },\n    \"iq\":     {\n      \"type\": \"integer\"\n    },\n    \"weightKg\":     {\n      \"type\": \"number\"\n    },\n    \"heightM\":     {\n      \"type\": \"number\"\n    },\n    \"dateOfBirth\":     {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"timeOfDeath\":     {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    }\n  },\n  \"required\": [\n\"name\",\n\"heightM\",\n\"dateOfBirth\",\n\"timeOfDeath\"\n  ]\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 686,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 17
+      },
+      "location" : "test/model/A.json",
+      "sourceInformation" : {
+        "endColumn" : 688,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 16
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::model::A" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    }
+  } ],
+  "imports" : [ ]
+}

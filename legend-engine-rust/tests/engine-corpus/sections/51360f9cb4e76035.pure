@@ -1,0 +1,17 @@
+
+Class test::Person
+{
+   name: String[1];
+}
+
+Class <<temporal.businesstemporal>> test::Firm
+{
+   id: Integer[1];
+   legalName: String[1];
+}
+
+Association test::Firm_Person
+{
+   employees: test::Person[*];
+   employer: test::Firm[1];
+}

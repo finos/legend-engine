@@ -1,0 +1,8 @@
+
+ModelChainConnection meta::external::store::service::showcase::connection::modelChainConnection
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+}

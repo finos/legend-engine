@@ -1,0 +1,28 @@
+
+Class example::Report
+{
+   productSide:String[1];
+   hasOption:Boolean[1];
+}
+
+Class example::Trade
+{
+   product:example::Product[1];
+   
+}
+Class  example::Product
+{
+   name:String[1];
+   
+}
+Class example::Option extends example::Product
+{
+   side1:String[1];
+   
+}
+
+Class example::Swap extends example::Product
+{
+   side2:String[1];
+   
+}

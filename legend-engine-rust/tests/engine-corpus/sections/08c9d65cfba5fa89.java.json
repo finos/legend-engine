@@ -1,0 +1,434 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "meta::external::store::service::showcase::domain::Trade",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 282,
+                "sourceId" : "",
+                "startColumn" : 6,
+                "startLine" : 282
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 282,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 282
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 284,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 284
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "meta::external::store::service::showcase::domain::Trade",
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 284,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 284
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "tradeId",
+                "sourceInformation" : {
+                  "endColumn" : 22,
+                  "endLine" : 285,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 285
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "quantity",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 286,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 286
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "trader",
+                "sourceInformation" : {
+                  "endColumn" : 21,
+                  "endLine" : 287,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 287
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "kerberos",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 288,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 288
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 289,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 289
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "lastName",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 290,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 290
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "product",
+                "sourceInformation" : {
+                  "endColumn" : 22,
+                  "endLine" : 292,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 292
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "productId",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 293,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 293
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "productName",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 294,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 294
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "description",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 295,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 295
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 298,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 298
+            },
+            "value" : 100
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 283,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 283
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 300,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 300
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "meta::external::store::service::showcase::domain::Trade",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 300,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 300
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "tradeId",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 301,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 301
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "quantity",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 302,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 302
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "trader",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 303,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 303
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "kerberos",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 304,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 304
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 305,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 305
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 306,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 306
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "product",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 308,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 308
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "productId",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 309,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 309
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "productName",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 310,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 310
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "description",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 311,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 311
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 299,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 299
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 314,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 282
+      }
+    } ],
+    "name" : "query__Any_1_",
+    "package" : "showcase",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 280,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 280
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 315,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 280
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

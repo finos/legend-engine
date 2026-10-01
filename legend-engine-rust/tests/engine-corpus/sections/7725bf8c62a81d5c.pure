@@ -1,0 +1,9 @@
+
+DeephavenConnection import::store::serverUrlDefinition::serverUrl::authentication::AuthenticationDemo::UserPassword::username::password::ApiKey::location::keyName::value::EncryptedPrivateKey::userName::privateKey::passphrase::GCPWIFWithAWSIdP::serviceAccountEmail::AWSIdP::idP::region::accountId::role::GCPWorkload::workload::projectNumber::poolId::providerId::PropertiesFileSecret::propertyName::EnvironmentSecret::envVariableName::SystemPropertiesSecret::systemPropertyName::AWSSecretsManagerSecret::secretId::versionId::versionStage::Static::accessKeyId::secretAccessKey::Default::awsCredentials::STSAssumeRole::roleArn::roleSessionName::Kerberos::psk
+{
+    store: test::DeephavenStore;
+    serverUrl: 'http://dummyurl.com:12345'
+    authentication: # PSK {
+        psk: 'abcde';
+    }#;
+}

@@ -1,0 +1,16 @@
+
+Class modelToModel::test::Firm
+{
+  name: String[1];
+}
+
+Class modelToModel::test::_Firm
+{
+  name: String[1];
+}
+
+Class modelToModel::test::__Firm
+{
+  name: String[1];
+}
+

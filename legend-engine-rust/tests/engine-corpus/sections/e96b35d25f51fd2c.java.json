@@ -1,0 +1,318 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "fieldBasedForTds",
+            "partitionFields" : [ "foo", "bar" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 15
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForTds",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 25
+          },
+          "versionField" : "version"
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      }
+    }, {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "fieldBasedForGraphFetch",
+            "partitionFieldPaths" : [ {
+              "path" : [ {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "prop",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 68,
+                  "startLine" : 45
+                }
+              }, {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "foo",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 73,
+                  "startLine" : 45
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 45,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 45
+              },
+              "startType" : "test::example::MyType"
+            }, {
+              "path" : [ {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "prop",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 103,
+                  "startLine" : 45
+                }
+              }, {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "bar",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 108,
+                  "startLine" : 45
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 45,
+                "sourceId" : "",
+                "startColumn" : 81,
+                "startLine" : 45
+              },
+              "startType" : "test::example::MyType"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 39
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForGraphFetch",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 49
+          },
+          "versionFieldPath" : {
+            "path" : [ {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "prop",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 51,
+                "sourceId" : "",
+                "startColumn" : 82,
+                "startLine" : 51
+              }
+            }, {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "version",
+              "sourceInformation" : {
+                "endColumn" : 94,
+                "endLine" : 51,
+                "sourceId" : "",
+                "startColumn" : 87,
+                "startLine" : 51
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 99,
+              "endLine" : 51,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 51
+            },
+            "startType" : "test::example::MyType"
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 37
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "foo",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 37
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 37
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 37
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "bar",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 37
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 37
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 33
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 33
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 53,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 33
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

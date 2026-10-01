@@ -1,0 +1,62 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "decodeUrl",
+      "parameters" : [ {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 3
+        },
+        "value" : "dummy"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "testStringNativeFunctionCompilationFromGrammar__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

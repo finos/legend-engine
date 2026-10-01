@@ -1,0 +1,11 @@
+
+Database simple::dbInc
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LASTNAME VARCHAR(200)
+  )
+
+  Join personSelfJoin(personTable.ID = {target}.ID)
+)

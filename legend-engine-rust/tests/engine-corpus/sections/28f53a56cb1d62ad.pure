@@ -1,0 +1,10 @@
+
+Database demo::store::DistinctDB
+(
+  Table PersonRoleTable
+  (
+    firstName VARCHAR(200) PRIMARY KEY,
+    lastName VARCHAR(200) PRIMARY KEY,
+    role VARCHAR(50) PRIMARY KEY
+  )
+)

@@ -1,0 +1,11 @@
+
+RelationalDatabaseConnection meta::dataquality::H2
+{
+  store: meta::dataquality::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+

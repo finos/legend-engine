@@ -1,0 +1,12 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: H2;
+  specification: LocalH2 {
+    testDataSetupCSV: 'testCSV';
+    testDataSetupCSV: 'testCSV';
+  };
+  auth: DefaultH2;
+}
+

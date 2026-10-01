@@ -1,0 +1,189 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "IntegerThing",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "amount",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "cast",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 8
+        },
+        "value" : 1
+      }, {
+        "_type" : "genericTypeInstance",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::pure::metamodel::relation::Relation",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 8
+            }
+          },
+          "typeArguments" : [ {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "relationType",
+              "columns" : [ {
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "Number",
+                    "sourceInformation" : {
+                      "endColumn" : 64,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 59,
+                      "startLine" : 8
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "name" : "VAL",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 55,
+                  "startLine" : 8
+                }
+              } ]
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          } ],
+          "typeVariableValues" : [ ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 8
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 8
+      }
+    } ],
+    "name" : "numericColumnFunction__Relation_1_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 84,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 6
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 81,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

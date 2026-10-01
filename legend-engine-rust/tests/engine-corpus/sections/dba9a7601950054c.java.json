@@ -1,0 +1,1038 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::ExtendedEmployee",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 32,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 32,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 33,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 33,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 34,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 34,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 35,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 35,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 36,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 36,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 36
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 36,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 36
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 36,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 36
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 36,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 36
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 42,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 42
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 37,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 37,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 38,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 38,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "salaryDoubled",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 39,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 39,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "times",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 39,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 41,
+                "startLine" : 39
+              },
+              "values" : [ {
+                "_type" : "func",
+                "function" : "toOne",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "src",
+                    "sourceInformation" : {
+                      "endColumn" : 23,
+                      "endLine" : 39,
+                      "sourceId" : "mapping/exprMapping.pure",
+                      "startColumn" : 20,
+                      "startLine" : 39
+                    }
+                  } ],
+                  "property" : "SALARY",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 39,
+                    "sourceId" : "mapping/exprMapping.pure",
+                    "startColumn" : 25,
+                    "startLine" : 39
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 39,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 33,
+                  "startLine" : 39
+                }
+              }, {
+                "_type" : "float",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 39,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 43,
+                  "startLine" : 39
+                },
+                "value" : 2.0
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 39,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 41,
+              "startLine" : 39
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 48,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 20,
+            "startLine" : 48
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "fullGreeting",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 40,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 40,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 40
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 4,
+                "upperBound" : 4
+              },
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 40,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 29,
+                "startLine" : 40
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 19,
+                  "startLine" : 40
+                },
+                "value" : "Hello, "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 40,
+                    "sourceId" : "mapping/exprMapping.pure",
+                    "startColumn" : 31,
+                    "startLine" : 40
+                  }
+                } ],
+                "property" : "FIRST_NAME",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 36,
+                  "startLine" : 40
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 49,
+                  "startLine" : 40
+                },
+                "value" : " "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 40,
+                    "sourceId" : "mapping/exprMapping.pure",
+                    "startColumn" : 55,
+                    "startLine" : 40
+                  }
+                } ],
+                "property" : "LAST_NAME",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/exprMapping.pure",
+                  "startColumn" : 60,
+                  "startLine" : 40
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 40,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 29,
+              "startLine" : 40
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 50,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 19,
+            "startLine" : 50
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::salariedEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 31,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 31
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "mapping/exprMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 43,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 43
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 47,
+        "sourceId" : "mapping/exprMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 43
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeExpressionMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 124,
+      "sourceId" : "mapping/exprMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::ExtendedEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 53,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 18,
+                  "startLine" : 53
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 53,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 58,
+                "startLine" : 53
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 54,
+                    "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                    "startColumn" : 32,
+                    "startLine" : 54
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 54,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 35,
+                  "startLine" : 54
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 54,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 30,
+                "startLine" : 54
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 54,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 54
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 56,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 56
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 56,
+                    "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                    "startColumn" : 26,
+                    "startLine" : 56
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 56,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 29,
+                  "startLine" : 56
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 56,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 24,
+                "startLine" : 56
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 56,
+                    "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                    "startColumn" : 44,
+                    "startLine" : 56
+                  }
+                } ],
+                "property" : "salaryDoubled",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 56,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 47,
+                  "startLine" : 56
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 56,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 42,
+                "startLine" : 56
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 57,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 57
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 57,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 22,
+                "startLine" : 57
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 57,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 36,
+                "startLine" : 57
+              },
+              "value" : "Salary x2"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 55,
+            "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+            "startColumn" : 21,
+            "startLine" : 55
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 58,
+          "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+          "startColumn" : 17,
+          "startLine" : 53
+        }
+      },
+      "id" : "doubledSalarySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 86,
+        "sourceId" : "mapping/exprMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 51
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\",\"Salary x2\":180000.0},{\"First Name\":\"Bob\",\"Salary x2\":150000.0}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 81,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 77
+            }
+          },
+          "id" : "shouldDoubleValues",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 82,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 74
+          }
+        } ],
+        "id" : "doubledSalary",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 84,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 61
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 69,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 66
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 69,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 66
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 69,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 65
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 65,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 65
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::ExtendedEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 89,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 18,
+                  "startLine" : 89
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 89,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 58,
+                "startLine" : 89
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 90,
+                    "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                    "startColumn" : 32,
+                    "startLine" : 90
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 90,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 35,
+                  "startLine" : 90
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 90,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 30,
+                "startLine" : 90
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 90,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 90
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 92,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 92
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 92,
+                    "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                    "startColumn" : 26,
+                    "startLine" : 92
+                  }
+                } ],
+                "property" : "fullGreeting",
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 92,
+                  "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                  "startColumn" : 29,
+                  "startLine" : 92
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 92,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 24,
+                "startLine" : 92
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 93,
+              "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+              "startColumn" : 21,
+              "startLine" : 93
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 93,
+                "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+                "startColumn" : 22,
+                "startLine" : 93
+              },
+              "value" : "Greeting"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 91,
+            "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+            "startColumn" : 21,
+            "startLine" : 91
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 94,
+          "sourceId" : "demo::relation::mapping::EmployeeExpressionMapping",
+          "startColumn" : 17,
+          "startLine" : 89
+        }
+      },
+      "id" : "greetingSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 122,
+        "sourceId" : "mapping/exprMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 87
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Greeting\":\"Hello, Alice Green\"},{\"Greeting\":\"Hello, Bob Smith\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 117,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 113
+            }
+          },
+          "id" : "shouldConcatNames",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 118,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 110
+          }
+        } ],
+        "id" : "concatGreeting",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 120,
+          "sourceId" : "mapping/exprMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 97
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 105,
+                "sourceId" : "mapping/exprMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 102
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 105,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 102
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 105,
+            "sourceId" : "mapping/exprMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 101
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 101,
+              "sourceId" : "mapping/exprMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 101
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

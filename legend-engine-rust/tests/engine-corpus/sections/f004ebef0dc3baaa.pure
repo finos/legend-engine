@@ -1,0 +1,22 @@
+
+Mapping test::crossPropertyMappingWithLocalProperties_Milestoned
+(
+  test::Person_Milestoned[p]: Pure
+  {
+    ~src test::Person_Milestoned
+    +firmId: Integer[1]: 1,
+    name: $src.name
+  }
+  test::Firm_Milestoned[f]: Pure
+  {
+    ~src test::Firm_Milestoned
+    id: $src.id,
+    legalName: $src.legalName
+  }
+
+  test::Firm_Person_Milestoned: XStore
+  {
+    employer: $this.firmId == $that.id,
+    employees: $this.id == $that.firmId
+  }
+)

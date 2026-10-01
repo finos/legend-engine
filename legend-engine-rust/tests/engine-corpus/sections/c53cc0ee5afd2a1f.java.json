@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n  \"title\": \"test::Simple::Person\",\n  \"type\": \"object\",\n  \"properties\":   {\n    \"firstName\":     {\n      \"type\": \"string\"\n    },\n    \"lastName\":     {\n      \"type\": \"string\"\n    },\n    \"middleName\":     {\n      \"type\": \"string\"\n    },\n    \"age\":     {\n      \"type\": \"integer\"\n    },\n    \"addresses\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"$ref\": \"#\\/definitions\\/test::Simple::Address\"\n      }\n    },\n    \"firm\":     {\n      \"$ref\": \"#\\/definitions\\/test::Simple::Firm\"\n    }\n  },\n  \"required\": [\n\"firstName\",\n\"lastName\",\n\"firm\"\n  ],\n  \"definitions\":   {\n    \"test::Simple::Address\":     {\n      \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n      \"title\": \"test::Simple::Address\",\n      \"type\": \"object\",\n      \"properties\":       {\n        \"addressType\":         {\n          \"$ref\": \"#\\/definitions\\/test::Simple::AddressType\"\n        },\n        \"addressLine1\":         {\n          \"type\": \"string\"\n        },\n        \"addressLine2\":         {\n          \"type\": \"string\"\n        },\n        \"addressLine3\":         {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n\"addressType\",\n\"addressLine1\"\n      ]\n    },\n    \"test::Simple::AddressType\":     {\n      \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n      \"title\": \"test::Simple::AddressType\",\n      \"enum\": [\n\"HOME\",\n\"OFFICE\",\n\"WORKSHOP\"\n      ],\n      \"type\": \"string\"\n    },\n    \"test::Simple::Firm\":     {\n      \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n      \"title\": \"test::Simple::Firm\",\n      \"type\": \"object\",\n      \"properties\":       {\n        \"legalName\":         {\n          \"type\": \"string\"\n        },\n        \"addresses\":         {\n          \"type\": \"array\",\n          \"items\":           {\n            \"$ref\": \"#\\/definitions\\/test::Simple::Address\"\n          }\n        }\n      },\n      \"required\": [\n\"legalName\"\n      ]\n    }\n  }\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 2079,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 37
+      },
+      "location" : "test/Simple/Person.json",
+      "sourceInformation" : {
+        "endColumn" : 2081,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 36
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 33
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Simple::Person", "test::Simple::Firm", "test::Simple::Address", "test::Simple::AddressType" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 40
+    }
+  } ],
+  "imports" : [ ]
+}

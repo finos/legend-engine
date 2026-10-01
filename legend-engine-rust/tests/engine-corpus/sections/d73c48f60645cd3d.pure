@@ -1,0 +1,101 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: [ ID ]
+    deduplication: None;
+    datasetType: Delta
+    {
+      actionIndicator: DeleteIndicator
+      {
+        deleteField: DELETED;
+        deleteValues: ['Y', 'true'];
+      }
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: Unitemporal
+    {
+      processingDimension: DateTime
+      {
+        dateTimeIn: 'IN_Z';
+        dateTimeOut: 'OUT_Z';
+      }
+    }
+  }#
+  ];
+  tests:
+  [
+   test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY", "DELETED": "N"},{"ID":2, "NAME":"BRAD","DELETED": "N"},{"ID":3, "NAME":"CATHY","DELETED": "N"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"}]';
+                 }#;
+             }#
+         ]
+       },
+       testBatch2:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":2, "NAME":"BRAD","DELETED": "Y"},{"ID":3, "NAME":"CATHERINE","DELETED": "N"},{"ID":4, "NAME":"TOM","DELETED": "N"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected :
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":3, "NAME":"CATHERINE"},{"ID":4, "NAME":"TOM"}]';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]
+}

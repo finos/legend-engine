@@ -1,0 +1,5 @@
+
+function abc::to(): Float[*]
+{
+  toVariant(1)->toMany(1.0)
+}

@@ -1,0 +1,12 @@
+
+Data meta::data::MyData
+{
+  ModelStore #{
+    my::PersonMissing:
+      ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '{}';
+        }#
+  }#
+}

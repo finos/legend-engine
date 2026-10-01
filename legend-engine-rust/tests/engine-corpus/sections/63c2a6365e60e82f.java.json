@@ -1,0 +1,146 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "BiTemporalDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 41,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 25
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 34,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 35,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "FROM_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 36,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "THRU_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 37,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "IN_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 38,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "OUT_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "FROM_Z",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 31
+          },
+          "thru" : "THRU_Z",
+          "thruIsInclusive" : false
+        }, {
+          "_type" : "processingMilestoning",
+          "in" : "IN_Z",
+          "out" : "OUT_Z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 8,
+            "startLine" : 32
+          }
+        } ],
+        "name" : "PRODUCT",
+        "primaryKey" : [ "ID", "FROM_Z", "IN_Z" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 40,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ]
+  } ]
+}

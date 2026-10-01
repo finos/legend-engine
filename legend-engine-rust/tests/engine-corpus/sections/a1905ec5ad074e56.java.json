@@ -1,0 +1,1402 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_FirmRow",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 22
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 22,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Firm",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 23,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 23,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 28
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 28,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Address",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 29,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "address",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 29,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "tags",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Division",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 31
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "divisions",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 31,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Terms",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 32
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "terms",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 32,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 26
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Terms",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 11,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "termId",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 39,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_RepoTerms",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Collateral",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 44,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 15,
+            "startLine" : 44
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "collateral",
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 44,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "chain::source::S_Terms",
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 42,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 42,
+        "startLine" : 42
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Collateral",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Identifier",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 49,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "collateralId",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 49,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 50,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 50
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 50,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 50
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 47
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Identifier",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 15,
+            "startLine" : 55
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "identifier",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 55,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 55
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 60,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 60
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "line1",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 60,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 61,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 61
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "city",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 61,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 61
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 58
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Division",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 66,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 66
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 66,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 66
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 67,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 67
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "headcount",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 67,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 67
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Location",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 68,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 68
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "location",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 68,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 68
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::source::S_Team",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 69,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 69
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "teams",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 69,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 69
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Location",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 74,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 74
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "city",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 74,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 74
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 75,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 75
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "country",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 75,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 75
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 76,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 72
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Team",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::source",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 80,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 80
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "label",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 80,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 80
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 81,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 81
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "members",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 81,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 81
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 78
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 88,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 88
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 88,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 89,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 89
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 89,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 89
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 90,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 90
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "city",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 90,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 90
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 91,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 11,
+            "startLine" : 91
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "labels",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 91,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 91
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::model::Unit",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 92,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 92
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "units",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 92,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 92
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::model::Holding",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 93,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 93
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "holdings",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 93,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 93
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 94,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 86
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Holding",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 98,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 98
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "pieceId",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 98,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 98
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 99,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 99
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 99,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 99
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 100,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 96
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Unit",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 104,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 104
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "unitName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 104,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 104
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 105,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 105
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "unitSize",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 105,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 105
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 106,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 12,
+            "startLine" : 106
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "country",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 106,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 106
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "chain::model::Squad",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 107,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 11,
+            "startLine" : 107
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "squads",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 107,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 107
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 108,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 102
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Squad",
+    "originalMilestonedProperties" : [ ],
+    "package" : "chain::model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 112,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 112
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "squadName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 112,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 112
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 113,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 113
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "memberCount",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 113,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 113
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 114,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 114
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "memberNames",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 114,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 114
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 115,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 110
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

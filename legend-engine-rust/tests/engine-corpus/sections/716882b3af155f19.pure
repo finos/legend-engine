@@ -1,0 +1,9 @@
+
+RelationalDatabaseConnection test::runtime::FirmConnection
+{
+  store: test::store::FirmDB;
+  type: H2;
+  timezone: '';
+  specification: LocalH2 {};
+  auth: DefaultH2;
+}

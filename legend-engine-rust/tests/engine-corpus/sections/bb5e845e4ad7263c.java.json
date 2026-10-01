@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "serviceStore",
+      "serviceStubMappings" : [ {
+        "requestPattern" : {
+          "method" : "GET",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          },
+          "url" : "/employees/allEmployees"
+        },
+        "responseDefinition" : {
+          "body" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" } ]",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 16
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 13
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 7
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "TestData",
+    "package" : "testServiceStoreTestSuites",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

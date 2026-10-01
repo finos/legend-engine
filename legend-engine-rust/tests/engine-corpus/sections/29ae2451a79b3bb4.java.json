@@ -1,0 +1,202 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      }, {
+        "enumValue" : "b",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "b"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::B",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 6
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "1",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "M1",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      }, {
+        "enumValue" : "b",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "b"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::B",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 12
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "2",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 12
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "M2",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      }, {
+        "enumValue" : "b",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "b"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::B",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 21
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 21
+      }
+    }, {
+      "enumValueMappings" : [ {
+        "enumValue" : "a",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "a"
+        } ]
+      }, {
+        "enumValue" : "b",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "b"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::B",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 25
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 25
+      }
+    } ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::M1",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 19
+      }
+    }, {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::M2",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 20
+      }
+    } ],
+    "name" : "M3",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

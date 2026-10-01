@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "NUMS", "WORDS" ],
+        "paths" : [ "default", "T" ],
+        "rows" : [ {
+          "values" : [ "1", "\"{\"\"values\"\":[3,1,2,1]}\"", "\"{\"\"values\"\":[\"\"b\"\",\"\"a\"\"]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 23,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 21
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 24,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 21
+      }
+    },
+    "name" : "D",
+    "package" : "demo::ssv::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

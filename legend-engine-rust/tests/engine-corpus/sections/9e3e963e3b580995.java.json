@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Map",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

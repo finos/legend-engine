@@ -1,0 +1,29 @@
+{
+  "elements" : [ {
+    "_type" : "bigQueryFunction",
+    "actions" : [ ],
+    "function" : {
+      "path" : "a::f():String[1]",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 4
+      },
+      "type" : "FUNCTION"
+    },
+    "functionName" : "sass",
+    "name" : "toBytes",
+    "package" : "BigQueryFunction::functionName::description::function::ownership::Deployment::identifier::activationConfiguration::BigQueryFunctionDeploymentConfiguration::activationConnection::stage::all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

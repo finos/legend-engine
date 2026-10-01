@@ -1,0 +1,267 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 30
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::model::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 33
+              }
+            } ],
+            "property" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::model::Firm",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        },
+        "target" : "test_model_Person",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 34
+              }
+            } ],
+            "property" : "employees",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 34
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "srcClass" : "test::store::S_Firm"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "test::model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 36
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::model::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 39
+              }
+            } ],
+            "property" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 39
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::model::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 40
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 40
+              }
+            } ],
+            "property" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 40
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 38
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "srcClass" : "test::store::S_Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "FirmMapping",
+    "package" : "test::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 28
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

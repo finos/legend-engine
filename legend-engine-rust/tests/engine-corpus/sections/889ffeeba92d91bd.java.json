@@ -1,0 +1,1354 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Employee",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 32,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 32,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 33,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 33,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 34,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 34,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 35,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 35,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 36,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 36,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/filterMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 36
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 36,
+                "sourceId" : "mapping/filterMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 36
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 36,
+                "sourceId" : "mapping/filterMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 36
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 36,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 36
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 42,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 42
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 37,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 37,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 38,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 38,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::activeEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 31,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 31
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "mapping/filterMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 41,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 41
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 45,
+        "sourceId" : "mapping/filterMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 41
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeFilterMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 157,
+      "sourceId" : "mapping/filterMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 51,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 18,
+                  "startLine" : 51
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 51,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 50,
+                "startLine" : 51
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 52,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 32,
+                    "startLine" : 52
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 52,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 35,
+                  "startLine" : 52
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 52,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 30,
+                "startLine" : 52
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 52,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 52
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 54,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 54
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 54,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 26,
+                    "startLine" : 54
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 54,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 29,
+                  "startLine" : 54
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 54,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 24,
+                "startLine" : 54
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 54,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 44,
+                    "startLine" : 54
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 54,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 47,
+                  "startLine" : 54
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 54,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 42,
+                "startLine" : 54
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 55,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 55
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 55,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 22,
+                "startLine" : 55
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 55,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 36,
+                "startLine" : 55
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 53,
+            "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+            "startColumn" : 21,
+            "startLine" : 53
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 56,
+          "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+          "startColumn" : 17,
+          "startLine" : 51
+        }
+      },
+      "id" : "allActiveSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 84,
+        "sourceId" : "mapping/filterMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 49
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\",\"Last Name\":\"Green\"},{\"First Name\":\"Bob\",\"Last Name\":\"Smith\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 79,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 75
+            }
+          },
+          "id" : "shouldReturnActiveRows",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 80,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 72
+          }
+        } ],
+        "id" : "activeOnly",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 82,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 59
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 67,
+                "sourceId" : "mapping/filterMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 64
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 67,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 64
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 67,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 63
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 63,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 63
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::domain::Employee",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 87,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 18,
+                    "startLine" : 87
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 87,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 50,
+                  "startLine" : 87
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e",
+                      "sourceInformation" : {
+                        "endColumn" : 33,
+                        "endLine" : 88,
+                        "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                        "startColumn" : 32,
+                        "startLine" : 88
+                      }
+                    } ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 43,
+                      "endLine" : 88,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 35,
+                      "startLine" : 88
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 54,
+                      "endLine" : 88,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 48,
+                      "startLine" : 88
+                    },
+                    "value" : "Alice"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 88,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 45,
+                    "startLine" : 88
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "e"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 88,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 30,
+                  "startLine" : 88
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 88,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 21,
+                "startLine" : 88
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 89,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 32,
+                    "startLine" : 89
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 89,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 35,
+                  "startLine" : 89
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 89,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 30,
+                "startLine" : 89
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 89,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 89
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 91,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 91
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 91,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 26,
+                    "startLine" : 91
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 91,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 29,
+                  "startLine" : 91
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 91,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 24,
+                "startLine" : 91
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 91,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 44,
+                    "startLine" : 91
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 91,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 47,
+                  "startLine" : 91
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 91,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 42,
+                "startLine" : 91
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 92,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 92
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 92,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 22,
+                "startLine" : 92
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 92,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 36,
+                "startLine" : 92
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 90,
+            "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+            "startColumn" : 21,
+            "startLine" : 90
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 93,
+          "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+          "startColumn" : 17,
+          "startLine" : 87
+        }
+      },
+      "id" : "aliceOnlySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 121,
+        "sourceId" : "mapping/filterMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 85
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\",\"Last Name\":\"Green\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 116,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 112
+            }
+          },
+          "id" : "shouldReturnAliceOnly",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 117,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 109
+          }
+        } ],
+        "id" : "queryFilterStacked",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 119,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 96
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 104,
+                "sourceId" : "mapping/filterMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 101
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 104,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 101
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 104,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 100
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 100,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 100
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "groupBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "project",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::domain::Employee",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 124,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 18,
+                    "startLine" : 124
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 124,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 50,
+                  "startLine" : 124
+                }
+              }, {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 125,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 30,
+                  "startLine" : 125
+                },
+                "type" : "colSpecArray",
+                "value" : {
+                  "colSpecs" : [ {
+                    "function1" : {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "func",
+                        "function" : "toString",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "x",
+                            "sourceInformation" : {
+                              "endColumn" : 42,
+                              "endLine" : 125,
+                              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                              "startColumn" : 41,
+                              "startLine" : 125
+                            }
+                          } ],
+                          "property" : "employeeType",
+                          "sourceInformation" : {
+                            "endColumn" : 55,
+                            "endLine" : 125,
+                            "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                            "startColumn" : 44,
+                            "startLine" : 125
+                          }
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 65,
+                          "endLine" : 125,
+                          "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                          "startColumn" : 58,
+                          "startLine" : 125
+                        }
+                      } ],
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x"
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 67,
+                        "endLine" : 125,
+                        "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                        "startColumn" : 39,
+                        "startLine" : 125
+                      }
+                    },
+                    "name" : "type",
+                    "sourceInformation" : {
+                      "endColumn" : 67,
+                      "endLine" : 125,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 31,
+                      "startLine" : 125
+                    }
+                  }, {
+                    "function1" : {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "x",
+                          "sourceInformation" : {
+                            "endColumn" : 81,
+                            "endLine" : 125,
+                            "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                            "startColumn" : 80,
+                            "startLine" : 125
+                          }
+                        } ],
+                        "property" : "firstName",
+                        "sourceInformation" : {
+                          "endColumn" : 91,
+                          "endLine" : 125,
+                          "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                          "startColumn" : 83,
+                          "startLine" : 125
+                        }
+                      } ],
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x"
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 91,
+                        "endLine" : 125,
+                        "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                        "startColumn" : 78,
+                        "startLine" : 125
+                      }
+                    },
+                    "name" : "name",
+                    "sourceInformation" : {
+                      "endColumn" : 91,
+                      "endLine" : 125,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 70,
+                      "startLine" : 125
+                    }
+                  } ]
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 125,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 21,
+                "startLine" : 125
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 126,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 30,
+                "startLine" : 126
+              },
+              "type" : "colSpec",
+              "value" : {
+                "name" : "type",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 126,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 30,
+                  "startLine" : 126
+                }
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 126,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 37,
+                "startLine" : 126
+              },
+              "type" : "colSpec",
+              "value" : {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 53,
+                        "endLine" : 126,
+                        "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                        "startColumn" : 52,
+                        "startLine" : 126
+                      }
+                    } ],
+                    "property" : "name",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 126,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 55,
+                      "startLine" : 126
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 126,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 50,
+                    "startLine" : 126
+                  }
+                },
+                "function2" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "count",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "y",
+                      "sourceInformation" : {
+                        "endColumn" : 67,
+                        "endLine" : 126,
+                        "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                        "startColumn" : 66,
+                        "startLine" : 126
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 74,
+                      "endLine" : 126,
+                      "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                      "startColumn" : 70,
+                      "startLine" : 126
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 76,
+                    "endLine" : 126,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 64,
+                    "startLine" : 126
+                  }
+                },
+                "name" : "headcount",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 126,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 37,
+                  "startLine" : 126
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 126,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 21,
+              "startLine" : 126
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 127,
+              "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+              "startColumn" : 26,
+              "startLine" : 127
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 127,
+                  "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                  "startColumn" : 28,
+                  "startLine" : 127
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "type",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 127,
+                    "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                    "startColumn" : 28,
+                    "startLine" : 127
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 127,
+                "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+                "startColumn" : 34,
+                "startLine" : 127
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 127,
+            "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+            "startColumn" : 21,
+            "startLine" : 127
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 127,
+          "sourceId" : "demo::relation::mapping::EmployeeFilterMapping",
+          "startColumn" : 17,
+          "startLine" : 124
+        }
+      },
+      "id" : "activeCountByTypeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 155,
+        "sourceId" : "mapping/filterMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 122
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"type\":\"CONTRACT\",\"headcount\":1},{\"type\":\"FULL_TIME\",\"headcount\":1}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 150,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 146
+            }
+          },
+          "id" : "shouldCountActiveEmployeesByType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 151,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 143
+          }
+        } ],
+        "id" : "oneActiveEmployeePerType",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 153,
+          "sourceId" : "mapping/filterMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 130
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 138,
+                "sourceId" : "mapping/filterMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 135
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 138,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 135
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 138,
+            "sourceId" : "mapping/filterMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 134
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 134,
+              "sourceId" : "mapping/filterMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 134
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

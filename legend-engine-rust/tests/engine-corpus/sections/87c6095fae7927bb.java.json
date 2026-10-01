@@ -1,0 +1,453 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllPersonsService",
+        "method" : "GET",
+        "path" : "/allPersons",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::personServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 115
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 117,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 111
+        }
+      }, {
+        "_type" : "service",
+        "id" : "PersonByNameService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "PATH",
+          "name" : "fullName",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 125
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 125,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 125
+            }
+          }
+        } ],
+        "path" : "/personByName/{fullName}",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::personServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 127,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 127
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 129,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 119
+        }
+      }, {
+        "_type" : "service",
+        "id" : "PersonsByAddressNameService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "addressName",
+          "required" : false,
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 137,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 137
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 137,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 137
+            }
+          }
+        } ],
+        "path" : "/personsByAddressName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::personServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 139,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 139
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 141,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 131
+        }
+      } ],
+      "id" : "PersonService",
+      "path" : "/persons",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 142,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 107
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "PersonService",
+    "package" : "test::serviceStore::caching::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 143,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 105
+    }
+  }, {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllFirmsService",
+        "method" : "GET",
+        "path" : "/allFirms",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::firmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 155,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 155
+          },
+          "type" : "test::Firm"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 157,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 151
+        }
+      }, {
+        "_type" : "service",
+        "id" : "FirmByNameService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "name",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 165,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 165
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 165,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 165
+            }
+          }
+        } ],
+        "path" : "/firmByName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::firmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 167,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 167
+          },
+          "type" : "test::Firm"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 169,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 159
+        }
+      } ],
+      "id" : "FirmService",
+      "path" : "/firms",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 170,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 147
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "FirmService",
+    "package" : "test::serviceStore::caching::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 171,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 145
+    }
+  }, {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllAddressesService",
+        "method" : "GET",
+        "path" : "/allAddresses",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::addressServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 183,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 183
+          },
+          "type" : "test::Address"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 185,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 179
+        }
+      }, {
+        "_type" : "service",
+        "id" : "AddressByNameService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "name",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 193,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 193
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 193,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 193
+            }
+          }
+        } ],
+        "path" : "/addressByName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::addressServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 195,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 195
+          },
+          "type" : "test::Address"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 197,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 187
+        }
+      } ],
+      "id" : "AddressService",
+      "path" : "/addresses",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 198,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 175
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "AddressService",
+    "package" : "test::serviceStore::caching::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 199,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 173
+    }
+  }, {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllStreetsService",
+        "method" : "GET",
+        "path" : "/allStreets",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::streetServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 211,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 211
+          },
+          "type" : "test::Street"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 213,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 207
+        }
+      }, {
+        "_type" : "service",
+        "id" : "StreetByIDService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "streetId",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 221,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 221
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 221,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 221
+            }
+          }
+        } ],
+        "path" : "/streetByID",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::streetServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 223,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 223
+          },
+          "type" : "test::Street"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 225,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 215
+        }
+      } ],
+      "id" : "StreetService",
+      "path" : "/streets",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 226,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 203
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "StreetService",
+    "package" : "test::serviceStore::caching::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 227,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 201
+    }
+  } ]
+}

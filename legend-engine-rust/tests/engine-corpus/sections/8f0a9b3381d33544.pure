@@ -1,0 +1,17 @@
+
+Class <<temporal.processingtemporal>> test::Person2
+{
+   name: String[1];
+}
+
+Class test::Firm2
+{
+   id: Integer[1];
+   legalName: String[1];
+}
+
+Association test::Firm_Person2
+{
+   employees: test::Person2[*];
+   employer: test::Firm2[1];
+}

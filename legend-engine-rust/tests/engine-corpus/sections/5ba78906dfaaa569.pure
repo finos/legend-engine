@@ -1,0 +1,20 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: H2;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'okilkol.asdasd';
+    warehouse: 'warehousename';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: false;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}

@@ -1,0 +1,385 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      },
+      "id" : "1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::A",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          }
+        },
+        "source" : "1",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 13
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 13
+              }
+            } ],
+            "property" : "prop1",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 13
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 11
+      },
+      "srcClass" : "test::S_A"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M1",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 18
+      },
+      "id" : "2",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::A",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 20
+          }
+        },
+        "source" : "2",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 20
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 20
+              }
+            } ],
+            "property" : "prop1",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 20
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 19
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "srcClass" : "test::S_A"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::M1",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 17
+      }
+    } ],
+    "name" : "M2",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 27
+      },
+      "id" : "1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::A",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 29
+          }
+        },
+        "source" : "1",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 29
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 29
+              }
+            } ],
+            "property" : "prop1",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 29
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 28
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 27
+      },
+      "srcClass" : "test::S_A"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 31
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::A",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 33
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 33
+              }
+            } ],
+            "property" : "prop1",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 31
+      },
+      "srcClass" : "test::S_A"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::M1",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 25
+      }
+    }, {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::M2",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "M3",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,7 @@
+
+JsonModelConnection meta::myConnection
+{
+  class: meta::mySimpleClass;
+  url: 'dummy';
+}
+

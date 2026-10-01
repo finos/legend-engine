@@ -1,0 +1,11 @@
+ 
+ 
+Class main::Person 
+{ 
+    name : String[1]; 
+} 
+ 
+function main::walkTree(zero: String[2..*], people: main::Person[*]): String[*] 
+{ 
+    $people->fold({p,a|$a->concatenate($p.name)}, $zero); 
+} 

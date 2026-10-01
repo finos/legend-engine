@@ -1,0 +1,135 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 3
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Firm",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 3
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 3
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "alias" : "alias1",
+            "parameters" : [ ],
+            "property" : "SubTypeName",
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 3
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::FirmSubType1",
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 90,
+            "startLine" : 3
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "alias" : "alias2",
+            "parameters" : [ ],
+            "property" : "SubTypeName",
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 119,
+              "startLine" : 3
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::FirmSubType2",
+          "subTypeTrees" : [ ]
+        } ]
+      }
+    } ],
+    "name" : "test__Any_MANY_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'transactionMilestoning' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

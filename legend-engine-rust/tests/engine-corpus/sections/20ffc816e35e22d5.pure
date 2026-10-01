@@ -1,0 +1,81 @@
+
+Mapping demo::FirmIncludingMapping
+(
+  include mapping demo::PersonBaseMapping
+
+  *demo::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::FirmDB]FirmTable.id
+    )
+    ~mainTable [demo::store::FirmDB]FirmTable
+    legalName: [demo::store::FirmDB]FirmTable.legalName
+  }
+
+  testSuites:
+  [
+    includedClassMappingSuite:
+    {
+      function: |demo::Person.all()->sortBy(x|$x.firstName)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+      tests:
+      [
+        personVisibleThroughInclude:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::data::IncludeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveIncludedMapping:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Jane","Last Name":"Smith"},{"First Name":"John","Last Name":"Doe"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    ownClassMappingSuite:
+    {
+      function: |demo::Firm.all()->sortBy(x|$x.legalName)->project([x|$x.legalName], ['Legal Name']);
+      tests:
+      [
+        firmMappedLocally:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::data::IncludeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveOwnMapping:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Legal Name":"Finos"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

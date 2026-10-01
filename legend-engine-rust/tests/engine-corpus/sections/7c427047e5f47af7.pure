@@ -1,0 +1,5 @@
+
+function test::new(): Any[1]
+{
+  meta::pure::tds::func(r: TDSRow[1]|1)
+}

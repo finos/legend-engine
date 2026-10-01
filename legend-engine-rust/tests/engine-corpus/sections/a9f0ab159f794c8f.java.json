@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "ActiveStatus",
+    "package" : "demo::relation::domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "model/activeStatus.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 18,
+        "sourceId" : "model/activeStatus.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "ACTIVE"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 19,
+        "sourceId" : "model/activeStatus.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "INACTIVE"
+    } ]
+  } ],
+  "imports" : [ ]
+}

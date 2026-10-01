@@ -1,0 +1,4 @@
+
+MemSqlFunction x::A
+{
+   function : a::f():String[1];   ownership : Deployment { identifier: 'testDeployment' };}

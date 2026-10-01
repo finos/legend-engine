@@ -1,0 +1,6 @@
+
+Class test::model::A
+{
+  alphaBetaGamma : String[1];
+  deltaEpsilon   : Decimal[1];
+}

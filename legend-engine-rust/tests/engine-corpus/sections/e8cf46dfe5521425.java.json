@@ -1,0 +1,336 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Employee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joins",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 18,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 9,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 18,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "model/domain.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Department",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joins",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 23,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 9,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 23,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 24,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 13,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "location",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 24,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "model/domain.pure",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Sale",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joins",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 29,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 11,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "amount",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 29,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "model/domain.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "EmpDept",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joins",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::joins::Department",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 36,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 15,
+            "startLine" : 36
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "department",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 36,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::joins::Employee",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 37,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 14,
+            "startLine" : 37
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 37,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 37
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "model/domain.pure",
+      "startColumn" : 1,
+      "startLine" : 34
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "EmpSale",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joins",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::joins::Employee",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 44,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 11,
+            "startLine" : 44
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "seller",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 44,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::joins::Sale",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 45,
+            "sourceId" : "model/domain.pure",
+            "startColumn" : 10,
+            "startLine" : 45
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "sales",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 45,
+        "sourceId" : "model/domain.pure",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "model/domain.pure",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,8 @@
+
+Database model::relational::tests::dbInc
+(
+    Table personTable (ID INT PRIMARY KEY, FIRMID INT)
+    Table firmTable(ID INT PRIMARY KEY)
+    Join Firm_Person(missingTable.ID = personTable.FIRMID)
+
+)

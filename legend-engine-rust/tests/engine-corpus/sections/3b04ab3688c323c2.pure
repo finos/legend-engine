@@ -1,0 +1,24 @@
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::MilestoneClassA
+{
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::MilestoneClassB
+{
+}
+
+Class model::ClassA
+{
+  b: model::ClassB[1];
+}
+
+Class model::ClassB
+{
+  a: model::ClassA[1];
+}
+
+Association model::AssociationAB
+{
+  a: model::MilestoneClassA[1];
+  b: model::MilestoneClassB[1];
+}

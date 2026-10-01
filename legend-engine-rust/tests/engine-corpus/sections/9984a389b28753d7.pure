@@ -1,0 +1,6 @@
+
+Text meta::pure::myText
+{
+  type: STRING;
+  content: 'a more complex test. let\'s start. the guy said "We are going to open source! " \n Here we are in a new line';
+}

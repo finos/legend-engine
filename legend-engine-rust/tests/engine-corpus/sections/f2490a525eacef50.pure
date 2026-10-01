@@ -1,0 +1,13 @@
+
+Class relational::graphFetch::Target_Firm
+{
+  firmName: String[1];
+  firmCode: Integer[1];
+}
+
+Class relational::graphFetch::Firm
+{
+  name: String[1];
+  id: Integer[1];
+}
+

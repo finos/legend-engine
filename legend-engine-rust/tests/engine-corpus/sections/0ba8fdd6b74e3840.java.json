@@ -1,0 +1,87 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "plus",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 13
+        },
+        "values" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 3,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 13
+          },
+          "value" : 1
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          },
+          "value" : 1
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "Firm_QueryFunction__Integer_1_",
+    "package" : "model",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Integer",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 11
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

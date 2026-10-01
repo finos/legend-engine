@@ -1,0 +1,12 @@
+rel|$rel->rowsWithEmptyColumn(
+  ~id
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName,
+     age,
+     emailAddress,
+     annualSalary,
+     dateOfBirth
+   ]
+)

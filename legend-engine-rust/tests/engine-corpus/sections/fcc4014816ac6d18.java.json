@@ -1,0 +1,60 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "dataSpace",
+    "operationalMetadata" : {
+      "coverageRegions" : [ "APAC", "EMEA", "NAMR" ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "updateFrequency" : "DAILY"
+    },
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

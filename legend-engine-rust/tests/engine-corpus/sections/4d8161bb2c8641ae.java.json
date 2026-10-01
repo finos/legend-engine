@@ -1,0 +1,120 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    } ],
+    "name" : "legacyEmail",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "supportInfo" : {
+      "_type" : "email",
+      "address" : "support@example.org",
+      "documentationUrl" : "https://docs.example.org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 27
+      }
+    },
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 40
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 39
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      }
+    } ],
+    "name" : "legacyCombined",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 33
+    },
+    "stereotypes" : [ ],
+    "supportInfo" : {
+      "_type" : "combined",
+      "documentationUrl" : "https://docs.example.org",
+      "emails" : [ "support@example.org" ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 44
+      },
+      "website" : "https://example.org"
+    },
+    "taggedValues" : [ ]
+  } ]
+}

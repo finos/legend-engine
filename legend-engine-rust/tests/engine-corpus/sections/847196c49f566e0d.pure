@@ -1,0 +1,27 @@
+
+Database stores::testRelationalJoinsDB
+(
+  Schema testSchema
+  (
+    Table Firms
+    (
+      id INTEGER PRIMARY KEY,
+      firm_name VARCHAR(200)
+    )
+    Table People
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200),
+      firm_id INTEGER,
+      pet_id INTEGER
+    )
+    Table Pets
+    (
+      id INTEGER PRIMARY KEY,
+      pet_name VARCHAR(50),
+      species VARCHAR(200)
+    )
+  )
+  Join FirmPerson(testSchema.People.firm_id = testSchema.Firms.id)
+  Join PersonPetWithNull(testSchema.People.pet_id = testSchema.Pets.id and testSchema.Pets.species is null)
+)

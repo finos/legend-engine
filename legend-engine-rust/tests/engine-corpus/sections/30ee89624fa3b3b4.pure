@@ -1,0 +1,32 @@
+
+ServiceStore test::testServiceStoreGrammarWithSingleServiceGroup
+(
+  ServiceGroup TestServices
+  (
+    path : '/testServices';
+
+    Service TestService1
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : ExampleClass <- tests::store::exampleBinding;
+      security : [];
+    )
+    Service TestService2
+    (
+      path : '/testService';
+      requestBody : ExampleClass <- tests::store::exampleBinding;
+      method : POST;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : ExampleClass <- tests::store::exampleBinding;
+      security : [];
+    )
+  )
+)

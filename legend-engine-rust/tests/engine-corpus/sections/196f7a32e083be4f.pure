@@ -1,0 +1,83 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: ObjectStorage
+    {
+      binding: test::Binding;
+    }
+    ingestMode: BitemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: deleted;
+        deleteValues: ['Y', '1', 'true'];
+      }
+      transactionMilestoning: DateTime
+      {
+        dateTimeInName: 'inZ';
+        dateTimeOutName: 'outZ';
+        derivation: SourceSpecifiesInAndOutDateTime
+        {
+          sourceDateTimeInField: sourceIn;
+          sourceDateTimeOutField: sourceOut;
+        }
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromAndThruDateTime
+        {
+          sourceDateTimeFromField: sourceFrom;
+          sourceDateTimeThruField: sourceThru;
+        }
+      }
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: test::WrapperClass;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: property1;
+          targetName: 'TestDataset1';
+          partitionFields: [propertyA, propertyB];
+          deduplicationStrategy: AnyVersion;
+        },
+        {
+          modelProperty: property2;
+          targetName: 'TestDataset1';
+          partitionFields: [propertyA, propertyB];
+          deduplicationStrategy: DuplicateCount
+          {
+            duplicateCountName: 'duplicateCount';
+          }
+        },
+        {
+          modelProperty: property3;
+          targetName: 'TestDataset2';
+        }
+      ];
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'x.y@z.com';
+      },
+      PagerDuty
+      {
+        url: 'https://x.com';
+      }
+    ];
+  }
+}

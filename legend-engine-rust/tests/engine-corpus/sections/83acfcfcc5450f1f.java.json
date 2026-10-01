@@ -1,0 +1,82 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "dummyRuntime",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 275,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 275
+        },
+        "type" : "MAPPING"
+      }, {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 276,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 276
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 278,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 271
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 278,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 271
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "dummyRuntime2",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 284,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 284
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 286,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 280
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 286,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 280
+    }
+  } ],
+  "imports" : [ ]
+}

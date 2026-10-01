@@ -1,0 +1,56 @@
+
+Class test::Person
+{
+  fullName: String[1];
+  firmName : String[0..1];
+
+  // multiplicity here should be [0..1] but there will be a param multiplicity error if querying by this attrib
+  // this implies that firmName String[0..1] would also fail for a similar query - implies that servicestore
+  // may not accept 0..1 in the model. Services return a JSON and currently need to return empty string
+  // implication is that model does/can not fully capture multiplicity of result.
+  // Error - Parameter multiplicity is not compatible with transform multiplicity - Multiplicity error: [1] doesn't subsume [0..1]
+  addressName : String[1];
+}
+
+Class test::Firm
+{
+  name: String[1];
+  addressName : String[0..1];
+}
+
+Class test::Address
+{
+  name: String[1];
+  streetName: String[0..1];
+}
+
+Class test::Street
+{
+  streetId: String[1];
+}
+
+Association test::Person_Firm
+{
+  employees: test::Person[*];
+  firm: test::Firm[0..1];
+}
+
+Association test::Person_Address
+{
+  persons: test::Person[*];
+  address: test::Address[0..1];
+}
+
+Association test::Firm_Address
+{
+  firms: test::Firm[*];
+  address: test::Address[0..1];
+}
+
+Association test::Address_Street
+{
+  street: test::Street[0..1];
+  addresses: test::Address[*];
+}
+
+// Define schema bindings

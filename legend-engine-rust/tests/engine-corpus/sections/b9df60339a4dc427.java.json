@@ -1,0 +1,2162 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "wild::Row",
+      "classSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "wild::store::DB",
+        "mainTableDb" : "wild::store::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 21,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 33,
+          "startLine" : 21
+        },
+        "table" : "T"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 20,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 20
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "wild::store::DB",
+          "mainTableDb" : "wild::store::DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 20,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 36,
+            "startLine" : 20
+          },
+          "table" : "T"
+        },
+        "tableAlias" : "T"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "wild::store::DB",
+            "mainTableDb" : "wild::store::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 22,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 26,
+              "startLine" : 22
+            },
+            "table" : "T"
+          },
+          "tableAlias" : "T"
+        },
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "oneLevel",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "DOC",
+              "sourceInformation" : {
+                "endColumn" : 78,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 57,
+                "startLine" : 26
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "wild::store::DB",
+                "mainTableDb" : "wild::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 74,
+                  "startLine" : 26
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 81,
+                "startLine" : 26
+              },
+              "value" : "divisions[*].name"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 112,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 102,
+                "startLine" : 26
+              },
+              "value" : "VARCHAR[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 118,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 116,
+              "startLine" : 26
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 119,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 119,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "twoLevels",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "DOC",
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 58,
+                "startLine" : 30
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "wild::store::DB",
+                "mainTableDb" : "wild::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 30,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 75,
+                  "startLine" : 30
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 82,
+                "startLine" : 30
+              },
+              "value" : "divisions[*].teams[*].label"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 113,
+                "startLine" : 30
+              },
+              "value" : "VARCHAR[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 124,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 32,
+              "startLine" : 30
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 127,
+              "startLine" : 30
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 130,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 130,
+          "endLine" : 30,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "countLeaves",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_size",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "DOC",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 55,
+                "startLine" : 34
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "wild::store::DB",
+                "mainTableDb" : "wild::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 34,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 72,
+                  "startLine" : 34
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 107,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 79,
+                "startLine" : 34
+              },
+              "value" : "divisions[*].teams[*].label"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 110,
+                "startLine" : 34
+              },
+              "value" : "VARCHAR[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 121,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 34
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 122,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 122,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "maxLeaf",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_max",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "DOC",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 37,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 50,
+                "startLine" : 37
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "wild::store::DB",
+                "mainTableDb" : "wild::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 37,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 67,
+                  "startLine" : 37
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 97,
+                "endLine" : 37,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 74,
+                "startLine" : 37
+              },
+              "value" : "divisions[*].headcount"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 37,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 100,
+                "startLine" : 37
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 111,
+              "endLine" : 37,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 24,
+              "startLine" : 37
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 37,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "countDivisions",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_size",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "DOC",
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 58,
+                "startLine" : 40
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "wild::store::DB",
+                "mainTableDb" : "wild::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 75,
+                  "startLine" : 40
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 95,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 82,
+                "startLine" : 40
+              },
+              "value" : "divisions[*]"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 98,
+                "startLine" : 40
+              },
+              "value" : "SEMISTRUCTURED[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 116,
+              "endLine" : 40,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 32,
+              "startLine" : 40
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 117,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 21,
+            "startLine" : 40
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 117,
+          "endLine" : 40,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 40
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "wild::Row",
+          "property" : "shadowed",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_transform",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "DOC",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 73,
+                  "startLine" : 47
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "wild::store::DB",
+                  "mainTableDb" : "wild::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 47,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 90,
+                    "startLine" : 47
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 97,
+                  "startLine" : 47
+                },
+                "value" : "divisions"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 127,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 110,
+                  "startLine" : 47
+                },
+                "value" : "SEMISTRUCTURED[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 47,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "relationalLambda",
+              "body" : {
+                "_type" : "dynaFunc",
+                "funcName" : "array_to_string",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "wc1",
+                    "sourceInformation" : {
+                      "endColumn" : 182,
+                      "endLine" : 47,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 179,
+                      "startLine" : 47
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 200,
+                      "endLine" : 47,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 185,
+                      "startLine" : 47
+                    },
+                    "value" : "teams[*].label"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 213,
+                      "endLine" : 47,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 203,
+                      "startLine" : 47
+                    },
+                    "value" : "VARCHAR[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 214,
+                    "endLine" : 47,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 153,
+                    "startLine" : 47
+                  }
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 219,
+                    "endLine" : 47,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 217,
+                    "startLine" : 47
+                  },
+                  "value" : "|"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 220,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 137,
+                  "startLine" : 47
+                }
+              },
+              "parameterNames" : [ "wc1" ],
+              "sourceInformation" : {
+                "endColumn" : 220,
+                "endLine" : 47,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 131,
+                "startLine" : 47
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 221,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 47
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 226,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 224,
+              "startLine" : 47
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 227,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 47
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 227,
+          "endLine" : 47,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 47
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M",
+    "package" : "wild",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 83,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 54,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 54
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 54,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 54
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 54,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 54
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 54,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 54
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 54,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 54
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 54,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 54
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 54,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 54
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 54,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 54
+                      }
+                    } ],
+                    "property" : "oneLevel",
+                    "sourceInformation" : {
+                      "endColumn" : 77,
+                      "endLine" : 54,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 54
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 54,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 54
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 54,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 54
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 54,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 54
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 54,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 54
+        }
+      },
+      "id" : "oneLevelSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 56,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 52
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"Alpha,Beta\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 223,
+              "endLine" : 55,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 55
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 227,
+            "endLine" : 55,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 55
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 232,
+          "endLine" : 55,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 55
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 55,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 55
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 55,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 55
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 55,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 55
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 55,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 55
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 59,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 59
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 59,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 59
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 59,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 59
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 59,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 59
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 59,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 59
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 59,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 59
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 59,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 59
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 59,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 59
+                      }
+                    } ],
+                    "property" : "twoLevels",
+                    "sourceInformation" : {
+                      "endColumn" : 78,
+                      "endLine" : 59,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 59
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 78,
+                    "endLine" : 59,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 59
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 59,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 59
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 59,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 59
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 59,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 59
+        }
+      },
+      "id" : "twoLevelsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 61,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 57
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"Core,Edge,Ops\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 226,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 60
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 230,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 60
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 235,
+          "endLine" : 60,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 60
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 60,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 60
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 60
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 60
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 60
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 64,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 64
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 64,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 64
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 64,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 64
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 64,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 64
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 64,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 64
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 64,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 64
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 64,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 64
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 64,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 64
+                      }
+                    } ],
+                    "property" : "countLeaves",
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 64,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 64
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 64,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 64
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 80,
+                  "endLine" : 64,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 64
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 64,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 64
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 64,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 64
+        }
+      },
+      "id" : "countLeavesSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 66,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 62
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 3\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 212,
+              "endLine" : 65,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 65
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 216,
+            "endLine" : 65,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 65
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 221,
+          "endLine" : 65,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 65
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 65,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 65
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 65,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 65
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 65,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 65
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 65,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 65
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 69,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 69
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 69,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 69
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 77,
+              "endLine" : 69,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 69
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 69,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 69
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 69,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 69
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 69,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 69
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 69,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 69
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 69,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 69
+                      }
+                    } ],
+                    "property" : "maxLeaf",
+                    "sourceInformation" : {
+                      "endColumn" : 76,
+                      "endLine" : 69,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 69
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 76,
+                    "endLine" : 69,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 69
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 69,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 69
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 69,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 69
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 69,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 69
+        }
+      },
+      "id" : "maxLeafSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 71,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 67
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 100\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 214,
+              "endLine" : 70,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 70
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 218,
+            "endLine" : 70,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 70
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 223,
+          "endLine" : 70,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 70
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 70,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 70
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 70,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 70
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 70,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 70
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 70,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 70
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 74,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 74
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 74,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 74
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 74,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 74
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 74,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 74
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 74,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 74
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 74,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 74
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 74,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 74
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 74,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 74
+                      }
+                    } ],
+                    "property" : "shadowed",
+                    "sourceInformation" : {
+                      "endColumn" : 77,
+                      "endLine" : 74,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 74
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 74,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 74
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 74,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 74
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 74,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 74
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 74,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 74
+        }
+      },
+      "id" : "shadowedSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 76,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 72
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"Core|Edge,Ops\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 226,
+              "endLine" : 75,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 75
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 230,
+            "endLine" : 75,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 75
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 235,
+          "endLine" : 75,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 75
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 75,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 75
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 75,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 75
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 75,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 75
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 75,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 75
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "wild::Row",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 79,
+                "sourceId" : "wild::M",
+                "startColumn" : 18,
+                "startLine" : 79
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 79,
+              "sourceId" : "wild::M",
+              "startColumn" : 27,
+              "startLine" : 79
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 79,
+              "sourceId" : "wild::M",
+              "startColumn" : 44,
+              "startLine" : 79
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 79,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 53,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 79,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 56,
+                      "startLine" : 79
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 79,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 51,
+                    "startLine" : 79
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 79,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 45,
+                  "startLine" : 79
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 79,
+                        "sourceId" : "wild::M",
+                        "startColumn" : 67,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "property" : "countDivisions",
+                    "sourceInformation" : {
+                      "endColumn" : 83,
+                      "endLine" : 79,
+                      "sourceId" : "wild::M",
+                      "startColumn" : 70,
+                      "startLine" : 79
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 79,
+                    "sourceId" : "wild::M",
+                    "startColumn" : 65,
+                    "startLine" : 79
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 79,
+                  "sourceId" : "wild::M",
+                  "startColumn" : 60,
+                  "startLine" : 79
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 79,
+            "sourceId" : "wild::M",
+            "startColumn" : 35,
+            "startLine" : 79
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 79,
+          "sourceId" : "wild::M",
+          "startColumn" : 17,
+          "startLine" : 79
+        }
+      },
+      "id" : "countDivisionsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 81,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 77
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 2\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 212,
+              "endLine" : 80,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 118,
+              "startLine" : 80
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 216,
+            "endLine" : 80,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 93,
+            "startLine" : 80
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 221,
+          "endLine" : 80,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 80
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "wild::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 80,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 80
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 80,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 46,
+              "startLine" : 80
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 80,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 80
+          },
+          "store" : {
+            "path" : "wild::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 80,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 80
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,240 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "Context 1",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 40
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 40
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 40
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 40
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 40
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 44,
+                "startLine" : 40
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 54,
+                    "startLine" : 40
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 60,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 40
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 40
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 77,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 40
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 40
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 40
+              },
+              "value" : "Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 40
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 40
+        }
+      },
+      "sampleValues" : {
+        "columns" : [ "Id", "Name" ],
+        "paths" : [ ],
+        "rows" : [ {
+          "values" : [ "1", "Alice" ]
+        }, {
+          "values" : [ "2", "Bob" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 43
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 31
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 30
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 28
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

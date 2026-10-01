@@ -1,0 +1,13 @@
+
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists PersonTable;'
+      ];
+  };
+  auth: DefaultH2;
+}

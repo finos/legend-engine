@@ -1,0 +1,11 @@
+
+RelationalMapper test::testMapper
+(
+   DatabaseMappers:
+   [
+      [test::OrganizationsDB.Org] -> 'SnowflakeOrgDB1',
+      [test::OrganizationsDB.Org] -> 'SnowflakeOrgDB2',
+      [test::OrganizationsDB.Product] -> 'SnowflakeProduct1',
+      [test::OrganizationsDB.Product] -> 'SnowflakeProduct2'
+   ];
+)

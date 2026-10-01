@@ -1,0 +1,20 @@
+
+Database store::relational::db
+(
+  Schema mySchema
+  (
+    Table Firm
+    (
+      id INTEGER PRIMARY KEY
+    )
+  )
+  Schema mySchema
+  (
+    Table Firm
+    (
+      id INTEGER PRIMARY KEY
+    )
+  )
+
+  Join Firm_SELFJOIN(mySchema.Firm.id = {target}.id)
+)

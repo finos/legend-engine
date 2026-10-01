@@ -1,0 +1,5 @@
+
+function my::test(): Any[*]
+{
+  #{test::Firm{legalName,employeeCount,employeesByFirstName([]){firstName,lastName},employeesByFirstName('Peter'){firstName,lastName},employeesByFirstName(['Peter']){firstName,lastName},employeesByFirstName(['Peter', 'John']){firstName,lastName},employeesByFirstNameAndCity(['Peter', 'John'], ['New York']){firstName,lastName}}}#
+}

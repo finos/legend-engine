@@ -1,0 +1,860 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::test::A",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 206,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 206
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "a",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "store::test::testDatabase",
+        "mainTableDb" : "store::test::testDatabase",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 212,
+          "sourceId" : "",
+          "startColumn" : 43,
+          "startLine" : 212
+        },
+        "table" : "ABC"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 210,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 210
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "store::test::testDatabase",
+          "mainTableDb" : "store::test::testDatabase",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 210,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 210
+          },
+          "table" : "ABC"
+        },
+        "tableAlias" : "ABC"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::A",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 213,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 213
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 213,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 213
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 213,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 213
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 213,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 213
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::A",
+          "property" : "aName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 214,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 214
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "aName",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 214,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 214
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 214,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 214
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 214,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 214
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 215,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 206
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testAMapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 216,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 204
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::test::B",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 222,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 222
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "a",
+      "groupBy" : [ ],
+      "id" : "b1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 224,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 222
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "mapping::testAMapping",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 220,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 220
+      }
+    } ],
+    "name" : "testB1Mapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 225,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 218
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::test::B",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 231,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 231
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "a",
+      "groupBy" : [ ],
+      "id" : "b2",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::B",
+          "property" : "aName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 233,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 233
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "concat",
+          "parameters" : [ {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 233,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 233
+            },
+            "value" : "bName_"
+          }, {
+            "_type" : "column",
+            "column" : "aName",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 233,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 233
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "store::test::testDatabase",
+              "mainTableDb" : "store::test::testDatabase",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 233,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 233
+              },
+              "table" : "ABC"
+            },
+            "tableAlias" : "ABC"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 233,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 233
+          }
+        },
+        "source" : "b2",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 233,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 233
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::B",
+          "property" : "bName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 234,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 234
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "bName",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 234,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 234
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 234,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 234
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        },
+        "source" : "b2",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 234,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 234
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 235,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 231
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "mapping::testAMapping",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 229,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 229
+      }
+    } ],
+    "name" : "testB2Mapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 236,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 227
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::test::C",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 242,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 242
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "b1",
+      "groupBy" : [ ],
+      "id" : "c1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 244,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 242
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "mapping::testB1Mapping",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 240,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 240
+      }
+    } ],
+    "name" : "testC1Mapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 245,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 238
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::test::C",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 251,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 251
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "b2",
+      "groupBy" : [ ],
+      "id" : "c2",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::C",
+          "property" : "aName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 253,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 253
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "concat",
+          "parameters" : [ {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 253,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 253
+            },
+            "value" : "cName_"
+          }, {
+            "_type" : "column",
+            "column" : "aName",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 253,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 253
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "store::test::testDatabase",
+              "mainTableDb" : "store::test::testDatabase",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 253,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 253
+              },
+              "table" : "ABC"
+            },
+            "tableAlias" : "ABC"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 253,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 253
+          }
+        },
+        "source" : "c2",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 253,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 253
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::C",
+          "property" : "bName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 254,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 254
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "concat",
+          "parameters" : [ {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 254,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 254
+            },
+            "value" : "cName_"
+          }, {
+            "_type" : "column",
+            "column" : "bName",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 254,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 254
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "store::test::testDatabase",
+              "mainTableDb" : "store::test::testDatabase",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 254,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 254
+              },
+              "table" : "ABC"
+            },
+            "tableAlias" : "ABC"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 254,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 254
+          }
+        },
+        "source" : "c2",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 254,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 254
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::test::C",
+          "property" : "cName",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 255,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 255
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "cName",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 255,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 255
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 255,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 255
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        },
+        "source" : "c2",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 255,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 255
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 256,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 251
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "mapping::testB2Mapping",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 249,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 249
+      }
+    } ],
+    "name" : "testC2Mapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 257,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 247
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 261,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 261
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "id",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "my::db",
+        "mainTableDb" : "my::db",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 267,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 267
+        },
+        "table" : "PersonTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "NAME",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 265,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 265
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "my::db",
+          "mainTableDb" : "my::db",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 265,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 265
+          },
+          "table" : "PersonTable"
+        },
+        "tableAlias" : "PersonTable"
+      } ],
+      "propertyMappings" : [ ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 268,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 261
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "model::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 269,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 269
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "id",
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "my::db",
+        "mainTableDb" : "my::db",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 275,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 275
+        },
+        "table" : "EmployeeTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "FIRMNAME",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 273,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 273
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "my::db",
+          "mainTableDb" : "my::db",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 273,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 273
+          },
+          "table" : "EmployeeTable"
+        },
+        "tableAlias" : "EmployeeTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Employee",
+          "property" : "firmName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 276,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 276
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRMNAME",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 276,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 276
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "my::db",
+            "mainTableDb" : "my::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 276,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 276
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 276,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 276
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 277,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 269
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "map",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 278,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 259
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

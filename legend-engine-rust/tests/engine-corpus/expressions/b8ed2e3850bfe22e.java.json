@@ -1,0 +1,494 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "letFunction",
+    "parameters" : [ {
+      "_type" : "string",
+      "value" : "businessDate"
+    }, {
+      "_type" : "func",
+      "function" : "now",
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 2
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 27,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "func",
+    "function" : "groupBy",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "model::domain::referenceData::account::FirmAccount",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "latestDate",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 54,
+        "startLine" : 3
+      }
+    }, {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "sourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 4
+      },
+      "values" : [ {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "latestDate"
+            } ],
+            "property" : "trader",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 4
+            }
+          } ],
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 4
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 4
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 5
+              }
+            }, {
+              "_type" : "latestDate"
+            } ],
+            "property" : "trader",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 5
+            }
+          } ],
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 5
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 5
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "latestDate"
+            } ],
+            "property" : "trader",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 6
+            }
+          } ],
+          "property" : "isActive",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 6
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 6
+        }
+      } ]
+    }, {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 133,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 7
+      },
+      "values" : [ {
+        "_type" : "func",
+        "function" : "agg",
+        "parameters" : [ {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 27,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "latestDate"
+              } ],
+              "property" : "trader",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 7
+              }
+            } ],
+            "property" : "kerberos",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "x"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 7
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "uniqueValueOnly",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 60,
+                "startLine" : 7
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "y"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 58,
+            "startLine" : 7
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "func",
+        "function" : "agg",
+        "parameters" : [ {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 91,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "latestDate"
+              } ],
+              "property" : "trader",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 94,
+                "startLine" : 7
+              }
+            } ],
+            "property" : "age",
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 110,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "x"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 89,
+            "startLine" : 7
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "average",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y",
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 119,
+                "startLine" : 7
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 123,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "y"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 131,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 117,
+            "startLine" : 7
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 83,
+          "startLine" : 7
+        }
+      } ]
+    }, {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 4,
+        "upperBound" : 4
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 8
+      },
+      "values" : [ {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 8
+        },
+        "value" : "Trader/Last Name"
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 9
+        },
+        "value" : "Trader/First Name"
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 10
+        },
+        "value" : "Trader/Is Active"
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 11
+        },
+        "value" : "Trader/Kerberos Distinct Value"
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 16,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 10,
+      "startLine" : 4
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 9,
+    "endLine" : 12,
+    "sourceId" : "",
+    "startColumn" : 2,
+    "startLine" : 1
+  }
+}
+}

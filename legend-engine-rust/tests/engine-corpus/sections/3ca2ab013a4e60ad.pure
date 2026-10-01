@@ -1,0 +1,14 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    ~service [test::ServiceStore] TestService
+    (
+      ~request
+      (
+        body = $this.requestBodyProp
+      )
+    )
+  }
+)

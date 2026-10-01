@@ -1,0 +1,47 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::A",
+      "classSourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 9
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "srcClass" : "StrictDate"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PrimitiveMapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST NAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunctionQuoted():Relation<('FIRST NAME':String[1],AGE:Integer[1])>[1]",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 34
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "bareQuotedMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

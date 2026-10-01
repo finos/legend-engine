@@ -1,0 +1,15 @@
+
+Runtime model::dummyRuntime
+{
+  mappings:
+  [
+    model::dummyMapping
+  ];
+  connectionStores:
+  [
+    model::connection:
+    [
+      (dataspace) model::dataSpace
+    ]
+  ];
+}

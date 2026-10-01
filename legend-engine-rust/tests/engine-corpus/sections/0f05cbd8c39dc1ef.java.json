@@ -1,0 +1,272 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "goes2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "anything",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "profile",
+    "name" : "goes",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 8
+      },
+      "value" : "test"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 9
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 9
+      },
+      "value" : "todo"
+    } ]
+  }, {
+    "_type" : "association",
+    "name" : "myAsso",
+    "originalMilestonedProperties" : [ ],
+    "package" : "",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "a",
+      "sourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "stereotypes" : [ {
+        "profile" : "goes",
+        "profileSourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 14
+        },
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 14
+        },
+        "value" : "test"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 14
+        },
+        "tag" : {
+          "profile" : "goes",
+          "profileSourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 14
+          },
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 14
+          },
+          "value" : "doc"
+        },
+        "value" : "Tag Value for assoc prop"
+      } ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "goes2",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 15
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "b",
+      "sourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 15
+      },
+      "stereotypes" : [ {
+        "profile" : "goes",
+        "profileSourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        },
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        },
+        "value" : "test"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 15
+        },
+        "tag" : {
+          "profile" : "goes",
+          "profileSourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 15
+          },
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 15
+          },
+          "value" : "doc"
+        },
+        "value" : "Tag Value for assoc prop"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ {
+      "profile" : "goes",
+      "profileSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 12
+      },
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 12
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 12
+      },
+      "tag" : {
+        "profile" : "goes",
+        "profileSourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 12
+        },
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 12
+        },
+        "value" : "doc"
+      },
+      "value" : "Tag Value for assoc prop"
+    } ]
+  } ],
+  "imports" : [ "anything" ]
+}

@@ -1,0 +1,13 @@
+
+Elasticsearch7ClusterConnection abc::abc::Connection
+{
+  store: test::esStore;
+  clusterDetails: # URL { wrong url }#;
+  authentication: # UserPassword {
+    username: 'hello_user';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'sys.prop.name';
+    };
+  }#;
+}

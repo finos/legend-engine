@@ -1,0 +1,10 @@
+
+Mapping 
+model::mapping::myMap
+(
+   model::Person: Relational
+   {
+      name : [model::store::db]myTable.name,
+      + localProp : String[1] : [model::store::db]myTable.name
+   }
+)

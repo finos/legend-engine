@@ -1,0 +1,52 @@
+
+Mapping demo::AliasPersonMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::AliasDB]hr.PersonTable.id
+    )
+    ~mainTable [demo::store::AliasDB]hr.PersonTable
+    scope([demo::store::AliasDB]hr.PersonTable)
+    (
+      firstName: firstName,
+      lastName: lastName
+    )
+  }
+
+  testSuites:
+  [
+    mainTableAliasSuite:
+    {
+      function: |demo::Person.all()->sortBy(x|$x.firstName)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+      tests:
+      [
+        scopedColumnReferences:
+        {
+          data:
+          [
+            demo::store::AliasDB:
+              Reference
+              #{
+                demo::data::AliasPersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveScopedColumns:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Jane","Last Name":"Smith"},{"First Name":"John","Last Name":"Doe"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

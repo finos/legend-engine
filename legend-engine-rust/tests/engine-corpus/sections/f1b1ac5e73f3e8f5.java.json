@@ -1,0 +1,368 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ {
+      "functionDefinition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "greaterThanEqual",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "this",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 85,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 85
+              }
+            } ],
+            "property" : "age",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 85
+            }
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 85
+            },
+            "value" : 18
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 85
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "this"
+        } ]
+      },
+      "name" : "mustBeOfLegalAge",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 85
+      }
+    } ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::dataquality",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 88,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 88
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 89
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 89
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::dataquality::Address",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 90
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "addresses",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 90,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 90
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 91,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 83
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::dataquality",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::dataquality::Location",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 95
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "location",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 95,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 95
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 96
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "locationStreet",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 96,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 96
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 97
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "addressId",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 97
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 98,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 93
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Location",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::dataquality",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 102
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "street",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 102
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 103
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "locality",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 103,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 103
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 104,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 100
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "XmlModelConnection",
+      "class" : "test::someClass",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 4
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "url" : "asd"
+    },
+    "name" : "connection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

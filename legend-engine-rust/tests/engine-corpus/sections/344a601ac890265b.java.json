@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type SMALLINT does not expect any parameters in declaration 'clientIdSMALLINT(2,2)'",
+    "sourceInformation" : {
+      "endColumn" : 28,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 5
+    }
+  }
+}

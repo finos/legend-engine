@@ -1,0 +1,28 @@
+
+function example::testMaxInteger(input: Integer[1]):Any[0..1]
+{
+   [1,$input]->max();
+}
+function example::testMaxInteger(input: Number[1]):Any[0..1]
+{
+   [1,2]->max();
+}
+function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]
+{
+   [1, $f, $d]->max();
+}
+function example::testMaxInteger():Any[0..1]
+{
+   [1,2]->max();
+}
+function example::test::testMaxInteger():Any[0..1]
+{
+   [1,2]->max();
+}
+function example::test::go():Any[0..1]
+{
+   example::testMaxInteger(1);
+   example::testMaxInteger();
+   example::test::testMaxInteger();
+   example::testMaxInteger(1.0, 1.123);
+}

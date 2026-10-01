@@ -1,0 +1,27 @@
+
+function testfetch4::query(): Any[1]
+{
+  {|test::Person.all()
+    ->graphFetch(#{
+      test::Person {
+        fullName,
+        firm {
+          name
+        },
+        address {
+          name
+        }
+      }
+    }#, 1)
+    ->serialize(#{
+      test::Person {
+        fullName,
+        firm {
+          name
+        },
+        address {
+          name
+        }
+      }
+    }#)};
+}

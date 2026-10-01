@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'diagram' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 14
+    }
+  }
+}

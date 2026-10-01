@@ -1,0 +1,32 @@
+{
+  "elements" : [ {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ ],
+    "name" : "testMapper",
+    "package" : "test",
+    "schemaMappers" : [ {
+      "from" : {
+        "_type" : "Schema",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Productt",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 24
+        }
+      },
+      "to" : "ProductSchema"
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "tableMappers" : [ ]
+  } ],
+  "imports" : [ ]
+}

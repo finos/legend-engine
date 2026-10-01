@@ -1,0 +1,7 @@
+
+import anything::*;
+Avro model::AvroConfig
+{
+  scopeElements: 1;
+  generationOutputPath: [''];
+}

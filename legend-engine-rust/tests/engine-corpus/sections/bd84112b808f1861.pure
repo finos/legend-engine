@@ -1,0 +1,20 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::S_Product.all()
+       ->filter(p | $p.s_productName == 'product 30' && $p.s_description == 'product 30 description')
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description
+           }
+         }#)
+       ->serialize(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description
+           }
+        }#)};
+}

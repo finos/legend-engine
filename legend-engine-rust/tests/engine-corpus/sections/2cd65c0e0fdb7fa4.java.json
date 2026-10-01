@@ -1,0 +1,137 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "CustomerDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "region",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EuCustomerTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 23,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "region",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "UsCustomerTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 29,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 24
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

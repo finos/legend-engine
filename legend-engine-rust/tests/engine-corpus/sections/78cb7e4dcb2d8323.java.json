@@ -1,0 +1,169 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "filter",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 11
+        },
+        "type" : ">",
+        "value" : {
+          "path" : [ "a::A", "tb" ],
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 11
+          }
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "greaterThanAll",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 11
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "func",
+            "function" : "select",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 49,
+                "startLine" : 11
+              },
+              "type" : ">",
+              "value" : {
+                "path" : [ "a::A", "other" ],
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 11
+                }
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 74,
+                "startLine" : 11
+              },
+              "type" : "colSpec",
+              "value" : {
+                "name" : "oid",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 74,
+                  "startLine" : 11
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 11
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 11
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "f__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 9
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

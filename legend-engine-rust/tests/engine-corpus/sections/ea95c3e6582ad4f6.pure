@@ -1,0 +1,45 @@
+
+Runtime runtime::dummyRuntime
+{
+  mappings:
+  [
+    mapping::customerMapping
+  ];
+  connections:
+  [
+    store::CustomerDataStore:
+    [
+      connection: runtime::connection::dummyConnection
+    ]
+  ];
+}
+
+Runtime runtime::snowflakeRuntimeWithoutRole
+{
+  mappings:
+  [
+    mapping::customerMapping
+  ];
+  connections:
+  [
+    store::CustomerDataStore:
+    [
+      connection: runtime::connection::snowflakeConnectionWithoutRole
+    ]
+  ];
+}
+
+Runtime runtime::snowflakeRuntime
+{
+  mappings:
+  [
+    mapping::customerMapping
+  ];
+  connections:
+  [
+    store::CustomerDataStore:
+    [
+      connection: runtime::connection::snowflakeConnection
+    ]
+  ];
+}

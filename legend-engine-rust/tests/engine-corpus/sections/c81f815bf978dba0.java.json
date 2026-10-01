@@ -1,0 +1,302 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "PetType",
+    "package" : "models",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "DOG"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CAT"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "RABBIT"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "HAMSTER"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Pet",
+    "originalMilestonedProperties" : [ ],
+    "package" : "models",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 38
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "pet_name",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "models::PetType",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "species",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 36
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "models",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 43
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm_name",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 41
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "models",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 47
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 47
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "models::Firm",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 48
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 48
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "models::Pet",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "pet_name",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 45
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

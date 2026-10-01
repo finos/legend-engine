@@ -1,0 +1,9 @@
+
+Class my::OptionalFirm
+{
+  legalName: String[0..1];
+}
+function my::optionalColumnFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(LEGALNAME:String[0..1])>);
+}

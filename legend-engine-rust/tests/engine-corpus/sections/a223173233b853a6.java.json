@@ -1,0 +1,224 @@
+{
+  "elements" : [ {
+    "_type" : "dataQualityRelationComparison",
+    "additionalColumnsToPersist" : [ ],
+    "columnsToCompare" : [ ],
+    "keys" : [ ],
+    "name" : "testRecon",
+    "package" : "meta::external::dataquality",
+    "source" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 4
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "my::Store", "sourceTable" ],
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 4
+            }
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "c",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 54,
+                  "startLine" : 4
+                }
+              } ],
+              "property" : "active",
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 57,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 4
+              },
+              "value" : true
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 4
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "c"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 4
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "src"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 4
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "strategy" : {
+      "_type" : "md5Hash"
+    },
+    "target" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 5
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "my::Store", "targetTable" ],
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 5
+            }
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "c",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 5,
+                  "sourceId" : "",
+                  "startColumn" : 54,
+                  "startLine" : 5
+                }
+              } ],
+              "property" : "active",
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 57,
+                "startLine" : 5
+              }
+            }, {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 5
+              },
+              "value" : true
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 5
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "c"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 5
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 5
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "tgt"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 5
+      }
+    }
+  } ]
+}

@@ -1,0 +1,101 @@
+
+Database store::test::testDatabase
+(
+  Table ABC
+  (
+    id INTEGER PRIMARY KEY,
+    aName VARCHAR(20),
+    bName VARCHAR(20),
+    cName VARCHAR(20),
+    m1Id INTEGER,
+    m2Id INTEGER,
+    m3Id INTEGER,
+    m4Id INTEGER,
+    n1Id INTEGER,
+    n2Id INTEGER,
+    n3Id INTEGER,
+    o1Id INTEGER,
+    o2Id INTEGER
+  )
+  Table DEF
+  (
+    id INTEGER PRIMARY KEY,
+    dName VARCHAR(20),
+    eName VARCHAR(20),
+    fName VARCHAR(20)
+  )
+  Table GHI
+  (
+    id INTEGER PRIMARY KEY,
+    gName VARCHAR(20),
+    hName VARCHAR(20),
+    iName VARCHAR(20)
+  )
+  Table JKL
+  (
+    id INTEGER PRIMARY KEY,
+    jName VARCHAR(20),
+    kName VARCHAR(20),
+    lName VARCHAR(20)
+  )
+  Table ABC2
+  (
+    id INTEGER PRIMARY KEY,
+    aName VARCHAR(20),
+    bName VARCHAR(20),
+    cName VARCHAR(20),
+    m1Id INTEGER,
+    m2Id INTEGER,
+    m3Id INTEGER,
+    m4Id INTEGER,
+    n1Id INTEGER,
+    n2Id INTEGER,
+    n3Id INTEGER,
+    o1Id INTEGER,
+    o2Id INTEGER
+  )
+  Table DEF2
+  (
+    id INTEGER PRIMARY KEY,
+    dName VARCHAR(20),
+    eName VARCHAR(20),
+    fName VARCHAR(20)
+  )
+  Table GHI2
+  (
+    id INTEGER PRIMARY KEY,
+    gName VARCHAR(20),
+    hName VARCHAR(20),
+    iName VARCHAR(20)
+  )
+  Table JKL2
+  (
+    id INTEGER PRIMARY KEY,
+    jName VARCHAR(20),
+    kName VARCHAR(20),
+    lName VARCHAR(20)
+  )
+
+  Join AE(ABC.id = DEF.id)
+  Join BH(ABC.id = GHI.id)
+  Join CK(ABC.id = JKL.id)
+  Join A2E2(ABC2.id = DEF2.id)
+  Join B2H2(ABC2.id = GHI2.id)
+  Join C2K2(ABC2.id = JKL2.id)
+
+  Filter AFilter(ABC.aName = 'aName1')
+  Filter CFilter(ABC.cName = 'cName1')
+)
+
+Database my::db
+(
+  Table PersonTable
+  (
+    NAME CHAR(200) PRIMARY KEY
+  )
+  Table EmployeeTable
+  (
+    FIRMNAME CHAR(200) PRIMARY KEY
+  )
+)
+

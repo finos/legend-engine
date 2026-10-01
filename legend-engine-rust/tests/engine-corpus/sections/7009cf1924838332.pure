@@ -1,0 +1,6 @@
+
+Data meta::data::MyData
+{
+  my::data::MyData2;
+  my::data::MyData3;
+}

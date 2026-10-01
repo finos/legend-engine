@@ -1,0 +1,84 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "id", "firstName", "lastName" ],
+        "paths" : [ "default", "PersonTable" ],
+        "rows" : [ {
+          "values" : [ "1", "I'm John", "\"Doe, Jr\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    },
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id", "firstName", "lastName" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "1", "John", "Doe" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 13
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 10
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 10
+      }
+    } ],
+    "name" : "RelationalData",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

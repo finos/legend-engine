@@ -1,0 +1,17 @@
+
+Class model::element {}
+Class model::sub::element
+{ name: String[1];
+}
+function model::templateFunc(): meta::pure::tds::TabularDataSet[1]
+{
+   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping, model::dummyRuntime)
+}
+function model::templateFunc1(): meta::pure::tds::TabularDataSet[1]
+{
+   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping1, model::dummyRuntime)
+}
+function model::templateFunc2(): meta::pure::tds::TabularDataSet[1]
+{
+   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping, model::dummyRuntime1)
+}

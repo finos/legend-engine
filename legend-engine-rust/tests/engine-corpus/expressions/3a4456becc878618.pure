@@ -1,0 +1,1 @@
+data:Byte[*]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(#{test::firm::model::Person {firstName, lastName, dateOfBirth, isAlive, heightInMeters}}#)->externalize(test::gen::TestBinding, checked(#{test::firm::model::Person {firstName, lastName, dateOfBirth, isAlive, heightInMeters}}#, test::gen::TestBinding))

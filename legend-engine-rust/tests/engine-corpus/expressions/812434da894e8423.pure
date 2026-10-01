@@ -1,0 +1,1 @@
+|model::Person.all()->project(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'model documentation'} 'Person Name':x|$x.name])

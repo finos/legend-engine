@@ -1,0 +1,70 @@
+
+DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    },
+    {
+      name: 'Context 2';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+      testData:
+        Reference
+        #{
+          com::model::someDataElement
+        }#;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'some title';
+  description: 'some description';
+  diagrams:
+  [
+    {
+      title: 'Diag 1';
+      description: 'some information about the context';
+      diagram: model::SomeDiag1;
+    },
+    {
+      title: 'Diag 2';
+      diagram: model::SomeDiag2;
+    }
+  ];
+  elements:
+  [
+    model::Class1,
+    model::Class2,
+    -model,
+    -model::Enum2,
+    -model::Assoc
+  ];
+  executables:
+  [
+    {
+      title: 'Exec 1';
+      description: 'some information about the context';
+      executable: model::SomeExec1;
+    },
+    {
+      title: 'Exec 2';
+      executable: model::SomeExec2;
+    }
+  ];
+  supportInfo: Combined {
+    documentationUrl: 'https://example.org';
+    website: 'https://example.org/website';
+    faqUrl: 'https://example.org/faq';
+    supportUrl: 'https://example.org/support';
+    emails:
+    [
+      'someEmail@test.org',
+      'someEmail2@test.org'
+    ];
+  };
+}

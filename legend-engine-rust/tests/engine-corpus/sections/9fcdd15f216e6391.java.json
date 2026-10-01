@@ -1,0 +1,250 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "domain::COVIDData",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "id" : "6b69f44b-f729-46aa-b244-ec5ee8164142",
+      "position" : {
+        "x" : 280.0,
+        "y" : 159.0
+      },
+      "rectangle" : {
+        "height" : 128.0,
+        "width" : 205.8291015625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "class" : "domain::Demographics",
+      "classSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "id" : "159e797e-ae75-437d-ba9c-253f99a48826",
+      "position" : {
+        "x" : 698.0,
+        "y" : 238.0
+      },
+      "rectangle" : {
+        "height" : 58.0,
+        "width" : 111.68994140625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    }, {
+      "class" : "domain::Class1",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 18
+      },
+      "id" : "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+      "position" : {
+        "x" : 360.844970703125,
+        "y" : 49.0
+      },
+      "rectangle" : {
+        "height" : 58.0,
+        "width" : 137.390625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      }
+    }, {
+      "class" : "domain::Class2",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 24
+      },
+      "id" : "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+      "position" : {
+        "x" : 696.844970703125,
+        "y" : 95.0
+      },
+      "rectangle" : {
+        "height" : 44.0,
+        "width" : 133.68994140625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "COVIDDataDiagram",
+    "package" : "domain",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 382.91455078125,
+          "y" : 223.0
+        }, {
+          "x" : 753.844970703125,
+          "y" : 267.0
+        } ]
+      },
+      "property" : {
+        "class" : "domain::COVIDData",
+        "property" : "demographics",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "sourceView" : "6b69f44b-f729-46aa-b244-ec5ee8164142",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 31
+      },
+      "targetView" : "159e797e-ae75-437d-ba9c-253f99a48826",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 32
+      }
+    }, {
+      "line" : {
+        "points" : [ {
+          "x" : 763.68994140625,
+          "y" : 117.0
+        }, {
+          "x" : 429.540283203125,
+          "y" : 78.0
+        } ]
+      },
+      "property" : {
+        "class" : "domain::Class2",
+        "property" : "fromClass1",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 37
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "sourceView" : "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 38
+      },
+      "targetView" : "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 39
+      }
+    }, {
+      "line" : {
+        "points" : [ {
+          "x" : 429.540283203125,
+          "y" : 78.0
+        }, {
+          "x" : 763.68994140625,
+          "y" : 117.0
+        } ]
+      },
+      "property" : {
+        "class" : "domain::Class1",
+        "property" : "fromClass2",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 44
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "sourceView" : "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 45
+      },
+      "targetView" : "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 46
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,301 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::model::Person",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 77,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 77
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 77,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 77
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 3,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 78
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 8,
+                    "endLine" : 79,
+                    "sourceId" : "",
+                    "startColumn" : 7,
+                    "startLine" : 79
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 79,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 79
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 79,
+                "sourceId" : "",
+                "startColumn" : 6,
+                "startLine" : 79
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 8,
+                    "endLine" : 80,
+                    "sourceId" : "",
+                    "startColumn" : 7,
+                    "startLine" : 80
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 80,
+                  "sourceId" : "",
+                  "startColumn" : 10,
+                  "startLine" : 80
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 6,
+                "startLine" : 80
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 3,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 82
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 83,
+                "sourceId" : "",
+                "startColumn" : 5,
+                "startLine" : 83
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 84,
+                "sourceId" : "",
+                "startColumn" : 5,
+                "startLine" : 84
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 77
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 1,
+          "endLine" : 86,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 77
+        }
+      },
+      "mapping" : "test::TestMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 87
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::TestRuntime",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 88
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 75
+      }
+    },
+    "name" : "TestServiceNoProfile",
+    "owners" : [ "anonymous", "testuser" ],
+    "package" : "test",
+    "pattern" : "/service/test",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 129,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite_1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 127,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 92
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "relationalCSVData",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 104,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 99
+            },
+            "tables" : [ {
+              "schema" : "TESTDB",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 103,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 101
+              },
+              "table" : "PERSON_TABLE",
+              "values" : "ID,FIRSTNAME,LASTNAME\n1,JOHN,DOE\n"
+            } ]
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 104,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 98
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 94
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\r\n  \"columns\" : [ {\r\n    \"name\" : \"First Name\",\r\n    \"type\" : \"String\"\r\n  }, {\r\n    \"name\" : \"Last Name\",\r\n    \"type\" : \"String\"\r\n  } ],\r\n  \"rows\" : [ {\r\n    \"values\" : [ \"JOHN\", \"DOE\" ]\r\n  } ]\r\n}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 122,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 118
+            }
+          },
+          "id" : "assertion_1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 115
+          }
+        } ],
+        "id" : "test_1",
+        "keys" : [ ],
+        "serializationFormat" : "PURE",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 125,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 109
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

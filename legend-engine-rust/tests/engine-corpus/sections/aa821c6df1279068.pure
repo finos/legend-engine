@@ -1,0 +1,21 @@
+
+Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue
+{
+  value: String[1];
+  productCollecton: my::domainModel::migration::test::product::ProductCollection[*];
+  getCategory() {$this->my::domainModel::migration::test::product::my_helper_function('tt')}: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection
+{
+  collectionName: String[1];
+  type: my::domainModel::migration::test::product::ProductType[1];
+}
+Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType
+{
+   category: String[1];
+}
+function my::domainModel::migration::test::product::my_helper_function(acc: my::domainModel::migration::test::account::AccountValue[1], str: String[1]):String[1]
+{
+  $acc.productCollecton(%2020-02-02).type.category->joinStrings();
+}

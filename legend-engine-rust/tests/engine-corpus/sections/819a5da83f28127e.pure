@@ -1,0 +1,9 @@
+
+Data meta::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{\n            "_type": "data",\n            "version": "v1_0_0",\n            "elements": [\n              {\n                "_type": "dataSpace",\n                "name": "TestDataSpace",\n                "package": "test::model",\n                "groupId": "test.group",\n                "artifactId": "test-data-space",\n                "versionId": "0.4.3",\n                "executionContexts": [\n                  {\n                    "name": "INT",\n                    "description": "some description 1",\n                    "mapping": {\n                      "type": "MAPPING",\n                      "path": "test::model::TestMapping"\n                    },\n                    "defaultRuntime": {\n                      "type": "RUNTIME",\n                      "path": "test::model::TestRuntime"\n                    }\n                  }\n                ],\n                "defaultExecutionContext": "INT",\n                "description": "some description 2",\n                "featuredDiagrams": [\n                  {\n                    "type": "DIAGRAM",\n                    "path": "test::model::TestDiagram1"\n                  },\n                  {\n                    "type": "DIAGRAM",\n                    "path": "test::model::TestDiagram2"\n                  }\n                ],\n                "supportInfo": {\n                  "_type": "email",\n                  "address": "testEmail@test.org"\n                }\n              }\n            ]\n          }\n';
+  }#
+}

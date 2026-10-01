@@ -1,0 +1,7 @@
+
+Measure test::NewNonConvertibleMeasure
+{
+   UnitOne;
+   UnitTwo;
+   UnitThree;
+}

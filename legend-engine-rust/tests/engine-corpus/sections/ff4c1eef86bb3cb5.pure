@@ -1,0 +1,8 @@
+
+Binding test::Binding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    org::dxl::Person
+  ];
+}

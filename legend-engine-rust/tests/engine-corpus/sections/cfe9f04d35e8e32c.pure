@@ -1,0 +1,7 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: store::Store;
+  type: Snowflake;
+  mode: local;
+}

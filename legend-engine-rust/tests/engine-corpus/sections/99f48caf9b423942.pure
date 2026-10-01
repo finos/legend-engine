@@ -1,0 +1,24 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Trade.all()
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Trade {
+               id,
+               quantity,
+               trader
+               {
+                   kerberos
+,                   id               }
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::Trade {
+               id,
+               quantity,
+               trader
+               {
+                   kerberos
+,                   id               }
+           }
+        }#)};
+}

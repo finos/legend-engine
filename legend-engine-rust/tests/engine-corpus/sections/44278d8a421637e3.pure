@@ -1,0 +1,4 @@
+
+Class {meta::pure::profiles::doc.doc = 'first\nspans lines', meta::pure::profiles::doc.doc = 'second'} model::A
+{
+}

@@ -1,0 +1,41 @@
+
+Database <<equality.Key>> {doc.doc = 'database'} test::db
+(
+  include Store1
+  include test::Store2
+
+  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema
+  (
+  )
+
+  Table <<equality.Key>> {doc.doc = 'table'} table1
+  (
+    col1 CHAR(32)
+  )
+  Table table2
+  (
+    col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)
+  )
+  Table table3
+  (
+    "col1" CHAR(32),
+    "this is a col" VARCHAR(32)
+  )
+
+  View view1
+  (
+    ~filter filter1
+    col1: test.col1
+  )
+  View view2
+  (
+    ~filter filter2
+    col2: test.col2
+  )
+
+  Join join1(TAB.col1 = {target}.col2)
+  Join join2(TAB2.col3 = TAB3.col2)
+
+  Filter filter1(TAB2.col1 is not null)
+  MultiGrainFilter filter2(TAB1.col2 is null)
+)

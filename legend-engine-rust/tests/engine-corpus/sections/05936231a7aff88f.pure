@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.xid == $b.id2})
+}

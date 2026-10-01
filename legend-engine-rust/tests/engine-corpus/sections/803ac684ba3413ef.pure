@@ -1,0 +1,9 @@
+
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100)
+  )
+)

@@ -1,0 +1,333 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 30,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 30
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 29,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 26
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 24,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 24
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 31,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 22
+      },
+      "type" : "H2"
+    },
+    "name" : "ShiftGmtConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 42,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 42
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 41,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 38
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 35,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 35
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 43,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 33
+      },
+      "timeZone" : "Pacific/Guam",
+      "type" : "H2"
+    },
+    "name" : "ShiftRegionConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 33
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 54,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 54
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 53,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 50
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 47,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 47
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 55,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 45
+      },
+      "timeZone" : "+1000",
+      "type" : "H2"
+    },
+    "name" : "ShiftOffsetConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 45
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 66,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 66
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 65,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 62
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 59,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 59
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 67,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 57
+      },
+      "timeZone" : "UTC+1000",
+      "type" : "H2"
+    },
+    "name" : "ShiftUtcPrefixedOffsetConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 67,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 57
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 78,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 78
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 77,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 74
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 71,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 71
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 79,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 69
+      },
+      "timeZone" : "UTC+0530",
+      "type" : "H2"
+    },
+    "name" : "ShiftHalfHourOffsetConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 69
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 90,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 90
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 89,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 86
+        },
+        "testDataSetupCsv" : "default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---"
+      },
+      "element" : "demo::store::ShiftDB",
+      "elementSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 83,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 83
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 91,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 81
+      },
+      "timeZone" : "America/New_York",
+      "type" : "H2"
+    },
+    "name" : "ShiftDaylightSavingConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 91,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 81
+    }
+  } ],
+  "imports" : [ ]
+}

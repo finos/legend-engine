@@ -1,0 +1,5 @@
+
+Class test::model::Firm
+{
+  legalName: String[1];
+}

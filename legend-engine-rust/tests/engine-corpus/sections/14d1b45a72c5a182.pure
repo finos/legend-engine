@@ -1,0 +1,5 @@
+
+MemSqlFunction MemSqlFunction::functionName::description::function::ownership::Deployment::identifier::activationConfiguration::MemSqlFunctionDeploymentConfiguration::activationConnection::stage::all::let::allVersions::allVersionsInRange::toBytes
+{
+   functionName : 'demoFunction';
+   function : a::f():String[1];   ownership : Deployment { identifier: 'testDeployment' };}

@@ -1,0 +1,102 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "Not over yet?",
+    "diagrams" : [ {
+      "diagram" : {
+        "path" : "domain::COVIDDataDiagram",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 75
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 73
+      },
+      "title" : ""
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 60
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 59
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 57
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 65,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 65
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 64
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 62
+      }
+    } ],
+    "name" : "COVIDDatapace",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "COVID Sample Data"
+  } ]
+}

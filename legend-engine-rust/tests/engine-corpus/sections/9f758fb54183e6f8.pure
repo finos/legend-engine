@@ -1,0 +1,8 @@
+
+Database test::DB
+(
+  Table employee
+  (
+    type VARCHAR(200)
+  )
+)

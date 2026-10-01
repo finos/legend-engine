@@ -1,0 +1,19 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    ~service [test::ServiceStore] TestService
+    (
+      ~request
+      (
+        parameters
+        (
+          param = $this.prop,
+          param2 = 1
+        )
+        body = ^test::requestBody(propA=$this.propA , propB=1)
+      )
+    )
+  }
+)

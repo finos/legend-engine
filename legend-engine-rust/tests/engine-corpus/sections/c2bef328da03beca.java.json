@@ -1,0 +1,1005 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "chain::model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 20,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 23,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 23,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 23,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 9,
+                "startLine" : 23
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 23,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 14,
+              "startLine" : 23
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 24,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 24,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "toUpper",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 14,
+                    "endLine" : 24,
+                    "sourceId" : "mapping/m2mMapping.pure",
+                    "startColumn" : 11,
+                    "startLine" : 24
+                  }
+                } ],
+                "property" : "firm",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 16,
+                  "startLine" : 24
+                }
+              } ],
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 24,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 21,
+                "startLine" : 24
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 24,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 32,
+              "startLine" : 24
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "city",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 25,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 14,
+                    "endLine" : 25,
+                    "sourceId" : "mapping/m2mMapping.pure",
+                    "startColumn" : 11,
+                    "startLine" : 25
+                  }
+                } ],
+                "property" : "firm",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 16,
+                  "startLine" : 25
+                }
+              } ],
+              "property" : "address",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 25,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 21,
+                "startLine" : 25
+              }
+            } ],
+            "property" : "city",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 25,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 29,
+              "startLine" : 25
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "labels",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 27,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 27,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 27
+                }
+              } ],
+              "property" : "firm",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 27,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 27
+              }
+            } ],
+            "property" : "tags",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 27,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 23,
+              "startLine" : 27
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "units",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 29,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 29,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 29,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 12,
+                  "startLine" : 29
+                }
+              } ],
+              "property" : "firm",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 29,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 17,
+                "startLine" : 29
+              }
+            } ],
+            "property" : "divisions",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 29,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 22,
+              "startLine" : 29
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Firm",
+          "property" : "holdings",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 31,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 31,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 31
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "subType",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "src",
+                    "sourceInformation" : {
+                      "endColumn" : 18,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/m2mMapping.pure",
+                      "startColumn" : 15,
+                      "startLine" : 31
+                    }
+                  } ],
+                  "property" : "firm",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/m2mMapping.pure",
+                    "startColumn" : 20,
+                    "startLine" : 31
+                  }
+                } ],
+                "property" : "terms",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 25,
+                  "startLine" : 31
+                }
+              }, {
+                "_type" : "genericTypeInstance",
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "chain::source::S_RepoTerms",
+                    "sourceInformation" : {
+                      "endColumn" : 66,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/m2mMapping.pure",
+                      "startColumn" : 41,
+                      "startLine" : 31
+                    }
+                  },
+                  "typeArguments" : [ ],
+                  "typeVariableValues" : [ ]
+                },
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 40,
+                  "startLine" : 31
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 31,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 32,
+                "startLine" : 31
+              }
+            } ],
+            "property" : "collateral",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 31,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 69,
+              "startLine" : 31
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 22,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 10,
+        "startLine" : 22
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "srcClass" : "chain::source::S_FirmRow"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "chain::model::Holding",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 34,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 34
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Holding",
+          "property" : "pieceId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 37,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 37,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 37
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 37,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 14,
+                  "startLine" : 37
+                }
+              } ],
+              "property" : "collateralId",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 37,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 19,
+                "startLine" : 37
+              }
+            } ],
+            "property" : "identifier",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 37,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 32,
+              "startLine" : 37
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Holding",
+          "property" : "quantity",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 38,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 38,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 38,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 38
+              }
+            } ],
+            "property" : "quantity",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 38,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 20,
+              "startLine" : 38
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 36,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 10,
+        "startLine" : 36
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "srcClass" : "chain::source::S_Collateral"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "chain::model::Unit",
+      "classSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 41,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 41
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Unit",
+          "property" : "unitName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 44,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 44,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 44
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 44,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 44
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 44,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 20,
+              "startLine" : 44
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Unit",
+          "property" : "unitSize",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 45,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 45,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 45
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 45,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 45
+              }
+            } ],
+            "property" : "headcount",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 45,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 20,
+              "startLine" : 45
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Unit",
+          "property" : "country",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 46,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 46,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 46
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 46,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 14,
+                  "startLine" : 46
+                }
+              } ],
+              "property" : "location",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 46,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 19,
+                "startLine" : 46
+              }
+            } ],
+            "property" : "country",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 46,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 28,
+              "startLine" : 46
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Unit",
+          "property" : "squads",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 48,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 48,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 48
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 48,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 13,
+                "startLine" : 48
+              }
+            } ],
+            "property" : "teams",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 48,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 18,
+              "startLine" : 48
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 43,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 10,
+        "startLine" : 43
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "srcClass" : "chain::source::S_Division"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "chain::model::Squad",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 51,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 51
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Squad",
+          "property" : "squadName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 54,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 54
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 54,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 54
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 54,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 16,
+                "startLine" : 54
+              }
+            } ],
+            "property" : "label",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 54,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 21,
+              "startLine" : 54
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Squad",
+          "property" : "memberCount",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 55,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 55
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 55,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 55
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "size",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 21,
+                  "endLine" : 55,
+                  "sourceId" : "mapping/m2mMapping.pure",
+                  "startColumn" : 18,
+                  "startLine" : 55
+                }
+              } ],
+              "property" : "members",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 55,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 23,
+                "startLine" : 55
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 55,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 32,
+              "startLine" : 55
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "chain::model::Squad",
+          "property" : "memberNames",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 56,
+            "sourceId" : "mapping/m2mMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 56
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 56,
+          "sourceId" : "mapping/m2mMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 56
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 56,
+                "sourceId" : "mapping/m2mMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 56
+              }
+            } ],
+            "property" : "members",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 56,
+              "sourceId" : "mapping/m2mMapping.pure",
+              "startColumn" : 23,
+              "startLine" : 56
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 53,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 10,
+        "startLine" : 53
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "mapping/m2mMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "srcClass" : "chain::source::S_Team"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2M",
+    "package" : "chain::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "mapping/m2mMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

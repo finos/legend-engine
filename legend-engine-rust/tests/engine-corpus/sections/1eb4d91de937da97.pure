@@ -1,0 +1,3 @@
+
+Database a::A (Table tb(id Integer))
+Database a::B (Table tb(otherCol Integer))

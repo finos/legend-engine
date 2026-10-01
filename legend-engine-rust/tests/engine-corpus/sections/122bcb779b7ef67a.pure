@@ -1,0 +1,16 @@
+
+Mapping mappings::BaseMapping
+(
+  models::Firm[model_Firm]: Relational
+  {
+    name: [stores::ExtendedDB]FirmSchema.Firms.name
+  }
+  models::Person[model_Person]: Relational
+  {
+    name: [stores::ExtendedDB]PeopleSchema.People.name
+  }
+)
+Mapping mappings::ExtendedMapping
+(
+  include mapping mappings::BaseMapping
+)

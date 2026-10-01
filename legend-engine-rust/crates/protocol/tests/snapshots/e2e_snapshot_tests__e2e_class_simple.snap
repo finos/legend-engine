@@ -1,0 +1,135 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 21,
+                "endLine": 19,
+                "sourceId": "class_simple.pure",
+                "startColumn": 16,
+                "startLine": 19
+              }
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "sourceInformation": {
+            "endColumn": 25,
+            "endLine": 19,
+            "sourceId": "class_simple.pure",
+            "startColumn": 5,
+            "startLine": 19
+          }
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 20,
+                "endLine": 20,
+                "sourceId": "class_simple.pure",
+                "startColumn": 15,
+                "startLine": 20
+              }
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "sourceInformation": {
+            "endColumn": 24,
+            "endLine": 20,
+            "sourceId": "class_simple.pure",
+            "startColumn": 5,
+            "startLine": 20
+          }
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 16,
+                "endLine": 21,
+                "sourceId": "class_simple.pure",
+                "startColumn": 10,
+                "startLine": 21
+              }
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "age",
+          "sourceInformation": {
+            "endColumn": 23,
+            "endLine": 21,
+            "sourceId": "class_simple.pure",
+            "startColumn": 5,
+            "startLine": 21
+          }
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 22,
+        "sourceId": "class_simple.pure",
+        "startColumn": 1,
+        "startLine": 17
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::Person"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 16,
+            "sourceId": "class_simple.pure",
+            "startColumn": 1,
+            "startLine": 16
+          }
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 7,
+        "endLine": 16,
+        "sourceId": "class_simple.pure",
+        "startColumn": 1,
+        "startLine": 16
+      }
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

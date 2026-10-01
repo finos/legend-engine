@@ -1,0 +1,30 @@
+
+Database test::DB
+(
+  Table firm
+  (
+    milestoning
+    (
+      business(BUS_FROM = BUS_FROM, BUS_THRU = BUS_THRU)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100),
+    BUS_FROM TIMESTAMP PRIMARY KEY,
+    BUS_THRU TIMESTAMP
+  )
+
+  Table person
+  (
+    milestoning
+    (
+      business(BUS_FROM = BUS_FROM, BUS_THRU = BUS_THRU)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    FIRM_ID INTEGER,
+    BUS_FROM TIMESTAMP PRIMARY KEY,
+    BUS_THRU TIMESTAMP
+  )
+
+  Join firm_person(firm.ID = person.FIRM_ID)
+)

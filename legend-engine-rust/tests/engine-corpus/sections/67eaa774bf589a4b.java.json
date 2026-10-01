@@ -1,0 +1,73 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "A",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "TEA"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "COFFEE"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "TEA"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "TEA"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "COFFEE"
+    } ]
+  } ],
+  "imports" : [ ]
+}

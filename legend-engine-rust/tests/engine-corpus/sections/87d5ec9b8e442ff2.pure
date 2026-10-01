@@ -1,0 +1,32 @@
+
+Runtime flatten::runtime::H2Runtime
+{
+  mappings:
+  [
+  ];
+  connections:
+  [
+    store:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: store;
+          type: H2;
+          specification: LocalH2
+          {
+          };
+          auth: Test;
+          queryGenerationConfigs: [
+            GenerationFeaturesConfig
+            {
+              enabled: ['FEAT_1', 'FEAT_2'];
+              disabled: ['FEAT_3'];
+            }
+          ];
+        }
+      }#
+    ]
+  ];
+}

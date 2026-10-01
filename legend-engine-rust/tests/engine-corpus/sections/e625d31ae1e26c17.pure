@@ -1,0 +1,17 @@
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    {
+      mapping: test::mapping2;
+      runtimeComponents:
+       {
+           runtime: test::runtime;
+           class: test::class;
+           binding: test::bind;
+       }
+    }
+  ];
+}

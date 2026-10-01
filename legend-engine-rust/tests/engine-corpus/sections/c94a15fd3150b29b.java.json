@@ -1,0 +1,110 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 63
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 62,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 60
+        }
+      },
+      "element" : "test::TestDatabase",
+      "elementSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 58,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 58
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 56
+      },
+      "type" : "H2"
+    },
+    "name" : "ServiceConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 64,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 56
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 73
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 72,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 70
+        }
+      },
+      "element" : "test::TestDatabase",
+      "elementSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 68
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 66
+      },
+      "type" : "H2"
+    },
+    "name" : "SinkConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 74,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 66
+    }
+  } ],
+  "imports" : [ ]
+}

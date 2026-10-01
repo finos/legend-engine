@@ -1,0 +1,9 @@
+
+import anything::*;
+Avro model::AvroConfig
+{
+  scopeElements: [model::MyClass, model];
+  generationOutputPath: 'myAvroRoot';
+  includeNamespace: true;
+  propertyProfile: ['model::myProfile', 'model::nextProfile'];
+}

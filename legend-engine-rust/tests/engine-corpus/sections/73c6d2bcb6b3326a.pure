@@ -1,0 +1,5 @@
+
+Database test::DB
+(
+    Table dataTable (personName VARCHAR(100) PRIMARY KEY, personAge INT)
+)

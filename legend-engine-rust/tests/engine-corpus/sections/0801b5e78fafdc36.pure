@@ -1,0 +1,9 @@
+
+'''
+A person in the system.
+
+Identity is established by legalName.
+'''
+Class model::Person
+{
+}

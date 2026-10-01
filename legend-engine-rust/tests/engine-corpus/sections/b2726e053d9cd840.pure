@@ -1,0 +1,8 @@
+
+Mapping ui::myMapping
+(
+  *ui::Employee[ui_Employee]: Pure
+  {
+    name: 'test name'
+  }
+)

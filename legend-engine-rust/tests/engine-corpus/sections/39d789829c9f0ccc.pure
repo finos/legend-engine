@@ -1,0 +1,11 @@
+
+Enum test::A
+{
+   A,B
+}
+
+Class test::B
+{
+   e:test::A[1];
+   z(){ $this.e.name}:String[1];
+}

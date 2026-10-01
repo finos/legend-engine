@@ -1,0 +1,16 @@
+
+DataSpace model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+  operationalMetadata: {
+    updateFrequency: ON_DEMAND;
+  };
+}

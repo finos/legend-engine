@@ -1,0 +1,113 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeModelJoinMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: ModelJoin
+  {
+    {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
+  }
+
+  testSuites:
+  [
+    modelJoinSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.employer.legalName],
+                    ['Name', 'Firm']
+                  );
+      tests:
+      [
+        withFirm:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoinViaModelJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    firmFilterSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.employer.legalName == 'Acme')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.employer.legalName],
+                    ['Name', 'Firm']
+                  );
+      tests:
+      [
+        acmeOnly:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterOnModelJoinTraversedProperty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

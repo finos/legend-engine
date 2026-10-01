@@ -1,0 +1,9 @@
+
+Mapping mapping::test
+(
+  *anything::goes[anything_goes]: Pure
+  {
+    ~src anything::goes
+    + firstName : : $src.fullName->substring(0, $src.fullName->indexOf(' '))
+  }
+)

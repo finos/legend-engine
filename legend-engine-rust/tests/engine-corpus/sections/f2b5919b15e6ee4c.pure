@@ -1,0 +1,19 @@
+
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+

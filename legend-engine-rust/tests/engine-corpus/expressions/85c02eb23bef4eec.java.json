@@ -1,0 +1,25 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "pack::f2",
+    "parameters" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 9,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 11,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

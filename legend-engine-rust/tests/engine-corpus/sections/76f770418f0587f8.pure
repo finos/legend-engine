@@ -1,0 +1,9 @@
+
+import test2::*;
+import test::*;
+
+Profile test::doc {}
+Profile test2::doc {}
+
+Class <<doc.doc>> test::mewo {
+}

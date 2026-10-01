@@ -1,0 +1,27 @@
+
+Mapping humanResourceModel::M2M_Mapping
+(
+  *humanResourceModel::school: Pure
+  {
+    ~src humanResourceModel::class
+    studentname: $src.studentname
+  }
+)
+
+Mapping humanResourceModel::M2M_Mapping2
+(
+  *humanResourceModel::class: Pure
+  {
+    ~src humanResourceModel::students
+    studentname: $src.name->toUpper()
+  }
+)
+
+Mapping humanResourceModel::M2M_Mapping3
+(
+  *humanResourceModel::student: Pure
+  {
+    ~src humanResourceModel::students
+    firstName: $src.name->substring(0, $src.name->indexOf(' '))
+  }
+)

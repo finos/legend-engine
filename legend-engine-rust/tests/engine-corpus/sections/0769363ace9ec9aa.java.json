@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported cluster details type: URI.  Supported: URL",
+    "sourceInformation" : {
+      "endColumn" : 25,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 19,
+      "startLine" : 5
+    }
+  }
+}

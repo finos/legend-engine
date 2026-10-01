@@ -1,0 +1,54 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      },
+      "type" : "TDS",
+      "value" : {
+        "tdsString" : "\na,b\n1,2\n3,4"
+      }
+    } ],
+    "name" : "f__Any_MANY_",
+    "package" : "a",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 6,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

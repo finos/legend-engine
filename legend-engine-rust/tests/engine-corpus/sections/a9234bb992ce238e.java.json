@@ -1,0 +1,175 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB1",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ ],
+        "milestoning" : [ ],
+        "name" : "People",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB2",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 6
+      },
+      "tables" : [ {
+        "columns" : [ ],
+        "milestoning" : [ ],
+        "name" : "Order",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 8
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStoreSpecifications" : [ {
+      "packageableElementPointer" : {
+        "path" : "stores::DB2",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 13
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "storeType" : "storeTypeABC"
+    } ],
+    "includedStores" : [ {
+      "path" : "stores::DB1",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ ],
+    "name" : "testDB1",
+    "package" : "stores",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStoreSpecifications" : [ {
+      "packageableElementPointer" : {
+        "path" : "stores::DB2",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 17
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      },
+      "storeType" : "storeTypeABC"
+    } ],
+    "includedStores" : [ {
+      "path" : "stores::DB1",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ ],
+    "name" : "testDB2",
+    "package" : "stores",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    },
+    "stereotypes" : [ ]
+  } ]
+}

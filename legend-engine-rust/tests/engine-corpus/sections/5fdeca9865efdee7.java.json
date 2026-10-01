@@ -1,0 +1,599 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "limit",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "meta::relational::tests::model::simple::Firm",
+                  "sourceInformation" : {
+                    "endColumn" : 48,
+                    "endLine" : 4,
+                    "sourceId" : "",
+                    "startColumn" : 5,
+                    "startLine" : 4
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 4
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 19,
+                        "endLine" : 5,
+                        "sourceId" : "",
+                        "startColumn" : 18,
+                        "startLine" : 5
+                      }
+                    } ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 29,
+                      "endLine" : 5,
+                      "sourceId" : "",
+                      "startColumn" : 21,
+                      "startLine" : 5
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 40,
+                      "endLine" : 5,
+                      "sourceId" : "",
+                      "startColumn" : 34,
+                      "startLine" : 5
+                    },
+                    "value" : "FirmA"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 32,
+                    "endLine" : 5,
+                    "sourceId" : "",
+                    "startColumn" : 31,
+                    "startLine" : 5
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 5,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 5
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 5
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 6
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 8
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "meta::relational::tests::model::simple::Firm",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 8
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 9
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 10,
+                    "sourceId" : "",
+                    "startColumn" : 28,
+                    "startLine" : 10
+                  },
+                  "value" : "Smith"
+                } ],
+                "property" : "employeeByLastName",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 10,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 10
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 19,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 11
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "lastName",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 12
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 13
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "name",
+                    "sourceInformation" : {
+                      "endColumn" : 23,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 20,
+                      "startLine" : 13
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 15,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 15
+                  },
+                  "value" : "New York"
+                }, {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 15,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 15
+                  },
+                  "value" : ""
+                } ],
+                "property" : "employeesByCityOrManager",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 15
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 19,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 16
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "lastName",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 17,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 17
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 18,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 18
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "name",
+                    "sourceInformation" : {
+                      "endColumn" : 23,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 20,
+                      "startLine" : 18
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 7
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 23
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "meta::relational::tests::model::simple::Firm",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 23
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 24,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 24
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 25
+                },
+                "value" : "Smith"
+              } ],
+              "property" : "employeeByLastName",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 25
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 26
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 27,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 27
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "address",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 28,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 28
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 28,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 28
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 30
+                },
+                "value" : "New York"
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 30
+                },
+                "value" : ""
+              } ],
+              "property" : "employeesByCityOrManager",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 30
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 31
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 32,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 32
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "address",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 33
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 33,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 33
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 22
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "name" : "fetch__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

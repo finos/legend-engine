@@ -1,0 +1,11 @@
+
+Data demo::ss::data::FirmData
+{
+  Relation
+  #{
+    default.FIRM_TABLE:
+      ID,FIRM_DETAILS,FIRM_TAGS
+      1,"{""legalName"":""Firm X"",""employeeCount"":4,""isMnc"":true,""ticker"":""FX"",""sector"":""Tech"",""revenue"":1234.5,""marketCap"":9876.54,""dates"":{""estDate"":""2020-01-15"",""lastUpdate"":""2024-03-02T10:15:30"",""auditStamp"":""2024-03-02T10:15:30""},""odd keys"":{""a.b c"":""quoted-hit""},""orders"":[{""price"":100},{""price"":250}],""matrix"":[[1,2],[3,4]],""items"":[{""tags"":[""a"",""b""]}]}","[""alpha"",{""label"":""beta""}]"
+      2,"{""legalName"":""Firm A"",""employeeCount"":1,""isMnc"":false,""ticker"":""FA"",""sector"":""Retail"",""revenue"":50.25,""marketCap"":100.75,""dates"":{""estDate"":""2021-06-30"",""lastUpdate"":""2023-01-05T08:00:00"",""auditStamp"":""2023-01-05T08:00:00""},""odd keys"":{""a.b c"":""quoted-miss""},""orders"":[{""price"":50}],""matrix"":[[9,8],[7,6]],""items"":[{""tags"":[""x"",""y""]}]}","[""gamma"",{""label"":""delta""}]";
+  }#
+}

@@ -1,0 +1,13 @@
+
+import meta::pure::metamodel::relation::*;
+
+Class demo::relation::domain::RankedEmployee extends demo::relation::domain::Employee
+{
+  rank: Integer[1];
+}
+
+function demo::relation::func::rankedEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    ->extend(over(~FIRM_ID, ~SALARY->ascending()), ~[RANK: {p, w, r | $p->rank($w, $r)}])
+}

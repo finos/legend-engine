@@ -1,0 +1,593 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 20,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 25,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 25,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "profileJson",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 26,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssn::Firm",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 27,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "TextPerson",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 32
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 32,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssn::Firm",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 33,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Staff",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 38,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 38
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 38,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 38
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "profileJson",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 39,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssn::Firm",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 41,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 41
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "managerFirm",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 41,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 36
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Tag",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 49,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "code",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 49,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 50,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 13,
+            "startLine" : 50
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "category",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 50,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 50
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 47
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Participant",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 10,
+            "startLine" : 55
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "party",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 55,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 55
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Record",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssn",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 60,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 60
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "reference",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 60,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssn::Tag",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 61,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 61
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "tags",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 61,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 61
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssn::Participant",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 62,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 62
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "participants",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 62,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 62
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 58
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

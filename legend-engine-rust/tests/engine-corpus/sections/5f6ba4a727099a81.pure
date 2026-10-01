@@ -1,0 +1,5 @@
+
+Class test::A extends test::A
+{
+   ok : Integer[0..1];
+}

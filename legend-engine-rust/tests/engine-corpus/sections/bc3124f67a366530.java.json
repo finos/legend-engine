@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "Enum",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "30_360"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "30_ACT"
+    } ]
+  } ],
+  "imports" : [ ]
+}

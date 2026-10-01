@@ -1,0 +1,246 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "nontemporalDelta",
+        "auditing" : {
+          "_type" : "dateTimeAuditing",
+          "dateTimeName" : "BATCH_TIME_IN",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 67
+          }
+        },
+        "mergeStrategy" : {
+          "_type" : "deleteIndicatorMergeStrategy",
+          "deleteField" : "DELETED",
+          "deleteValues" : [ "1", "YES", "true" ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 60
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 58
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 56
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 77,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 54
+      },
+      "targetShape" : {
+        "_type" : "flatTarget",
+        "deduplicationStrategy" : {
+          "_type" : "noDeduplicationStrategy"
+        },
+        "modelClass" : "test::ServiceResult",
+        "partitionFields" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 72
+        },
+        "targetName" : "personTable"
+      }
+    },
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 53
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 142,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 49
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 140,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 80
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_ID\":1},{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID\":1},{\"ID\":3, \"NAME\":\"DAVID\", \"BATCH_ID\":1}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 107,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 103
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 108,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 100
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 84
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"DELETED\":\"0\"},{\"ID\":2, \"NAME\":\"BRAD\", \"DELETED\":\"0\"},{\"ID\":3, \"NAME\":\"DAVID\", \"DELETED\":\"0\"}]",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 94,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 90
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 95,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 88
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 86
+          }
+        }
+      }, {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_ID\":1},{\"ID\":2, \"NAME\":\"BRADLEY\", \"BATCH_ID\":2},{\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_ID\":2}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 134,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 130
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 135,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 127
+          }
+        } ],
+        "batchId" : 1,
+        "id" : "testBatch2",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 137,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 111
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"DELETED\":\"yes\"},{\"ID\":2, \"NAME\":\"BRADLEY\", \"DELETED\":\"0\"},{\"ID\":3, \"NAME\":\"CATHY\", \"DELETED\":\"0\"},{\"ID\":4, \"NAME\":\"DAVID\", \"DELETED\":\"1\"}]",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 121,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 117
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 122,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 115
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 113
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

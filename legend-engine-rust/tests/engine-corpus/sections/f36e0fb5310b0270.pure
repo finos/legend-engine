@@ -1,0 +1,5 @@
+
+function example::testMaxInteger(input: Integer[1]):Any[0..1]
+{
+   [1,$input]->meta::pure::functions::math::max();
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type JSON does not expect any parameters in declaration 'FIRMJSON(10)'",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 10,
+      "startLine" : 7
+    }
+  }
+}

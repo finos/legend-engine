@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'passPhraseVaultReference' is required",
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 13
+    }
+  }
+}

@@ -1,0 +1,28 @@
+
+Mapping test::decomposeMapping
+(
+  *test::_Person: Pure
+  {
+    ~src test::Person
+    weightUnit: $src.weight->unitType(),
+    weightValue: $src.weight->unitValue()
+  }
+)
+
+Mapping test::composeMapping
+(
+  *test::Person: Pure
+  {
+    ~src test::_Person
+    weight: test::Mass~Kilogram->newUnit($src.weightValue)->cast(@test::Mass~Kilogram)
+  }
+)
+
+Mapping test::convertMapping
+(
+  *test::PersonWithPound: Pure
+  {
+    ~src test::Person
+    weight: $src.weight->convert(test::Mass~Pound)->cast(@test::Mass~Pound)
+  }
+)

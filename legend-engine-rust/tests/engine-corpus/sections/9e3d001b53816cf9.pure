@@ -1,0 +1,6 @@
+
+FunctionJar pack::A 
+{
+   function : a::f():String[1];
+   documentation : 'sass';
+}

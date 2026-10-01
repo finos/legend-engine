@@ -1,0 +1,155 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 44
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::Firm",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        },
+        "target" : "model_Person_1",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 47
+              }
+            } ],
+            "property" : "em",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 47
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "enumMappingId" : "model_IncType2",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::Firm",
+          "property" : "type",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 48
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 48
+              }
+            } ],
+            "property" : "_type",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 48
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 46
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "srcClass" : "model::_Firm"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "model::mapping2",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      }
+    } ],
+    "name" : "mapping1",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 41
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

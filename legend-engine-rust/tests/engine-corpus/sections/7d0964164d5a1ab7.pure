@@ -1,0 +1,10 @@
+
+Class demo::view::BigSale
+{
+  product: String[1];
+  amount: Integer[1];
+}
+
+// BigSaleView is an inline view (subquery) over SALE_TABLE, restricted by BigFilter
+// to rows with AMOUNT >= 100. The class mapping targets the view rather than the
+// base table, so store:relational-inline-view is exercised end-to-end.

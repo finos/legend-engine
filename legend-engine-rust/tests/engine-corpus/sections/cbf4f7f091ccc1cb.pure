@@ -1,0 +1,5 @@
+
+Class test::Person{name : String[1]; val : Integer[1];}function test::f():Any[*]
+{
+   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.vals])
+}

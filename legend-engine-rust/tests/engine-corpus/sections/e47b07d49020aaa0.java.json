@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'sink' is required",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 8
+    }
+  }
+}

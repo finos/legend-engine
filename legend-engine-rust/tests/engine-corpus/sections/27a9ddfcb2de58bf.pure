@@ -1,0 +1,79 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: meta::myMapping1;
+      runtime: test::runtime;
+    }
+    executions['UAT']:
+    {
+      mapping: meta::myMapping2;
+      runtime: meta::myRuntime;
+    }
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/x.flatdata';
+              data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+            }#,
+          connection2:
+            ModelStore
+            #{
+              my::Person:
+                [
+                  ^my::Person(
+                    givenNames = ['Fred', 'William'],
+                    address = ^my::Address(street = 'A Road')
+                  )
+                ]
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          keys:
+          [
+            'UAT'
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{Age:12, Name:"dummy"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

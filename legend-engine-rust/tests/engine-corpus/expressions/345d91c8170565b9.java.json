@@ -1,0 +1,232 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "meta::pure::functions::relation::select",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::relation::extend",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "meta::pure::functions::relation::select",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 2,
+            "startLine" : 1
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "meta::external::dataquality::tests::domain::db", "personTable" ],
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 2,
+              "startLine" : 1
+            }
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 122,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 108,
+            "startLine" : 1
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "FIRSTNAME",
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 109,
+                "startLine" : 1
+              }
+            }, {
+              "name" : "AGE",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 119,
+                "startLine" : 1
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 67,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 227,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 167,
+          "startLine" : 1
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "row",
+                  "sourceInformation" : {
+                    "endColumn" : 192,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 189,
+                    "startLine" : 1
+                  }
+                } ],
+                "property" : "FIRSTNAME",
+                "sourceInformation" : {
+                  "endColumn" : 202,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 194,
+                  "startLine" : 1
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 202,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 188,
+                "startLine" : 1
+              }
+            },
+            "name" : "FIRSTNAME_TARGET",
+            "sourceInformation" : {
+              "endColumn" : 202,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 168,
+              "startLine" : 1
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "row",
+                  "sourceInformation" : {
+                    "endColumn" : 222,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 219,
+                    "startLine" : 1
+                  }
+                } ],
+                "property" : "AGE",
+                "sourceInformation" : {
+                  "endColumn" : 226,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 224,
+                  "startLine" : 1
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 226,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 218,
+                "startLine" : 1
+              }
+            },
+            "name" : "AGE_TARGET",
+            "sourceInformation" : {
+              "endColumn" : 226,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 204,
+              "startLine" : 1
+            }
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 164,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 126,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 300,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 272,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "FIRSTNAME_TARGET",
+          "sourceInformation" : {
+            "endColumn" : 288,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 273,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "AGE_TARGET",
+          "sourceInformation" : {
+            "endColumn" : 299,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 290,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 269,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 231,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 301,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

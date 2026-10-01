@@ -1,0 +1,249 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "from",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "select",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "filter",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "filter",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 5,
+                "startLine" : 26
+              },
+              "type" : ">",
+              "value" : {
+                "path" : [ "test::DeephavenStore", "stockTrades" ],
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 5,
+                  "startLine" : 26
+                }
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "equal",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "c",
+                    "sourceInformation" : {
+                      "endColumn" : 56,
+                      "endLine" : 26,
+                      "sourceId" : "",
+                      "startColumn" : 55,
+                      "startLine" : 26
+                    }
+                  } ],
+                  "property" : "City",
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 26,
+                    "sourceId" : "",
+                    "startColumn" : 58,
+                    "startLine" : 26
+                  }
+                }, {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 26,
+                    "sourceId" : "",
+                    "startColumn" : 66,
+                    "startLine" : 26
+                  },
+                  "value" : "New York"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 63,
+                  "startLine" : 26
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "c"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 75,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 26
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "c",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 26,
+                    "sourceId" : "",
+                    "startColumn" : 90,
+                    "startLine" : 26
+                  }
+                } ],
+                "property" : "IsBuy",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 93,
+                  "startLine" : 26
+                }
+              }, {
+                "_type" : "boolean",
+                "sourceInformation" : {
+                  "endColumn" : 105,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 102,
+                  "startLine" : 26
+                },
+                "value" : true
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 100,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 99,
+                "startLine" : 26
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "c"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 105,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 88,
+              "startLine" : 26
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 79,
+            "startLine" : 26
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 129,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 117,
+            "startLine" : 26
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "StockSymbol",
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 118,
+                "startLine" : 26
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 109,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "test::DeephavenRuntime",
+        "sourceInformation" : {
+          "endColumn" : 159,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 138,
+          "startLine" : 26
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 136,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 133,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "filterStockTrades__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 37,
+          "startLine" : 24
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

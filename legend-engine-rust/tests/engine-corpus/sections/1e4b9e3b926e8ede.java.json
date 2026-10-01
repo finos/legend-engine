@@ -1,0 +1,556 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ {
+      "path" : "example::databaseInc",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ {
+      "name" : "BtoC",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "example::databaseInc",
+            "mainTableDb" : "example::databaseInc",
+            "schema" : "exampleSub",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 26
+            },
+            "table" : "TableBSub"
+          },
+          "tableAlias" : "TableBSub"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 61,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "example::database",
+            "mainTableDb" : "example::database",
+            "schema" : "exampleRoot",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 26
+            },
+            "table" : "TableC"
+          },
+          "tableAlias" : "TableC"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 26
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 82,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "database",
+    "package" : "example",
+    "schemas" : [ {
+      "name" : "exampleRoot",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        }, {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TableC",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "nameL",
+          "operation" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 16
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "example::database",
+              "mainTableDb" : "example::database",
+              "schema" : "exampleSub",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 16,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 16
+              },
+              "table" : "TableASub"
+            },
+            "tableAlias" : "TableASub"
+          },
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 16
+          }
+        }, {
+          "name" : "rootTable",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "example::databaseInc",
+              "name" : "AtoB",
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 17
+              }
+            }, {
+              "db" : "example::database",
+              "name" : "BtoC",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 17
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "name",
+              "sourceInformation" : {
+                "endColumn" : 97,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 75,
+                "startLine" : 17
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "example::database",
+                "mainTableDb" : "example::database",
+                "schema" : "exampleRoot",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 17,
+                  "sourceId" : "",
+                  "startColumn" : 75,
+                  "startLine" : 17
+                },
+                "table" : "TableC"
+              },
+              "tableAlias" : "TableC"
+            },
+            "sourceInformation" : {
+              "endColumn" : 97,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 17
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "dbView",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 14
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "nameL",
+          "operation" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 21
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "example::database",
+              "mainTableDb" : "example::database",
+              "schema" : "exampleRoot",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 21
+              },
+              "table" : "TableC"
+            },
+            "tableAlias" : "TableC"
+          },
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 21
+          }
+        }, {
+          "name" : "incTable",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "example::database",
+              "name" : "BtoC",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 36,
+                "startLine" : 22
+              }
+            }, {
+              "db" : "example::database",
+              "name" : "AtoB",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 63,
+                "startLine" : 22
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "name",
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 22
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "example::databaseInc",
+                "mainTableDb" : "example::databaseInc",
+                "schema" : "exampleSub",
+                "sourceInformation" : {
+                  "endColumn" : 112,
+                  "endLine" : 22,
+                  "sourceId" : "",
+                  "startColumn" : 93,
+                  "startLine" : 22
+                },
+                "table" : "TableASub"
+              },
+              "tableAlias" : "TableASub"
+            },
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 22
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 117,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 22
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "dbViewIncTable",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "AtoB",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "example::databaseInc",
+            "mainTableDb" : "example::databaseInc",
+            "schema" : "exampleSub",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 45
+            },
+            "table" : "TableASub"
+          },
+          "tableAlias" : "TableASub"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "example::databaseInc",
+            "mainTableDb" : "example::databaseInc",
+            "schema" : "exampleSub",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 45
+            },
+            "table" : "TableBSub"
+          },
+          "tableAlias" : "TableBSub"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 37,
+          "startLine" : 45
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 45
+      }
+    } ],
+    "name" : "databaseInc",
+    "package" : "example",
+    "schemas" : [ {
+      "name" : "exampleSub",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        }, {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TableASub",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        }, {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 41
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TableBSub",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ]
+  } ]
+}

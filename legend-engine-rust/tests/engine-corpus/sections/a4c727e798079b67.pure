@@ -1,0 +1,11 @@
+
+Data test::data::PersonSeed
+{
+  test::store::TestDB:
+    Relation
+    #{
+      default.PERSON_TABLE:
+        ID,FIRST_NAME
+        10,Zoe;
+    }#;
+}

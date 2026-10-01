@@ -1,0 +1,270 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Address",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 39
+      },
+      "id" : "a",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Address",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 41
+          }
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 41
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 41
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 41
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Address",
+          "property" : "streetName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 42
+          }
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 42
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 42,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 42
+              }
+            } ],
+            "property" : "streetName",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 42,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 42
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 43
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "property" : "streetId",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 43
+          }
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 43
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 43,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 43
+            },
+            "value" : "id"
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 40
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 39
+      },
+      "srcClass" : "test::Address"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 45
+      },
+      "id" : "p",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Person",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 47
+          }
+        },
+        "source" : "p",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 47
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 47
+              }
+            } ],
+            "property" : "fullName",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 47
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 46
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 45
+      },
+      "srcClass" : "test::Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "crossPropertyMappingWithLocalProperties",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

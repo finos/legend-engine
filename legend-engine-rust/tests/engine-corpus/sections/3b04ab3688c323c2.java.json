@@ -1,0 +1,250 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "MilestoneClassA",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 66,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 64
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 64
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "MilestoneClassB",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 68
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 68
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 68
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ClassA",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::ClassB",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 74
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "b",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 74
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 75,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 72
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ClassB",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::ClassA",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 79
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "a",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 79,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 79
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 80,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 77
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "AssociationAB",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::MilestoneClassA",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 84
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "a",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 84
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::MilestoneClassB",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 85
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "b",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 85
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 86,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 82
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

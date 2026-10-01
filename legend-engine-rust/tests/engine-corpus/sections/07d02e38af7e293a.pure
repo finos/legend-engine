@@ -1,0 +1,12 @@
+
+Mapping my::testMapping
+(
+  my::Person: Relation 
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: [FIRSTNAME, AGE]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+)

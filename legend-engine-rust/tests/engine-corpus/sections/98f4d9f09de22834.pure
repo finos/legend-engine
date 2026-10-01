@@ -1,0 +1,12 @@
+
+Data demo::data::EmployeeData
+{
+  Relational
+  #{
+    default.EmployeeTable:
+      'id,firstName,employeeType\n' +
+      '1,John,FTE\n' +
+      '2,Jane,FTC\n' +
+      '3,Bob,FTO\n';
+  }#
+}

@@ -1,0 +1,15 @@
+
+Database demo::store::AggDB
+(
+  Table SalesTable
+  (
+    id INTEGER PRIMARY KEY,
+    salesPerson VARCHAR(200),
+    revenue INTEGER
+  )
+  Table SalesByPersonTable
+  (
+    salesPerson VARCHAR(200) PRIMARY KEY,
+    revenue INTEGER
+  )
+)

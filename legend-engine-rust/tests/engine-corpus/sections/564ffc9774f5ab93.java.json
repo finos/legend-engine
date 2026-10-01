@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field ''authentication'' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

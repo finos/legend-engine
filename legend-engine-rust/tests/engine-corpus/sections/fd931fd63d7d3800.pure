@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::OptionalFirm[firm]: Relation
+  {
+    ~func my::optionalColumnFunction():Relation<Any>[1]
+    legalName: LEGALNAME
+  }
+)

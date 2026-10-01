@@ -1,0 +1,12 @@
+
+Runtime execution::Runtime
+{
+  mappings: [];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

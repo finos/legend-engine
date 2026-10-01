@@ -1,0 +1,185 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Foo",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "xs",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 35,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "new",
+      "parameters" : [ {
+        "_type" : "genericTypeInstance",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::pure::metamodel::type::Class"
+          },
+          "typeArguments" : [ {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::Foo"
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          } ],
+          "typeVariableValues" : [ ]
+        }
+      }, {
+        "_type" : "string",
+        "value" : ""
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "values" : [ {
+          "_type" : "keyExpression",
+          "add" : false,
+          "expression" : {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 4
+            },
+            "values" : [ {
+              "_type" : "var",
+              "name" : "opt",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 4
+              }
+            } ]
+          },
+          "key" : {
+            "_type" : "string",
+            "value" : "xs"
+          }
+        } ]
+      } ]
+    } ],
+    "name" : "mkFoo_String_$0_1$__Foo_1_",
+    "package" : "test",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "opt",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 2
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "test::Foo",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 40,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

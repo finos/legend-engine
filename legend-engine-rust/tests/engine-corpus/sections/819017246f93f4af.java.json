@@ -1,0 +1,141 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "personSelfJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 21
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 21
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 21
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 21
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 21
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      }
+    } ],
+    "name" : "dbInc",
+    "package" : "simple",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 13
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ ]
+  } ]
+}

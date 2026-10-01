@@ -1,0 +1,15 @@
+
+Runtime runtime::SnowflakeRuntime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    store::CovidDataStore:
+    [
+      connection_1: runtime::connection::SnowflakeConnection
+    ]
+  ];
+}

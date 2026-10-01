@@ -1,0 +1,15 @@
+
+Class demo::sse::Block
+{
+  id: String[1];
+  account: String[1];
+  // To-many, but backed by a join rather than by a binding: the multiplicity comes
+  // from the row fan-out the explosion produces, not from the model.
+  orders: demo::sse::Order[*];
+}
+
+Class demo::sse::Order
+{
+  id: String[1];
+  orderName: String[1];
+}

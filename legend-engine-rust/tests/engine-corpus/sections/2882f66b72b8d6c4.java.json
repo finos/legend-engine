@@ -1,0 +1,89 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ "FIRSTNAME" ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRM ID",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 44
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 44
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunctionWithQuotedCol():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 42
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

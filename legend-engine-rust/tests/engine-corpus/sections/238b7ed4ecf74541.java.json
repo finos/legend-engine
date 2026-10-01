@@ -1,0 +1,598 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "Virus",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 108,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 104
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 104,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 104
+        },
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 104,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 104
+        },
+        "value" : "doc"
+      },
+      "value" : "List of known viruses"
+    } ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 171,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 106
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 165,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 106
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 106
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 106
+          },
+          "value" : "doc"
+        },
+        "value" : "Severe acute respiratory syndrome (SARS) is a viral respiratory disease of zoonotic origin caused by the severe acute respiratory syndrome coronavirus"
+      } ],
+      "value" : "SARS"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 167,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 107
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 158,
+          "endLine" : 107,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 107
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 107
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 107
+          },
+          "value" : "doc"
+        },
+        "value" : "Coronavirus disease 2019 (COVID-19) is a contagious disease caused by a virus, the severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2)"
+      } ],
+      "value" : "COVID19"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Demographics",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 168,
+            "endLine" : 112,
+            "sourceId" : "",
+            "startColumn" : 163,
+            "startLine" : 112
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 175,
+        "endLine" : 112,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 112
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 154,
+          "endLine" : 112,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 112
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 112,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 112
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 112,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 112
+          },
+          "value" : "doc"
+        },
+        "value" : "The Federal Information Processing Standard (FIPS) code (FIPS 6-4) uniquely identifies counties and county equivalents in the United States"
+      } ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 63,
+            "startLine" : 113
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "state",
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 113,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 113
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 113,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 113
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 113
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 113
+          },
+          "value" : "doc"
+        },
+        "value" : "United States in 2-letter codes format"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 114,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 110
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 110,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 110
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 110
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 110
+        },
+        "value" : "doc"
+      },
+      "value" : "COVID-19 data demographics consisting of geolocation information"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "COVIDData",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 118
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 118,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 118
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 168,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 163,
+            "startLine" : 119
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 175,
+        "endLine" : 119,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 119
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 154,
+          "endLine" : 119,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 119
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 119
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 119
+          },
+          "value" : "doc"
+        },
+        "value" : "The Federal Information Processing Standard (FIPS) code (FIPS 6-4) uniquely identifies counties and county equivalents in the United States"
+      } ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 120
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "date",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 120,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 120
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 121,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 121
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "caseType",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 121,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 121
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 122
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "cases",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 122,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 122
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 113,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 107,
+            "startLine" : 123
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "lastReportedFlag",
+      "sourceInformation" : {
+        "endColumn" : 120,
+        "endLine" : 123,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 123
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 123,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 123
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 123
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 123
+          },
+          "value" : "doc"
+        },
+        "value" : "A flag indicating if the similar case data has been reported previously"
+      } ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "domain::Demographics",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 124,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 124
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "demographics",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 124,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 124
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 125,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 116
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 115,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 116
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 116,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 116
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 116,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 116
+        },
+        "value" : "doc"
+      },
+      "value" : "COVID-19 data report consisting of case statistics details and basic information on demographics"
+    } ]
+  } ],
+  "imports" : [ ]
+}

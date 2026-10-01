@@ -1,0 +1,111 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "simple::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "simple_Firm",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "simple::dbInc",
+        "mainTableDb" : "simple::dbInc",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 54
+        },
+        "table" : "firmTable"
+      },
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "simple::Firm",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 55
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "simple::dbInc",
+            "joinType" : "INNER",
+            "name" : "Firm_Person",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 55
+            }
+          }, {
+            "db" : "simple::dbInc",
+            "joinType" : "INNER",
+            "name" : "Firm_Person",
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 79,
+              "startLine" : 55
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 55
+          }
+        },
+        "source" : "simple_Firm",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 55
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "simpleRelationalMappingInc",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 50
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

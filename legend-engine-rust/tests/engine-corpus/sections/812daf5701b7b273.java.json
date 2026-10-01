@@ -1,0 +1,90 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "elements" : [ {
+      "path" : "model",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 150,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 150
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::experiment",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 151,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 151
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::target::_Firm",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 152,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 152
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::NotRelevant",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 153,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 153
+      }
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "mapping::ModelToModelRuntime",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 145,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 145
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::ModelToModelMapping",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 144
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 146,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 142
+      }
+    } ],
+    "name" : "_FirmDataSpace",
+    "package" : "dataSpace",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 156,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 138
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "Firm Dataspace"
+  } ]
+}

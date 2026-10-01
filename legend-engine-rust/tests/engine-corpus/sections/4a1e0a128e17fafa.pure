@@ -1,0 +1,6 @@
+
+Class demo::groupby::SalesSummary
+{
+  salesPerson: String[1];
+  totalAmount: Integer[1];
+}

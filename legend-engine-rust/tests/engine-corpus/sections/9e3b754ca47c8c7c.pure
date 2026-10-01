@@ -1,0 +1,49 @@
+
+Mapping demo::joins::CrossTableFilterMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~filter [demo::store::JoinsDB]@Emp_Dept | [demo::store::JoinsDB]NycDeptFilter
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME
+  }
+
+  testSuites:
+  [
+    crossTableFilterSuite:
+    {
+      function: |demo::joins::Employee.all()->sortBy(x | $x.name)->project([x | $x.name], ['Name']);
+      tests:
+      [
+        onlyNycDepartmentEmployees:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::CrossTableFilterData
+              }#
+          ];
+          asserts:
+          [
+            shouldKeepOnlyEmployeesInNycDepartments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice"},{"Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

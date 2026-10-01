@@ -1,0 +1,6 @@
+
+Class demo::relation::domain::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+}

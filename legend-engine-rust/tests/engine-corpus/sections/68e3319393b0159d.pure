@@ -1,0 +1,76 @@
+
+Service test::service::FirmService
+{
+  pattern: '/testFirmService';
+  title: 'my Service';
+  owners:
+  [
+    'owner1',
+    'owner2'
+  ];
+  documentation: 'adding some documentation';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stringParam: String[1],stringOptionalParam: String[0..1],stringListParam: String[*],integerParam: Integer[1],integerOptionalParam: Integer[0..1],integerListParam: Integer[*],floatParam: Float[1],floatOptionalParam: Float[0..1],floatListParam: Float[*],strictDateParam: StrictDate[1],strictDateOptionalParam: StrictDate[0..1],strictDateListParam: StrictDate[*],dateTimeParam: DateTime[1],dateTimeOptionalParam: DateTime[0..1],dateTimeListParam: DateTime[*],booleanParam: Boolean[1],booleanOptionalParam: Boolean[0..1],booleanListParam: Boolean[*]|test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#)};
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::SFirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          parameters:
+          [
+            stringParam = 'dummy',
+            stringOptionalParam = 'dummy',
+            stringListParam = ['dummy', 'dummy'],
+            integerParam = 1,
+            integerListParam = [1, 2],
+            floatParam = 1.123,
+            floatOptionalParam = [],
+            floatListParam = 1.123,
+            strictDateParam = %2020-1-1,
+            strictDateOptionalParam = [],
+            strictDateListParam = [%2020-1-1, %2020-1-2],
+            dateTimeParam = %2020-1-1T12:12:12,
+            dateTimeOptionalParam = [],
+            dateTimeListParam = [%2020-1-1T12:12:12, %2020-1-1T12:12:13],
+            booleanParam = false,
+            booleanOptionalParam = [],
+            booleanListParam = [true, false]
+          ]
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

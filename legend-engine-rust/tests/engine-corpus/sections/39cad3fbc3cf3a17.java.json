@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'database' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 11,
+      "startLine" : 10
+    }
+  }
+}

@@ -1,0 +1,37 @@
+
+Persistence test::MyPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: isDeleted;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: TableA;
+      database: test::Database;
+      temporality: None
+      {
+        updatesHandling: Overwrite;
+        auditing: None;
+      }
+    }#
+  ];
+}

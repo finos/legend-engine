@@ -1,0 +1,213 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "A persistence specification for Zoos.",
+    "name" : "ZooPersistence",
+    "notifier" : {
+      "notifyees" : [ {
+        "_type" : "emailNotifyee",
+        "address" : "x.y@z.com",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 143,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 140
+        }
+      }, {
+        "_type" : "pagerDutyNotifyee",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 144
+        },
+        "url" : "https://x.com"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 149,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 136
+      }
+    },
+    "package" : "org::dxl",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "bitemporalDelta",
+        "mergeStrategy" : {
+          "_type" : "deleteIndicatorMergeStrategy",
+          "deleteField" : "deleted",
+          "deleteValues" : [ "Y", "true" ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 109,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 80
+        },
+        "transactionMilestoning" : {
+          "_type" : "batchIdAndDateTimeTransactionMilestoning",
+          "batchIdInName" : "batchIdIn",
+          "batchIdOutName" : "batchIdOut",
+          "dateTimeInName" : "IN_Z",
+          "dateTimeOutName" : "OUT_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesInAndOutDateTime",
+            "sourceDateTimeInField" : "dateTimeIn",
+            "sourceDateTimeOutField" : "dateTimeOut",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 97,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 93
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 87
+          }
+        },
+        "validityMilestoning" : {
+          "_type" : "dateTimeValidityMilestoning",
+          "dateTimeFromName" : "FROM_Z",
+          "dateTimeThruName" : "THRU_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesFromAndThruDateTime",
+            "sourceDateTimeFromField" : "effectiveFrom",
+            "sourceDateTimeThruField" : "effectiveThru",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 107,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 103
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 108,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 99
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "objectStorageSink",
+        "binding" : {
+          "path" : "test::Binding",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 78
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 76
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 135,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 74
+      },
+      "targetShape" : {
+        "_type" : "multiFlatTarget",
+        "modelClass" : "org::dxl::Zoo",
+        "parts" : [ {
+          "deduplicationStrategy" : {
+            "_type" : "maxVersionDeduplicationStrategy",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 123,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 120
+            },
+            "versionField" : "version"
+          },
+          "modelProperty" : "zookeeper",
+          "partitionFields" : [ "stripe1", "stripe2" ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 124,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 116
+          },
+          "targetName" : "PersonDataset1"
+        }, {
+          "deduplicationStrategy" : {
+            "_type" : "duplicateCountDeduplicationStrategy",
+            "duplicateCountName" : "duplicateCount",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 131,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 128
+            }
+          },
+          "modelProperty" : "owner",
+          "partitionFields" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 132,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 125
+          },
+          "targetName" : "PersonDataset2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 134,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 110
+        },
+        "transactionScope" : "ALL_TARGETS"
+      }
+    },
+    "service" : {
+      "path" : "org::dxl::ZooService",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 73,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 73
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 150,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 69
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

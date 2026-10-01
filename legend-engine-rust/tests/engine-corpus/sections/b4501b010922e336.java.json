@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'validityMilestoning' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

@@ -1,0 +1,51 @@
+
+Diagram model::GeneralDiagram
+{
+  classView 4cec85f9-9b66-450a-bdcb-c855aa0314e1
+  {
+    class: model::animal::reptile::Reptile;
+    position: (568.0,404.0);
+    rectangle: (120.84765625,58.0);
+  }
+  classView 902bf14e-e7ff-40e7-92e4-8780f91bfa29
+  {
+    class: model::animal::Animal;
+    position: (809.0,187.0);
+    rectangle: (108.64453125,44.0);
+  }
+  generalizationView
+  {
+    source: 4cec85f9-9b66-450a-bdcb-c855aa0314e1;
+    target: 902bf14e-e7ff-40e7-92e4-8780f91bfa29;
+    points: [(628.423828125,433.0),(863.322265625,209.0)];
+  }
+}
+
+Diagram model::animal::AnimalDiagram
+{
+  classView 641a0336-d4b5-418c-b656-2f52461264e2
+  {
+    class: model::animal::mammal::Mammal;
+    position: (427.0,210.0);
+    rectangle: (125.1123046875,44.0);
+  }
+  classView b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98
+  {
+    class: model::animal::reptile::Reptile;
+    position: (787.0,216.0);
+    rectangle: (120.84765625,58.0);
+  }
+  classView 7a992cfc-c888-4091-aa00-ab430915aced
+  {
+    class: model::animal::Animal;
+    position: (515.423828125,-7.5);
+    rectangle: (199.716796875,100.0);
+  }
+  generalizationView
+  {
+    source: b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98;
+    target: 7a992cfc-c888-4091-aa00-ab430915aced;
+    points: [(847.423828125,245.0),(615.2822265625,42.5)];
+  }
+}
+

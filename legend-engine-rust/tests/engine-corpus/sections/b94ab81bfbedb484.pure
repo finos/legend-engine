@@ -1,0 +1,7 @@
+
+'''
+From the documentation.
+'''
+Class {doc.doc = 'From the tagged value.'} model::A
+{
+}

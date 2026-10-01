@@ -1,0 +1,47 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "default",
+    "executionContexts" : [ {
+      "mappingProvider" : {
+        "element" : {
+          "path" : "model::plainMapping3",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 12
+          }
+        },
+        "keys" : [ "someKey" ],
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 12
+        }
+      },
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 10
+      }
+    } ],
+    "name" : "mySpace3",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

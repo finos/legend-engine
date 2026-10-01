@@ -1,0 +1,120 @@
+
+
+Persistence None::DateTime::Relational::table::database::temporality::Unitemporal::Bitemporal::processingDimension::sourceDerivedDimension::auditing::dateTimeName::updatesHandling::AppendOnly::Overwrite::appendStrategy::AllowDuplicates::FailOnDuplicates::FilterDuplicates::BatchId::BatchIdAndDateTime::batchIdIn::batchIdOut::dateTimeIn::dateTimeOut::dateTimeStart::dateTimeEnd::sourceFields::Start::StartAndEnd::startField::endField::all::let::allVersions::allVersionsInRange::toBytes
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      deduplication: AnyVersion;
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: isDeleted;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+    }
+    ->
+    Relational
+    #{
+      table: TableA;
+      database: test::Database;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchIdAndDateTime
+        {
+          batchIdIn: x;
+          batchIdOut: y;
+          dateTimeIn: y;
+          dateTimeOut: y;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: x;
+          dateTimeEnd: y;
+          sourceFields: StartAndEnd
+          {
+            startField: timeIn;
+            endField: timeOut;
+          }
+        }
+      }
+    }#,
+    #/test::example::MyType/prop#
+    {
+      keys:
+      [
+        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#
+      ]
+      deduplication: MaxVersion
+      {
+        versionField: #/test::example::MyType/prop/version#;
+      }
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+    }
+    ->
+    Relational
+    #{
+      table: TableB;
+      database: test::Database;
+      temporality: None
+      {
+        updatesHandling: Overwrite;
+        auditing: None;
+      }
+    }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected: 
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '{"Age":12, "Name":"dummy"}';
+                 }#;
+             }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+      graphFetchPath: #/test::example::MyType/prop#;
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+
+import projectA::*;
+Class {doc.doc = 'a'} model::Person extends VersionClass
+{
+  targetA: TargetA[1];
+}

@@ -1,0 +1,25 @@
+ 
+Service test::Service 
+{ 
+  pattern: 'url/myUrl/'; 
+  title: 'my Service';
+  owners: ['ownerName']; 
+  documentation: 'test'; 
+  autoActivateUpdates: true; 
+  execution: Single 
+  { 
+    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); 
+    mapping: test::mapping; 
+    runtime: test::runtime; 
+  }
+  postValidations:
+  [
+    {
+      description: 'A good description of the validation';
+      params: [];
+      assertions: [
+          testAssert: |true;
+      ];
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "my_Person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

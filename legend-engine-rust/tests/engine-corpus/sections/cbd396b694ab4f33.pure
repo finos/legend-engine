@@ -1,0 +1,154 @@
+
+import test::*;
+PersistenceContext test::TestPersistenceContext 
+{
+  persistence: test::TestPersistence;
+  serviceParameters:
+  [
+    foo='hello',
+    bar=1,
+    con1=test::TestConnection,
+    con2=
+    #{      RelationalDatabaseConnection
+      {
+        store: test::TestDatabase;
+        type: H2;
+        specification: LocalH2{};
+        auth: Test;
+      }
+    }#
+  ];
+  sinkConnection: #{
+    RelationalDatabaseConnection
+    {
+      store: test::TestDatabase;
+      type: H2;
+      specification: LocalH2{};
+      auth: Test;
+    }
+  }#;
+}
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    ingestMode: BitemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: 'deleted';
+        deleteValues: ['Y', '1', 'true'];
+      }
+      transactionMilestoning: DateTime
+      {
+        dateTimeInName: 'inZ';
+        dateTimeOutName: 'outZ';
+        derivation: SourceSpecifiesInAndOutDateTime
+        {
+          sourceDateTimeInField: sourceIn;
+          sourceDateTimeOutField: sourceOut;
+        }
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromAndThruDateTime
+        {
+          sourceDateTimeFromField: sourceFrom;
+          sourceDateTimeThruField: sourceThru;
+        }
+      }
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: meta::test::TestClass2;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: property1;
+          targetName: 'TestDataset1';
+          partitionFields: [propertyA, propertyB];
+          deduplicationStrategy: MaxVersion
+          {
+            versionField: 'updateDateTime';
+          }
+        },
+        {
+          modelProperty: property2;
+          targetName: 'TestDataset1';
+          partitionFields: [propertyA, propertyB];
+          deduplicationStrategy: DuplicateCount
+          {
+            duplicateCountName: 'duplicateCount';
+          }
+        },
+        {
+          modelProperty: property3;
+          targetName: 'TestDataset2';
+          deduplicationStrategy: None;
+        }
+      ];
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'x.y@z.com';
+      },
+      PagerDuty
+      {
+        url: 'https://x.com';
+      }
+    ];
+  }
+  tests:
+  [
+  test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected: 
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '{"Age":12, "Name":"dummy"}';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]}
+

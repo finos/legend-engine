@@ -1,0 +1,394 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "path"
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 9
+        },
+        "type" : "path",
+        "value" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 52,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 9
+          },
+          "startType" : "test::Person"
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      }
+    }, {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "x"
+      }, {
+        "_type" : "var",
+        "name" : "path",
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 10
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    }, {
+      "_type" : "func",
+      "function" : "isNotEmpty",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Person",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 3,
+                "startLine" : 11
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "var",
+            "name" : "x",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 11
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "and",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "greaterThan",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 11
+                  }
+                }, {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 63,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 59,
+                    "startLine" : 11
+                  },
+                  "value" : "age"
+                } ],
+                "property" : "getInteger",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 11
+                }
+              }, {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 69,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 68,
+                  "startLine" : 11
+                },
+                "value" : 30
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 11
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 74,
+                  "startLine" : 11
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 87,
+                  "startLine" : 11
+                },
+                "value" : "age"
+              } ],
+              "property" : "isNotNull",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 77,
+                "startLine" : 11
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 71,
+              "startLine" : 11
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "r"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 11
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 11
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 105,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 96,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "usePath_Person_1__Boolean_1_",
+    "package" : "test",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::Person",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "p",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 7
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Boolean",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 43,
+          "startLine" : 7
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

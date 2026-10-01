@@ -1,0 +1,137 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "MyPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 31
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 30
+        },
+        "table" : "TableA",
+        "temporality" : {
+          "_type" : "none",
+          "auditing" : {
+            "_type" : "noAuditing",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 35
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 32
+          },
+          "updatesHandling" : {
+            "_type" : "overwrite",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 34
+            }
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForTds",
+            "deleteField" : "isDeleted",
+            "deleteValues" : [ "Y", "1", "true" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 19
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 17
+          }
+        },
+        "deduplication" : {
+          "_type" : "anyVersion",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 25
+          }
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 39,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 4
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

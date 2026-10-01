@@ -1,0 +1,64 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "oauth",
+        "oauthKey" : "oauthKey",
+        "scopeName" : "scopeName",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "databaseName" : "dbName",
+        "region" : "region",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 7
+        },
+        "warehouseName" : "warehouse"
+      },
+      "element" : "model::firm::Person",
+      "elementSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "quoteIdentifiers" : true,
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

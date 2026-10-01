@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 27,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 23,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "EuCustomerTable",
+        "values" : "id,name,region\n1,Alice,EMEA\n2,Bob,EMEA\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 26,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "table" : "UsCustomerTable",
+        "values" : "id,name,region\n1,Carol,AMER\n"
+      } ]
+    },
+    "name" : "CustomerData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,10 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +concatenated: String[1]: $src.FIRSTNAME + ' ' + $src.FIRSTNAME
+  }
+)

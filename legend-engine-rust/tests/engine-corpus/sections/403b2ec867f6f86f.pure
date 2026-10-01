@@ -1,0 +1,30 @@
+
+Database simple::dbInc
+(
+  TabularFunction personFunction
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER,
+    CEOID INTEGER
+  )
+    View FirmView
+    (
+        id: firmTable.ID PRIMARY KEY, 
+        legal:  firmTable.LEGALNAME
+
+   )
+  Join Firm_FirmView(firmTable.ID = FirmView.id)
+  Join Firm_Person(firmTable.ID = personFunction.FIRMID)
+)
+

@@ -1,0 +1,8 @@
+
+Class demo::Person
+{
+  prop: String[1];
+}
+function demo::testFunc():Any[1]
+{
+data:String[1] | demo::Person->fromJson($data)->toJson(#{demo::Person{prop}}#)}

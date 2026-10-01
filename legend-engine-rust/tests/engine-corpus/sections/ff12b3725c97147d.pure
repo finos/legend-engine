@@ -1,0 +1,11 @@
+
+Data demo::data::PersonData
+{
+  Relational
+  #{
+    default.PersonTable:
+      'id,firstName,lastName\n' +
+      '1,John,Doe\n' +
+      '2,Jane,Smith\n';
+  }#
+}

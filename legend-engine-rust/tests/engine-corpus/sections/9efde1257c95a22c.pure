@@ -1,0 +1,15 @@
+
+Class my::TestClass
+[
+  myConstraint
+  (
+    ~owner
+: abc
+    ~externalId	:'abc'
+    ~function: eq($this.var2 / $this.var1, $this.var4 / $this.var3)
+    ~enforcementLevel : Error
+  )
+]
+{
+  var1: Float[1];
+}

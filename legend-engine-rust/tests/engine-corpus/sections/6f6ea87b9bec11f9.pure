@@ -1,0 +1,50 @@
+
+Mapping demo::PersonKeyMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PersonKeyDB]PersonTable.firstName,
+      [demo::store::PersonKeyDB]PersonTable.lastName
+    )
+    ~mainTable [demo::store::PersonKeyDB]PersonTable
+    firstName: [demo::store::PersonKeyDB]PersonTable.firstName,
+    lastName: [demo::store::PersonKeyDB]PersonTable.lastName
+  }
+
+  testSuites:
+  [
+    primaryKeySuite:
+    {
+      function: |demo::Person.all()->sortBy(x|$x.firstName)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+      tests:
+      [
+        compositeKey:
+        {
+          data:
+          [
+            demo::store::PersonKeyDB:
+              Reference
+              #{
+                demo::data::PersonKeyData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolve:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Jane","Last Name":"Smith"},{"First Name":"John","Last Name":"Doe"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

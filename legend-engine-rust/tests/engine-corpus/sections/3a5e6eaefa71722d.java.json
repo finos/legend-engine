@@ -1,0 +1,120 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "EmployeeType",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 18,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "FULL_TIME"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 19,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CONTRACT"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Employee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 24,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 14,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 24,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::EmployeeType",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 25,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 9,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "type",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 25,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

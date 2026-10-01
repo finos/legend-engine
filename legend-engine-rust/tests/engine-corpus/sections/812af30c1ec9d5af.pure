@@ -1,0 +1,28 @@
+
+DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'some title';
+  featuredDiagrams:
+  [
+    model::Diagram,
+    model::Diagram2
+  ];
+  diagrams:
+  [
+    {
+      title: 'Diag 1';
+      description: 'some information about the context';
+      diagram: model::SomeDiag1;
+    }
+  ];
+}

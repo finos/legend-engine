@@ -1,0 +1,12 @@
+
+function model::MyFunc(): meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>[1]
+{
+  []->cast(@meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>)
+}
+{
+  testPass | MyFunc() => Relation
+  #{
+    id, name
+    1 , John;
+  }#;
+}

@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "dummyRuntime",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 18
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    }
+  } ],
+  "imports" : [ ]
+}

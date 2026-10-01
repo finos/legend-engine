@@ -1,0 +1,21 @@
+
+Service org::dxl::ZooService
+{
+  pattern : 'test';
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dxl::Zoo[1]|$src.name;
+    mapping: org::dxl::Mapping;
+    runtime:
+    #{
+      connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts: [];
+  }
+}

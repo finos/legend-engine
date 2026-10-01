@@ -1,0 +1,127 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "myClass",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 17
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 15
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "myClass",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 23
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 21
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection2",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 21
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "XmlModelConnection",
+      "class" : "myClass",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 29
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 27
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection3",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "myMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 32
+      }
+    },
+    "name" : "modelChainConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    }
+  } ],
+  "imports" : [ "meta" ]
+}

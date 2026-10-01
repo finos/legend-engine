@@ -1,0 +1,10 @@
+
+Class meta::mySimpleClass
+{
+  name: String[1];
+}
+
+Class meta::mySimpleClass2
+{
+  name: String[1];
+}

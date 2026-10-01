@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 15
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  } ],
+  "imports" : [ ]
+}

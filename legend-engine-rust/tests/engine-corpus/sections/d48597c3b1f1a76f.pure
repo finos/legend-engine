@@ -1,0 +1,8 @@
+
+Class Query
+{
+  allFirms(limit: Integer[1]) {
+    let offset = $limit + 10;
+    Firm.all()->slice($limit, $offset);
+  }: Firm[*];
+}

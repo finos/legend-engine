@@ -1,0 +1,22 @@
+
+Service meta::pure::myServiceMulti
+{
+  pattern: 'url/myUrl/';
+  documentation: 'this is just for context';
+  execution: Multi
+  {
+    executions['QA']:
+    {
+      mapping: meta::myMapping1;
+      runtime: test::runtime;
+    }
+    query: src: meta::transform::tests::Address[1]|$src.a;
+  }
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: 'moreData';
+    }
+  }
+}

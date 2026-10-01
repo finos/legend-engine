@@ -1,0 +1,10 @@
+
+Database demo::store::EmployeeDB
+(
+  Table EmployeeTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    employeeType VARCHAR(10)
+  )
+)

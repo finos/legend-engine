@@ -1,0 +1,5 @@
+
+function test::fetch(): Any[*]
+{
+  test::Position.all(%9999-12-31)->project([p | $p.id], ['id'])
+}

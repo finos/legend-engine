@@ -1,0 +1,12 @@
+
+Mapping test::Map
+(
+    test::Person: Relational
+    {
+       scope([test::DB] dataTable)
+       (
+          name: personName,
+          age: personAge
+       )
+    }
+)

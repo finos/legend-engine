@@ -1,0 +1,15 @@
+
+Runtime demo::runtime::FirmRuntime
+{
+  mappings:
+  [
+    demo::FirmMapping
+  ];
+  connections:
+  [
+    demo::store::FirmDB:
+    [
+      h2: demo::connection::FirmH2Connection
+    ]
+  ];
+}

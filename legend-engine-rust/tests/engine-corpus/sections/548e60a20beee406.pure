@@ -1,0 +1,5 @@
+
+Mapping my::testMapping
+(
+  include my::baseMapping
+)

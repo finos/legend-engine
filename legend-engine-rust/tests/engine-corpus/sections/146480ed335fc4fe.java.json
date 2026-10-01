@@ -1,0 +1,116 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "tradeSpecialCharactersServiceStoreSchemaSet",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n  \"title\": \"meta::external::store::service::showcase::domain::S_Trade\",\n  \"type\": \"object\",\n  \"properties\":   {\n    \"s_trade.Id\":     {\n      \"type\": \"string\"\n    },\n    \"s_trader.Details\":     {\n      \"type\": \"string\"\n    },\n    \"s_trade.Details\":     {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n\"s_trade.Id\",\n\"s_trader.Details\",\n\"s_trade.Details\"\n  ]\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 468,
+        "endLine" : 567,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 567
+      },
+      "id" : "S_Trade",
+      "location" : "meta/external/store/service/showcase/domain/S_Trade.json",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 568,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 564
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 570,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 560
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Trade" ]
+    },
+    "name" : "tradeServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 533,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 529
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Trade" ]
+    },
+    "name" : "tradeSpecialCharactersServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemaSet" : "meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 540,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 535
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Product", "meta::external::store::service::showcase::domain::S_Synonym" ]
+    },
+    "name" : "prodServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 546,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 542
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::Firm" ]
+    },
+    "name" : "firmServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 552,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 548
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::Person" ]
+    },
+    "name" : "personServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 558,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 554
+    }
+  } ],
+  "imports" : [ ]
+}

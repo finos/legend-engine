@@ -1,0 +1,31 @@
+
+ServiceStore testServiceStoreTestSuites::ServiceStore
+(
+  ServiceGroup EmployeeServices
+  (
+    path : '/employees';
+
+    Service EmployeeService
+    (
+      path : '/allEmployees';
+      method : GET;
+      response : [testServiceStoreTestSuites::Employee <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+    Service EmployeeServiceWithParameters
+    (
+      path : '/employeesWithParameters';
+      method : GET;
+      parameters :
+      (
+        stringParam : String ( location = query ),
+        integerParam : Integer ( location = query ),
+        floatParam : Float ( location = query ),
+        booleanParam : Boolean ( location = query )
+      );
+      response : [testServiceStoreTestSuites::Employee2 <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+  )
+)
+

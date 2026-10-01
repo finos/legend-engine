@@ -1,0 +1,49 @@
+
+Mapping demo::dyna::ProductMapping
+(
+  *demo::dyna::Product: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ProductDB]ProductView.id
+    )
+    ~mainTable [demo::store::ProductDB]ProductView
+    label: [demo::store::ProductDB]ProductView.label,
+    total: [demo::store::ProductDB]ProductView.total
+  }
+
+  testSuites:
+  [
+    dynaFunctionSuite:
+    {
+      function: |demo::dyna::Product.all()->sortBy(x | $x.label)->project([x | $x.label, x | $x.total], ['Label', 'Total']);
+      tests:
+      [
+        computedColumns:
+        {
+          data:
+          [
+            demo::store::ProductDB:
+              Reference
+              #{
+                demo::dyna::data::ProductData
+              }#
+          ];
+          asserts:
+          [
+            shouldComputeConcatAndSum:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Label":"P-Gadget","Total":205},{"Label":"P-Widget","Total":103}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

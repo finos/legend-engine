@@ -1,0 +1,25 @@
+
+Service model::MyService
+{
+  pattern: 'url/myUrl/';
+  title: 'test';
+  owners: ['test'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: '';
+    mapping: model::dummyMapping;
+    runtime:
+    #{
+     connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

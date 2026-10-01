@@ -1,0 +1,22 @@
+
+Service test::service::FirmService
+{
+  pattern: '/testFirmService';
+  owners:
+  [
+    'owner1',
+    'owner2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: name:String[1]|test::model::Firm.all()->filter(f | $f.legalName == $name )->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::SFirmRuntime;
+  }
+  testSuites:
+  [
+  ]
+}
+

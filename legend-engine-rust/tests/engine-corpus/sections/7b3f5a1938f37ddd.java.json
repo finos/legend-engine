@@ -1,0 +1,308 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "myEnum",
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "profile" : "st",
+      "profileSourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 77,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ {
+        "profile" : "equality",
+        "profileSourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "value" : "Key"
+      }, {
+        "profile" : "taggedValue",
+        "profileSourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 3
+        },
+        "value" : "test"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 3
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 3
+          },
+          "value" : "doc"
+        },
+        "value" : "Tag Value for enum Value"
+      } ],
+      "value" : "a"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 77,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ {
+        "profile" : "equality",
+        "profileSourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        },
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        },
+        "value" : "Key"
+      }, {
+        "profile" : "taggedValue",
+        "profileSourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 4
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 4
+        },
+        "value" : "test"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 4
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 4
+          },
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 4
+          },
+          "value" : "doc"
+        },
+        "value" : "Tag Value for enum Value"
+      } ],
+      "value" : "b"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "c"
+    } ]
+  }, {
+    "_type" : "Enumeration",
+    "name" : "MyOther",
+    "package" : "zz",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ {
+      "profile" : "st",
+      "profileSourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 8
+      },
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 8
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 8
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 8
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 8
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "e"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "g"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "r"
+    } ]
+  } ],
+  "imports" : [ ]
+}

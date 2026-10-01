@@ -1,0 +1,19 @@
+
+Class test::ProcessingDate{processingDate: Date[1];}Class test::BusinessDate{businessDate: Date[1];}Class test::ProcessingTemporalAddress
+{
+  processingDate: Date[1];
+  processingDateComplex: test::ProcessingDate[1];}
+
+Class test::BusinessTemporalAddress
+{
+  businessDate: Date[1];
+  businessDateComplex: test::BusinessDate[1];
+}
+
+Class test::BiTemporalAddress
+{
+  processingDate: Date[1];
+  businessDate: Date[1];
+  processingDateComplex: test::ProcessingDate[1];
+  businessDateComplex: test::BusinessDate[1];
+}

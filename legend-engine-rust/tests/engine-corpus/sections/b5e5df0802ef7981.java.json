@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported persistence platform type 'Unknown'",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 6
+    }
+  }
+}

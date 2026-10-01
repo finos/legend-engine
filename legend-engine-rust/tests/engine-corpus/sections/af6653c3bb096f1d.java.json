@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported Relational Query Generation Config type 'UnknownConfig'",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 10
+    }
+  }
+}

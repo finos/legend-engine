@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 31,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "tables" : [ {
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 26,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        },
+        "table" : "EMPLOYEE",
+        "values" : "ID,NAME,DEPT_ID\n1,Alice,10\n2,Bob,20\n3,Carol,99\n"
+      }, {
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 30,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        },
+        "table" : "DEPARTMENT",
+        "values" : "ID,NAME,LOCATION\n10,Engineering,NYC\n20,Sales,LON\n"
+      } ]
+    },
+    "name" : "LeftOuterJoinData",
+    "package" : "demo::joins::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

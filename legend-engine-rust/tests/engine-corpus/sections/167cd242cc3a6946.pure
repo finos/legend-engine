@@ -1,0 +1,8 @@
+
+Mapping test::parent2 (
+  *test::Parent2: Pure {
+    ~src test::ParentSrc
+    label: $src.label,
+    required: []
+  }
+)

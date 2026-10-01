@@ -1,0 +1,10 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunctionQuoted():Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]
+    firstName: 'FIRST NAME',
+    +age: Integer[0..1]: AGE
+  }
+)

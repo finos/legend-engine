@@ -1,0 +1,271 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "ProductDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 43,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 27
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "QTY",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PRICE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 34,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PRODUCT",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 35,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 29
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 39,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 9,
+              "startLine" : 39
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::ProductDB",
+              "mainTableDb" : "demo::store::ProductDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 39,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 9,
+                "startLine" : 39
+              },
+              "table" : "PRODUCT"
+            },
+            "tableAlias" : "PRODUCT"
+          },
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        }, {
+          "name" : "label",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "concat",
+            "parameters" : [ {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 40,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 19,
+                "startLine" : 40
+              },
+              "value" : "P-"
+            }, {
+              "_type" : "column",
+              "column" : "NAME",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 40,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 25,
+                "startLine" : 40
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::ProductDB",
+                "mainTableDb" : "demo::store::ProductDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 40,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 25,
+                  "startLine" : 40
+                },
+                "table" : "PRODUCT"
+              },
+              "tableAlias" : "PRODUCT"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 40,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 12,
+              "startLine" : 40
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 40,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        }, {
+          "name" : "total",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "plus",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "QTY",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 41,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 17,
+                "startLine" : 41
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::ProductDB",
+                "mainTableDb" : "demo::store::ProductDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 41,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 17,
+                  "startLine" : 41
+                },
+                "table" : "PRODUCT"
+              },
+              "tableAlias" : "PRODUCT"
+            }, {
+              "_type" : "column",
+              "column" : "PRICE",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 41,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 30,
+                "startLine" : 41
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::ProductDB",
+                "mainTableDb" : "demo::store::ProductDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 41,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 30,
+                  "startLine" : 41
+                },
+                "table" : "PRODUCT"
+              },
+              "tableAlias" : "PRODUCT"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 41,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 12,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 41,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 41
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "ProductView",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 42,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 37
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ]
+  } ]
+}

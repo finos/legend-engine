@@ -1,0 +1,6 @@
+
+Enum demo::relation::domain::EmployeeType
+{
+  FULL_TIME,
+  CONTRACT
+}

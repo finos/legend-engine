@@ -1,0 +1,46 @@
+
+Profile model::ProfileNotIncluded
+{
+  stereotypes: [stereotype1];
+  tags: [tag1];
+}
+
+Enum <<doc.deprecated>> {doc.doc = 'my doc for enum'}   model::animal::Family
+{
+  UO,
+  OP
+}
+
+Class <<doc.deprecated>> {doc.doc = ''} model::animal::reptile::Reptile extends model::animal::Animal2, model::animal::Animal
+{
+   <<doc.deprecated, model::ProfileNotIncluded.stereotype1>> {doc.doc = 'my doc for hasFin', model::ProfileNotIncluded.tag1 = ' class property not included'} hasFin: Boolean[1];
+}
+
+Class model::animal::Animal
+{
+  family: model::animal::Family[1];
+  noOfLegs: Number[1];
+  children: model::animal::GenericAnimal2[*];
+  something() {$this.noOfLegs > 4}: Boolean[1];
+  something2() {[]}: model::animal::GenericAnimal[0..1];
+}
+
+Class model::animal::GenericAnimal2
+{
+}
+
+Class model::animal::GenericAnimal
+{
+}
+
+Class model::animal::mammal::Mammal
+{
+  noOfLegs: String[1];
+}
+
+Class model::animal::Animal2
+{
+  name: String[1];
+  <<doc.deprecated, model::ProfileNotIncluded.stereotype1>> {doc.doc = 'my doc for hasFin', model::ProfileNotIncluded.tag1 = 'class qualified property not included'} name2() {''}: String[1];
+}
+

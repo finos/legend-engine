@@ -1,0 +1,17 @@
+
+RelationalDatabaseConnection test::MapperConnection
+{
+  store: test::OrganizationsDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    relationalMapper
+    {
+      test::testMapper
+    }
+  ];
+}

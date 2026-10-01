@@ -1,0 +1,19 @@
+
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::FirmDepartments
+{
+  firm: demo::relation::domain::Firm[1];
+  departments: demo::relation::domain::Department[1];
+}
+
+Association demo::relation::domain::DepartmentStaff
+{
+  department: demo::relation::domain::Department[1];
+  staff: demo::relation::domain::Employee[1];
+}
+
+function demo::relation::func::chainedDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.DepartmentTable}#
+}

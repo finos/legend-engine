@@ -1,0 +1,1 @@
+data:String[1]|test::gen::PricesRecord->internalize(test::gen::TestBinding, $data)->graphFetchChecked(#{test::gen::PricesRecord{accountId,synonym,synonymType,currency,closePrice,priceFile{header{closeOfBusiness}}}}#)->serialize(#{test::gen::PricesRecord{accountId,synonym,synonymType,currency,closePrice,priceFile{header{closeOfBusiness}}}}#)

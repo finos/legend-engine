@@ -1,0 +1,13 @@
+
+Database mapping::db(
+   Table employeeFirmDenormTable
+   (
+    id INT PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INT,
+    legalName VARCHAR(200),
+    address1 VARCHAR(200),
+    postcode VARCHAR(10)
+   )
+   Join firmAddress(employeeFirmDenormTable.address1 = {target}.address1)
+)

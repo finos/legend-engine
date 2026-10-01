@@ -33,6 +33,7 @@
         <module>legend-engine-language-pure-compiler-http-api</module>
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-http-api</module>
+        <module>legend-engine-language-pure-grammar-rust</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
         <module>legend-engine-language-pure-modelManager-sdlc-http-api</module>
@@ -40,21 +41,4 @@
         <module>legend-engine-protocol-http-api</module>
         <module>legend-engine-protocol-pure</module>
     </modules>
-
-    <profiles>
-        <!-- The Rust grammar parser module depends on a locally built legend-pure-rust-parser artifact and its native
-             library, so it only joins the build when -Dlegend.pure.rust.parser.lib=/abs/path/to/library is given
-             (or -Prust-parser). -->
-        <profile>
-            <id>rust-parser</id>
-            <activation>
-                <property>
-                    <name>legend.pure.rust.parser.lib</name>
-                </property>
-            </activation>
-            <modules>
-                <module>legend-engine-language-pure-grammar-rust</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

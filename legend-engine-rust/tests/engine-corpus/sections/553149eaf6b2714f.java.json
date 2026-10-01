@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Service response body should be ExternalFormat Embedded Data",
+    "sourceInformation" : {
+      "endColumn" : 14,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 16
+    }
+  }
+}

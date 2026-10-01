@@ -1,0 +1,7 @@
+
+ServiceStoreConnection demo::serviceStoreConnection
+{
+  store: test::serviceStore;
+  baseUrl: 'http://baseUrl';
+}
+

@@ -1,0 +1,11 @@
+
+Mapping test::Map
+(
+    test::DataTypesClass: Relational
+    {
+       scope([test::DataTypesDB] dataTable)
+       (
+          integer: vc
+       )
+    }
+)

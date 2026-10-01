@@ -1,0 +1,17 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  supportInfo: Combined {
+    faqUrl: 'https://example.com';
+    faqUrl: 'https://example.com';
+  };
+}

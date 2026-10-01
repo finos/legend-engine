@@ -1,0 +1,18 @@
+
+Class test::A
+{
+   prop : String[1];
+}
+Class test::B
+{
+   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];
+}
+Class test::C
+{
+   name : String[1];
+}
+
+Class test::D
+{
+   z(){test::C.all()->sortBy(a|$a.nam)}:test::C[*];
+}

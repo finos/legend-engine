@@ -1,0 +1,11 @@
+
+RelationalDatabaseConnection simple::H2Connection
+{
+  store: apps::pure::studio::relational::tests::dbInc;
+  type: H2;
+  timezone: 'GMT+05:00';
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}

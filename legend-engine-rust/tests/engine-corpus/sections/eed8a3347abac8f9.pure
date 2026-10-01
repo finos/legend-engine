@@ -1,0 +1,17 @@
+
+Avro model::AvroConfig
+{
+  scopeElements: [model::MyClass, model];
+  namespaceOverride: {
+    key1: 'mapValue1';
+    key2: 'mapValue2';
+  };
+  namespaceOverride2: {
+    key1: 'true';
+    key2: 'false';
+  };
+  namespaceOverride2: {
+    key1: '1';
+    key2: '2';
+  };
+}

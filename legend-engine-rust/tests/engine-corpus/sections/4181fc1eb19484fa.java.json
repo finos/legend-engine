@@ -1,0 +1,60 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id", "firstName", "lastName" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "1", "John", "Doe" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 17
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 14
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      }
+    } ],
+    "name" : "RelationalData",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

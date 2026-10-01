@@ -1,0 +1,26 @@
+
+Service meta::pure::myServiceWithTitle
+{
+  pattern: 'url/myUrl/';
+  title: 'My Service Title';
+  owners:
+  [
+    'ownerName'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'testData';
+    asserts:
+    [
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}

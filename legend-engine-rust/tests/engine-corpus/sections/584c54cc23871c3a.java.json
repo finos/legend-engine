@@ -1,0 +1,33 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "Simple",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section data: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: ',';\n\n  Record\n  {\n    Name            : STRING;\n    Employed        : INTEGER(optional);\n    IQ              : INTEGER(optional);\n    'Weight KG'     : DECIMAL(optional);\n    'DATE OF BIRTH' : DATE;\n    TIME_OF_DEATH   : DATETIME;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 343,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 7
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

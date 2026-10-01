@@ -1,0 +1,13 @@
+
+import other::*;
+
+Class other::Person
+{
+    firstName:String[1];
+    firm:Firm[1];
+}
+Class other::Firm
+{
+    legalName:String[1];
+    employees:Person[1];
+}

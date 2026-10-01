@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'ingestMode' is required",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 8
+    }
+  }
+}

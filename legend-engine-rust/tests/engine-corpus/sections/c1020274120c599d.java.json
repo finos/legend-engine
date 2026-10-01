@@ -1,0 +1,133 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "ui::Person",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 16
+      },
+      "id" : "ui_Person",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "ui::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 19
+          }
+        },
+        "source" : "ui_Person",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 19
+            },
+            "value" : "aa"
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "ui::Person",
+          "property" : "dog",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 20
+          }
+        },
+        "source" : "ui_Person",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 20
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 20
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 18
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "srcClass" : "ui::Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "a",
+    "package" : "ui",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

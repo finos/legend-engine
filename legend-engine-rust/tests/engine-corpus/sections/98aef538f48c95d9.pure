@@ -1,0 +1,9 @@
+
+function b::myFunction():String[1]
+{
+   z::otherFunction();
+}
+function z::otherFunction():String[1]
+{
+   'ok';
+}

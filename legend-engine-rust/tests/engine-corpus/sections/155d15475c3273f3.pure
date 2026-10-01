@@ -1,0 +1,26 @@
+
+import meta::*;
+JsonModelConnection meta::mySimpleConnection
+{
+  class: myClass;
+  url: 'my_url';
+}
+
+JsonModelConnection meta::mySimpleConnection2
+{
+  class: ui::myClass;
+  url: 'my_url';
+}
+
+XmlModelConnection meta::mySimpleConnection3
+{
+  class: myClass;
+  url: 'my_url';
+}
+
+ModelChainConnection meta::modelChainConnection
+{
+  mappings: [
+    myMapping
+  ];
+}

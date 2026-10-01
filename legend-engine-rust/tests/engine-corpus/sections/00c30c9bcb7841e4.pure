@@ -1,0 +1,16 @@
+
+Mapping ui::a
+(
+  *ui::Person[ui_Person]: Pure
+  {
+    ~src ui::Person
+    name: 'aa',
+    dog[imMissing]: $src.dog
+  }
+  *ui::Dog[ui_Dog]: Pure
+  {
+    ~src ui::Dog
+    name: 'dogName',
+    breed: 'dogBreed'
+  }
+)

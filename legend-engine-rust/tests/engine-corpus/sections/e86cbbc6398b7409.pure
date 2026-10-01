@@ -1,0 +1,23 @@
+
+Class meta::dataquality::Person
+[
+  mustBeOfLegalAge: $this.age >= 18
+]
+{
+   name : String[1];
+   age : Integer[1];
+   addresses : meta::dataquality::Address[*];
+}
+
+Class meta::dataquality::Address
+{
+   location: meta::dataquality::Location[1];
+   locationStreet: String[1];
+   addressId: String[1];
+}
+
+Class meta::dataquality::Location
+{
+   street: String[1];
+   locality: String[1];
+}

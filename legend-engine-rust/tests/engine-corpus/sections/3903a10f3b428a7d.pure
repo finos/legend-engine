@@ -1,0 +1,10 @@
+
+Class test::SomeClass
+{
+  prop: Integer[1];
+}
+Association test::SomeAssociation
+{
+  prop1: test::SomeClass[1];
+  prop2: test::SomeClass[1];
+}

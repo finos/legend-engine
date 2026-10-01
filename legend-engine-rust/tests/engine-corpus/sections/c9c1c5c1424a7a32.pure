@@ -1,0 +1,15 @@
+
+Database store::TestDB
+(
+Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+)

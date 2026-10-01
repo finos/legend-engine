@@ -1,0 +1,65 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "property",
+    "parameters" : [ {
+      "_type" : "packageableElementPtr",
+      "fullPath" : "myEnum",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 1
+      }
+    } ],
+    "property" : "VALUE1",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 24,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "genericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Integer",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "multiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "name" : "src",
+    "sourceInformation" : {
+      "endColumn" : 15,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 29,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 16,
+    "startLine" : 1
+  }
+}
+}

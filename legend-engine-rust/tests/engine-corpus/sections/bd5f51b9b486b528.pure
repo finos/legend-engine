@@ -1,0 +1,18 @@
+
+Enum test::PriceExpressionEnum {
+   AbsoluteTerms,
+   ParcentageOfNotional
+}
+
+Class ui::String {
+  prop1: String[1];
+}
+
+Class ui::b extends ui::String
+[
+   if($this.priceExpression == test::PriceExpressionEnum.PercetateOfNotionall, |$this.currency->isEmpty(), |true)
+]
+{
+  priceExpression: test::PriceExpressionEnum[1];
+  currency: String[*];
+}

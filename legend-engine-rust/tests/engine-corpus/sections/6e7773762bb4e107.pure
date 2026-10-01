@@ -1,0 +1,19 @@
+
+Runtime relational::graphFetch::ModelChainConnectionRuntime
+{
+  mappings:
+  [
+    relational::graphFetch::M2M_Mapping
+  ];
+  connectionStores:
+  [
+    relational::graphFetch::RelationalConnection:
+    [
+      relational::graphFetch::dbInc
+    ],
+    relational::graphFetch::SecondRelationalConnection:
+    [
+      relational::graphFetch::dbInc
+    ]
+  ];
+}

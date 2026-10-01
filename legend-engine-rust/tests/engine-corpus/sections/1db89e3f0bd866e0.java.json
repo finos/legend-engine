@@ -1,0 +1,1970 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ssd::Team",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 20,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "distinct" : false,
+      "filter" : {
+        "filter" : {
+          "db" : "demo::ssd::store::TeamDB",
+          "name" : "MultiScoreFilter"
+        },
+        "joins" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      },
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssd::store::TeamDB",
+        "mainTableDb" : "demo::ssd::store::TeamDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 27,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 42,
+          "startLine" : 27
+        },
+        "table" : "TEAM_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 25
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssd::store::TeamDB",
+          "mainTableDb" : "demo::ssd::store::TeamDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 33,
+            "startLine" : 25
+          },
+          "table" : "TEAM_TABLE"
+        },
+        "tableAlias" : "TEAM_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 28
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssd::store::TeamDB",
+            "mainTableDb" : "demo::ssd::store::TeamDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 28,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 28
+            },
+            "table" : "TEAM_TABLE"
+          },
+          "tableAlias" : "TEAM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 28,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "label",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LABEL",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 12,
+            "startLine" : 29
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssd::store::TeamDB",
+            "mainTableDb" : "demo::ssd::store::TeamDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 29,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 38,
+              "startLine" : 29
+            },
+            "table" : "TEAM_TABLE"
+          },
+          "tableAlias" : "TEAM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 29,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 10,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "scoreCount",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_size",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "SCORES",
+              "sourceInformation" : {
+                "endColumn" : 96,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 54,
+                "startLine" : 30
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssd::store::TeamDB",
+                "mainTableDb" : "demo::ssd::store::TeamDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 89,
+                  "endLine" : 30,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 80,
+                  "startLine" : 30
+                },
+                "table" : "TEAM_TABLE"
+              },
+              "tableAlias" : "TEAM_TABLE"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 99,
+                "startLine" : 30
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 109,
+                "startLine" : 30
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 120,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 28,
+              "startLine" : 30
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 121,
+          "endLine" : 30,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "largeDivisions",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_size",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_filter",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "DIVISIONS",
+                "sourceInformation" : {
+                  "endColumn" : 116,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 71,
+                  "startLine" : 33
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssd::store::TeamDB",
+                  "mainTableDb" : "demo::ssd::store::TeamDB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 106,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 97,
+                    "startLine" : 33
+                  },
+                  "table" : "TEAM_TABLE"
+                },
+                "tableAlias" : "TEAM_TABLE"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 129,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 119,
+                  "startLine" : 33
+                },
+                "value" : "divisions"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 149,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 132,
+                  "startLine" : 33
+                },
+                "value" : "SEMISTRUCTURED[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 150,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "relationalLambda",
+              "body" : {
+                "_type" : "dynaFunc",
+                "funcName" : "greaterThan",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "d",
+                    "sourceInformation" : {
+                      "endColumn" : 184,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 183,
+                      "startLine" : 33
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 197,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 187,
+                      "startLine" : 33
+                    },
+                    "value" : "headcount"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 208,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 200,
+                      "startLine" : 33
+                    },
+                    "value" : "INTEGER"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 215,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 157,
+                    "startLine" : 33
+                  }
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 215,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 213,
+                    "startLine" : 33
+                  },
+                  "value" : 100
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 215,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 211,
+                  "startLine" : 33
+                }
+              },
+              "parameterNames" : [ "d" ],
+              "sourceInformation" : {
+                "endColumn" : 215,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 153,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 216,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 32,
+              "startLine" : 33
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 217,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 21,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 217,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "divisionNames",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_transform",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "DIVISIONS",
+                "sourceInformation" : {
+                  "endColumn" : 123,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 78,
+                  "startLine" : 36
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssd::store::TeamDB",
+                  "mainTableDb" : "demo::ssd::store::TeamDB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 113,
+                    "endLine" : 36,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 104,
+                    "startLine" : 36
+                  },
+                  "table" : "TEAM_TABLE"
+                },
+                "tableAlias" : "TEAM_TABLE"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 136,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 126,
+                  "startLine" : 36
+                },
+                "value" : "divisions"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 156,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 139,
+                  "startLine" : 36
+                },
+                "value" : "SEMISTRUCTURED[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 157,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 52,
+                "startLine" : 36
+              }
+            }, {
+              "_type" : "relationalLambda",
+              "body" : {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "lambdaParameter",
+                  "name" : "d",
+                  "sourceInformation" : {
+                    "endColumn" : 191,
+                    "endLine" : 36,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 190,
+                    "startLine" : 36
+                  }
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 199,
+                    "endLine" : 36,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 194,
+                    "startLine" : 36
+                  },
+                  "value" : "name"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 210,
+                    "endLine" : 36,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 202,
+                    "startLine" : 36
+                  },
+                  "value" : "VARCHAR"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 211,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 164,
+                  "startLine" : 36
+                }
+              },
+              "parameterNames" : [ "d" ],
+              "sourceInformation" : {
+                "endColumn" : 211,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 160,
+                "startLine" : 36
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 212,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 36,
+              "startLine" : 36
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 217,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 215,
+              "startLine" : 36
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 218,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 20,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 218,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 18,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "totalScore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 38,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_reduce",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "SCORES",
+              "sourceInformation" : {
+                "endColumn" : 98,
+                "endLine" : 38,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 56,
+                "startLine" : 38
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssd::store::TeamDB",
+                "mainTableDb" : "demo::ssd::store::TeamDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 38,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 82,
+                  "startLine" : 38
+                },
+                "table" : "TEAM_TABLE"
+              },
+              "tableAlias" : "TEAM_TABLE"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 38,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 101,
+                "startLine" : 38
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 38,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 111,
+                "startLine" : 38
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 30,
+              "startLine" : 38
+            }
+          }, {
+            "_type" : "relationalLambda",
+            "body" : {
+              "_type" : "dynaFunc",
+              "funcName" : "plus",
+              "parameters" : [ {
+                "_type" : "lambdaParameter",
+                "name" : "acc",
+                "sourceInformation" : {
+                  "endColumn" : 143,
+                  "endLine" : 38,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 140,
+                  "startLine" : 38
+                }
+              }, {
+                "_type" : "lambdaParameter",
+                "name" : "d",
+                "sourceInformation" : {
+                  "endColumn" : 147,
+                  "endLine" : 38,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 146,
+                  "startLine" : 38
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 148,
+                "endLine" : 38,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 135,
+                "startLine" : 38
+              }
+            },
+            "parameterNames" : [ "d", "acc" ],
+            "sourceInformation" : {
+              "endColumn" : 149,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 125,
+              "startLine" : 38
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 38,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 152,
+              "startLine" : 38
+            },
+            "value" : 0
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 153,
+            "endLine" : 38,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 38
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 153,
+          "endLine" : 38,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "topScore",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_max",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "SCORES",
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 39,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 51,
+                "startLine" : 39
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssd::store::TeamDB",
+                "mainTableDb" : "demo::ssd::store::TeamDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 39,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 77,
+                  "startLine" : 39
+                },
+                "table" : "TEAM_TABLE"
+              },
+              "tableAlias" : "TEAM_TABLE"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 103,
+                "endLine" : 39,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 96,
+                "startLine" : 39
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 39,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 106,
+                "startLine" : 39
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 39,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 39
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 39
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 118,
+          "endLine" : 39,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 39
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::Team",
+          "property" : "lowScore",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_min",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "SCORES",
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 51,
+                "startLine" : 40
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssd::store::TeamDB",
+                "mainTableDb" : "demo::ssd::store::TeamDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 40,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 77,
+                  "startLine" : 40
+                },
+                "table" : "TEAM_TABLE"
+              },
+              "tableAlias" : "TEAM_TABLE"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 103,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 96,
+                "startLine" : 40
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 40,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 106,
+                "startLine" : 40
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 40,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 40
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 40
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 118,
+          "endLine" : 40,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 40
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssd::TeamStats",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 44,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssd::store::TeamDB",
+        "mainTableDb" : "demo::ssd::store::TeamDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 50,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 42,
+          "startLine" : 50
+        },
+        "table" : "TEAM_STATS"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 48,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 48
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssd::store::TeamDB",
+          "mainTableDb" : "demo::ssd::store::TeamDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 33,
+            "startLine" : 48
+          },
+          "table" : "TEAM_STATS"
+        },
+        "tableAlias" : "TEAM_STATS"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::TeamStats",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 51,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 51,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 51
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssd::store::TeamDB",
+            "mainTableDb" : "demo::ssd::store::TeamDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 51,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 51
+            },
+            "table" : "TEAM_STATS"
+          },
+          "tableAlias" : "TEAM_STATS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 51,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::TeamStats",
+          "property" : "total",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "TOTAL",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 12,
+            "startLine" : 52
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssd::store::TeamDB",
+            "mainTableDb" : "demo::ssd::store::TeamDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 38,
+              "startLine" : 52
+            },
+            "table" : "TEAM_STATS"
+          },
+          "tableAlias" : "TEAM_STATS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 52,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 10,
+          "startLine" : 52
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssd::TeamStats",
+          "property" : "top",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 53,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 53
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "TOP",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 53,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 10,
+            "startLine" : 53
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssd::store::TeamDB",
+            "mainTableDb" : "demo::ssd::store::TeamDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 53,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 36,
+              "startLine" : 53
+            },
+            "table" : "TEAM_STATS"
+          },
+          "tableAlias" : "TEAM_STATS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 53,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 8,
+          "startLine" : 53
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 54,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "TeamMapping",
+    "package" : "demo::ssd",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 87,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssd::Team",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 60,
+                  "sourceId" : "demo::ssd::TeamMapping",
+                  "startColumn" : 18,
+                  "startLine" : 60
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 60,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 33,
+                "startLine" : 60
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 242,
+                "endLine" : 61,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 30,
+                "startLine" : 61
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 43,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 42,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "label",
+                      "sourceInformation" : {
+                        "endColumn" : 49,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 45,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 49,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 40,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "label",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 31,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 69,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 68,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "scoreCount",
+                      "sourceInformation" : {
+                        "endColumn" : 80,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 71,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 66,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "scoreCount",
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 52,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 98,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 97,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "topScore",
+                      "sourceInformation" : {
+                        "endColumn" : 107,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 100,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 107,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 95,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "topScore",
+                  "sourceInformation" : {
+                    "endColumn" : 107,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 83,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 125,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 124,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "lowScore",
+                      "sourceInformation" : {
+                        "endColumn" : 134,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 127,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 134,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 122,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "lowScore",
+                  "sourceInformation" : {
+                    "endColumn" : 134,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 110,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 158,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 157,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "largeDivisions",
+                      "sourceInformation" : {
+                        "endColumn" : 173,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 160,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 173,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 155,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "largeDivisions",
+                  "sourceInformation" : {
+                    "endColumn" : 173,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 137,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 196,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 195,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "divisionNames",
+                      "sourceInformation" : {
+                        "endColumn" : 210,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 198,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 210,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 193,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "divisionNames",
+                  "sourceInformation" : {
+                    "endColumn" : 210,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 176,
+                    "startLine" : 61
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "t",
+                        "sourceInformation" : {
+                          "endColumn" : 230,
+                          "endLine" : 61,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 229,
+                          "startLine" : 61
+                        }
+                      } ],
+                      "property" : "totalScore",
+                      "sourceInformation" : {
+                        "endColumn" : 241,
+                        "endLine" : 61,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 232,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 241,
+                      "endLine" : 61,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 227,
+                      "startLine" : 61
+                    }
+                  },
+                  "name" : "totalScore",
+                  "sourceInformation" : {
+                    "endColumn" : 241,
+                    "endLine" : 61,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 213,
+                    "startLine" : 61
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 61,
+              "sourceId" : "demo::ssd::TeamMapping",
+              "startColumn" : 21,
+              "startLine" : 61
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 62,
+              "sourceId" : "demo::ssd::TeamMapping",
+              "startColumn" : 26,
+              "startLine" : 62
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 62,
+                  "sourceId" : "demo::ssd::TeamMapping",
+                  "startColumn" : 28,
+                  "startLine" : 62
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "label",
+                  "sourceInformation" : {
+                    "endColumn" : 32,
+                    "endLine" : 62,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 28,
+                    "startLine" : 62
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 62,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 35,
+                "startLine" : 62
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 62,
+            "sourceId" : "demo::ssd::TeamMapping",
+            "startColumn" : 21,
+            "startLine" : 62
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 62,
+          "sourceId" : "demo::ssd::TeamMapping",
+          "startColumn" : 17,
+          "startLine" : 60
+        }
+      },
+      "id" : "mappingArraySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 71,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 58
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"label\":\"Falcons\",\"scoreCount\":3,\"topScore\":100,\"lowScore\":9,\"largeDivisions\":2,\"divisionNames\":\"Alpha,Beta,Gamma\",\"totalScore\":129},{\"label\":\"Ravens\",\"scoreCount\":3,\"topScore\":12,\"lowScore\":5,\"largeDivisions\":0,\"divisionNames\":\"Delta\",\"totalScore\":24}]",
+            "sourceInformation" : {
+              "endColumn" : 388,
+              "endLine" : 68,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 71,
+              "startLine" : 68
+            }
+          },
+          "id" : "shouldAggregateInStore",
+          "sourceInformation" : {
+            "endColumn" : 392,
+            "endLine" : 68,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 46,
+            "startLine" : 68
+          }
+        } ],
+        "id" : "arrayFunctionsInMappingAndFilter",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 69,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 65
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssd::data::TeamData",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 67,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 67
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 67,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 45,
+              "startLine" : 67
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 67,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 67
+          },
+          "store" : {
+            "path" : "demo::ssd::store::TeamDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 67,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 67
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssd::TeamStats",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 74,
+                  "sourceId" : "demo::ssd::TeamMapping",
+                  "startColumn" : 18,
+                  "startLine" : 74
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 74,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 38,
+                "startLine" : 74
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 75,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 30,
+                "startLine" : 75
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "s",
+                        "sourceInformation" : {
+                          "endColumn" : 40,
+                          "endLine" : 75,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 39,
+                          "startLine" : 75
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 43,
+                        "endLine" : 75,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 42,
+                        "startLine" : 75
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 43,
+                      "endLine" : 75,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 37,
+                      "startLine" : 75
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 75,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 31,
+                    "startLine" : 75
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "s",
+                        "sourceInformation" : {
+                          "endColumn" : 58,
+                          "endLine" : 75,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 57,
+                          "startLine" : 75
+                        }
+                      } ],
+                      "property" : "total",
+                      "sourceInformation" : {
+                        "endColumn" : 64,
+                        "endLine" : 75,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 60,
+                        "startLine" : 75
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 64,
+                      "endLine" : 75,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 55,
+                      "startLine" : 75
+                    }
+                  },
+                  "name" : "total",
+                  "sourceInformation" : {
+                    "endColumn" : 64,
+                    "endLine" : 75,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 46,
+                    "startLine" : 75
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "s",
+                        "sourceInformation" : {
+                          "endColumn" : 77,
+                          "endLine" : 75,
+                          "sourceId" : "demo::ssd::TeamMapping",
+                          "startColumn" : 76,
+                          "startLine" : 75
+                        }
+                      } ],
+                      "property" : "top",
+                      "sourceInformation" : {
+                        "endColumn" : 81,
+                        "endLine" : 75,
+                        "sourceId" : "demo::ssd::TeamMapping",
+                        "startColumn" : 79,
+                        "startLine" : 75
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 75,
+                      "sourceId" : "demo::ssd::TeamMapping",
+                      "startColumn" : 74,
+                      "startLine" : 75
+                    }
+                  },
+                  "name" : "top",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 75,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 67,
+                    "startLine" : 75
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 75,
+              "sourceId" : "demo::ssd::TeamMapping",
+              "startColumn" : 21,
+              "startLine" : 75
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 76,
+              "sourceId" : "demo::ssd::TeamMapping",
+              "startColumn" : 26,
+              "startLine" : 76
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 76,
+                  "sourceId" : "demo::ssd::TeamMapping",
+                  "startColumn" : 28,
+                  "startLine" : 76
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 29,
+                    "endLine" : 76,
+                    "sourceId" : "demo::ssd::TeamMapping",
+                    "startColumn" : 28,
+                    "startLine" : 76
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 76,
+                "sourceId" : "demo::ssd::TeamMapping",
+                "startColumn" : 32,
+                "startLine" : 76
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 76,
+            "sourceId" : "demo::ssd::TeamMapping",
+            "startColumn" : 21,
+            "startLine" : 76
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 76,
+          "sourceId" : "demo::ssd::TeamMapping",
+          "startColumn" : 17,
+          "startLine" : 74
+        }
+      },
+      "id" : "viewArraySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 85,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 72
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"id\":1,\"total\":3,\"top\":100},{\"id\":2,\"total\":3,\"top\":12},{\"id\":3,\"total\":2,\"top\":40}]",
+            "sourceInformation" : {
+              "endColumn" : 221,
+              "endLine" : 82,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 73,
+              "startLine" : 82
+            }
+          },
+          "id" : "shouldComputeViewColumns",
+          "sourceInformation" : {
+            "endColumn" : 225,
+            "endLine" : 82,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 48,
+            "startLine" : 82
+          }
+        } ],
+        "id" : "arrayFunctionsInViewColumns",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 83,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 79
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssd::data::TeamData",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 81,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 81
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 81,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 45,
+              "startLine" : 81
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 81,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 81
+          },
+          "store" : {
+            "path" : "demo::ssd::store::TeamDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 81,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 81
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

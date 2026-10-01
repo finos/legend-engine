@@ -1,0 +1,96 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ModelChainConnectionRuntime",
+    "package" : "relational::graphFetch",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "relational::graphFetch::RelationalConnection",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 98
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 98
+        },
+        "storePointers" : [ {
+          "path" : "relational::graphFetch::dbInc",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 100
+          }
+        } ]
+      }, {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "relational::graphFetch::SecondRelationalConnection",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 102
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 105,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 102
+        },
+        "storePointers" : [ {
+          "path" : "relational::graphFetch::dbInc",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 104,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 104
+          }
+        } ]
+      } ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "relational::graphFetch::M2M_Mapping",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 94,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 94
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 90
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 107,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 90
+    }
+  } ],
+  "imports" : [ ]
+}

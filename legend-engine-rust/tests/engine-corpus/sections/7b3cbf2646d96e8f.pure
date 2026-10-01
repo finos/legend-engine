@@ -1,0 +1,71 @@
+
+Mapping demo::joins::NestedJoinMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME,
+    department: [demo::store::JoinsDB]@Emp_Dept
+  }
+
+  *demo::joins::Department: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.DEPARTMENT.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.DEPARTMENT
+    name: [demo::store::JoinsDB]HR.DEPARTMENT.NAME,
+    location: [demo::store::JoinsDB]HR.DEPARTMENT.LOCATION
+  }
+
+  *demo::joins::Sale: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]SALES.SALE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]SALES.SALE
+    amount: [demo::store::JoinsDB]SALES.SALE.AMOUNT,
+    seller: [demo::store::JoinsDB]@Emp_Sale
+  }
+
+  testSuites:
+  [
+    nestedJoinSuite:
+    {
+      function: |demo::joins::Sale.all()->sortBy(x | $x.amount)->project([x | $x.seller.name, x | $x.seller.department.name, x | $x.amount], ['Seller', 'Dept', 'Amount']);
+      tests:
+      [
+        chainedThroughTwoJoins:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::NestedJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveSellerDepartmentAcrossTwoJoins:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Seller":"Bob","Dept":"Sales","Amount":300},{"Seller":"Alice","Dept":"Engineering","Amount":500}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

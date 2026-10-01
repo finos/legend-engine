@@ -1,0 +1,137 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 6
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 6
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 6
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 6
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "test::binding"
+        },
+        "property" : {
+          "class" : "Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "jsonColumn",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 7
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 7
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 7
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

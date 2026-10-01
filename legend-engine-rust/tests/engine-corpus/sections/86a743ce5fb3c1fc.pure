@@ -1,0 +1,13 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);
+    validations: [
+      {
+         name: 'validFirstName';
+         description: 'First name cannot be empty';
+         assertion: row|$row.FIRSTNAME->isNotEmpty();
+         type: ROW_LEVEL;
+      }
+    ];
+}

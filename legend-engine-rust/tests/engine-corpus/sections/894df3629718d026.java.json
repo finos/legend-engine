@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'p2'. Valid alternatives: [',']",
+    "sourceInformation" : {
+      "endColumn" : 6,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 7
+    }
+  }
+}

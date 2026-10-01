@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB3",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 64
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 67
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "addressTable",
+        "primaryKey" : [ "name" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 68,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 66
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 69,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ ]
+  } ]
+}

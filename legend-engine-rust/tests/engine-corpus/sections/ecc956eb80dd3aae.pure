@@ -1,0 +1,9 @@
+
+Database test::store::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)

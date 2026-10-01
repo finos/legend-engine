@@ -1,0 +1,16 @@
+
+function my::Hello(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}
+{
+  MySuite
+  (
+    ModelStore: (JSON) '{}';
+    myTest | Hello('John') => Relation
+    #{
+      id, name
+      1 , John;
+    }#;
+  )
+}

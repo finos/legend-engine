@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'url' is required",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 29
+    }
+  }
+}

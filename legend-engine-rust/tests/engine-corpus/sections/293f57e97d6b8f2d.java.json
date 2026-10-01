@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "pack",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "a",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 3
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "myTab",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 3
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 31,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

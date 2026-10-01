@@ -1,0 +1,9 @@
+
+Mapping mongo::test::mapping::QuotedCollectionMapping
+(
+  *meta::external::mongo::mapping[id1]: MongoDB
+  {
+    ~mainCollection [mongo::test::db] 'person-records'
+    ~binding mongo::test::binding::PersonBinding
+  }
+)

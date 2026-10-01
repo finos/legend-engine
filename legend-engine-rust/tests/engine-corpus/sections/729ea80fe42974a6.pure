@@ -1,0 +1,13 @@
+
+DataSpace model::MySpace
+{
+  title: 'title';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'exec';
+      query: |model::Firm.all()->project([x|$x.name], ['name'])->from(model::MyMapping, model::MyRuntime);
+    }
+  ];
+}

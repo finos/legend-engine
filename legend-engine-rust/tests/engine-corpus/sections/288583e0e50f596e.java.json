@@ -1,0 +1,234 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "CovidDataDemographicsJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "FIPS",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 170,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 170
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 170,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 170
+            },
+            "table" : "DEMOGRAPHICS"
+          },
+          "tableAlias" : "DEMOGRAPHICS"
+        }, {
+          "_type" : "column",
+          "column" : "FIPS",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 170,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 170
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 170,
+              "sourceId" : "",
+              "startColumn" : 54,
+              "startLine" : 170
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 170,
+          "sourceId" : "",
+          "startColumn" : 52,
+          "startLine" : 170
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 170,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 170
+      }
+    } ],
+    "name" : "CovidDataStore",
+    "package" : "store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 171,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 153
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "FIPS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 157,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 157
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "STATE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 158,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 158
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "DEMOGRAPHICS",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 159,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 155
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 162,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 162
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIPS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 163,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 163
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "DATE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 164,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 164
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "CASE_TYPE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 165,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 165
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "CASES",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 166,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 166
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LAST_REPORTED_FLAG",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 167,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 167
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "COVID_DATA",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 168,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 160
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 171,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 153
+    },
+    "stereotypes" : [ ]
+  } ]
+}

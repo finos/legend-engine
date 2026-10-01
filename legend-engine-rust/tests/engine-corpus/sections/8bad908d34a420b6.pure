@@ -1,0 +1,12 @@
+
+Mapping testing::mapping
+(
+  MappingTests
+  [
+    test_1
+    (
+      assert: '{}';
+      query: |testing::Person.all();
+    )
+  ]
+)

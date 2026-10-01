@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "DOC" ],
+        "paths" : [ "default", "T" ],
+        "rows" : [ {
+          "values" : [ "1", "\"{\"\"divisions\"\":[{\"\"name\"\":\"\"Alpha\"\",\"\"headcount\"\":9,\"\"teams\"\":[{\"\"label\"\":\"\"Core\"\"},{\"\"label\"\":\"\"Edge\"\"}]},{\"\"name\"\":\"\"Beta\"\",\"\"headcount\"\":100,\"\"teams\"\":[{\"\"label\"\":\"\"Ops\"\"}]}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 189,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 22
+      }
+    },
+    "name" : "D",
+    "package" : "wild::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

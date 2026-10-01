@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->extend(over(~ids->ascending()), ~nid:{p,w,r|$r.id}:y|$y->sum())
+}

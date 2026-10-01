@@ -1,0 +1,5 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');
+}

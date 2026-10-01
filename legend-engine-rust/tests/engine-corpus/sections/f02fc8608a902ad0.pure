@@ -1,0 +1,9 @@
+
+Binding demo::ssa::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssa::Firm,
+    demo::ssa::Address
+  ];
+}

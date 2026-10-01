@@ -1,0 +1,14 @@
+
+Mapping test::crossPropertyMappingWithLocalProperties
+(
+   test::Address[a]: Pure {
+      ~src test::Address
+      name: $src.name,
+      streetName: $src.streetName,
+      +streetId: String[1] : 'id'
+   }
+   test::Person[p]: Pure {
+      ~src test::Person
+      fullName: $src.fullName
+   }
+)

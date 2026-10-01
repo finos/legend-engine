@@ -1,0 +1,46 @@
+
+Database example::database
+(
+  include example::databaseInc
+
+  Schema exampleRoot
+  (
+    Table TableC
+    (
+      name VARCHAR(255),
+      id INTEGER PRIMARY KEY
+    )
+
+    View dbView
+    (
+      nameL: exampleSub.TableASub.name,
+      rootTable: [example::databaseInc]@AtoB > [example::database]@BtoC | exampleRoot.TableC.name
+    )
+    View dbViewIncTable
+    (
+      nameL: exampleRoot.TableC.name,
+      incTable: [example::database]@BtoC > [example::database]@AtoB | [example::databaseInc]exampleSub.TableASub.name
+    )
+  )
+
+  Join BtoC([example::databaseInc]exampleSub.TableBSub.id = exampleRoot.TableC.id)
+)
+
+Database example::databaseInc
+(
+  Schema exampleSub
+  (
+    Table TableASub
+    (
+      name VARCHAR(255),
+      id INTEGER PRIMARY KEY
+    )
+    Table TableBSub
+    (
+      name VARCHAR(255),
+      id INTEGER PRIMARY KEY
+    )
+  )
+
+  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)
+)

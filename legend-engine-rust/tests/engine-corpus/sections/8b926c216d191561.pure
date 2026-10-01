@@ -1,0 +1,8 @@
+
+Class test::Person
+{
+  fullName: String[1];
+  addressName: String[1];
+  firmName: String[1];
+}
+

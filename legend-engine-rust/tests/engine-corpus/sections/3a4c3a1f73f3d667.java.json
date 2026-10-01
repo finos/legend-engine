@@ -1,0 +1,177 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "1,2,3"
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 3,
+          "upperBound" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        },
+        "values" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 3
+          },
+          "value" : 1
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 3
+          },
+          "value" : 2
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 3
+          },
+          "value" : 3
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    }, {
+      "_type" : "func",
+      "function" : "joinStrings",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "map",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "1,2,3",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 4
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "toString",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "n",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 4
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 4
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "n"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 4
+        }
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 48,
+          "startLine" : 4
+        },
+        "value" : ","
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 4
+      }
+    } ],
+    "name" : "qoutedParams__String_$0_1$_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

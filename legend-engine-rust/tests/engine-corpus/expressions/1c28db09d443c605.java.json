@@ -1,0 +1,34 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 51,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "type" : ">",
+    "value" : {
+      "path" : [ "meta::analytics::lineage::tests::db", "firmTable" ],
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      }
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 51,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

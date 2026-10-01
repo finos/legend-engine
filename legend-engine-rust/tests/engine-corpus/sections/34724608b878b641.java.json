@@ -1,0 +1,118 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ServiceStoreRuntime",
+    "package" : "meta::external::store::service::showcase::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 328,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 325
+        },
+        "store" : {
+          "path" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 325,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 325
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "meta::external::store::service::showcase::connection::serviceStoreConnection",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 327,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 327
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 327,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 327
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 332,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 329
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 329,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 329
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "meta::external::store::service::showcase::connection::modelChainConnection",
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 331,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 331
+            }
+          },
+          "id" : "connection_2",
+          "sourceInformation" : {
+            "endColumn" : 101,
+            "endLine" : 331,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 331
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "meta::external::store::service::showcase::mapping::ServiceStoreMapping",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 321,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 321
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 334,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 317
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 334,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 317
+    }
+  } ],
+  "imports" : [ ]
+}

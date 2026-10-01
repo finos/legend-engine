@@ -1,0 +1,10 @@
+
+Data data::RelationalData
+{
+store::TestDB:
+  Relation
+  #{
+    default.PersonTable:
+      id
+      2;  }#;
+}

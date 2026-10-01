@@ -1,0 +1,5 @@
+
+Class test::B
+{
+   z(){test::A.all()->map(a|$a.nam)}:String[*];
+}

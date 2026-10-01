@@ -1,0 +1,79 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "elements" : [ {
+      "path" : "model::element",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 31
+      }
+    }, {
+      "path" : "model",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 31
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::sub",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 37,
+        "startLine" : 31
+      }
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 27
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 26
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

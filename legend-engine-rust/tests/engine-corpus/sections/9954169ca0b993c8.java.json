@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 18,
+        "sourceId" : "mappingFunction/businessTemporalEmployees.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "BusinessTemporalEmployeeTable" ],
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 18,
+          "sourceId" : "mappingFunction/businessTemporalEmployees.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }
+    } ],
+    "name" : "businessTemporalEmployees__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 16,
+          "sourceId" : "mappingFunction/businessTemporalEmployees.pure",
+          "startColumn" : 61,
+          "startLine" : 16
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 16,
+            "sourceId" : "mappingFunction/businessTemporalEmployees.pure",
+            "startColumn" : 103,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "mappingFunction/businessTemporalEmployees.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

@@ -1,0 +1,126 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "relational",
+      "association" : {
+        "path" : "test::SomeAssociation",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 33
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "model::Test",
+            "name" : "RandomJoin",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 54,
+              "startLine" : 37
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 37
+          }
+        },
+        "source" : "prop2_source",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 37
+        },
+        "target" : "prop1_source"
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "prop2",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 38
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "model::Test",
+            "name" : "RandomJoin",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 54,
+              "startLine" : 38
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 41,
+            "startLine" : 38
+          }
+        },
+        "source" : "prop1_source",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 38
+        },
+        "target" : "prop2_source"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stores" : [ "model::Test" ]
+    } ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 31
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

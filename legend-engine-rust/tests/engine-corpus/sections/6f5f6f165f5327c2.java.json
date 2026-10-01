@@ -1,0 +1,17 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ ],
+    "includedStores" : [ ],
+    "name" : "toBytes",
+    "package" : "Database::Collection::jsonSchema::validationLevel::validationAction::Join::include::error::warn::strict::moderate::true::false::null::all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

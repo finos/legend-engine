@@ -1,0 +1,9 @@
+
+Mapping mapping::test
+(
+  mapping::SomeClass: XStore
+  {
+    p1: true,
+    p2: false
+  }
+)

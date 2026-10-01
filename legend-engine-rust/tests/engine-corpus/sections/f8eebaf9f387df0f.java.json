@@ -1,0 +1,36 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition" ]
+    },
+    "name" : "TestBinding1",
+    "package" : "test::firm::model",
+    "sourceInformation" : {
+      "endColumn" : 173,
+      "endLine" : 64,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 61
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::firm::model::Address", "test::firm::model::GeographicPosition" ]
+    },
+    "name" : "TestBinding2",
+    "package" : "test::firm::model",
+    "sourceInformation" : {
+      "endColumn" : 90,
+      "endLine" : 68,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    }
+  } ],
+  "imports" : [ ]
+}

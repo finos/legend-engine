@@ -1,0 +1,243 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "simple::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "simple::dbInc",
+        "mainTableDb" : "simple::dbInc",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 43
+        },
+        "table" : "personTable"
+      },
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "simple::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRSTNAME",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 44
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 44
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "simple::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LASTNAME",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 45
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 45
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "simple::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AGE",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 46
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "simple::TestBinding"
+        },
+        "property" : {
+          "class" : "simple::Person",
+          "property" : "manager",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRM",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 58,
+              "startLine" : 47
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 47
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "simpleRelationalMappingInc",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 39
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

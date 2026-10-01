@@ -1,0 +1,5 @@
+
+function my::personFunc():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{my::db.personTable}#->filter(x | $x.AGE > 25)
+}

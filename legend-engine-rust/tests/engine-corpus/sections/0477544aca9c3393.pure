@@ -1,0 +1,11 @@
+
+Database app::db
+(
+  Schema <<meta::pure::profiles::storeType.type3>> mySchema
+  (
+    Table Product
+    (
+      ProductID VARCHAR(30) PRIMARY KEY
+    )
+  )
+)

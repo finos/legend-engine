@@ -1,0 +1,9 @@
+
+Data meta::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{"some":"data"}';
+  }#
+}

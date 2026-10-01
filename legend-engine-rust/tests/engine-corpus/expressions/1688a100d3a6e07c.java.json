@@ -1,0 +1,66 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "or",
+    "parameters" : [ {
+      "_type" : "boolean",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "value" : true
+    }, {
+      "_type" : "func",
+      "function" : "and",
+      "parameters" : [ {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 1
+        },
+        "value" : true
+      }, {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        },
+        "value" : false
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 8,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 22,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

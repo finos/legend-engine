@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported HTTP Method type - PUT. Supported types are - GET,POST",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 7
+    }
+  }
+}

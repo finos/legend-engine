@@ -1,0 +1,991 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+      "classSourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "id" : "meta_pure_mapping_modelToModel_test_shared_dest_Person",
+      "operation" : "STORE_UNION",
+      "parameters" : [ "p1", "p2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "id" : "meta_pure_mapping_modelToModel_test_shared_dest_Firm",
+      "operation" : "STORE_UNION",
+      "parameters" : [ "f1", "f2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "id" : "f1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 15
+          }
+        },
+        "source" : "f1",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 15
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 22,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 15
+                },
+                "value" : "f1 / "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 29,
+                    "endLine" : 15,
+                    "sourceId" : "",
+                    "startColumn" : 26,
+                    "startLine" : 15
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 15
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 15
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 14
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::shared::src::_Firm"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      },
+      "id" : "f2",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 20
+          }
+        },
+        "source" : "f2",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 20
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 22,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 20
+                },
+                "value" : "f2 / "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 29,
+                    "endLine" : 20,
+                    "sourceId" : "",
+                    "startColumn" : 26,
+                    "startLine" : 20
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 20
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 20
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 19
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::shared::src::_Firm"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Address",
+      "classSourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "id" : "meta_pure_mapping_modelToModel_test_shared_dest_Address",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Address",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "source" : "meta_pure_mapping_modelToModel_test_shared_dest_Address",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 24
+            },
+            "value" : "streetConstant"
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "filter" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "startsWith",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 29
+              }
+            } ],
+            "property" : "fullName",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 29
+            },
+            "value" : "Johny"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ ]
+      },
+      "id" : "p1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 30
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 30
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 30
+              },
+              "value" : 0
+            }, {
+              "_type" : "func",
+              "function" : "indexOf",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 30,
+                    "sourceId" : "",
+                    "startColumn" : 44,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 30
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 69,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 67,
+                  "startLine" : 30
+                },
+                "value" : " "
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 59,
+                "startLine" : 30
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 30
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 31
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 31
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 31
+              }
+            }, {
+              "_type" : "func",
+              "function" : "plus",
+              "parameters" : [ {
+                "_type" : "collection",
+                "multiplicity" : {
+                  "lowerBound" : 2,
+                  "upperBound" : 2
+                },
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 68,
+                  "startLine" : 31
+                },
+                "values" : [ {
+                  "_type" : "func",
+                  "function" : "indexOf",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "src",
+                      "sourceInformation" : {
+                        "endColumn" : 43,
+                        "endLine" : 31,
+                        "sourceId" : "",
+                        "startColumn" : 40,
+                        "startLine" : 31
+                      }
+                    } ],
+                    "property" : "fullName",
+                    "sourceInformation" : {
+                      "endColumn" : 52,
+                      "endLine" : 31,
+                      "sourceId" : "",
+                      "startColumn" : 45,
+                      "startLine" : 31
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 65,
+                      "endLine" : 31,
+                      "sourceId" : "",
+                      "startColumn" : 63,
+                      "startLine" : 31
+                    },
+                    "value" : " "
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 31,
+                    "sourceId" : "",
+                    "startColumn" : 55,
+                    "startLine" : 31
+                  }
+                }, {
+                  "_type" : "integer",
+                  "sourceInformation" : {
+                    "endColumn" : 70,
+                    "endLine" : 31,
+                    "sourceId" : "",
+                    "startColumn" : 70,
+                    "startLine" : 31
+                  },
+                  "value" : 1
+                } ]
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 68,
+                "startLine" : 31
+              }
+            }, {
+              "_type" : "func",
+              "function" : "length",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 76,
+                    "endLine" : 31,
+                    "sourceId" : "",
+                    "startColumn" : 73,
+                    "startLine" : 31
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 85,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 78,
+                  "startLine" : 31
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 88,
+                "startLine" : 31
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 31
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "addresses",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "target" : "meta_pure_mapping_modelToModel_test_shared_dest_Address",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 73,
+                "startLine" : 32
+              }
+            } ],
+            "property" : "addresses",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 78,
+              "startLine" : 32
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "target" : "f1",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 33
+              }
+            } ],
+            "property" : "firm",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 28
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "filter" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "startsWith",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 38
+              }
+            } ],
+            "property" : "fullName",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 38
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 38
+            },
+            "value" : "_"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 38
+          }
+        } ],
+        "parameters" : [ ]
+      },
+      "id" : "p2",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 39
+            },
+            "value" : "N/A"
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 40
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 40
+            },
+            "value" : "N/A"
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::shared::dest::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 41
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 41
+        },
+        "target" : "f2",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 41
+              }
+            } ],
+            "property" : "firm",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 41
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 37
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::shared::src::_Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "unionModelMapping",
+    "package" : "meta::pure::mapping::modelToModel::test::union",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

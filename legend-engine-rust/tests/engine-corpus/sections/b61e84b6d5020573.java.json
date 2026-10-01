@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 26,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        },
+        "table" : "PRODUCT",
+        "values" : "ID,NAME,FROM_Z,THRU_Z,IN_Z,OUT_Z\n1,WidgetV1,2020-01-01,2021-01-01,2020-01-01,2021-01-01\n1,WidgetV2,2021-01-01,9999-12-31,2021-01-01,9999-12-31\n"
+      } ]
+    },
+    "name" : "BiProductData",
+    "package" : "demo::milestone::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

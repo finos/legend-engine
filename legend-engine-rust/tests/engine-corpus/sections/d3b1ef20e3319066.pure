@@ -1,0 +1,9 @@
+
+Mapping test::firm::model::M2MMapping
+(
+  test::firm::model::TargetPerson: Pure
+  {
+    ~src test::firm::model::Person
+    fullName : $src.firstName + ' ' + $src.lastName
+  }
+)

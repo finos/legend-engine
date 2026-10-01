@@ -1,0 +1,28 @@
+
+DataSpace domain::COVIDDatapace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::MyRuntime;
+    },
+    {
+      name: 'dummyContext2';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'Not over yet?';
+  diagrams:
+  [
+    {
+      title: '';
+      diagram: domain::COVIDDataDiagram;
+    }
+  ];
+}
+

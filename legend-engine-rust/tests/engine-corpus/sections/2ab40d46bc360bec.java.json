@@ -1,0 +1,388 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "FirmPerson",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "firm_id",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 25
+            },
+            "table" : "People"
+          },
+          "tableAlias" : "People"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 25
+            },
+            "table" : "Firms"
+          },
+          "tableAlias" : "Firms"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    }, {
+      "name" : "PersonPetWithNull",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "pet_id",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 26
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "stores::testRelationalJoinsDB",
+              "mainTableDb" : "stores::testRelationalJoinsDB",
+              "schema" : "testSchema",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 26
+              },
+              "table" : "People"
+            },
+            "tableAlias" : "People"
+          }, {
+            "_type" : "column",
+            "column" : "id",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 26
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "stores::testRelationalJoinsDB",
+              "mainTableDb" : "stores::testRelationalJoinsDB",
+              "schema" : "testSchema",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 26
+              },
+              "table" : "Pets"
+            },
+            "tableAlias" : "Pets"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 26
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "species",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 76,
+              "startLine" : 26
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "stores::testRelationalJoinsDB",
+              "mainTableDb" : "stores::testRelationalJoinsDB",
+              "schema" : "testSchema",
+              "sourceInformation" : {
+                "endColumn" : 90,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 76,
+                "startLine" : 26
+              },
+              "table" : "Pets"
+            },
+            "tableAlias" : "Pets"
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlNull",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 102,
+              "startLine" : 26
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 110,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 100,
+            "startLine" : 26
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 110,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 72,
+          "startLine" : 26
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 111,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "testRelationalJoinsDB",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "testSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "firm_name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Firms",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firm_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 15
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "pet_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "People",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "pet_name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 50
+          }
+        }, {
+          "name" : "species",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Pets",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 18
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

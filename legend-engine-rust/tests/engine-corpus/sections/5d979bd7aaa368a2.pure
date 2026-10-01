@@ -1,0 +1,10 @@
+
+Profile meta::pure::profiles::storeType
+{
+    stereotypes: [type1, type2];
+}
+
+Profile meta::pure::profiles::doc
+{
+    tags: [doc];
+}

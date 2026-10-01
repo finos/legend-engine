@@ -1,0 +1,91 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 17
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ProductID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Product",
+        "primaryKey" : [ "ProductID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 19
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::storeType",
+      "profileSourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 17
+      },
+      "sourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 44,
+        "startLine" : 17
+      },
+      "value" : "type2"
+    }, {
+      "profile" : "meta::pure::profiles::storeType",
+      "profileSourceInformation" : {
+        "endColumn" : 81,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 51,
+        "startLine" : 17
+      },
+      "sourceInformation" : {
+        "endColumn" : 87,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 83,
+        "startLine" : 17
+      },
+      "value" : "type1"
+    } ]
+  } ]
+}

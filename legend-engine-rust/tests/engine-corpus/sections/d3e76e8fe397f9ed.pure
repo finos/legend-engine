@@ -1,0 +1,8 @@
+
+Runtime meta::myRuntime
+{
+  mappings:
+  [
+    meta::myMapping
+  ];
+}

@@ -1,0 +1,19 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: Snowflake;
+  quoteIdentifiers: true;
+  specification: Snowflake
+      {
+           name: 'dbName';
+           account: 'account';
+           warehouse: 'warehouse';
+           region: 'region';
+      };
+  auth: OAuth
+  {
+    oauthKey: 'oauthKey';
+    scopeName: 'scopeName';
+  };
+}

@@ -1,0 +1,14 @@
+
+Class <<temporal.processingtemporal>> meta::test::milestoning::domain::Product[
+   CST
+   (
+      ~function: $this.classification.exchangeName->startsWith('a') 
+      ~message: 'Ensure parent (this) milestoning context propagated through project'
+   )
+]
+{
+   classification : meta::test::milestoning::domain::Classification[1];
+}
+Class  <<temporal.processingtemporal>> meta::test::milestoning::domain::Classification{
+   exchangeName : String[1];
+}

@@ -1,0 +1,44 @@
+
+Class test::Class {
+   nestedZeroOne: test::NestedClass[0..1];
+   nestedOne: test::NestedClass[1];
+   nestedTwo: test::NestedClass[2];
+   nestedMany: test::NestedClass[*];
+   mulZeroOne: String[0..1];
+   mulOne: String[1];
+   mulOneTwo: Integer[1..2];
+   mulOneMany: String[1..*];
+   mulZeroMany: String[0..*];
+}
+Class test::NestedClass {
+   mulZeroOne: String[0..1];
+   mulOne: String[1];
+   mulOneTwo: Integer[1..2];
+   mulOneMany: String[1..*];
+   mulZeroMany: String[0..*];
+}
+function test::f():Any[*]
+{
+   test::Class.all()->project(~[
+        mulZeroOne: x|$x.mulZeroOne,
+        mulOne: x|$x.mulOne,
+        mulOneTwo: x|$x.mulOneTwo,
+        mulOneMany: x|$x.mulOneMany,
+        mulZeroMany: x|$x.mulZeroMany,
+        nestedOneMulZeroOne: x|$x.nestedOne.mulZeroOne,
+        nestedOneMulOne: x|$x.nestedOne.mulOne,
+        nestedOneMulOneTwo: x|$x.nestedOne.mulOneTwo,
+        nestedOneMulOneMany: x|$x.nestedOne.mulOneMany,
+        nestedOneMulZeroMany: x|$x.nestedOne.mulZeroMany,
+        nestedTwoMulZeroOne: x|$x.nestedTwo.mulZeroOne,
+        nestedTwoMulOne: x|$x.nestedTwo.mulOne,
+        nestedTwoMulOneTwo: x|$x.nestedTwo.mulOneTwo,
+        nestedTwoMulOneMany: x|$x.nestedTwo.mulOneMany,
+        nestedTwoMulZeroMany: x|$x.nestedTwo.mulZeroMany,
+        nestedManyMulZeroOne: x|$x.nestedMany.mulZeroOne,
+        nestedManyMulOne: x|$x.nestedMany.mulOne,
+        nestedManyMulOneTwo: x|$x.nestedMany.mulOneTwo,
+        nestedManyMulOneMany: x|$x.nestedMany.mulOneMany,
+        nestedManyMulZeroMany: x|$x.nestedMany.mulZeroMany
+      ])
+}

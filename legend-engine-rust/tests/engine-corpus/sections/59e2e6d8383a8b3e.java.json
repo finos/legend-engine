@@ -1,0 +1,244 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DataTypesDB",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 24
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "pk",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ti",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "TinyInt"
+          }
+        }, {
+          "name" : "si",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "SmallInt"
+          }
+        }, {
+          "name" : "int",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "bi",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "BigInt"
+          }
+        }, {
+          "name" : "vc",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "c",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 1
+          }
+        }, {
+          "name" : "date",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "ts",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "f",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "d",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Double"
+          }
+        }, {
+          "name" : "bit",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        }, {
+          "name" : "dec",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Decimal",
+            "precision" : 38,
+            "scale" : 15
+          }
+        }, {
+          "name" : "r",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 41
+          },
+          "type" : {
+            "_type" : "Real"
+          }
+        }, {
+          "name" : "n",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 42
+          },
+          "type" : {
+            "_type" : "Numeric",
+            "precision" : 38,
+            "scale" : 15
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "dataTable",
+        "primaryKey" : [ "pk" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ]
+  } ]
+}

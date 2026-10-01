@@ -1,0 +1,16 @@
+
+Deephaven test::Store::foo
+(
+    Table xyz
+    (
+      prop1: STRING,
+      prop2: INT,
+      prop3: BOOLEAN,
+      prop4: DATETIME,
+      prop5: FLOAT,
+      prop6: DOUBLE,
+      prop7: TIMESTAMP,
+      prop8: DECIMAL(10, 2)
+    )
+)
+

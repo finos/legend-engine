@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field ''store'' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

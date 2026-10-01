@@ -1,0 +1,96 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "profile",
+      "name": "doc",
+      "package": "meta::pure::profiles",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 21,
+        "sourceId": "profile.pure",
+        "startColumn": 1,
+        "startLine": 17
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 28,
+            "endLine": 19,
+            "sourceId": "profile.pure",
+            "startColumn": 19,
+            "startLine": 19
+          },
+          "value": "deprecated"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 42,
+            "endLine": 19,
+            "sourceId": "profile.pure",
+            "startColumn": 31,
+            "startLine": 19
+          },
+          "value": "experimental"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 22,
+            "endLine": 20,
+            "sourceId": "profile.pure",
+            "startColumn": 12,
+            "startLine": 20
+          },
+          "value": "description"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 28,
+            "endLine": 20,
+            "sourceId": "profile.pure",
+            "startColumn": 25,
+            "startLine": 20
+          },
+          "value": "todo"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::pure::profiles::doc"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 16,
+            "sourceId": "profile.pure",
+            "startColumn": 1,
+            "startLine": 16
+          }
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 7,
+        "endLine": 16,
+        "sourceId": "profile.pure",
+        "startColumn": 1,
+        "startLine": 16
+      }
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

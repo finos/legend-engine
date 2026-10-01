@@ -1,0 +1,35 @@
+
+ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup TradeServices
+   (
+      path : '/trades';
+
+      Service TradeByTraderDetailsService
+      (
+         path : '/traderDetails';
+         method : GET;
+         parameters :
+         (
+            "trader.details" : String (location = query, allowReserved = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradesByRegionService
+      (
+         path : '/allTradesByRegion';
+         method : GET;
+         parameters :
+         (
+            region : String (location = query),
+            requiredParam : String (location = query, required = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+   )
+)

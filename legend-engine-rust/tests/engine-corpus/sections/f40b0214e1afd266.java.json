@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'importd'. Valid alternatives: ['Class', 'Association', 'Profile', 'Enum', 'Measure', 'function', 'native', '^']",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    }
+  }
+}

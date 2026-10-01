@@ -1,0 +1,203 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 57
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 85
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 90,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 84
+        },
+        "table" : "schemaB.personTable",
+        "temporality" : {
+          "_type" : "none",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 86
+          },
+          "updatesHandling" : {
+            "_type" : "overwrite",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 88
+            }
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "fieldBasedForTds",
+            "partitionFields" : [ "foo1", "bar2" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 74,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 68
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 66
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForTds",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 76
+          },
+          "versionField" : "version"
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 60
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 90,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 60
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 129,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 127,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 94
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"Age\":12, \"Name\":\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 121,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 117
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 114
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 124,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 98
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/x.flatdata",
+              "data" : "FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 108,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 104
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 109,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 102
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 110,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 100
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

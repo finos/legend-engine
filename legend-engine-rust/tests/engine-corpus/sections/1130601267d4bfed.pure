@@ -1,0 +1,5 @@
+
+function my::personFunctionQuoted(): meta::pure::metamodel::relation::Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<('FIRST NAME':String[1], AGE:Integer[1])>);
+}

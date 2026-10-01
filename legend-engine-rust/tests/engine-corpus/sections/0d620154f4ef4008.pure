@@ -1,0 +1,17 @@
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    {
+      mapping: test::myMapping1;
+      runtime: test::myRuntime1;
+    },
+    PROD:
+    {
+      mapping: test::myMapping2;
+      runtime: test::myRuntime2;
+    }
+  ];
+}

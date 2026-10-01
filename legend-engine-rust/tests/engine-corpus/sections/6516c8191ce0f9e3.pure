@@ -1,0 +1,11 @@
+
+import other::*;
+import mapping::*;
+Mapping mappingPackage::myMapping
+(
+    Person: Relational
+    {
+        ~filter [mapping::db] (INNER) @Firm_Person | [mapping::db] FirmFilter 
+        firstName : [db]personTable.firstName
+    }
+)

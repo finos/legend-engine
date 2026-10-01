@@ -1,0 +1,2 @@
+
+function x::call():Integer[1]{   1->cast(@meta::pure::precisePrimitives::TinyInt) + 1;}

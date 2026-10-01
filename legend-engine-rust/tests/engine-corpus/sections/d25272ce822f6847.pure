@@ -1,0 +1,61 @@
+
+Diagram model::MyDiagram
+{
+  classView 47bba0d6-38f1-4c93-aa0a-16d38f480e6a
+  {
+    class: model::ClassA;
+    position: (497.0,168.0);
+    rectangle: (86.021484375,44.0);
+  }
+  classView 8302b3fd-60c1-4336-aef8-56dd7368ce70
+  {
+    class: model::ClassB;
+    position: (821.0,330.0);
+    rectangle: (60.6875,30.0);
+  }
+  propertyView
+  {
+    property: model::ClassB.a;
+    source: 8302b3fd-60c1-4336-aef8-56dd7368ce70;
+    target: 47bba0d6-38f1-4c93-aa0a-16d38f480e6a;
+    points: [(851.34375,345.0),(540.0107421875,190.0)];
+  }
+  propertyView
+  {
+    property: model::ClassA.b;
+    source: 47bba0d6-38f1-4c93-aa0a-16d38f480e6a;
+    target: 8302b3fd-60c1-4336-aef8-56dd7368ce70;
+    points: [(540.0107421875,190.0),(851.34375,345.0)];
+  }
+}
+
+Diagram model::MilestoneDiagram
+{
+  classView afecc712-ce0e-4126-9de0-9dff6e1d68d2
+  {
+    class: model::MilestoneClassA;
+    position: (388.0,211.0);
+    rectangle: (148.748046875,58.0);
+  }
+  classView 791b3fa0-21cb-48a2-aec7-c61148966942
+  {
+    class: model::MilestoneClassB;
+    position: (606.0,271.0);
+    rectangle: (148.748046875,44.0);
+  }
+  propertyView
+  {
+    property: model::AssociationAB.a;
+    source: 791b3fa0-21cb-48a2-aec7-c61148966942;
+    target: afecc712-ce0e-4126-9de0-9dff6e1d68d2;
+    points: [(680.3740234375,293.0),(462.3740234375,240.0)];
+  }
+  propertyView
+  {
+    property: model::AssociationAB.b;
+    source: afecc712-ce0e-4126-9de0-9dff6e1d68d2;
+    target: 791b3fa0-21cb-48a2-aec7-c61148966942;
+    points: [(462.3740234375,240.0),(680.3740234375,293.0)];
+  }
+}
+

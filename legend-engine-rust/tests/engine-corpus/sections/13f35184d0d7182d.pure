@@ -1,0 +1,11 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    ~primaryKey: firstName
+    firstName: firstName,
+    firm: jsonColumn
+  }
+)

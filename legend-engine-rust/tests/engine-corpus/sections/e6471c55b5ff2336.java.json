@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Trade" ]
+    },
+    "name" : "tradeServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 113,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 109
+    }
+  } ],
+  "imports" : [ ]
+}

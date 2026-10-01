@@ -1,0 +1,16 @@
+
+Runtime humanResourceModel::M2MModelRuntime
+{
+  mappings:
+  [
+    humanResourceModel::M2M_Mapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: humanResourceModel::M2MModelChainConnection,
+      connection_2: humanResourceModel::M2MModelChainConnection2
+    ]
+  ];
+}

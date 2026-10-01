@@ -1,0 +1,25 @@
+
+DataSpace model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+  supportInfo: {
+    documentation: { label: 'Docs'; url: 'https://docs.example.org'; };
+    website: { url: 'https://example.org'; };
+    emails:
+    [
+      { title: 'Data Steward'; address: 'steward@example.org'; }
+    ];
+    expertise:
+    [
+      { description: 'Fixed Income SMEs'; expertIds: ['jdoe', 'asmith']; }
+    ];
+  };
+}

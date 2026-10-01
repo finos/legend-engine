@@ -1,0 +1,33 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "Example1",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section sectionName: DelimitedWithHeadings\n{\n  Record\n  {\n    HEADING1: STRING;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 118,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 5
+      },
+      "sourceInformation" : {
+        "endColumn" : 120,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 5
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

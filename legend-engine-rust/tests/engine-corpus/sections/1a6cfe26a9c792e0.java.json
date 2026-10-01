@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field ''authentication'' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

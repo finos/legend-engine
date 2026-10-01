@@ -1,0 +1,217 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "test doc",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ {
+        "_type" : "emailNotifyee",
+        "address" : "x.y@z.com",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 73
+        }
+      }, {
+        "_type" : "pagerDutyNotifyee",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 77
+        },
+        "url" : "https://x.com"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 69
+      }
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "bitemporalDelta",
+        "mergeStrategy" : {
+          "_type" : "deleteIndicatorMergeStrategy",
+          "deleteField" : "deleted",
+          "deleteValues" : [ "Y", "1", "true" ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 13
+        },
+        "transactionMilestoning" : {
+          "_type" : "dateTimeTransactionMilestoning",
+          "dateTimeInName" : "inZ",
+          "dateTimeOutName" : "outZ",
+          "derivation" : {
+            "_type" : "sourceSpecifiesInAndOutDateTime",
+            "sourceDateTimeInField" : "sourceIn",
+            "sourceDateTimeOutField" : "sourceOut",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 24
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 20
+          }
+        },
+        "validityMilestoning" : {
+          "_type" : "dateTimeValidityMilestoning",
+          "dateTimeFromName" : "FROM_Z",
+          "dateTimeThruName" : "THRU_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesFromAndThruDateTime",
+            "sourceDateTimeFromField" : "sourceFrom",
+            "sourceDateTimeThruField" : "sourceThru",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 34
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 30
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "objectStorageSink",
+        "binding" : {
+          "path" : "test::Binding",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 11
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      },
+      "targetShape" : {
+        "_type" : "multiFlatTarget",
+        "modelClass" : "test::WrapperClass",
+        "parts" : [ {
+          "deduplicationStrategy" : {
+            "_type" : "anyVersionDeduplicationStrategy"
+          },
+          "modelProperty" : "property1",
+          "partitionFields" : [ "propertyA", "propertyB" ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 47
+          },
+          "targetName" : "TestDataset1"
+        }, {
+          "deduplicationStrategy" : {
+            "_type" : "duplicateCountDeduplicationStrategy",
+            "duplicateCountName" : "duplicateCount",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 57
+            }
+          },
+          "modelProperty" : "property2",
+          "partitionFields" : [ "propertyA", "propertyB" ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 53
+          },
+          "targetName" : "TestDataset1"
+        }, {
+          "deduplicationStrategy" : {
+            "_type" : "noDeduplicationStrategy"
+          },
+          "modelProperty" : "property3",
+          "partitionFields" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 65,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 62
+          },
+          "targetName" : "TestDataset2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 67,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 41
+        },
+        "transactionScope" : "ALL_TARGETS"
+      }
+    },
+    "service" : {
+      "path" : "test::service::Service",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 83,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

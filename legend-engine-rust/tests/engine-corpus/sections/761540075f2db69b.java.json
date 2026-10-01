@@ -1,0 +1,124 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::TestScopeCM",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::TestScopeCM",
+          "property" : "feeAmount",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "plus",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "quantity",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 6
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "db",
+              "mainTableDb" : "db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 6
+              },
+              "table" : "table"
+            },
+            "tableAlias" : "table"
+          }, {
+            "_type" : "column",
+            "column" : "quantity",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 6
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "db",
+              "mainTableDb" : "db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 42,
+                "startLine" : 6
+              },
+              "table" : "table"
+            },
+            "tableAlias" : "table"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 6
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 6
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

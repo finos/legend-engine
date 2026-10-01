@@ -1,0 +1,19 @@
+
+Service meta::pure::myServiceSingle
+{
+  documentation: 'this is just for context';
+  pattern: 'url/myUrl/';
+  autoActivateUpdates: true;
+  owners: ['ownerName', 'ownerName2'];
+  owners: ['ownerName', 'ownerName2'];
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'data';
+  }
+}

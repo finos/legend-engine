@@ -1,0 +1,20 @@
+
+GenerationSpecification test::x
+{
+  generationNodes: [
+    {
+      generationElement: model::serializableSpec;
+    },
+    {
+      generationElement: model::modelSpec;
+    },
+    {
+      id: 'secondGeneration';
+      generationElement: model::modelSpec;
+    }
+  ];
+  fileGenerations: [
+    model::myFileGeneration,
+    model::myFileGeneration
+  ];
+}

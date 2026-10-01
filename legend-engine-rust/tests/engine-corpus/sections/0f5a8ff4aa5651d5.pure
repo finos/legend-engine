@@ -1,0 +1,14 @@
+
+Runtime test::DeephavenRuntime
+{
+    mappings:
+    [
+    ];
+    connections:
+    [
+        test::DeephavenStore:
+        [
+            connection: test::DeephavenConnection
+        ]
+    ];
+}

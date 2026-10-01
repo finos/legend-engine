@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported column data type 'UNKNOWN'",
+    "sourceInformation" : {
+      "endColumn" : 22,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 6
+    }
+  }
+}

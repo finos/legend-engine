@@ -1,0 +1,55 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Firm.all()       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Firm {
+               legalName,
+               addresses
+               {
+                   street,
+                   city,
+                   country
+               },
+               employees
+               {
+                   firstName,
+                   lastName,
+                   kerberos,
+                   designation,
+                   id,
+                   age,
+                   addresses
+                   {
+                       street,
+                       city,
+                       country
+                   }
+               }
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::Firm {
+               legalName,
+               addresses
+               {
+                   street,
+                   city,
+                   country
+               },
+               employees
+               {
+                   firstName,
+                   lastName,
+                   kerberos,
+                   designation,
+                   id,
+                   age,
+                   addresses
+                   {
+                       street,
+                       city,
+                       country
+                   }
+               }
+           }
+        }#)};
+}

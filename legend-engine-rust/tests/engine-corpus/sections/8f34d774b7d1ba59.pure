@@ -1,0 +1,14 @@
+
+Database store::CovidDataStore
+(
+  Table COVID_DATA
+  (
+    ID INTEGER PRIMARY KEY,
+    FIPS VARCHAR(200),
+    DATE DATE,
+    CASE_TYPE VARCHAR(200),
+    CASES INTEGER,
+    LAST_REPORTED_FLAG BIT
+  )
+)
+

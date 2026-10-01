@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type DOUBLE does not expect any parameters in declaration 'clientIdDOUBLE(1)'",
+    "sourceInformation" : {
+      "endColumn" : 24,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 5
+    }
+  }
+}

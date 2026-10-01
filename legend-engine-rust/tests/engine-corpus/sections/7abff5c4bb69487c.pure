@@ -1,0 +1,17 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Trade.all()
+       ->graphFetchChecked(#{
+           meta::external::store::service::showcase::domain::Trade {
+               tradeId,
+               quantity
+           }
+         }#)
+       ->serialize(#{
+           meta::external::store::service::showcase::domain::Trade {
+               tradeId,
+               quantity
+           }
+        }#)};
+}

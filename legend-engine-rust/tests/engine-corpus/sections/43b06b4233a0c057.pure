@@ -1,0 +1,13 @@
+
+Database test::TestDb
+(
+  Schema TESTDB
+  (
+    Table PERSON_TABLE
+    (
+      ID DOUBLE PRIMARY KEY,
+      FIRSTNAME VARCHAR(2147483647),
+      LASTNAME VARCHAR(2147483647)
+    )
+  )
+)

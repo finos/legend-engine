@@ -1,0 +1,6 @@
+
+Class test::model::A
+{
+  alpha   : String[*];
+  beta    : Boolean[0..1];
+}

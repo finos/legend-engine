@@ -1,0 +1,79 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "data::RelationalData",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 22
+      }
+    }, {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "1" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "RelationalData2",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

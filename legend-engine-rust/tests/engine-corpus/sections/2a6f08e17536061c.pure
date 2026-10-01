@@ -1,0 +1,6 @@
+
+Class demo::union::Customer
+{
+  name: String[1];
+  region: String[1];
+}

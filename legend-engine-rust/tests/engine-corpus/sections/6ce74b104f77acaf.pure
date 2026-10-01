@@ -1,0 +1,61 @@
+
+Mapping demo::JoinMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::FirmDB]PersonTable.id
+    )
+    ~mainTable [demo::store::FirmDB]PersonTable
+    firstName: [demo::store::FirmDB]PersonTable.firstName,
+    lastName: [demo::store::FirmDB]PersonTable.lastName,
+    firm: [demo::store::FirmDB]@PersonFirm
+  }
+
+  *demo::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::FirmDB]FirmTable.id
+    )
+    ~mainTable [demo::store::FirmDB]FirmTable
+    legalName: [demo::store::FirmDB]FirmTable.legalName,
+    employees: [demo::store::FirmDB]@PersonFirm
+  }
+
+  testSuites:
+  [
+    joinSuite:
+    {
+      function: |demo::Person.all()->sortBy(x|$x.firstName)->project([x|$x.firstName, x|$x.firm.legalName], ['First Name', 'Firm']);
+      tests:
+      [
+        joinedPersonFirm:
+        {
+          data:
+          [
+            demo::store::FirmDB:
+              Reference
+              #{
+                demo::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Bob","Firm":"Goldman"},{"First Name":"Jane","Firm":"Finos"},{"First Name":"John","Firm":"Finos"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

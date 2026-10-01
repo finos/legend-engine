@@ -1,0 +1,6 @@
+
+JsonModelConnection import::class::url::mappings
+{
+  class: test;
+  url: 'test';
+}

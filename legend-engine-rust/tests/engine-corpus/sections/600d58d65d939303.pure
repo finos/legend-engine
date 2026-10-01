@@ -1,0 +1,15 @@
+
+Database simple::dbInc
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    FIRM SEMISTRUCTURED,
+    FIRM_JSON JSON
+  )
+
+  Join personSelfJoin(personTable.ID = {target}.ID)
+)

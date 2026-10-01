@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "fieldBasedForTds",
+            "partitionFields" : [ "foo1", "bar2" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 15
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForTds",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 25
+          },
+          "versionField" : "version"
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "deephavenConnection",
+      "authSpec" : {
+        "_type" : "PSK",
+        "psk" : "testPSK"
+      },
+      "element" : "test::Store::foo",
+      "elementSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 32
+      },
+      "sourceSpec" : {
+        "url" : "http://localhost:10000"
+      }
+    },
+    "name" : "DeephavenConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    }
+  } ],
+  "imports" : [ ]
+}

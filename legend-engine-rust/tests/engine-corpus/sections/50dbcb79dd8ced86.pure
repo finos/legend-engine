@@ -1,0 +1,12 @@
+
+JsonModelConnection test::runtime::SFirmConnection
+{
+  class: test::store::S_Firm;
+  url: 'executor:default';
+}
+JsonModelConnection test::runtime::SPersonConnection
+{
+  class: test::store::S_Person;
+  url: 'executor:default';
+}
+

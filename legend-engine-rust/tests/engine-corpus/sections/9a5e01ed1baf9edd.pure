@@ -1,0 +1,20 @@
+
+Database demo::ssj::store::HrDB
+(
+  Table EMPLOYEE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    PROFILE SEMISTRUCTURED
+  )
+  Table FIRM
+  (
+    ID VARCHAR(100) PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100)
+  )
+
+  // The join key is not stored in a column - it is read out of the JSON document on
+  // one side and compared to an ordinary column on the other. No explosion is
+  // involved: the document yields a single scalar per row.
+  Join Employee_Firm(extractFromSemiStructured(EMPLOYEE.PROFILE, 'employment.firmId', 'VARCHAR') = FIRM.ID)
+)

@@ -1,0 +1,12 @@
+
+Enum test::b
+{
+   names
+}
+Class test::A
+[
+   test::b.c
+]
+{
+   names : String[*];
+}

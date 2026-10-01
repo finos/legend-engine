@@ -1,0 +1,121 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 14
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 14
+                }
+              } ],
+              "property" : "prop1",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 47,
+                "startLine" : 14
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 54,
+              "startLine" : 14
+            },
+            "value" : "prop1"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 14
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 14
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 12
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "/url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

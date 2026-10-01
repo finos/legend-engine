@@ -1,0 +1,14 @@
+
+DataSpace model::MySpace
+{
+  title: 'x';
+  description: 'y';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::Firm.all()->withMapping(model::dummyMapping);
+    }
+  ];
+}

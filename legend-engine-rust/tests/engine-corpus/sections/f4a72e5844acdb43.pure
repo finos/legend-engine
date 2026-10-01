@@ -1,0 +1,13 @@
+
+Class test::C
+[
+   $this.id > 0 && $this.id < 30,
+  constraint1
+  (
+    ~function: $this.id > 0 && $this.id < 30
+    ~message: $this.id->toString() + ' is invalid'
+  )
+]
+{
+  id : Integer[1];
+}

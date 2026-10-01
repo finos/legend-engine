@@ -1,0 +1,8 @@
+
+Avro model::AvroConfig
+{
+  scopeElements: [model::MyClass, model];
+  generationOutputPath: 'myAvroRoot';
+  'include Namespace': true;
+  'property Profiles': ['model::myProfile', 'model::nextProfile'];
+}

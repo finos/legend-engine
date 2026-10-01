@@ -1,0 +1,6 @@
+
+Association my::Assoc
+{
+  (shared) prop1: String[1];
+  (none) prop2: String[1];
+}

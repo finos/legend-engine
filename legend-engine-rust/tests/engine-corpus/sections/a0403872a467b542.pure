@@ -1,0 +1,21 @@
+
+function model::PersonWithParams(firstName: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->filter(x|$x.firstName == $firstName)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name'])->from(execution::RelationalMapping, execution::Runtime)
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+        Relational
+        #{
+          default.PersonTable:
+            'id,firm_id,firstName,lastName,employeeType\n'+
+            '1,1,I\'m John,"Doe, Jr",FTO\n'+
+            '2,1,Nicole,Smith,FTC\n'+
+            '3,2,Time,Smith,FTE\n';
+        }#;
+    testFail | PersonWithParams('Nicole') => (JSON) '[]';
+    testPass | PersonWithParams('Nicole') => (JSON) '[{ "First Name" : "Nicole", "Last Name" : "Smith"} ]';
+  )
+}

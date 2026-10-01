@@ -1,0 +1,56 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "simple",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 7
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "\"tableNameInQuotes.With.Dots\"",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 9
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ]
+  } ]
+}

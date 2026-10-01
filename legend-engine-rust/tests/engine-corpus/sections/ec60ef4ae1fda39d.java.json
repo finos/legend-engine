@@ -1,0 +1,330 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 29
+            }
+          } ],
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 29
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 29
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 29
+        }
+      },
+      "mapping" : "test::mapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 30
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::runtime",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 31
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 27
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ {
+        "assert" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 112,
+                "startLine" : 38
+              },
+              "values" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 111,
+                  "startLine" : 38
+                },
+                "value" : 1
+              }, {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 115,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 113,
+                  "startLine" : 38
+                },
+                "value" : 280
+              }, {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 117,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 117,
+                  "startLine" : 38
+                },
+                "value" : 1
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 112,
+              "startLine" : 38
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "parametersValues" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 38
+          },
+          "value" : "parameter1"
+        }, {
+          "_type" : "strictTime",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 38
+          },
+          "value" : "23:12:8.54"
+        }, {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 38
+          },
+          "value" : true
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 38
+          },
+          "value" : 440
+        }, {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 38
+          },
+          "value" : 13.23
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 38
+          },
+          "value" : 88
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 58,
+            "startLine" : 38
+          },
+          "value" : -54
+        }, {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 63,
+            "startLine" : 38
+          },
+          "value" : 2.3
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 68,
+            "startLine" : 38
+          },
+          "values" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 38
+            },
+            "value" : 1
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 72,
+              "startLine" : 38
+            },
+            "value" : 2
+          } ]
+        }, {
+          "_type" : "dateTime",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 38
+          },
+          "value" : "2019-05-24T00:00:00"
+        }, {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 108,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 98,
+            "startLine" : 38
+          },
+          "value" : "2019-05-24"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 118,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 38
+        }
+      } ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 33
+      }
+    },
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

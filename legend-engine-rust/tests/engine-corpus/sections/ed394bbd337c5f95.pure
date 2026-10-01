@@ -1,0 +1,64 @@
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person
+    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')
+  }
+
+  MappingTests
+  [
+    test1
+    (
+      query: src: meta::slang::transform::tests::Address[1]|$src.a;
+      data:
+      [
+      ];
+      assert: 'assertString';
+    )
+  ]
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      doc: 'myDoc';
+      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);
+      tests:
+      [
+        test1:
+        {
+          doc: 'my test';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::example::model:
+                  Reference
+                  #{
+                    testMapping::TestData
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":["john doe"]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

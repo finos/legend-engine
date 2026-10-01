@@ -1,0 +1,330 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "any::thing goes",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "hideProperties" : true,
+      "id" : "1a0ac401-d443-4388-8ade-08a458f735e9",
+      "position" : {
+        "x" : 123.123,
+        "y" : 23.23
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : 123.123
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "class" : "any::thing goes",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 13
+      },
+      "hideProperties" : true,
+      "hideStereotypes" : true,
+      "hideTaggedValues" : true,
+      "id" : "firstTimeIsNotAlwaysTheHardest",
+      "position" : {
+        "x" : -123.123,
+        "y" : 23.0
+      },
+      "rectangle" : {
+        "height" : -90.0,
+        "width" : 12.23
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      }
+    } ],
+    "generalizationViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "sourceView" : "sourceId",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 36
+      },
+      "targetView" : "ranOutOfCreativityHere",
+      "targetViewSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 37
+      }
+    } ],
+    "name" : "MyDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 0.3,
+          "y" : 2.23E-8
+        }, {
+          "x" : 2.23E10,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "any::thing goes",
+        "property" : "on Monday",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "sourceView" : "86a8a6a1-5353-48f1-b058-199ddd7cbe5a",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 23
+      },
+      "targetView" : "86a8a6a1-5353-48f1-b058-199ddd7cbe5a",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 24
+      }
+    }, {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "any::thing goes",
+        "property" : "on Monday",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "sourceView" : "sourceId",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 30
+      },
+      "targetView" : "ranOutOfCreativityHere",
+      "targetViewSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 31
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "diagram",
+    "classViews" : [ ],
+    "generalizationViews" : [ ],
+    "name" : "AnotherDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "anything::goes",
+        "property" : "milk",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 46
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "sourceView" : "sourceId",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 47
+      },
+      "targetView" : "ranOutOfCreativityHere",
+      "targetViewSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 48
+      }
+    }, {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "anything::goes",
+        "property" : "milk",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 53,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 53
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "sourceView" : "sourceId",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 54
+      },
+      "targetView" : "ranOutOfCreativityHere",
+      "targetViewSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 55
+      }
+    }, {
+      "line" : {
+        "points" : [ ]
+      },
+      "property" : {
+        "class" : "anything::goes",
+        "property" : "milk",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 60
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 58
+      },
+      "sourceView" : "sourceId",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 61
+      },
+      "targetView" : "ranOutOfCreativityHere",
+      "targetViewSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 62
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    }
+  } ],
+  "imports" : [ ]
+}

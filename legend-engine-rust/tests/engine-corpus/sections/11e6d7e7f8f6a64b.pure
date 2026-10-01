@@ -1,0 +1,19 @@
+
+Mapping test::hierarchyMapping
+(
+   test::SpecificEntity[e]: Pure {
+      ~src test::SpecificEntity
+      id: $src.id,
+      name: $src.name
+   }
+   
+   test::Order[o]: Pure {
+      ~src test::Order
+      entityId: $src.entityId,
+      description: $src.description
+   }
+
+   test::EntityOrder: ModelJoin {
+      {base:test::BaseEntity[1], ord:test::Order[1]|$base.id == $ord.entityId}
+   }
+)

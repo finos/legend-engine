@@ -1,0 +1,45 @@
+
+DataQualityRelationValidation demo::simplePersonValidation
+{
+   query: |demo::Person.all()->project(
+  ~[
+     id: x|$x.id,
+     fullName: x|$x.fullName,
+     age: x|$x.age,
+     emailAddress: x|$x.emailAddress,
+     annualSalary: x|$x.annualSalary,
+     dateOfBirth: x|$x.dateOfBirth
+   ]
+)->from(
+  demo::PersonMap,
+  demo::PersonRuntime
+);
+   validations: [
+   {
+     name: 'idNotNegative';
+     description: 'Validates that person ID is not negative';
+     assertion: rel|$rel->filter(
+  row|$row.id > 0
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName
+   ]
+);
+    },
+   {
+     name: 'ageValid';
+     description: 'Validates that person age is not negative when present';
+     assertion: rel|$rel->filter(
+  row|$row.age->isNotEmpty() &&
+    ($row.age->toOne() > 0)
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName
+   ]
+);
+    }
+   ];
+}
+

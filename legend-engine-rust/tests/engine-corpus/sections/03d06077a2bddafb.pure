@@ -1,0 +1,10 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +ageBucket: String[1]: if($src.AGE > 65, |'senior', |'other')
+  }
+)

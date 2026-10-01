@@ -1,0 +1,462 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "runtime1",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "runtime2",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 14
+        },
+        "type" : "MAPPING"
+      }, {
+        "path" : "test::mapping::someMapping2",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 10
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "runtime3",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 27
+        },
+        "store" : {
+          "path" : "test::someStore",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 29
+            }
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 29
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 23
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 19
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "runtime4",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 42
+        },
+        "store" : {
+          "path" : "test::someStore",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 42
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 44
+            }
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 44
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 45
+            }
+          },
+          "id" : "id2",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 45
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        },
+        "store" : {
+          "path" : "test::someStore2",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 49,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 49
+            }
+          },
+          "id" : "id3",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 49
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 38
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 34
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "runtime5",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "test::connection",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 74
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 74
+        },
+        "storePointers" : [ {
+          "path" : "test::com::store1",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 76
+          }
+        }, {
+          "path" : "test::com::store2",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 77
+          }
+        } ]
+      } ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 62
+        },
+        "store" : {
+          "path" : "test::someStore",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 62,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 62
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 64,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 64
+            }
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 64
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 65,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 65
+            }
+          },
+          "id" : "id2",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 65,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 65
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 67
+        },
+        "store" : {
+          "path" : "test::someStore2",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 67
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 69
+            }
+          },
+          "id" : "id3",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 69
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::someMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 58,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 58
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 80,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 54
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 80,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 54
+    }
+  } ],
+  "imports" : [ ]
+}

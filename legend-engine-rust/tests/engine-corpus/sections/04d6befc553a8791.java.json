@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'fileGenerations' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 93,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

@@ -1,0 +1,36 @@
+
+Database demo::store::JoinsDB
+(
+  Schema HR
+  (
+    Table EMPLOYEE
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      DEPT_ID INTEGER
+    )
+    Table DEPARTMENT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      LOCATION VARCHAR(100)
+    )
+  )
+  Schema SALES
+  (
+    Table SALE
+    (
+      ID INTEGER PRIMARY KEY,
+      EMP_ID INTEGER,
+      AMOUNT INTEGER
+    )
+  )
+
+  Join Emp_Dept(HR.EMPLOYEE.DEPT_ID = HR.DEPARTMENT.ID)
+  Join Emp_Sale(HR.EMPLOYEE.ID = SALES.SALE.EMP_ID)
+
+  // A filter on DEPARTMENT; a class mapping on EMPLOYEE applies it through the
+  // Emp_Dept join (~filter [db]@Emp_Dept | [db]NycDeptFilter) to filter employees
+  // by a column of another table — used by relational-cross-table-filter.
+  Filter NycDeptFilter(HR.DEPARTMENT.LOCATION = 'NYC')
+)

@@ -1,0 +1,112 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "model::target::_Firm",
+      "classSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "id" : "a6b8266b-395e-4308-a08a-8f9b44af6d53",
+      "position" : {
+        "x" : 547.0,
+        "y" : 270.0
+      },
+      "rectangle" : {
+        "height" : 72.0,
+        "width" : 159.0
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "class" : "model::target::_Person",
+      "classSourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "id" : "c41deda8-19be-4374-9260-8be50c32d3cd",
+      "position" : {
+        "x" : 1128.0,
+        "y" : 308.0
+      },
+      "rectangle" : {
+        "height" : 44.0,
+        "width" : 122.0
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "MyDiagram",
+    "package" : "diagram",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 626.5,
+          "y" : 306.0
+        }, {
+          "x" : 1189.0,
+          "y" : 330.0
+        } ]
+      },
+      "property" : {
+        "class" : "model::target::_Firm",
+        "property" : "employees",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 18
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "sourceView" : "a6b8266b-395e-4308-a08a-8f9b44af6d53",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 19
+      },
+      "targetView" : "c41deda8-19be-4374-9260-8be50c32d3cd",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 20
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

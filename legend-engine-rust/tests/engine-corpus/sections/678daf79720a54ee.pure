@@ -1,0 +1,10 @@
+
+Service meta::pure::myServiceSingle
+{
+  documentation: 'this is just for context';
+  pattern: 'url/myUrl/';
+  test: Single
+  {
+    data: 'data';
+  }
+}

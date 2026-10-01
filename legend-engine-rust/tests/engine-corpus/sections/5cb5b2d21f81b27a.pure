@@ -1,0 +1,13 @@
+
+Class test::Employee
+{
+   id: Integer[1];
+   managerId: Integer[0..1];
+   name: String[1];
+}
+
+Association test::Employee_Manager
+{
+   reports: test::Employee[*];
+   manager: test::Employee[0..1];
+}

@@ -1,0 +1,279 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::this::class::has::path",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "e::R",
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 86,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 93,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ {
+        "profile" : "a profile",
+        "profileSourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "value" : "1>stereo"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 3
+        },
+        "tag" : {
+          "profile" : "a profile",
+          "profileSourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 3
+          },
+          "value" : "2>tag"
+        },
+        "value" : "Borrowers date of birth"
+      } ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 78,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 2
+      },
+      "name" : "ok",
+      "sourceInformation" : {
+        "endColumn" : 91,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 4
+        },
+        "tag" : {
+          "profile" : "Descriptor",
+          "profileSourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 4
+          },
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 4
+          },
+          "value" : "descriptionA"
+        },
+        "value" : "test1"
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 4
+        },
+        "tag" : {
+          "profile" : "Descriptor",
+          "profileSourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 4
+          },
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 50,
+            "startLine" : 4
+          },
+          "value" : "descriptionB"
+        },
+        "value" : "test2"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "value" : "businesstemporal"
+    }, {
+      "profile" : "taggedValue",
+      "profileSourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 1
+      },
+      "value" : "Number2"
+    } ],
+    "superTypes" : [ {
+      "path" : "B",
+      "sourceInformation" : {
+        "endColumn" : 137,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 137,
+        "startLine" : 1
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 59,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 63,
+          "startLine" : 1
+        },
+        "value" : "test1"
+      },
+      "value" : "up1"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 94,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 78,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 78,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 82,
+          "startLine" : 1
+        },
+        "value" : "test2"
+      },
+      "value" : "up2"
+    } ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,507 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::Classification",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "classification",
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "new",
+        "parameters" : [ {
+          "_type" : "genericTypeInstance",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::pure::metamodel::type::Class"
+            },
+            "typeArguments" : [ {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "test::Classification"
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            } ],
+            "typeVariableValues" : [ ]
+          }
+        }, {
+          "_type" : "string",
+          "value" : ""
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "values" : [ {
+            "_type" : "keyExpression",
+            "add" : false,
+            "expression" : {
+              "_type" : "var",
+              "name" : "bd",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 68,
+                "startLine" : 4
+              }
+            },
+            "key" : {
+              "_type" : "string",
+              "value" : "businessDate"
+            }
+          } ]
+        } ]
+      } ],
+      "name" : "myClassification",
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Date",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 4
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "bd",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 4
+        }
+      } ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::Classification",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 99,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Classification",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::Exchange",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "exchange",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 6
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ExtendedClassification",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ {
+      "path" : "test::Classification",
+      "sourceInformation" : {
+        "endColumn" : 93,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 9
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Exchange",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 12
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "exchangeName",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 12
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 11
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 11
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "subType",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "test::Product",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 6,
+                    "startLine" : 16
+                  }
+                }, {
+                  "_type" : "strictDate",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 24,
+                    "startLine" : 16
+                  },
+                  "value" : "2022-11-12"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 16,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 16
+                }
+              } ],
+              "property" : "classification",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 16,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 16
+              }
+            }, {
+              "_type" : "genericTypeInstance",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "test::ExtendedClassification",
+                  "sourceInformation" : {
+                    "endColumn" : 89,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 62,
+                    "startLine" : 16
+                  }
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 16,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 16
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 16
+            }
+          } ],
+          "property" : "exchange",
+          "sourceInformation" : {
+            "endColumn" : 99,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 92,
+            "startLine" : 16
+          }
+        } ],
+        "property" : "exchangeName",
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 101,
+          "startLine" : 16
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 112,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 16
+      }
+    } ],
+    "name" : "walkTree__Any_MANY_",
+    "package" : "main",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 14
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

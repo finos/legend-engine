@@ -1,0 +1,11 @@
+
+Class test::A
+{
+   name : String[1];
+   age : Integer[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'],desc('age'), y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];
+}

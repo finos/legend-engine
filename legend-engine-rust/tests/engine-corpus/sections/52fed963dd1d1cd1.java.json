@@ -1,0 +1,346 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "zipCode",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Street",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "street",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "test::Address",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 7
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "City",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "capital",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "test::Address",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 26,
+        "startLine" : 12
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Address",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "zipCode",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 21
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 22
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 23
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 24
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::Street",
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 26
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "alias" : "cityName",
+            "parameters" : [ ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 27
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::City",
+          "subTypeTrees" : [ ]
+        } ]
+      }
+    } ],
+    "name" : "test__Any_MANY_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 17
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

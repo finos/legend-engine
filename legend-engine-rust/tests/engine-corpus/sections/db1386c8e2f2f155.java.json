@@ -1,0 +1,110 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "TestRuntime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 157,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 140
+        },
+        "store" : {
+          "path" : "test::TestDb",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 140,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 140
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 154,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 154
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 153,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 148
+              },
+              "testDataSetupSqls" : [ "create schema if not exists TESTDB;\ncreate table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from TESTDB.PERSON_TABLE;\ninsert into TESTDB.PERSON_TABLE values(1,'John','Doe');" ]
+            },
+            "element" : "test::TestDb",
+            "elementSourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 146
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 155,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 144
+            },
+            "type" : "H2"
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 156,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 142
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::TestMapping",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 136,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 136
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 159,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 132
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 159,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 132
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,6 @@
+
+JsonModelConnection anything::class
+{
+  class : anything::class;
+  url : 'asd';
+}

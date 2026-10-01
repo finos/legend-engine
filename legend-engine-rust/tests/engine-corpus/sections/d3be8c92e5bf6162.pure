@@ -1,0 +1,7 @@
+
+Mapping mapping::test
+(
+  *anything::goes[anything_goes]: Unknown
+  {
+  }
+)

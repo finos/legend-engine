@@ -1,0 +1,178 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 15
+          }
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      }
+    }, {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 28
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "foo",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 26
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 26
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "bar",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 26
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 26
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 22
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 22
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

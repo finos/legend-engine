@@ -1,0 +1,91 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "EmployeesService",
+      "method" : "GET",
+      "path" : "/employees",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "meta::external::store::service::showcase::store::ApiResponseSchemaBinding",
+        "list" : true,
+        "sourceInformation" : {
+          "endColumn" : 157,
+          "endLine" : 51,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 51
+        },
+        "type" : "meta::external::store::service::showcase::domain::ApiResponse"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 46
+      }
+    }, {
+      "_type" : "service",
+      "id" : "EmployeesServiceByFirmId",
+      "method" : "GET",
+      "parameters" : [ {
+        "location" : "PATH",
+        "name" : "firmId",
+        "serializationFormat" : { },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 60
+        },
+        "type" : {
+          "_type" : "integer",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 60
+          }
+        }
+      } ],
+      "path" : "/employeesByFirmId/{firmId}",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "meta::external::store::service::showcase::store::ApiResponseSchemaBinding",
+        "list" : true,
+        "sourceInformation" : {
+          "endColumn" : 157,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 63
+        },
+        "type" : "meta::external::store::service::showcase::domain::ApiResponse"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 54
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "EmployeesServiceStore",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    }
+  } ]
+}

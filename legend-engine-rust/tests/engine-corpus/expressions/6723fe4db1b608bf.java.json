@@ -1,0 +1,67 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "isNotEmpty",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "divide",
+      "parameters" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "this",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 1
+          }
+        } ],
+        "property" : "var1",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 1
+        },
+        "value" : 3
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 11,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 27,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,8 @@
+
+RelationalMapper test::testMapper
+(
+   DatabaseMappers:
+   [
+      [test::OrgDB.Product] -> 'SnowflakeDB'
+   ];
+)

@@ -1,0 +1,25 @@
+
+Class test::Address
+{
+  zipCode : String[1];
+}
+
+Class test::Street extends test::Address
+{
+  street: String[1];
+}
+
+function my::test():Any[*]
+{
+  #{
+    test::Address {
+      zipCode,
+      ->subType(@test::Street) {
+        street
+      },
+      ->subType(@test::Street) {
+        street
+      }
+    }
+  }#
+}

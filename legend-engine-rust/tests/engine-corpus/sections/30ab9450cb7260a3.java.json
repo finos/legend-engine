@@ -1,0 +1,115 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "SampleProfile",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 3
+      },
+      "value" : "important"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "value" : "doc"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

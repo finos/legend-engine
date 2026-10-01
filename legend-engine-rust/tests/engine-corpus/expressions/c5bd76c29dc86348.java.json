@@ -1,0 +1,35 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "reverse",
+    "parameters" : [ {
+      "_type" : "boolean",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "value" : true
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 14,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 8,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 16,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

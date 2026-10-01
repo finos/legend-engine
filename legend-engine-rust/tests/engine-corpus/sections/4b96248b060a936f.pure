@@ -1,0 +1,87 @@
+
+Mapping testing::mapping
+(
+  *testing::Person[testing_Person]: Pure
+  {
+    ~src testing::other::NPerson
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      doc: 'myDoc';
+      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);
+      tests:
+      [
+        test1:
+        {
+          doc: 'my test';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::example::model:
+                  Reference
+                  #{
+                    testMapping::TestData
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":["john doe"]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    testSuite2:
+    {
+      doc: 'myDoc';
+      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);
+      tests:
+      [
+        test1:
+        {
+          doc: 'my test';
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                test::example::model:
+                  Reference
+                  #{
+                    testMapping::TestData
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":["john doe"]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

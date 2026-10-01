@@ -1,0 +1,32 @@
+
+import anything::*;
+import test::*;
+Class test::trial {
+   name: ritual[*];
+   anotherOne(){$this.name->toOne()}: ritual[1];
+   
+}
+Class test::trial2 {
+   name: trial[*];
+   anotherOne(){$this.name->toOne().name2}: ritual[1];
+   
+}
+
+Enum anything::ritual {
+   theGoodOne   
+}
+Class test::Person
+{
+   firstName:String[1];
+   lastName:String[1];
+}
+Class test::Firm
+{
+   employees:test::Person[*];
+}
+Class test::Test
+{
+   x(){test::Person.all()->graphFetch(#{
+       test::Person{
+                first}}#);true;}:Boolean[1];
+}

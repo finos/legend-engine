@@ -1,0 +1,420 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::changedModel",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 22
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::changedModel",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 25
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 25
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::changedModel",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "parseInteger",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 12,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 26
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 26
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 26
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 24
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      },
+      "srcClass" : "test::model"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "modelToModelMapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "test::changedModel",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 32,
+                  "sourceId" : "test::modelToModelMapping",
+                  "startColumn" : 18,
+                  "startLine" : 32
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 32,
+                "sourceId" : "test::modelToModelMapping",
+                "startColumn" : 36,
+                "startLine" : 32
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 32,
+                "sourceId" : "test::modelToModelMapping",
+                "startColumn" : 57,
+                "startLine" : 32
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "test::changedModel",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 32,
+                  "sourceId" : "test::modelToModelMapping",
+                  "startColumn" : 57,
+                  "startLine" : 32
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 32,
+                    "sourceId" : "test::modelToModelMapping",
+                    "startColumn" : 76,
+                    "startLine" : 32
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 32,
+                    "sourceId" : "test::modelToModelMapping",
+                    "startColumn" : 79,
+                    "startLine" : 32
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 32,
+              "sourceId" : "test::modelToModelMapping",
+              "startColumn" : 44,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 118,
+              "endLine" : 32,
+              "sourceId" : "test::modelToModelMapping",
+              "startColumn" : 101,
+              "startLine" : 32
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "test::changedModel",
+              "sourceInformation" : {
+                "endColumn" : 118,
+                "endLine" : 32,
+                "sourceId" : "test::modelToModelMapping",
+                "startColumn" : 101,
+                "startLine" : 32
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 121,
+                  "endLine" : 32,
+                  "sourceId" : "test::modelToModelMapping",
+                  "startColumn" : 120,
+                  "startLine" : 32
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 126,
+                  "endLine" : 32,
+                  "sourceId" : "test::modelToModelMapping",
+                  "startColumn" : 123,
+                  "startLine" : 32
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 32,
+            "sourceId" : "test::modelToModelMapping",
+            "startColumn" : 89,
+            "startLine" : 32
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 130,
+          "endLine" : 32,
+          "sourceId" : "test::modelToModelMapping",
+          "startColumn" : 17,
+          "startLine" : 32
+        }
+      },
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 30
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 58,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 54
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 51
+          }
+        } ],
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 35
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "modelStore",
+            "modelData" : [ {
+              "_type" : "modelEmbeddedData",
+              "data" : {
+                "_type" : "reference",
+                "dataElement" : {
+                  "path" : "test::data::MyData",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 45,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 42
+                  },
+                  "type" : "DATA"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 17,
+                  "startLine" : 42
+                }
+              },
+              "model" : "test::model",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 45,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 41
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 39
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 39
+          },
+          "store" : {
+            "path" : "ModelStore",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 39
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,8 @@
+
+Binding my::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    my::Firm
+  ];
+}

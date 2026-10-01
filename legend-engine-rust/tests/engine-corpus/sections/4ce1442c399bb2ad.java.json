@@ -1,0 +1,491 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "main",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "main::Firm",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 3
+      },
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 3
+      },
+      "value" : "bitemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "main",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 11
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "value" : "bitemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 16
+        }
+      }, {
+        "_type" : "strictDate",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 16
+        },
+        "value" : "2020-12-12"
+      }, {
+        "_type" : "strictDate",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 16
+        },
+        "value" : "2020-12-13"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 16
+      }
+    } ],
+    "name" : "walkTree__Person_MANY_",
+    "package" : "main",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 14
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "latestDate",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "latestDate",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 21
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 21
+      }
+    } ],
+    "name" : "walkTree1__Person_MANY_",
+    "package" : "main",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 19
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "latestDate",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "strictDate",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 26
+        },
+        "value" : "2020-12-12"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "walkTree2__Person_MANY_",
+    "package" : "main",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "main::Person",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 24
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "property",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "main::Person",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        }, {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 31
+          },
+          "value" : "2020-12-12"
+        }, {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 31
+          },
+          "value" : "2020-12-13"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "latestDate"
+      }, {
+        "_type" : "latestDate"
+      } ],
+      "property" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 48,
+        "startLine" : 31
+      }
+    } ],
+    "name" : "walkTree3__Firm_MANY_",
+    "package" : "main",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "main::Firm",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 29
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

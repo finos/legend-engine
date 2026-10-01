@@ -1,0 +1,195 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Query",
+    "originalMilestonedProperties" : [ ],
+    "package" : "",
+    "properties" : [ ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "letFunction",
+        "parameters" : [ {
+          "_type" : "string",
+          "value" : "offset"
+        }, {
+          "_type" : "func",
+          "function" : "plus",
+          "parameters" : [ {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 4
+            },
+            "values" : [ {
+              "_type" : "var",
+              "name" : "limit",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 4
+              },
+              "value" : 10
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        }
+      }, {
+        "_type" : "func",
+        "function" : "slice",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "Firm",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 5
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 5
+          }
+        }, {
+          "_type" : "var",
+          "name" : "limit",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 5
+          }
+        }, {
+          "_type" : "var",
+          "name" : "offset",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 5
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 5
+        }
+      } ],
+      "name" : "allFirms",
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Integer",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 3
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "limit",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 3
+        }
+      } ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Firm",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

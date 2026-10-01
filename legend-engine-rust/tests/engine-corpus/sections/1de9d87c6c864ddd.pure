@@ -1,0 +1,10 @@
+
+function model::test(a: String[1]): String[1]
+{
+  'a'
+}
+
+function model::test(a: String[1], b: Integer[1]): String[1]
+{
+  'a'
+}

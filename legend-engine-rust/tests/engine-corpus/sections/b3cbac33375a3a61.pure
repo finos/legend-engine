@@ -1,0 +1,6 @@
+
+Class my::Person1
+{
+  names: String[*];
+  age: Integer[1];
+}

@@ -1,0 +1,10 @@
+
+Database model::db
+(
+   Table personTb(name VARCHAR(200), firm VARCHAR(200))
+   Table firmTb(name VARCHAR(200))
+   Table otherTb(name VARCHAR(200))
+   Table otherTb2(name VARCHAR(200))
+   Join myJoin(otherTb2.name = otherTb.name)
+   Join otherJoin(otherTb2.name = firmTb.name)
+)

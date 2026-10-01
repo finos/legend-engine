@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Mapping",
+    "package" : "org::dxl",
+    "sourceInformation" : {
+      "endColumn" : 28,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,5 @@
+
+Class my::NumericThing
+{
+  amount: Number[1];
+}

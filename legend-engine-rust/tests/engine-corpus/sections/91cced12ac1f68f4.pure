@@ -1,0 +1,8 @@
+
+import meta::pure::metamodel::relation::*;
+
+Class demo::relation::domain::EmployeeWithStatus extends demo::relation::domain::Employee
+{
+  activeStatus: demo::relation::domain::ActiveStatus[1];
+}
+

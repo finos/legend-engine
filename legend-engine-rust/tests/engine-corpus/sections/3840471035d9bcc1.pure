@@ -1,0 +1,6 @@
+
+Database a::A
+(
+   Table tb(amount DECIMAL(18,6))
+   Table other(oamount DECIMAL(20,2))
+)

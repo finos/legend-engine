@@ -1,0 +1,96 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "tradeSchemaSet",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemas" : [ {
+      "content" : "section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: ',';  Record  {      s_tradeId       : STRING;      s_traderDetails : STRING;      s_tradeDetails  : STRING;  }}",
+      "contentSourceInformation" : {
+        "endColumn" : 197,
+        "endLine" : 214,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 214
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 215,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 213
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 217,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 209
+    }
+  }, {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "productSchemaSet",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemas" : [ {
+      "content" : "section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: ',';  Record  {      s_productId   : STRING;      s_productName : STRING;      s_description : STRING;  }}",
+      "contentSourceInformation" : {
+        "endColumn" : 191,
+        "endLine" : 224,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 224
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 225,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 223
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 227,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 219
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Trade" ]
+    },
+    "name" : "tradeServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemaSet" : "meta::external::store::service::showcase::store::tradeSchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 234,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 229
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::S_Product" ]
+    },
+    "name" : "prodServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "schemaSet" : "meta::external::store::service::showcase::store::productSchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 241,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 236
+    }
+  } ],
+  "imports" : [ ]
+}

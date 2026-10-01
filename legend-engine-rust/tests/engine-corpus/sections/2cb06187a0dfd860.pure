@@ -1,0 +1,6 @@
+
+Database app::dbInc
+(
+    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)
+    Join Person_Manager(personTable.MANAGERID = {target}.ID)
+)

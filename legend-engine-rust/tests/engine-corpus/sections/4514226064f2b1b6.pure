@@ -1,0 +1,14 @@
+
+Database test::store::TestDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(200)
+  )
+)

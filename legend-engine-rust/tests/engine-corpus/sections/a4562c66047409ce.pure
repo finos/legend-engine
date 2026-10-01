@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   name : String[*];
+   xza(z:String[1]){ok}:String[1];
+}

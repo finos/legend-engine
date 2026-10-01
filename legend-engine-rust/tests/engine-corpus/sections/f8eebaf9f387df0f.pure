@@ -1,0 +1,10 @@
+
+Binding test::firm::model::TestBinding1
+{
+   contentType   : 'application/json';
+   modelIncludes : [ test::firm::model::Firm, test::firm::model::Person, test::firm::model::Address, test::firm::model::AddressUse, test::firm::model::GeographicPosition ];}
+Binding test::firm::model::TestBinding2
+{
+   contentType   : 'application/json';
+   modelIncludes : [ test::firm::model::Address, test::firm::model::GeographicPosition ];}
+

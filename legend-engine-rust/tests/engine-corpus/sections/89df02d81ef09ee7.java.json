@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'actual'. Valid alternatives: ['expected']",
+    "sourceInformation" : {
+      "endColumn" : 22,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 43
+    }
+  }
+}

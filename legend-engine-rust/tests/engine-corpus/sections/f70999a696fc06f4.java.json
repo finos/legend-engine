@@ -1,0 +1,271 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "my",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "DOC",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "T",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 12
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "my::DB",
+              "mainTableDb" : "my::DB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 9,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 12
+              },
+              "table" : "T"
+            },
+            "tableAlias" : "T"
+          },
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          }
+        }, {
+          "name" : "N",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "array_size",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_filter",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 58,
+                    "startLine" : 13
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "my::DB",
+                    "mainTableDb" : "my::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 58,
+                      "startLine" : 13
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 65,
+                    "startLine" : 13
+                  },
+                  "value" : "divisions"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 78,
+                    "startLine" : 13
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 96,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 13
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "d",
+                    "sourceInformation" : {
+                      "endColumn" : 130,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 129,
+                      "startLine" : 13
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 143,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 133,
+                      "startLine" : 13
+                    },
+                    "value" : "headcount"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 154,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 146,
+                      "startLine" : 13
+                    },
+                    "value" : "INTEGER"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 155,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 103,
+                    "startLine" : 13
+                  }
+                },
+                "parameterNames" : [ "d" ],
+                "sourceInformation" : {
+                  "endColumn" : 155,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 99,
+                  "startLine" : 13
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 156,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 13
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 157,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 8,
+              "startLine" : 13
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 157,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "V",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 10
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

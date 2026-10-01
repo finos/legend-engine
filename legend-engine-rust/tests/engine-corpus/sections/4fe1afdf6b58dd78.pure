@@ -1,0 +1,16 @@
+
+RelationalDatabaseConnection simple::H2Connection
+{
+  store: model::relational::tests::dbInc;
+  type: H2;
+  timezone: 'UTC+0530';
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: Test
+  {
+  };
+}

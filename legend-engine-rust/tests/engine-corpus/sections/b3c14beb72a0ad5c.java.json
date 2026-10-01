@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "ShapeTable",
+        "values" : "id,kind,name,radius,side\n1,circle,Big Circle,10,0\n2,square,Small Square,0,5\n3,circle,Small Circle,2,0\n"
+      } ]
+    },
+    "name" : "ShapeSingleData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,178 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "my::Person",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 34
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "p1", "p2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "p1",
+      "primaryKey" : [ "FIRSTNAME" ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 42
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 42
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 43
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 43
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 40
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "p2",
+      "primaryKey" : [ "FIRSTNAME" ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 49
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 49
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 50
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 47
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 45
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

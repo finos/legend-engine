@@ -1,0 +1,152 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "RandomJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "prop1_source",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 23
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::Test",
+            "mainTableDb" : "model::Test",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 23
+            },
+            "table" : "TestTable1"
+          },
+          "tableAlias" : "TestTable1"
+        }, {
+          "_type" : "column",
+          "column" : "prop2_source",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 23
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::Test",
+            "mainTableDb" : "model::Test",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 23
+            },
+            "table" : "TestTable2"
+          },
+          "tableAlias" : "TestTable2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 43,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "Test",
+    "package" : "model",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 12
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "prop1_source",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TestTable1",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        }
+      }, {
+        "columns" : [ {
+          "name" : "prop2_source",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TestTable2",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ ]
+  } ]
+}

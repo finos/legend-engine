@@ -1,0 +1,15 @@
+
+Mapping my::testMapping
+(
+  my::Gender: EnumerationMapping GenderMapping
+  {
+    MALE: ['M'],
+    FEMALE: ['F']
+  }
+  *my::PersonWithGender[person]: Relation
+  {
+    ~func my::personWithGenderFunction():Relation<Any>[1]
+    firstName: $src.FIRSTNAME,
+    gender: EnumerationMapping GenderMapping: $src.GENDER
+  }
+)

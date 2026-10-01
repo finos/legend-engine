@@ -1,0 +1,253 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "goes",
+    "originalMilestonedProperties" : [ ],
+    "package" : "anything",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "v",
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "goes2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "anything",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "anything::goes",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "v2",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "x"
+      }, {
+        "_type" : "func",
+        "function" : "new",
+        "parameters" : [ {
+          "_type" : "genericTypeInstance",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::pure::metamodel::type::Class"
+            },
+            "typeArguments" : [ {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "anything::goes2"
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            } ],
+            "typeVariableValues" : [ ]
+          }
+        }, {
+          "_type" : "string",
+          "value" : ""
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "values" : [ {
+            "_type" : "keyExpression",
+            "add" : false,
+            "expression" : {
+              "_type" : "func",
+              "function" : "new",
+              "parameters" : [ {
+                "_type" : "genericTypeInstance",
+                "genericType" : {
+                  "multiplicityArguments" : [ ],
+                  "rawType" : {
+                    "_type" : "packageableType",
+                    "fullPath" : "meta::pure::metamodel::type::Class"
+                  },
+                  "typeArguments" : [ {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "anything::goes"
+                    },
+                    "typeArguments" : [ ],
+                    "typeVariableValues" : [ ]
+                  } ],
+                  "typeVariableValues" : [ ]
+                }
+              }, {
+                "_type" : "string",
+                "value" : ""
+              }, {
+                "_type" : "collection",
+                "multiplicity" : {
+                  "lowerBound" : 1,
+                  "upperBound" : 1
+                },
+                "values" : [ {
+                  "_type" : "keyExpression",
+                  "add" : false,
+                  "expression" : {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 55,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 49,
+                      "startLine" : 13
+                    },
+                    "value" : "value"
+                  },
+                  "key" : {
+                    "_type" : "string",
+                    "value" : "v"
+                  }
+                } ]
+              } ]
+            },
+            "key" : {
+              "_type" : "string",
+              "value" : "v2"
+            }
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 13
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 57,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "f__Any_1_",
+    "package" : "",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 11
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,109 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::model",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "serializationFormat",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 12
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 33,
+                    "startLine" : 12
+                  },
+                  "value" : "CSV"
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 33,
+                  "startLine" : 12
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 10
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "service" : {
+          "service" : "TestService",
+          "serviceStore" : "test::ServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 6
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

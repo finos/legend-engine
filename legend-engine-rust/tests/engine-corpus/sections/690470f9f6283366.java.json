@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'url' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 29
+    }
+  }
+}

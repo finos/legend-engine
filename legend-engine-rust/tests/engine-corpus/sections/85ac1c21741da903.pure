@@ -1,0 +1,34 @@
+
+Class domain::COVIDData
+{
+  id: Integer[1];
+  fips: String[0..1];
+  date: StrictDate[0..1];
+  caseType: String[0..1];
+  cases: Float[0..1];
+  lastReportedFlag: Boolean[0..1];
+  demographics: domain::Demographics[0..1];
+}
+
+Class domain::Demographics
+{
+  fips: String[0..1];
+  state: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> domain::Class2
+{
+  propClass2: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> domain::Class1
+{
+  propClass1: String[1];
+}
+
+Association domain::Class12Assoc
+{
+  fromClass1: domain::Class1[1];
+  fromClass2: domain::Class2[1];
+}
+

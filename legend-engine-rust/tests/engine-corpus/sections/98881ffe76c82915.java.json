@@ -1,0 +1,62 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "userNamePassword",
+        "passwordVaultReference" : "pwd",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 12
+        },
+        "userNameVaultReference" : "user"
+      },
+      "databaseType" : "SqlServer",
+      "datasourceSpecification" : {
+        "_type" : "static",
+        "databaseName" : "name",
+        "host" : "host",
+        "port" : 1234,
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        }
+      },
+      "element" : "apps::pure::studio::relational::tests::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "SqlServer"
+    },
+    "name" : "StaticConnection",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

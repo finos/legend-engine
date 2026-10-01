@@ -1,0 +1,6 @@
+
+Class model::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}

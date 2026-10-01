@@ -1,0 +1,87 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "and",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "lessThan",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 1
+        },
+        "value" : 1
+      }, {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 1
+        },
+        "value" : 2
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "func",
+      "function" : "lessThan",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 1
+        },
+        "value" : 2
+      }, {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        },
+        "value" : 3
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 11,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 10,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 19,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

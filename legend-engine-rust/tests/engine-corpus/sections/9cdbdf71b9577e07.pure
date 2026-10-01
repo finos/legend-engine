@@ -1,0 +1,20 @@
+
+RelationalDatabaseConnection test::ServiceConnection
+{
+  store: test::TestDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: Test;
+}
+
+RelationalDatabaseConnection test::SinkConnection
+{
+  store: test::TestDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: Test;
+}

@@ -1,0 +1,9 @@
+
+'''
+Answers everything.
+Deterministically.
+'''
+function model::f(): Integer[1]
+{
+  42
+}

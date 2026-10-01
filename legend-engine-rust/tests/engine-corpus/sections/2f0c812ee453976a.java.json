@@ -1,0 +1,171 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Vehicle",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::vehicle",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 18,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 17,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "registration",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 18,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Car",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::vehicle",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 23,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 10,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "doors",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 23,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::vehicle::Vehicle",
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 21,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 34,
+        "startLine" : 21
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Truck",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::vehicle",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 28,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 18,
+            "startLine" : 28
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "payloadTonnes",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 28,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 26
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::vehicle::Vehicle",
+      "sourceInformation" : {
+        "endColumn" : 57,
+        "endLine" : 26,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 36,
+        "startLine" : 26
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

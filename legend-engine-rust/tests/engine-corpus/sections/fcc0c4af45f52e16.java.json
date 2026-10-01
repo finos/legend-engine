@@ -1,0 +1,106 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "mySimpleRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 31
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 31
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "mySimpleConnection",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 8,
+              "startLine" : 32
+            }
+          },
+          "id" : "id3",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 32
+          }
+        }, {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "mySimpleClass2",
+            "classSourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 36
+            },
+            "sourceInformation" : {
+              "endColumn" : 5,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 34
+            },
+            "url" : "my_url"
+          },
+          "id" : "id4",
+          "sourceInformation" : {
+            "endColumn" : 4,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 33
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mySimpleMapping",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 43
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 27
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    }
+  } ],
+  "imports" : [ "meta" ]
+}

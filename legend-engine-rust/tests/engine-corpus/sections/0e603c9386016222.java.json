@@ -1,0 +1,196 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "firmAddress",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "address1",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 34
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "mapping::db",
+            "mainTableDb" : "mapping::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 34
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        }, {
+          "_type" : "column",
+          "column" : "address1",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 34
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "mapping::db",
+            "mainTableDb" : "mapping::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 34
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 54,
+          "startLine" : 34
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 34
+      }
+    } ],
+    "name" : "db",
+    "package" : "mapping",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 24
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firmId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "legalName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "address1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "postcode",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "employeeFirmDenormTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 25
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,55 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "id", "firstName", "lastName" ],
+        "paths" : [ "default", "PersonTable" ],
+        "rows" : [ {
+          "values" : [ "1", "I'm John", "\"Doe, Jr\"" ]
+        }, {
+          "values" : [ "2", "Nicole", "Smith" ]
+        }, {
+          "values" : [ "3", "Time", "Smith" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      }, {
+        "columns" : [ "id", "firstName", "lastName" ],
+        "paths" : [ "default", "PersonTable" ],
+        "rows" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    },
+    "name" : "RelationalData",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

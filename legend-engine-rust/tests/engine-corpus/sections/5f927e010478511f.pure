@@ -1,0 +1,5 @@
+
+Class model::A
+{
+  'a name': String[1];
+}

@@ -1,0 +1,84 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "Enumeration",
+      "name": "Color",
+      "package": "model",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 22,
+        "sourceId": "enumeration.pure",
+        "startColumn": 1,
+        "startLine": 17
+      },
+      "values": [
+        {
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 19,
+            "sourceId": "enumeration.pure",
+            "startColumn": 5,
+            "startLine": 19
+          },
+          "value": "RED"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 20,
+            "sourceId": "enumeration.pure",
+            "startColumn": 5,
+            "startLine": 20
+          },
+          "value": "GREEN"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 21,
+            "sourceId": "enumeration.pure",
+            "startColumn": 5,
+            "startLine": 21
+          },
+          "value": "BLUE"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::Color"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 16,
+            "sourceId": "enumeration.pure",
+            "startColumn": 1,
+            "startLine": 16
+          }
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 7,
+        "endLine": 16,
+        "sourceId": "enumeration.pure",
+        "startColumn": 1,
+        "startLine": 16
+      }
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -1,0 +1,12 @@
+
+Database simple::dbInc
+(
+  Schema "productSchema"
+  (
+    Table "productTable"
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+  )
+)

@@ -1,0 +1,58 @@
+
+Service demo::service::EmployeesByFirmService
+{
+  pattern: '/api/employeesByFirm';
+  documentation: 'List each person with their employer.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Person.all()->sortBy(x|$x.firstName)->project([x|$x.fullName(), x|$x.firm.legalName], ['Full Name', 'Firm']);
+    mapping: demo::FirmMapping;
+    runtime: demo::runtime::FirmRuntime;
+  }
+  testSuites:
+  [
+    serviceSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firmId,firstName,lastName\n' +
+                '1,1,John,Doe\n' +
+                '2,1,Jane,Smith\n' +
+                '3,2,Bob,Jones\n';
+              default.FirmTable:
+                'id,legalName\n' +
+                '1,Finos\n' +
+                '2,Goldman\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        joinedQuery:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Full Name":"Bob Jones","Firm":"Goldman"},{"Full Name":"Jane Smith","Firm":"Finos"},{"Full Name":"John Doe","Firm":"Finos"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

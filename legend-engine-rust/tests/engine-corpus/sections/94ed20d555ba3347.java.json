@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FLAG",
+        "property" : {
+          "class" : "my::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::booleanColumnFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 34
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

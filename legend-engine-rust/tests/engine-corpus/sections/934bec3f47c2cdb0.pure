@@ -1,0 +1,110 @@
+
+Mapping demo::SaleAggregationAwareMapping
+(
+  *demo::agg::Sale: AggregationAware
+  {
+    Views:
+    [
+      (
+        ~modelOperation:
+        {
+          ~canAggregate true,
+          ~groupByFunctions
+          (
+            $this.salesPerson
+          ),
+          ~aggregateValues
+          (
+            ( ~mapFn: $this.revenue, ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Relational
+        {
+          ~primaryKey
+          (
+            [demo::store::AggDB]SalesByPersonTable.salesPerson
+          )
+          ~mainTable [demo::store::AggDB]SalesByPersonTable
+          salesPerson: [demo::store::AggDB]SalesByPersonTable.salesPerson,
+          revenue: [demo::store::AggDB]SalesByPersonTable.revenue
+        }
+      )
+    ],
+    ~mainMapping: Relational
+    {
+      ~primaryKey
+      (
+        [demo::store::AggDB]SalesTable.id
+      )
+      ~mainTable [demo::store::AggDB]SalesTable
+      salesPerson: [demo::store::AggDB]SalesTable.salesPerson,
+      revenue: [demo::store::AggDB]SalesTable.revenue
+    }
+  }
+
+  testSuites:
+  [
+    mainMappingSuite:
+    {
+      function: |demo::agg::Sale.all()->sortBy(x|$x.revenue)->project([x|$x.salesPerson, x|$x.revenue], ['Sales Person', 'Revenue']);
+      tests:
+      [
+        rowLevelQueryUsesMainTable:
+        {
+          data:
+          [
+            demo::store::AggDB:
+              Reference
+              #{
+                demo::data::AggSalesData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnRawRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sales Person":"Jane","Revenue":5},{"Sales Person":"John","Revenue":10},{"Sales Person":"John","Revenue":20}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    aggregateViewSuite:
+    {
+      function: |demo::agg::Sale.all()->groupBy([x|$x.salesPerson], [agg(x|$x.revenue, y|$y->sum())], ['Sales Person', 'Revenue'])->sort([asc('Sales Person')]);
+      tests:
+      [
+        groupedQueryUsesAggregateTable:
+        {
+          data:
+          [
+            demo::store::AggDB:
+              Reference
+              #{
+                demo::data::AggSalesData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnAggregatedRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sales Person":"Jane","Revenue":5},{"Sales Person":"John","Revenue":30}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

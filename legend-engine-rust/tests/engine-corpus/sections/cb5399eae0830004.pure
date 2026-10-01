@@ -1,0 +1,59 @@
+
+Mapping testServiceStoreTestSuites::ServiceStoreMapping
+(
+  *testServiceStoreTestSuites::Employee[employee_set]: ServiceStore
+  {
+    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeService
+  }
+  *testServiceStoreTestSuites::Employee2[employee2_set]: ServiceStore
+  {
+    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeServiceWithParameters
+    (
+      ~request
+      (
+        parameters
+        (
+          stringParam = $this.stringParam,
+          integerParam = $this.integerParam,
+          floatParam = $this.floatParam,
+          booleanParam = $this.booleanParam
+        )
+      )
+    )
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            testServiceStoreTestSuites::ServiceStore:
+              Reference
+              #{
+                testMapping::TestData
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ "kerberos": "dummy kerberos", "employeeID": "dummy id", "title": "dummy title", "firstName": "dummy firstName", "lastName": "dummy lastname", "countryCode": "dummy countryCode" }';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

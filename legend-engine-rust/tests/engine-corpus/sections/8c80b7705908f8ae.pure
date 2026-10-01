@@ -1,0 +1,13 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    address
+    (
+      city: CITY
+    )
+  }
+)

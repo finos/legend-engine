@@ -1,0 +1,22 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  title: 'some title';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::element.all()->from(model::dummyMapping, model::dummyRuntime);
+      executionContextKey: 'Context 1';
+    }
+  ];
+}

@@ -1,0 +1,21 @@
+
+Runtime test::Runtime
+{
+  mappings:
+  [
+  ];
+  connections:
+  [
+    local::db:
+    [
+      c1: #{
+        RelationalDatabaseConnection
+        {
+          type: H2;
+          specification: LocalH2 {};
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

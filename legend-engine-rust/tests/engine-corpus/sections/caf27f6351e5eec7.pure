@@ -1,0 +1,19 @@
+
+Data meta::data::MyData
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+        };
+      }
+    ]
+  }#
+}

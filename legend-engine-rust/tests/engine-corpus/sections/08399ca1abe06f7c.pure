@@ -1,0 +1,8 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[my_Person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+  }
+)

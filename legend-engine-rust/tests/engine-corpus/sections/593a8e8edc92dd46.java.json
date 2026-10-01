@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "integer",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "value" : 42
+    } ],
+    "name" : "f__Integer_1_",
+    "package" : "model",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Integer",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 4
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Answers everything."
+      }
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

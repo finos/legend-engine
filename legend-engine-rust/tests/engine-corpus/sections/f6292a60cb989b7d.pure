@@ -1,0 +1,9 @@
+
+DataQualityRelationComparison meta::dataquality::TestRelationComparison
+{
+    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, AGE])->from(meta::dataquality::DataQualityRuntime);
+    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, AGE])->from(meta::dataquality::DataQualityRuntime);
+    keys: ['SALARY'];
+    columnsToCompare: ['AGE'];
+    strategy: MD5Hash;
+}

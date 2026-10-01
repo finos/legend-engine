@@ -1,0 +1,7 @@
+
+FunctionJar stereotypes::tags::FunctionJar::import::ownership::Deployment::identifier::activationConfiguration::documentation::function::all::let::allVersions::allVersionsInRange::toBytes
+{
+   function : a::f():String[1];
+   ownership : Deployment { identifier: '17' };
+   documentation : 'sass';
+}

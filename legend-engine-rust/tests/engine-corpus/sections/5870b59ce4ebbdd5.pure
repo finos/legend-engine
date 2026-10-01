@@ -1,0 +1,5 @@
+
+Class <<temporal.businesstemporal, taggedValue.Number2>> {doc.test1 = 'test1\'s', doc.test2 = 'm\'s test'} meta::this::class::has::path::A
+{
+  <<equality.Key, taggedValue.test>> {doc.doc = 'uyaguari\'s test', doc.test2 = 'm\'s test'} name: e::R[*];
+}

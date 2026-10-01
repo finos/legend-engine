@@ -1,0 +1,58 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "function",
+  "body": [
+    {
+      "_type": "func",
+      "function": "plus",
+      "parameters": [
+        {
+          "_type": "string",
+          "value": "Hello "
+        },
+        {
+          "_type": "var",
+          "name": "name"
+        }
+      ]
+    }
+  ],
+  "name": "hello",
+  "package": "my",
+  "parameters": [
+    {
+      "_type": "var",
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "name": "name"
+    }
+  ],
+  "returnGenericType": {
+    "rawType": {
+      "_type": "packageableType",
+      "fullPath": "String"
+    }
+  },
+  "returnMultiplicity": {
+    "lowerBound": 1,
+    "upperBound": 1
+  },
+  "sourceInformation": {
+    "endColumn": 1,
+    "endLine": 6,
+    "sourceId": "test.pure",
+    "startColumn": 1,
+    "startLine": 2
+  }
+}

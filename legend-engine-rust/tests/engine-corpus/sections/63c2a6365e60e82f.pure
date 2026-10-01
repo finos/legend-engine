@@ -1,0 +1,18 @@
+
+Database demo::store::BiTemporalDB
+(
+  Table PRODUCT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z),
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL,
+    IN_Z DATE PRIMARY KEY,
+    OUT_Z DATE NOT NULL
+  )
+)

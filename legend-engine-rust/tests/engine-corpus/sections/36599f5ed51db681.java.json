@@ -1,0 +1,65 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "passRef",
+        "privateKeyVaultReference" : "privateKeyRef",
+        "publicUserName" : "myName",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "cloudType" : "aws",
+        "databaseName" : "test",
+        "region" : "us-east2",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        },
+        "warehouseName" : "warehouseName"
+      },
+      "element" : "store::Store",
+      "elementSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

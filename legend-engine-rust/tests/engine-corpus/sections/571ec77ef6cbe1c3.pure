@@ -1,0 +1,9 @@
+
+function test::f(): String[1]
+{
+  let x = '''
+  Hello
+  World
+  ''';
+  $x;
+}

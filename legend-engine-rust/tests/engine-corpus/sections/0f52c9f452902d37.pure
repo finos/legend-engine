@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   'ab'->cast(@meta::pure::precisePrimitives::Varchar(32))->in(1->cast(@meta::pure::metamodel::relation::Relation<(c:meta::pure::precisePrimitives::Varchar(64))>))
+}

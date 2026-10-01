@@ -1,0 +1,2877 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "demo::ssn::Person",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 21,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 21
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "Type_Nested", "Type_Root" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssn::Person",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 26,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "Type_Nested",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssn::store::PersonDB",
+        "mainTableDb" : "demo::ssn::store::PersonDB",
+        "schema" : "PERSON_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 32,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 32
+        },
+        "table" : "PERSON_NESTED"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 30,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 30
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssn::store::PersonDB",
+          "mainTableDb" : "demo::ssn::store::PersonDB",
+          "schema" : "PERSON_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 30
+          },
+          "table" : "PERSON_NESTED"
+        },
+        "tableAlias" : "PERSON_NESTED"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 33
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 33
+            },
+            "table" : "PERSON_NESTED"
+          },
+          "tableAlias" : "PERSON_NESTED"
+        },
+        "source" : "Type_Nested",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "profileJson",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "toJson",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 34
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 53,
+                "startLine" : 34
+              },
+              "table" : "PERSON_NESTED"
+            },
+            "tableAlias" : "PERSON_NESTED"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 88,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 34
+          }
+        },
+        "source" : "Type_Nested",
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 132,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 70,
+              "startLine" : 36
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 124,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 98,
+                "startLine" : 36
+              },
+              "table" : "PERSON_NESTED"
+            },
+            "tableAlias" : "PERSON_NESTED"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 151,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 135,
+              "startLine" : 36
+            },
+            "value" : "employment.firm"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 162,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 154,
+              "startLine" : 36
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 44,
+            "startLine" : 36
+          }
+        },
+        "source" : "Type_Nested",
+        "sourceInformation" : {
+          "endColumn" : 163,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 36
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssn::Person",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 39,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "Type_Root",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssn::store::PersonDB",
+        "mainTableDb" : "demo::ssn::store::PersonDB",
+        "schema" : "PERSON_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 45,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 45
+        },
+        "table" : "PERSON_ROOT"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 43,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 43
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssn::store::PersonDB",
+          "mainTableDb" : "demo::ssn::store::PersonDB",
+          "schema" : "PERSON_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 43,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 43
+          },
+          "table" : "PERSON_ROOT"
+        },
+        "tableAlias" : "PERSON_ROOT"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 46,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 46,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 46,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 46
+            },
+            "table" : "PERSON_ROOT"
+          },
+          "tableAlias" : "PERSON_ROOT"
+        },
+        "source" : "Type_Root",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 46,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "profileJson",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "toJson",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 47
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 47,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 53,
+                "startLine" : 47
+              },
+              "table" : "PERSON_ROOT"
+            },
+            "tableAlias" : "PERSON_ROOT"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 47
+          }
+        },
+        "source" : "Type_Root",
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 47,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 47
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "PROFILE",
+          "sourceInformation" : {
+            "endColumn" : 104,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 44,
+            "startLine" : 48
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 72,
+              "startLine" : 48
+            },
+            "table" : "PERSON_ROOT"
+          },
+          "tableAlias" : "PERSON_ROOT"
+        },
+        "source" : "Type_Root",
+        "sourceInformation" : {
+          "endColumn" : 104,
+          "endLine" : 48,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 48
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssn::TextPerson",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 53,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 53
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssn::store::PersonDB",
+        "mainTableDb" : "demo::ssn::store::PersonDB",
+        "schema" : "PERSON_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 59,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 59
+        },
+        "table" : "PERSON_TEXT"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 57,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 57
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssn::store::PersonDB",
+          "mainTableDb" : "demo::ssn::store::PersonDB",
+          "schema" : "PERSON_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 57
+          },
+          "table" : "PERSON_TEXT"
+        },
+        "tableAlias" : "PERSON_TEXT"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::TextPerson",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 60
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 60
+            },
+            "table" : "PERSON_TEXT"
+          },
+          "tableAlias" : "PERSON_TEXT"
+        },
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 60,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 60
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::TextPerson",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 61,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 61
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "parseJson",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE_JSON",
+            "sourceInformation" : {
+              "endColumn" : 119,
+              "endLine" : 61,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 54,
+              "startLine" : 61
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 61,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 82,
+                "startLine" : 61
+              },
+              "table" : "PERSON_TEXT"
+            },
+            "tableAlias" : "PERSON_TEXT"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 120,
+            "endLine" : 61,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 44,
+            "startLine" : 61
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 120,
+          "endLine" : 61,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 61
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 62,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 53
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssn::Staff",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 66,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 66
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssn::store::PersonDB",
+        "mainTableDb" : "demo::ssn::store::PersonDB",
+        "schema" : "PERSON_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 72,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 72
+        },
+        "table" : "STAFF"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 70,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 70
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssn::store::PersonDB",
+          "mainTableDb" : "demo::ssn::store::PersonDB",
+          "schema" : "PERSON_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 70,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 70
+          },
+          "table" : "STAFF"
+        },
+        "tableAlias" : "STAFF"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Staff",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 73,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 73
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 73,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 73
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 73,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 73
+            },
+            "table" : "STAFF"
+          },
+          "tableAlias" : "STAFF"
+        },
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 73,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 73
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Staff",
+          "property" : "profileJson",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 74,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 74
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "toJson",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 74,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 74
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 74,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 53,
+                "startLine" : 74
+              },
+              "table" : "STAFF"
+            },
+            "tableAlias" : "STAFF"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 74,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 74
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 74,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 74
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::Staff",
+          "property" : "managerFirm",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 75,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 75
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::ssn::store::PersonDB",
+            "name" : "Manager",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 75,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 79,
+              "startLine" : 75
+            }
+          } ],
+          "relationalElement" : {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 144,
+              "endLine" : 75,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 90,
+              "startLine" : 75
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 75,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 118,
+                "startLine" : 75
+              },
+              "table" : "STAFF"
+            },
+            "tableAlias" : "STAFF"
+          },
+          "sourceInformation" : {
+            "endColumn" : 144,
+            "endLine" : 75,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 51,
+            "startLine" : 75
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 144,
+          "endLine" : 75,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 75
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 76,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 66
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssn::Record",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 82,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 82
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssn::store::PersonDB",
+        "mainTableDb" : "demo::ssn::store::PersonDB",
+        "schema" : "PERSON_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 88,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 88
+        },
+        "table" : "RECORD_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 86,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 86
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssn::store::PersonDB",
+          "mainTableDb" : "demo::ssn::store::PersonDB",
+          "schema" : "PERSON_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 86,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 86
+          },
+          "table" : "RECORD_TABLE"
+        },
+        "tableAlias" : "RECORD_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssn::Record",
+          "property" : "reference",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 89,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 89
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "REFERENCE",
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 89,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 89
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 89,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 44,
+              "startLine" : 89
+            },
+            "table" : "RECORD_TABLE"
+          },
+          "tableAlias" : "RECORD_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 89,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 89
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::TagBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::Record",
+          "property" : "tags",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 90,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 90
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "CONTENT",
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 90,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 69,
+              "startLine" : 90
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 122,
+                "endLine" : 90,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 97,
+                "startLine" : 90
+              },
+              "table" : "RECORD_TABLE"
+            },
+            "tableAlias" : "RECORD_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 146,
+              "endLine" : 90,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 133,
+              "startLine" : 90
+            },
+            "value" : "payload.tags"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 166,
+              "endLine" : 90,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 149,
+              "startLine" : 90
+            },
+            "value" : "SEMISTRUCTURED[]"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 167,
+            "endLine" : 90,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 43,
+            "startLine" : 90
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 167,
+          "endLine" : 90,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 90
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssn::ParticipantBinding"
+        },
+        "property" : {
+          "class" : "demo::ssn::Record",
+          "property" : "participants",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 91,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 91
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "CONTENT",
+            "sourceInformation" : {
+              "endColumn" : 146,
+              "endLine" : 91,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 85,
+              "startLine" : 91
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssn::store::PersonDB",
+              "mainTableDb" : "demo::ssn::store::PersonDB",
+              "schema" : "PERSON_SCHEMA",
+              "sourceInformation" : {
+                "endColumn" : 138,
+                "endLine" : 91,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 113,
+                "startLine" : 91
+              },
+              "table" : "RECORD_TABLE"
+            },
+            "tableAlias" : "RECORD_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 170,
+              "endLine" : 91,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 149,
+              "startLine" : 91
+            },
+            "value" : "payload.participants"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 190,
+              "endLine" : 91,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 173,
+              "startLine" : 91
+            },
+            "value" : "SEMISTRUCTURED[]"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 191,
+            "endLine" : 91,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 59,
+            "startLine" : 91
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 191,
+          "endLine" : 91,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 17,
+          "startLine" : 91
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 92,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 82
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PersonMapping",
+    "package" : "demo::ssn",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 167,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssn::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 98,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 98
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 98,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 98
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 99,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 99
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 42,
+                          "endLine" : 99,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 41,
+                          "startLine" : 99
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 47,
+                        "endLine" : 99,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 44,
+                        "startLine" : 99
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 47,
+                      "endLine" : 99,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 39,
+                      "startLine" : 99
+                    }
+                  },
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 99,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 99
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "p",
+                          "sourceInformation" : {
+                            "endColumn" : 66,
+                            "endLine" : 99,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 65,
+                            "startLine" : 99
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 71,
+                          "endLine" : 99,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 68,
+                          "startLine" : 99
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 81,
+                        "endLine" : 99,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 73,
+                        "startLine" : 99
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 99,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 63,
+                      "startLine" : 99
+                    }
+                  },
+                  "name" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 99,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 50,
+                    "startLine" : 99
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 102,
+                          "endLine" : 99,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 101,
+                          "startLine" : 99
+                        }
+                      } ],
+                      "property" : "profileJson",
+                      "sourceInformation" : {
+                        "endColumn" : 114,
+                        "endLine" : 99,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 104,
+                        "startLine" : 99
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 114,
+                      "endLine" : 99,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 99,
+                      "startLine" : 99
+                    }
+                  },
+                  "name" : "profileJson",
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 99,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 84,
+                    "startLine" : 99
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 99,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 99
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 100,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 100
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 100,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 100
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 100,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 100
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 100,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 34,
+                "startLine" : 100
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 100,
+            "sourceId" : "demo::ssn::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 100
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 100,
+          "sourceId" : "demo::ssn::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 98
+        }
+      },
+      "id" : "unionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 109,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 96
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Alice\",\"legalName\":\"Firm One\",\"profileJson\":\"{\\\"employment\\\":{\\\"firm\\\":{\\\"legalName\\\":\\\"Firm One\\\"}},\\\"grade\\\":3}\"},{\"name\":\"Bob\",\"legalName\":\"Firm Two\",\"profileJson\":\"{\\\"legalName\\\":\\\"Firm Two\\\"}\"}]",
+            "sourceInformation" : {
+              "endColumn" : 349,
+              "endLine" : 106,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 64,
+              "startLine" : 106
+            }
+          },
+          "id" : "shouldReconcile",
+          "sourceInformation" : {
+            "endColumn" : 353,
+            "endLine" : 106,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 39,
+            "startLine" : 106
+          }
+        } ],
+        "id" : "reconcileShapes",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 107,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 103
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssn::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 105,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 105
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 105,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 105
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 105,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 105
+          },
+          "store" : {
+            "path" : "demo::ssn::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 105,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 105
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssn::TextPerson",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 112,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 112
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 112,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 112
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 113,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 113
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 42,
+                          "endLine" : 113,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 41,
+                          "startLine" : 113
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 47,
+                        "endLine" : 113,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 44,
+                        "startLine" : 113
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 47,
+                      "endLine" : 113,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 39,
+                      "startLine" : 113
+                    }
+                  },
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 113,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 113
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "p",
+                          "sourceInformation" : {
+                            "endColumn" : 66,
+                            "endLine" : 113,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 65,
+                            "startLine" : 113
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 71,
+                          "endLine" : 113,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 68,
+                          "startLine" : 113
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 81,
+                        "endLine" : 113,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 73,
+                        "startLine" : 113
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 113,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 63,
+                      "startLine" : 113
+                    }
+                  },
+                  "name" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 113,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 50,
+                    "startLine" : 113
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 113,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 113
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 114,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 114
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 114,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 114
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 114,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 114
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 114,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 34,
+                "startLine" : 114
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 114,
+            "sourceId" : "demo::ssn::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 114
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 114,
+          "sourceId" : "demo::ssn::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 112
+        }
+      },
+      "id" : "parseJsonSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 123,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 110
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Cara\",\"legalName\":\"Firm Three\"}]",
+            "sourceInformation" : {
+              "endColumn" : 167,
+              "endLine" : 120,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 63,
+              "startLine" : 120
+            }
+          },
+          "id" : "shouldTypeText",
+          "sourceInformation" : {
+            "endColumn" : 171,
+            "endLine" : 120,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 38,
+            "startLine" : 120
+          }
+        } ],
+        "id" : "typeTextColumn",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 121,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 117
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssn::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 119,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 119
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 119,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 119
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 119,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 119
+          },
+          "store" : {
+            "path" : "demo::ssn::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 119,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 119
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssn::Staff",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 126,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 126
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 126,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 34,
+                "startLine" : 126
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 127,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 127
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "s",
+                        "sourceInformation" : {
+                          "endColumn" : 42,
+                          "endLine" : 127,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 41,
+                          "startLine" : 127
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 47,
+                        "endLine" : 127,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 44,
+                        "startLine" : 127
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 47,
+                      "endLine" : 127,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 39,
+                      "startLine" : 127
+                    }
+                  },
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 127
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "s",
+                          "sourceInformation" : {
+                            "endColumn" : 73,
+                            "endLine" : 127,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 72,
+                            "startLine" : 127
+                          }
+                        } ],
+                        "property" : "managerFirm",
+                        "sourceInformation" : {
+                          "endColumn" : 85,
+                          "endLine" : 127,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 75,
+                          "startLine" : 127
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 95,
+                        "endLine" : 127,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 87,
+                        "startLine" : 127
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 95,
+                      "endLine" : 127,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 70,
+                      "startLine" : 127
+                    }
+                  },
+                  "name" : "managerLegalName",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 50,
+                    "startLine" : 127
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "s",
+                        "sourceInformation" : {
+                          "endColumn" : 116,
+                          "endLine" : 127,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 115,
+                          "startLine" : 127
+                        }
+                      } ],
+                      "property" : "profileJson",
+                      "sourceInformation" : {
+                        "endColumn" : 128,
+                        "endLine" : 127,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 118,
+                        "startLine" : 127
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "s"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 128,
+                      "endLine" : 127,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 113,
+                      "startLine" : 127
+                    }
+                  },
+                  "name" : "profileJson",
+                  "sourceInformation" : {
+                    "endColumn" : 128,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 98,
+                    "startLine" : 127
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 127,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 127
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 128,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 128
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 128,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 128
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 128,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 128
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 128,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 34,
+                "startLine" : 128
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 128,
+            "sourceId" : "demo::ssn::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 128
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 128,
+          "sourceId" : "demo::ssn::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 126
+        }
+      },
+      "id" : "joinBindingSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 137,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 124
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Dan\",\"managerLegalName\":\"Eve Firm\",\"profileJson\":\"{\\\"legalName\\\":\\\"Dan Firm\\\"}\"},{\"name\":\"Eve\",\"managerLegalName\":null,\"profileJson\":\"{\\\"legalName\\\":\\\"Eve Firm\\\"}\"}]",
+            "sourceInformation" : {
+              "endColumn" : 315,
+              "endLine" : 134,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 70,
+              "startLine" : 134
+            }
+          },
+          "id" : "shouldBindThroughJoin",
+          "sourceInformation" : {
+            "endColumn" : 319,
+            "endLine" : 134,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 45,
+            "startLine" : 134
+          }
+        } ],
+        "id" : "bindThroughJoin",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 135,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 131
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssn::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 133,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 133
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 133,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 133
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 133,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 133
+          },
+          "store" : {
+            "path" : "demo::ssn::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 133,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 133
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssn::Record",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 140,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 140
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 140,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 140
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 141,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 141
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 141,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 141
+                        }
+                      } ],
+                      "property" : "reference",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 141,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 141
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 141,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 141
+                    }
+                  },
+                  "name" : "reference",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 141,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 141
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "r",
+                          "sourceInformation" : {
+                            "endColumn" : 74,
+                            "endLine" : 141,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 73,
+                            "startLine" : 141
+                          }
+                        } ],
+                        "property" : "tags",
+                        "sourceInformation" : {
+                          "endColumn" : 79,
+                          "endLine" : 141,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 76,
+                          "startLine" : 141
+                        }
+                      } ],
+                      "property" : "code",
+                      "sourceInformation" : {
+                        "endColumn" : 84,
+                        "endLine" : 141,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 81,
+                        "startLine" : 141
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 84,
+                      "endLine" : 141,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 71,
+                      "startLine" : 141
+                    }
+                  },
+                  "name" : "tagCode",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 141,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 141
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "r",
+                          "sourceInformation" : {
+                            "endColumn" : 105,
+                            "endLine" : 141,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 104,
+                            "startLine" : 141
+                          }
+                        } ],
+                        "property" : "tags",
+                        "sourceInformation" : {
+                          "endColumn" : 110,
+                          "endLine" : 141,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 107,
+                          "startLine" : 141
+                        }
+                      } ],
+                      "property" : "category",
+                      "sourceInformation" : {
+                        "endColumn" : 119,
+                        "endLine" : 141,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 112,
+                        "startLine" : 141
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 119,
+                      "endLine" : 141,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 102,
+                      "startLine" : 141
+                    }
+                  },
+                  "name" : "tagCategory",
+                  "sourceInformation" : {
+                    "endColumn" : 119,
+                    "endLine" : 141,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 87,
+                    "startLine" : 141
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 141,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 141
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 73,
+              "endLine" : 142,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 142
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 142,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 142
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "reference",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 142,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 142
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 142,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 142
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 142,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 142
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "tagCode",
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 142,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 142
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 142,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 62,
+                "startLine" : 142
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 142,
+            "sourceId" : "demo::ssn::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 142
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 142,
+          "sourceId" : "demo::ssn::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 140
+        }
+      },
+      "id" : "boundArraySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 151,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 138
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"reference\":\"R-1\",\"tagCode\":\"T1\",\"tagCategory\":\"Primary\"},{\"reference\":\"R-1\",\"tagCode\":\"T2\",\"tagCategory\":\"Secondary\"},{\"reference\":\"R-2\",\"tagCode\":\"T9\",\"tagCategory\":\"Primary\"}]",
+            "sourceInformation" : {
+              "endColumn" : 312,
+              "endLine" : 148,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 70,
+              "startLine" : 148
+            }
+          },
+          "id" : "shouldTypeEachElement",
+          "sourceInformation" : {
+            "endColumn" : 316,
+            "endLine" : 148,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 45,
+            "startLine" : 148
+          }
+        } ],
+        "id" : "bindArrayOfObjects",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 149,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 145
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssn::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 147,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 147
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 147,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 147
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 147,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 147
+          },
+          "store" : {
+            "path" : "demo::ssn::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 147,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 147
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssn::Record",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 154,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 154
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 154,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 154
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 92,
+                "endLine" : 155,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 155
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 155,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 155
+                        }
+                      } ],
+                      "property" : "reference",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 155,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 155
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 155,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 155
+                    }
+                  },
+                  "name" : "reference",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 155,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 155
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "r",
+                          "sourceInformation" : {
+                            "endColumn" : 72,
+                            "endLine" : 155,
+                            "sourceId" : "demo::ssn::PersonMapping",
+                            "startColumn" : 71,
+                            "startLine" : 155
+                          }
+                        } ],
+                        "property" : "participants",
+                        "sourceInformation" : {
+                          "endColumn" : 85,
+                          "endLine" : 155,
+                          "sourceId" : "demo::ssn::PersonMapping",
+                          "startColumn" : 74,
+                          "startLine" : 155
+                        }
+                      } ],
+                      "property" : "party",
+                      "sourceInformation" : {
+                        "endColumn" : 91,
+                        "endLine" : 155,
+                        "sourceId" : "demo::ssn::PersonMapping",
+                        "startColumn" : 87,
+                        "startLine" : 155
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 91,
+                      "endLine" : 155,
+                      "sourceId" : "demo::ssn::PersonMapping",
+                      "startColumn" : 69,
+                      "startLine" : 155
+                    }
+                  },
+                  "name" : "party",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 155,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 155
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 155,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 155
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 156,
+              "sourceId" : "demo::ssn::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 156
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 156,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 156
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "reference",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 156,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 156
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 156,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 156
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 156,
+                  "sourceId" : "demo::ssn::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 156
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "party",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 156,
+                    "sourceId" : "demo::ssn::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 156
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 156,
+                "sourceId" : "demo::ssn::PersonMapping",
+                "startColumn" : 60,
+                "startLine" : 156
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 156,
+            "sourceId" : "demo::ssn::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 156
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 156,
+          "sourceId" : "demo::ssn::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 154
+        }
+      },
+      "id" : "siblingArraySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 165,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 152
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"reference\":\"R-1\",\"party\":\"P1\"},{\"reference\":\"R-2\",\"party\":\"P8\"},{\"reference\":\"R-2\",\"party\":\"P9\"}]",
+            "sourceInformation" : {
+              "endColumn" : 232,
+              "endLine" : 162,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 70,
+              "startLine" : 162
+            }
+          },
+          "id" : "shouldTypeSecondArray",
+          "sourceInformation" : {
+            "endColumn" : 236,
+            "endLine" : 162,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 45,
+            "startLine" : 162
+          }
+        } ],
+        "id" : "bindSiblingArray",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 163,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 159
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssn::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 161,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 161
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 161,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 161
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 161,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 161
+          },
+          "store" : {
+            "path" : "demo::ssn::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 161,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 161
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

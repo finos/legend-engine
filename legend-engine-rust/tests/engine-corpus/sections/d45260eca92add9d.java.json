@@ -1,0 +1,296 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "id" : "anything_goes",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 7
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 7
+          }
+        },
+        "source" : "anything_goes",
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 7
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 36,
+                "startLine" : 7
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 7
+              },
+              "value" : 0
+            }, {
+              "_type" : "func",
+              "function" : "indexOf",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 59,
+                    "startLine" : 7
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 64,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 82,
+                  "startLine" : 7
+                },
+                "value" : " "
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 74,
+                "startLine" : 7
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "source" : "anything_goes",
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 30,
+                  "startLine" : 8
+                }
+              } ],
+              "property" : "lastName",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 8
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 8
+              },
+              "value" : 0
+            }, {
+              "_type" : "func",
+              "function" : "indexOf",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 58,
+                    "startLine" : 8
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 63,
+                  "startLine" : 8
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 81,
+                  "startLine" : 8
+                },
+                "value" : " "
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 73,
+                "startLine" : 8
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 8
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "srcClass" : "anything::goes"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "test",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

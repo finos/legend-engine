@@ -1,0 +1,19 @@
+
+Class testServiceStoreTestSuites::Employee
+{
+  kerberos: String[1];
+  employeeID: String[1];
+  title: String[0..1];
+  firstName: String[0..1];
+  lastName: String[0..1];
+  countryCode: String[0..1];
+}
+
+Class testServiceStoreTestSuites::Employee2
+{
+  stringParam: String[1];
+  integerParam: Integer[1];
+  floatParam: Float[1];
+  booleanParam: Boolean[1];
+}
+

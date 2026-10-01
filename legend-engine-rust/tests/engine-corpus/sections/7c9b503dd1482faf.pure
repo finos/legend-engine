@@ -1,0 +1,20 @@
+
+Runtime test::runtime::FirmRuntime
+{
+  mappings: [test::mapping::FirmMapping];
+  connections:
+  [
+    test::store::FirmDB:
+    [
+      connection_1: #{
+        RelationalDatabaseConnection
+        {
+          type: H2;
+          timezone: 'America/NewYork';
+          specification: LocalH2 {};
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

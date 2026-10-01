@@ -1,0 +1,18 @@
+
+Class <<temporal.businesstemporal>> test::Product{
+   classification : test::Classification[*];
+   myClassification(bd:Date[1]){^test::Classification(name='',businessDate=$bd)} : test::Classification[*];
+}
+Class  <<temporal.businesstemporal>> test::Classification{
+   name : String[1];
+   exchange : test::Exchange[0..1];
+}
+Class <<temporal.businesstemporal>> test::ExtendedClassification extends test::Classification{
+}
+Class <<temporal.businesstemporal>> test::Exchange{
+   exchangeName : String[1];
+}
+function main::walkTree(): Any[*]
+{
+   {|test::Product.all(%2022-11-12).classification->filter(t2|$t2.exchange.exchangeName == '')}
+}

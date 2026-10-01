@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "demo::ssa::Firm", "demo::ssa::Address" ]
+    },
+    "name" : "FirmBinding",
+    "package" : "demo::ssa",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 47,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 40
+    }
+  } ],
+  "imports" : [ ]
+}

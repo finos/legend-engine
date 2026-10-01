@@ -1,0 +1,22 @@
+
+Database test::mixedCollectionNames
+(
+  Collection "firm-data"
+  (
+    validationLevel: strict;
+    validationAction: error;
+    jsonSchema: {
+      "bsonType": "object",
+      "additionalProperties": false
+    };
+  )
+  Collection Address
+  (
+    validationLevel: moderate;
+    validationAction: warn;
+    jsonSchema: {
+      "bsonType": "object",
+      "additionalProperties": false
+    };
+  )
+)

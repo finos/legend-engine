@@ -1,0 +1,14 @@
+
+Mapping test::M1 (
+   test::A: Pure {
+      ~src test::_A
+      prop1: $src.prop1,
+      prop2: $src.prop2
+   }
+   test::B: Pure {
+      ~src test::_B
+      prop: $src.prop
+   }
+)
+
+

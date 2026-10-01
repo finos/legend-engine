@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "bigQueryFunction",
+    "actions" : [ ],
+    "activationConfiguration" : {
+      "_type" : "bigQueryFunctionConfig",
+      "activationConnection" : {
+        "_type" : "connectionPointer",
+        "connection" : "com::gs::test::TestConnection"
+      }
+    },
+    "description" : "A super nice app!",
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "functionName" : "MyApp",
+    "name" : "MyApp",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "myAppOwnership"
+    },
+    "package" : "xx",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "a::A",
+      "profileSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 25,
+        "startLine" : 2
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 33,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "a::A",
+        "profileSourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 2
+        },
+        "value" : "val"
+      },
+      "value" : "ok"
+    } ]
+  } ]
+}

@@ -1,0 +1,268 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 55
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 75
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 84,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 74
+        },
+        "table" : "personTable",
+        "temporality" : {
+          "_type" : "unitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "processingTime",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 82,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 78
+            },
+            "timeIn" : "IN_Z",
+            "timeOut" : "OUT_Z"
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 76
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForTds",
+            "deleteField" : "DELETED",
+            "deleteValues" : [ "Y", "true" ],
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 64
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 62
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 61
+          }
+        },
+        "keys" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 58
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 58
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 150,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 51
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 148,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 88
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\"},{\"ID\":2, \"NAME\":\"BRAD\"},{\"ID\":3, \"NAME\":\"CATHY\"}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 111
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 116,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 108
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 118,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 92
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"DELETED\": \"N\"},{\"ID\":2, \"NAME\":\"BRAD\",\"DELETED\": \"N\"},{\"ID\":3, \"NAME\":\"CATHY\",\"DELETED\": \"N\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 102,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 98
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 103,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 96
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 104,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 94
+          }
+        }
+      }, {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\"},{\"ID\":2, \"NAME\":\"BRAD\"},{\"ID\":3, \"NAME\":\"CATHY\"},{\"ID\":3, \"NAME\":\"CATHERINE\"},{\"ID\":4, \"NAME\":\"TOM\"}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 142,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 138
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 143,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 135
+          }
+        } ],
+        "batchId" : 1,
+        "id" : "testBatch2",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 145,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 119
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":2, \"NAME\":\"BRAD\",\"DELETED\": \"Y\"},{\"ID\":3, \"NAME\":\"CATHERINE\",\"DELETED\": \"N\"},{\"ID\":4, \"NAME\":\"TOM\",\"DELETED\": \"N\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 129,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 125
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 130,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 123
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 131,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 121
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

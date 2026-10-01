@@ -1,0 +1,7 @@
+
+Class demo::literal::Account
+{
+  name: String[1];
+  source: String[1];
+  tier: String[1];
+}

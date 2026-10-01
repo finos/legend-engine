@@ -1,0 +1,11 @@
+
+Mapping my::testMapping
+(
+  my::Person: Relation 
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE
+,    firm: Binding my::FirmBinding : FOO_DETAILS
+  }
+)

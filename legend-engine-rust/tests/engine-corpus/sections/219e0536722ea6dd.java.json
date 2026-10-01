@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "TestRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 53,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 50
+        },
+        "store" : {
+          "path" : "test::store::TestDB",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::TestConnection",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 52,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 52
+            }
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 52
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 47
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 45
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 45
+    }
+  } ],
+  "imports" : [ ]
+}

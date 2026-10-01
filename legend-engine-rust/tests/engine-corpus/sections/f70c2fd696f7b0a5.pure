@@ -1,0 +1,9 @@
+
+Diagram meta::pure::MyDiagram
+{
+  generalizationView
+  {
+    target: ranOutOfCreativityHere;
+    source: sourceId;
+  }
+}

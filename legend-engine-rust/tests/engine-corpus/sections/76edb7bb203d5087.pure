@@ -1,0 +1,30 @@
+
+Class test::Product
+{
+  id: Integer[1];
+  producer: test::Person[1];
+  price: Float[1];
+}
+
+Class test::DiscountedProduct extends test::Product
+{
+  discount: Float[1];
+}
+
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::Service
+{
+  id: Integer[1];
+  provider: test::Person[1];
+  price: Float[1];
+}
+
+function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]
+{
+  $numbers->plus()
+}
+

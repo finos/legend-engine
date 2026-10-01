@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 6
+    }
+  }
+}

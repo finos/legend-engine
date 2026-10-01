@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "deephavenConnection",
+      "authSpec" : {
+        "_type" : "PSK",
+        "psk" : "abcde"
+      },
+      "element" : "test::DeephavenStore",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 4
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      },
+      "sourceSpec" : {
+        "url" : "http://dummyurl.com:12345"
+      }
+    },
+    "name" : "psk",
+    "package" : "import::store::serverUrlDefinition::serverUrl::authentication::AuthenticationDemo::UserPassword::username::password::ApiKey::location::keyName::value::EncryptedPrivateKey::userName::privateKey::passphrase::GCPWIFWithAWSIdP::serviceAccountEmail::AWSIdP::idP::region::accountId::role::GCPWorkload::workload::projectNumber::poolId::providerId::PropertiesFileSecret::propertyName::EnvironmentSecret::envVariableName::SystemPropertiesSecret::systemPropertyName::AWSSecretsManagerSecret::secretId::versionId::versionStage::Static::accessKeyId::secretAccessKey::Default::awsCredentials::STSAssumeRole::roleArn::roleSessionName::Kerberos",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

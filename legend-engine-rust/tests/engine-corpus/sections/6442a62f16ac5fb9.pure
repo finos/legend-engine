@@ -1,0 +1,44 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);
+   validations: [
+   {
+     name: 'testValidation';
+     assertion: rel|$rel->assertRelationNotEmpty();
+    }
+   ];
+   testSuites:
+   [
+      testSuite1:
+      {
+         data:
+         [
+            my::Store:
+               Reference
+               #{
+                 my::embedded::data
+               }#
+         ]
+         tests:
+         [
+            test1:
+            {
+               asserts:
+               [
+                  assert1:
+                    EqualToJson
+                    #{
+                      expected:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '[]';
+                        }#;
+                    }#
+               ]
+            }
+         ]
+      }
+   ]
+}

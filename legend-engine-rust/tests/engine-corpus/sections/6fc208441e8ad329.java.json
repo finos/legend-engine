@@ -1,0 +1,1200 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ssc::Person",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssc::store::PersonDB",
+        "mainTableDb" : "demo::ssc::store::PersonDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 24
+        },
+        "table" : "PERSON_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssc::store::PersonDB",
+          "mainTableDb" : "demo::ssc::store::PersonDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 22
+          },
+          "table" : "PERSON_TABLE"
+        },
+        "tableAlias" : "PERSON_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssc::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssc::store::PersonDB",
+            "mainTableDb" : "demo::ssc::store::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 44,
+              "startLine" : 25
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssc::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssc::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRM_DETAILS",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 44,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssc::store::PersonDB",
+            "mainTableDb" : "demo::ssc::store::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 83,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 72,
+              "startLine" : 26
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PersonMapping",
+    "package" : "demo::ssc",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 141,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssc::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 40,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 40
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 40,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 40
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 41,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 41
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 41,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 41
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 41,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 41
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 41,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 41
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 41,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 41
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "p",
+                          "sourceInformation" : {
+                            "endColumn" : 76,
+                            "endLine" : 41,
+                            "sourceId" : "demo::ssc::PersonMapping",
+                            "startColumn" : 75,
+                            "startLine" : 41
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 81,
+                          "endLine" : 41,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 78,
+                          "startLine" : 41
+                        }
+                      } ],
+                      "property" : "otherNames",
+                      "sourceInformation" : {
+                        "endColumn" : 92,
+                        "endLine" : 41,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 83,
+                        "startLine" : 41
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 41,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 73,
+                      "startLine" : 41
+                    }
+                  },
+                  "name" : "otherName",
+                  "sourceInformation" : {
+                    "endColumn" : 92,
+                    "endLine" : 41,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 41
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 41,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 41
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 75,
+              "endLine" : 42,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 42
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 42,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 42
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 42,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 42
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 42,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 42
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 42,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 42
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "otherName",
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 42,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 42
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 72,
+                "endLine" : 42,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 64,
+                "startLine" : 42
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 42,
+            "sourceId" : "demo::ssc::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 42
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 42,
+          "sourceId" : "demo::ssc::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 40
+        }
+      },
+      "id" : "primitiveCollectionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 70,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 38
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"otherName\":\"FX\"},{\"firstName\":\"Alice\",\"otherName\":\"FirmTen\"},{\"firstName\":\"Bob\",\"otherName\":\"FA\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 65,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 61
+            }
+          },
+          "id" : "shouldFanOutOneRowPerElement",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 66,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 58
+          }
+        } ],
+        "id" : "flattenPrimitiveArray",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 68,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 45
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssc::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 53,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 50
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 53,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 50
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 53,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 49
+          },
+          "store" : {
+            "path" : "demo::ssc::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 49,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 49
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssc::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 73,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 73
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 73,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 73
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 74,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 74
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 74,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 74
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 74,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 74
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 74,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 74
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 74,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 74
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 78,
+                              "endLine" : 74,
+                              "sourceId" : "demo::ssc::PersonMapping",
+                              "startColumn" : 77,
+                              "startLine" : 74
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 83,
+                            "endLine" : 74,
+                            "sourceId" : "demo::ssc::PersonMapping",
+                            "startColumn" : 80,
+                            "startLine" : 74
+                          }
+                        } ],
+                        "property" : "addresses",
+                        "sourceInformation" : {
+                          "endColumn" : 93,
+                          "endLine" : 74,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 85,
+                          "startLine" : 74
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 98,
+                        "endLine" : 74,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 95,
+                        "startLine" : 74
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 98,
+                      "endLine" : 74,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 75,
+                      "startLine" : 74
+                    }
+                  },
+                  "name" : "addressName",
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 74,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 74
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 74,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 74
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 77,
+              "endLine" : 75,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 75
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 75,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 75
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 75,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 75
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 75,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 75
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 75,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 75
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "addressName",
+                  "sourceInformation" : {
+                    "endColumn" : 63,
+                    "endLine" : 75,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 75
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 75,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 66,
+                "startLine" : 75
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 75,
+            "sourceId" : "demo::ssc::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 75
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 75,
+          "sourceId" : "demo::ssc::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 73
+        }
+      },
+      "id" : "complexCollectionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 103,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 71
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"addressName\":\"Annex\"},{\"firstName\":\"Alice\",\"addressName\":\"HQ\"},{\"firstName\":\"Bob\",\"addressName\":\"Main\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 98,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 94
+            }
+          },
+          "id" : "shouldFanOutOneRowPerObject",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 99,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 91
+          }
+        } ],
+        "id" : "flattenObjectArray",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 101,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 78
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssc::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 86,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 83
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 86,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 83
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 86,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 82
+          },
+          "store" : {
+            "path" : "demo::ssc::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 82,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 82
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssc::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 109,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 109
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 109,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 109
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 110,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 110
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 110,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 110
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 110,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 110
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 110,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 110
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 110,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 110
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "p",
+                              "sourceInformation" : {
+                                "endColumn" : 77,
+                                "endLine" : 110,
+                                "sourceId" : "demo::ssc::PersonMapping",
+                                "startColumn" : 76,
+                                "startLine" : 110
+                              }
+                            } ],
+                            "property" : "firm",
+                            "sourceInformation" : {
+                              "endColumn" : 82,
+                              "endLine" : 110,
+                              "sourceId" : "demo::ssc::PersonMapping",
+                              "startColumn" : 79,
+                              "startLine" : 110
+                            }
+                          } ],
+                          "property" : "addresses",
+                          "sourceInformation" : {
+                            "endColumn" : 92,
+                            "endLine" : 110,
+                            "sourceId" : "demo::ssc::PersonMapping",
+                            "startColumn" : 84,
+                            "startLine" : 110
+                          }
+                        } ],
+                        "property" : "lines",
+                        "sourceInformation" : {
+                          "endColumn" : 98,
+                          "endLine" : 110,
+                          "sourceId" : "demo::ssc::PersonMapping",
+                          "startColumn" : 94,
+                          "startLine" : 110
+                        }
+                      } ],
+                      "property" : "detail",
+                      "sourceInformation" : {
+                        "endColumn" : 105,
+                        "endLine" : 110,
+                        "sourceId" : "demo::ssc::PersonMapping",
+                        "startColumn" : 100,
+                        "startLine" : 110
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 105,
+                      "endLine" : 110,
+                      "sourceId" : "demo::ssc::PersonMapping",
+                      "startColumn" : 74,
+                      "startLine" : 110
+                    }
+                  },
+                  "name" : "lineDetail",
+                  "sourceInformation" : {
+                    "endColumn" : 105,
+                    "endLine" : 110,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 110
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 110,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 110
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 111,
+              "sourceId" : "demo::ssc::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 111
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 111,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 111
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 111,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 111
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 111,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 111
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 111,
+                  "sourceId" : "demo::ssc::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 111
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "lineDetail",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 111,
+                    "sourceId" : "demo::ssc::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 111
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 111,
+                "sourceId" : "demo::ssc::PersonMapping",
+                "startColumn" : 65,
+                "startLine" : 111
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 111,
+            "sourceId" : "demo::ssc::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 111
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 111,
+          "sourceId" : "demo::ssc::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 109
+        }
+      },
+      "id" : "nestedCollectionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 139,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 107
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"lineDetail\":\"L1\"},{\"firstName\":\"Alice\",\"lineDetail\":\"L2\"},{\"firstName\":\"Alice\",\"lineDetail\":\"L3\"},{\"firstName\":\"Bob\",\"lineDetail\":\"L9\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 134,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 130
+            }
+          },
+          "id" : "shouldFanOutAcrossBothLevels",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 135,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 127
+          }
+        } ],
+        "id" : "flattenNestedArray",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 137,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 114
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssc::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 122,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 119
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 122,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 119
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 122,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 118
+          },
+          "store" : {
+            "path" : "demo::ssc::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 118,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 118
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

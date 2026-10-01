@@ -1,0 +1,36 @@
+
+ServiceStore test::ServiceStore
+(
+  ServiceGroup TestServiceGroup1
+  (
+    path : '/testServices1';
+    ServiceGroup TestServiceGroup2
+    (
+      path : '/testServices2';
+      Service TestService1
+      (
+        path : '/testService1/{param}';
+        method : GET;
+        parameters :
+        (
+          param : String ( location = path ),
+          param1 : Integer ( location = query )
+        );
+        response : test::model::A <- test::Binding;
+        security : [];
+      )
+      Service TestService2
+      (
+        path : '/testService2/{param}';
+        method : GET;
+        parameters :
+        (
+          param : Boolean ( location = path ),
+          param1 : Float ( location = query )
+        );
+        response : test::model::B <- test::Binding2;
+        security : [];
+      )
+    )
+  )
+)

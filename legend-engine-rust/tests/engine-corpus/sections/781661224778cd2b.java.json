@@ -1,0 +1,18 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ ],
+    "generalizationViews" : [ ],
+    "name" : "class",
+    "package" : "anything",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    }
+  } ],
+  "imports" : [ ]
+}

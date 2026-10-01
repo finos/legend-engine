@@ -1,0 +1,5 @@
+
+ModelChainConnection test::firm::connection::modelChainConnection
+{
+   mappings: [test::firm::model::M2MMapping];
+}

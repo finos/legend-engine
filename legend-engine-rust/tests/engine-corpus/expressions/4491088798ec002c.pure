@@ -1,0 +1,1 @@
+data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchUnexpanded(#{test::firm::model::GeographicPosition{latitude, longitude}}#)->serialize(#{test::firm::model::GeographicPosition{latitude, longitude}}#)

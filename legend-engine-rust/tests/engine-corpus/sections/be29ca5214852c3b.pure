@@ -1,0 +1,9 @@
+
+Class test::A
+{
+   property : Integer[0..1];
+   property : String[1];
+   other : String[1];
+   ok : String[1];
+   other: String[1];
+}

@@ -1,0 +1,36 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::Firm", "meta::external::store::service::showcase::domain::Employee", "meta::external::store::service::showcase::domain::Address", "meta::external::store::service::showcase::domain::FirmSearch", "meta::external::store::service::showcase::domain::EmployeeSearch", "meta::external::store::service::showcase::domain::NameFilter", "meta::external::store::service::showcase::domain::DesignationFilter", "meta::external::store::service::showcase::domain::IdFilter", "meta::external::store::service::showcase::domain::EmployeeSearchByFilters" ]
+    },
+    "name" : "employeeFirmServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 215,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 203
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::service::showcase::domain::Product", "meta::external::store::service::showcase::domain::Synonym", "meta::external::store::service::showcase::domain::TradeDetails", "meta::external::store::service::showcase::domain::Trader", "meta::external::store::service::showcase::domain::Trade" ]
+    },
+    "name" : "prodServiceStoreSchemaBinding",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 225,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 217
+    }
+  } ],
+  "imports" : [ ]
+}

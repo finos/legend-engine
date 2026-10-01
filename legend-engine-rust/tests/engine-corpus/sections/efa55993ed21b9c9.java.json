@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "externalFormat",
+      "contentType" : "application/json",
+      "data" : "",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "PersonData",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "modelStore",
+      "modelData" : [ {
+        "_type" : "modelEmbeddedData",
+        "data" : {
+          "_type" : "reference",
+          "dataElement" : {
+            "path" : "model::PersonData",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 16
+            },
+            "type" : "DATA"
+          },
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 16
+          }
+        },
+        "model" : "model::Person",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 15
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      }
+    },
+    "name" : "ModelStoreRef",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 11
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

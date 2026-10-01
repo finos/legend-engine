@@ -1,0 +1,17 @@
+
+Data my::RelationalData
+{
+  Relational
+  #{
+    mySchema.MyTable:
+          'id,firstName,lastName,age\n'+
+          '1,John,Doe\n'+
+          '2,Nicole,Smith\n'+
+          '3,Nick,Smith\n';
+
+    mySchema.MyTable:
+          'id,name\n'+
+          '1,John\n'+
+          '2,Jack\n';
+  }#
+}

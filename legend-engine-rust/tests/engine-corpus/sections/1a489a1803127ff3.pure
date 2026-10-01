@@ -1,0 +1,9 @@
+
+Database test::myDatabase
+(
+  Table bitempPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),    startTime TIMESTAMP,    endTime TIMESTAMP,    batchIdIn INTEGER,    batchIdOut INTEGER
+  )
+)

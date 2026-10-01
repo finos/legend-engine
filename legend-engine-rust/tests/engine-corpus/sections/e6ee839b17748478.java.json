@@ -1,0 +1,256 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "this is just for context",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::_NPerson",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 14
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 14
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 14
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::_NPerson",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 14
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "Age",
+                  "sourceInformation" : {
+                    "endColumn" : 65,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 63,
+                    "startLine" : 14
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "Name",
+                  "sourceInformation" : {
+                    "endColumn" : 70,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 67,
+                    "startLine" : 14
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 89,
+              "startLine" : 14
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::_NPerson",
+              "sourceInformation" : {
+                "endColumn" : 102,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 89,
+                "startLine" : 14
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "Age",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 104,
+                  "startLine" : 14
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "Name",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 108,
+                  "startLine" : 14
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 14
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 115,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 14
+        }
+      },
+      "mapping" : "meta::myMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 15
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "meta::myRuntime",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 16
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 12
+      }
+    },
+    "name" : "myServiceSingle",
+    "owners" : [ "ownerName", "ownerName2" ],
+    "package" : "meta::pure",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{Age:12, Name:\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 32
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 29
+          }
+        } ],
+        "id" : "test1",
+        "keys" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 24
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

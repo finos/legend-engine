@@ -1,0 +1,20 @@
+
+import other::*;
+import mapping::*;
+Mapping mappingPackage::myMapping
+(
+    Firm[firm1]: Relational
+    {
+       legalName : [db]FirmInfoTable.name ,
+       otherInformation: [db]FirmInfoTable.other
+    }
+    Person[alias1]: Relational
+    {
+        name : [db]employeeFirmDenormTable.name,
+        firm
+        (
+            ~primaryKey ([db]employeeFirmDenormTable.legalName)
+            legalName : [db]employeeFirmDenormTable.legalName
+        ) Otherwise ( [firm1]:[db]@PersonFirmJoin) 
+    }
+)

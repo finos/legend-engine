@@ -1,0 +1,20 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Firm: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+  MappingTests
+  [
+    test_1
+    (
+      query: |model::LegalEntity.all()->project([p|$p.name],['name']);
+      data:
+      [
+        <Relational, SQL, test::DB, 'Drop table if exists personTable;Create Table personTable(id INT, firstName INT);Insert into PersonTable (id, firstName) values (1, \'Doe\;\');Insert into PersonTable (id, lastName) values (2, \'Doe2\');'>
+      ];
+      assert: '[ {\n  "values" : [ "Doe;" ]\n}, {\n  "values" : [ "Wrong" ]\n} ]';
+    )
+  ]
+)

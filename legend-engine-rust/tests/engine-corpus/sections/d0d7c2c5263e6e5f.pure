@@ -1,0 +1,27 @@
+
+import org::dxl::*;
+
+Class org::dxl::Zoo
+{
+  name: String[1];
+  zookeeper: Person[1];
+  owner: Person[1];
+}
+
+Class org::dxl::Person
+{
+  name: String[1];
+  effectiveFrom: DateTime[1];
+  effectiveThru: DateTime[1];
+}
+
+Class org::dxl::Animal
+{
+  name: String[1];
+}
+
+Association org::dxl::ZooAnimal
+{
+  zoo: Zoo[1];
+  animals: Animal[*];
+}

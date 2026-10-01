@@ -1,0 +1,7 @@
+
+function test::fetch(): Any[1]
+{
+  {birthTime:DateTime[*] | test::Person.all()
+                               ->filter(p:test::Person[1] | $p.birthTime->in($birthTime))
+                               ->project([x | $x.fullName], ['fullName'])}
+}

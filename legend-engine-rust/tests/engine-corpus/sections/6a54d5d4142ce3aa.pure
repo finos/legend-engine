@@ -1,0 +1,11 @@
+
+Class domain::COVIDData
+{
+  id: Integer[1];
+  cases: Float[0..1];
+}
+
+function domain::baseQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  domain::COVIDData.all()->project([x: domain::COVIDData[1]|$x.cases], ['Cases'])
+}

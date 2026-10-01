@@ -1,0 +1,17 @@
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);
+}
+function my::firmFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGALNAME:String[1])>);
+}
+function my::addressFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(CITY:String[1])>);
+}
+function my::personFunctionTyped(): meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);
+}

@@ -1,0 +1,7 @@
+
+
+PersistenceContext test::TestPersistenceContext 
+{
+  persistence: test::TestPersistence;
+  persistence: test::TestPersistence;
+}

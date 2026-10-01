@@ -1,0 +1,7 @@
+
+RelationalDatabaseConnection simple::StaticConnection
+{
+  store: model::relational::tests::dbInc;
+  type: Snowflake;
+  mode: local;
+}

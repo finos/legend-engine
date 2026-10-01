@@ -1,0 +1,4 @@
+
+Mapping a::mapping
+(test::IncType : EnumerationMapping a
+{ CORP : [1], LLC : [2] })

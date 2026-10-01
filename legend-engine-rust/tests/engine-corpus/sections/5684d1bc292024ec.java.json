@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unknown test assertion type: Unknown",
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 15,
+      "startLine" : 41
+    }
+  }
+}

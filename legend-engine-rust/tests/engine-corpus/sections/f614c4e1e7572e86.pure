@@ -1,0 +1,12 @@
+
+Mapping test::mapping
+(
+  test::SomeAssociation: Relational
+  {
+    AssociationMapping
+    (
+      prop1[prop2_source,prop1_source]: [model::Test]@RandomJoin,
+      prop2[prop1_source,prop2_source]: [model::Test]@RandomJoin
+    )
+  }
+)

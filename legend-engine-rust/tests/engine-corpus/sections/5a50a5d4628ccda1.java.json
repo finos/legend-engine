@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "functionJar",
+    "actions" : [ ],
+    "documentation" : "blah",
+    "function" : {
+      "path" : "a::f():String[1]",
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 41,
+        "startLine" : 7
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "Name",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 58,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

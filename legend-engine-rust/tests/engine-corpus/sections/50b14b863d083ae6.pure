@@ -1,0 +1,11 @@
+
+Runtime test::runtime
+{
+  mappings:
+  [
+    test::mapping
+  ];
+      connections: [
+      ModelStore: [id1: #{ JsonModelConnection { class:                   test::class2; url: 'my_url'; }}#]
+   ];
+}

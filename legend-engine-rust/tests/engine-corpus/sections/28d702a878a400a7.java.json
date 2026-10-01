@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported Parameter Location - requestBody. Supported Locations are - header,path,query",
+    "sourceInformation" : {
+      "endColumn" : 61,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 10
+    }
+  }
+}

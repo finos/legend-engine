@@ -1,0 +1,12 @@
+
+Class anything::goes
+{
+  v: String[1];
+  v2: Integer[0..1];
+  v3: Boolean[*];
+}
+
+function f(): Any[1]
+{
+  let x = ^anything::goes(v='value' , v2=17 , v3=[true, false])
+}

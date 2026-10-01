@@ -1,0 +1,24 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "strictTime",
+    "sourceInformation" : {
+      "endColumn" : 15,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "value" : "22:22:22.1111"
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 15,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

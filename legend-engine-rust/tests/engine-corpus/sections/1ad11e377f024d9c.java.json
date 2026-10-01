@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n  \"title\": \"test::Simple::Person\",\n  \"type\": \"object\",\n  \"properties\":   {\n    \"firstName\":     {\n      \"type\": \"string\"\n    },\n    \"lastName\":     {\n      \"type\": \"string\"\n    },\n    \"middleName\":     {\n      \"type\": \"string\"\n    },\n    \"age\":     {\n      \"type\": \"integer\"\n    },\n    \"firm\":     {\n      \"$ref\": \"#\\/definitions\\/test::Simple::Firm\"\n    }\n  },\n  \"required\": [\n\"firstName\",\n\"lastName\",\n\"firm\"\n  ],\n  \"definitions\":   {\n    \"test::Simple::Firm\":     {\n      \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n      \"title\": \"test::Simple::Firm\",\n      \"type\": \"object\",\n      \"properties\":       {\n        \"legalName\":         {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n\"legalName\"\n      ]\n    }\n  }\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 891,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 20
+      },
+      "location" : "test/Simple/Person.json",
+      "sourceInformation" : {
+        "endColumn" : 893,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 19
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Simple::Person", "test::Simple::Firm" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,42 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "FIRM_DETAILS" ],
+        "paths" : [ "default", "PERSON_TABLE" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "\"{\"\"legalName\"\":\"\"Firm X\"\",\"\"scores\"\":[30,10,20,10],\"\"addresses\"\":[{\"\"name\"\":\"\"A1\"\",\"\"rank\"\":5},{\"\"name\"\":\"\"B2\"\",\"\"rank\"\":3},{\"\"name\"\":\"\"A3\"\",\"\"rank\"\":9}]}\"" ]
+        }, {
+          "values" : [ "2", "Bob", "\"{\"\"legalName\"\":\"\"Firm A\"\",\"\"scores\"\":[7],\"\"addresses\"\":[{\"\"name\"\":\"\"Z9\"\",\"\"rank\"\":1}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 28,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 24
+      }
+    },
+    "name" : "PersonData",
+    "package" : "demo::ssa::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

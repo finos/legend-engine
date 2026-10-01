@@ -1,0 +1,13 @@
+
+Mapping test::Map
+(
+  test::Firm: Relational
+  {
+    legalName: [test::DB]firm.LEGAL_NAME,
+    employees: [test::DB]@firm_person
+  }
+  test::Person: Relational
+  {
+    name: [test::DB]person.NAME
+  }
+)

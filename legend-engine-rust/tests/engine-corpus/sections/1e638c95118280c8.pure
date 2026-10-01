@@ -1,0 +1,6 @@
+
+Profile meta::pure::profiles::doc
+{
+  stereotypes: [deprecated];
+  tags: [doc, todo];
+}

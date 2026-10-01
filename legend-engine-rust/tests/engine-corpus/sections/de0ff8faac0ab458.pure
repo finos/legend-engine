@@ -1,0 +1,13 @@
+
+DataQualityRelationComparison meta::dataquality::TestRelationComparison
+{
+    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);
+    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);
+    keys: ['FIRSTNAME'];
+    additionalColumnsToPersist: ['LASTNAME'];
+    strategy: MD5Hash
+    {
+       sourceHashColumn: 'LASTNAME';
+       targetHashColumn: 'LASTNAME';
+    };
+}

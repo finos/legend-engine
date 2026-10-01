@@ -1,0 +1,12 @@
+
+Binding meta::external::store::service::showcase::store::ApiResponseSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [
+                    meta::external::store::service::showcase::domain::Metadata,
+                    meta::external::store::service::showcase::domain::Person,
+                    meta::external::store::service::showcase::domain::Firm,
+                    meta::external::store::service::showcase::domain::Address,
+                    meta::external::store::service::showcase::domain::ApiResponse
+                  ];
+}

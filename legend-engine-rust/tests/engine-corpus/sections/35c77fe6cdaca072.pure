@@ -1,0 +1,72 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    ingestMode: BitemporalSnapshot
+    {
+      transactionMilestoning: BatchIdAndDateTime
+      {
+        batchIdInName: 'batchIdIn';
+        batchIdOutName: 'batchIdOut';
+        dateTimeInName: 'inZ';
+        dateTimeOutName: 'outZ';
+        derivation: SourceSpecifiesInDateTime
+        {
+          sourceDateTimeInField: sourceIn;
+        }
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromDateTime
+        {
+          sourceDateTimeFromField: sourceFrom;
+        }
+      }
+    }
+    targetShape: Flat
+    {
+      modelClass: test::ModelClass;
+      targetName: 'TestDataset1';
+      partitionFields: [propertyA, propertyB];
+      deduplicationStrategy: MaxVersion
+      {
+        versionField: version;
+      }
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'x.y@z.com';
+      },
+      PagerDuty
+      {
+        url: 'https://x.com';
+      }
+    ];
+  }
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

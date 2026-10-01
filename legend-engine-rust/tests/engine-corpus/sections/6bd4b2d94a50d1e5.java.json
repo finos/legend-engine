@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "A",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 4
+      },
+      "value" : "stereotype1"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 32,
+        "startLine" : 4
+      },
+      "value" : "stereotype2"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 3
+      },
+      "value" : "tag1"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 3
+      },
+      "value" : "tag2"
+    } ]
+  } ],
+  "imports" : [ ]
+}

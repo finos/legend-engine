@@ -1,0 +1,2 @@
+
+Database local::db(  Table person  (     name varchar(100),     initials varchar(100)  ))

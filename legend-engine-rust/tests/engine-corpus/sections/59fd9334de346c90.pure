@@ -1,0 +1,19 @@
+
+Runtime chain::runtime::FirmRuntime
+{
+  mappings:
+  [
+    chain::mapping::M2M
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      chain: chain::connection::FirmModelChainConnection
+    ],
+    chain::store::DB:
+    [
+      h2: chain::connection::FirmH2Connection
+    ]
+  ];
+}

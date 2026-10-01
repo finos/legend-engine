@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "EmployeeTable",
+        "values" : "id,firstName,employeeType\n1,John,FTE\n2,Jane,FTC\n3,Bob,FTO\n"
+      } ]
+    },
+    "name" : "EmployeeData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

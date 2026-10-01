@@ -1,0 +1,172 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "SFirmRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 69,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 66
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 66
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SFirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 68
+            }
+          },
+          "id" : "connection1",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 68
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 62,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 62
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 71,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 58
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 71,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 58
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "SFirmAndSPersonRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 84,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 80
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 80
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SFirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 82,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 82
+            }
+          },
+          "id" : "connection1",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 82,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 82
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SPersonConnection",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 83
+            }
+          },
+          "id" : "connection2",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 83
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 76
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 72
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 86,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 72
+    }
+  } ],
+  "imports" : [ ]
+}

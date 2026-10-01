@@ -1,0 +1,70 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "TestDatabase",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 48
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 52
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 53
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 50
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 48
+    },
+    "stereotypes" : [ ]
+  } ]
+}

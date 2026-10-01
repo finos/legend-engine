@@ -1,0 +1,12 @@
+
+SchemaSet test::Simple
+{
+  format:JSON;
+  schemas: [
+    {
+      id:Test;
+      location:'Test.json';
+      content:'{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "type": "object",\n  "properties": {\n    "stringField": {\n      "type": "string"\n    },\n    "floatField": {\n      "type": "number"\n    },\n    "decimalField": {\n      "type": "number"\n    },\n    "integerField": {\n      "type": "integer"\n    },\n    "dateField": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "dateTimeField": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "strictDateField": {\n      "type": "string",\n      "format": "date"\n    },\n    "booleanField": {\n      "type": "boolean"\n    }\n  },\n  "required": [\n    "booleanField"\n  ]\n}';
+    }
+  ];
+}

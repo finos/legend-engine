@@ -1,0 +1,28 @@
+
+Class demo::ssb::Person
+{
+  firstName: String[1];
+  detailsJson: String[1];
+  firm: demo::ssb::Firm[1];
+}
+
+Class demo::ssb::Firm
+{
+  legalName: String[1];
+  employeeCount: Integer[1];
+  address: demo::ssb::Address[1];
+}
+
+Class demo::ssb::Address
+{
+  name: String[1];
+  // Absent from the second document: navigation must yield no value rather than fail.
+  street: String[0..1];
+  geo: demo::ssb::Geo[1];
+}
+
+Class demo::ssb::Geo
+{
+  lat: Float[1];
+  lon: Float[1];
+}

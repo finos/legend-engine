@@ -1,0 +1,9 @@
+
+function test::f():Any[*]
+{
+   1->cast(@Relation<(country:String[0..1], city:String[1], year:Integer[0..1])>)->project(~[
+        country: x|$x.country,
+        city : x|$x.city,
+        year: x|$x.year->map(y|$y)
+   ])
+}

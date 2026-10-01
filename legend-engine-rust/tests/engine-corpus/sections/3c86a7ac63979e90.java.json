@@ -1,0 +1,233 @@
+{
+  "elements" : [ {
+    "_type" : "association",
+    "name" : "EmployeeTemporalLink",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::BusinessTemporalEmployee",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 20,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 19,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "businessRecord",
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 20,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::TemporalEmployee",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 21,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 21,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "processingRecord",
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 21,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "EmployeeDepartmentSameScheme",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::TemporalEmployee",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 26,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "employee",
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 26,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::TemporalDepartment",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 27,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "department",
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 27,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 32,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "TemporalDepartmentTable" ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 32,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 32
+        }
+      }
+    } ],
+    "name" : "sameSchemeDepartments__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 30,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 57,
+          "startLine" : 30
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 101,
+            "endLine" : 30,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 99,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

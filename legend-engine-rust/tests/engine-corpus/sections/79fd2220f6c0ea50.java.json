@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'firm'. Valid alternatives: [',']",
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 8
+    }
+  }
+}

@@ -1,0 +1,48 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradeByTraderDetailsService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trader.details" = $this.s_traderDetails
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
+     (
+         ~request
+         (
+            parameters
+            (
+                region = 'RegionA',
+                requiredParam = 'present'
+            )
+         )
+     )
+  }
+
+
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMappingWithoutOptionalParam
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.TradesByRegionService
+     (
+         ~request
+         (
+            parameters
+            (
+                requiredParam = 'present'
+            )
+         )
+     )
+  }
+)

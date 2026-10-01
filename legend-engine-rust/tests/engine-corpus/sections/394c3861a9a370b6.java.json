@@ -1,0 +1,73 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 76
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "static",
+        "databaseName" : "name",
+        "host" : "host",
+        "port" : 1234,
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 70
+        }
+      },
+      "element" : "model::relational::tests::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 67
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "queryGenerationConfigs" : [ {
+        "_type" : "generationFeaturesConfig",
+        "disabled" : [ ],
+        "enabled" : [ "USE_DB_NATIVE_IMPLICIT_NULL_ORDERING" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 83,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 80
+        }
+      } ],
+      "quoteIdentifiers" : true,
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 65
+      },
+      "type" : "H2"
+    },
+    "name" : "H2Connection",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 85,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+HostedService model::NewActivator
+{
+   pattern : '/pattern';
+   ownership : Deployment { identifier: '' };
+   function : model::Firm_QueryFunction():Integer[1];
+   documentation : '';
+   autoActivateUpdates : true;
+}

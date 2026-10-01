@@ -1,0 +1,198 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "Runtime",
+    "package" : "test::serviceStore::caching",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 340,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 337
+        },
+        "store" : {
+          "path" : "test::serviceStore::caching::store::PersonService",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 337,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 337
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::serviceStore::caching::connection::PersonConnection",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 339,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 339
+            }
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 339,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 339
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 344,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 341
+        },
+        "store" : {
+          "path" : "test::serviceStore::caching::store::FirmService",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 341,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 341
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::serviceStore::caching::connection::FirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 343,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 343
+            }
+          },
+          "id" : "c2",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 343,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 343
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 348,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 345
+        },
+        "store" : {
+          "path" : "test::serviceStore::caching::store::AddressService",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 345,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 345
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::serviceStore::caching::connection::AddressConnection",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 347,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 347
+            }
+          },
+          "id" : "c3",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 347,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 347
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 352,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 349
+        },
+        "store" : {
+          "path" : "test::serviceStore::caching::store::StreetService",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 349,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 349
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::serviceStore::caching::connection::StreetConnection",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 351,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 351
+            }
+          },
+          "id" : "c4",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 351,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 351
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::serviceStore::caching::Map",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 333,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 333
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 354,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 329
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 354,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 329
+    }
+  } ],
+  "imports" : [ ]
+}

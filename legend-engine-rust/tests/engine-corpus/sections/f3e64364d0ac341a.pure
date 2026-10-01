@@ -1,0 +1,19 @@
+
+Measure test::Mass
+{
+   *Gram: x -> $x;
+   Kilogram: x -> $x * 1000;
+   Pound: x -> $x * 453.59;
+}Class test::Person
+{
+   weight : test::Mass~Kilogram[1];
+}
+Class test::_Person
+{
+   weightUnit : String[1];
+   weightValue : Number[1];
+}
+Class test::PersonWithPound
+{
+   weight : test::Mass~Pound[1];
+}

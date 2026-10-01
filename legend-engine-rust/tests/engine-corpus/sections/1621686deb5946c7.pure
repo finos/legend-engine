@@ -1,0 +1,30 @@
+
+
+PersistenceContext true::false::import::derivation::None::DateTime::PersistenceContext::persistence::platform::serviceParameters::sinkConnection::Persistence::doc::trigger::service::serviceOutputTargets::persister::notifier::tests::serviceOutput::target::Notifier::notifyees::Email::address::PagerDuty::url::isTestDataFromServiceOutput::graphFetchPath::testBatches::data::connection::asserts::TDS::keys::deduplication::datasetType::AnyVersion::MaxVersion::versionField::Snapshot::partitioning::Delta::actionIndicator::FieldBased::partitionFields::emptyDatasetHandling::NoOp::DeleteTargetData::DeleteIndicator::deleteField::deleteValues::Streaming::Batch::sink::targetShape::ingestMode::Relational::ObjectStorage::database::binding::modelClass::targetName::deduplicationStrategy::Flat::MultiFlat::transactionScope::parts::modelProperty::SINGLE_TARGET::ALL_TARGETS::DuplicateCount::duplicateCountName::NontemporalSnapshot::UnitemporalSnapshot::BitemporalSnapshot::NontemporalDelta::UnitemporalDelta::BitemporalDelta::AppendOnly::filterDuplicates::auditing::dateTimeName::transactionMilestoning::BatchId::BatchIdAndDateTime::batchIdInName::batchIdOutName::dateTimeInName::dateTimeOutName::SourceSpecifiesInDateTime::SourceSpecifiesInAndOutDateTime::sourceDateTimeInField::sourceDateTimeOutField::validityMilestoning::dateTimeFromName::dateTimeThruName::SourceSpecifiesFromDateTime::SourceSpecifiesFromAndThruDateTime::sourceDateTimeFromField::sourceDateTimeThruField::mergeStrategy::NoDeletes::all::let::allVersions::allVersionsInRange::toBytes
+{
+  persistence: test::TestPersistence;
+}
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ModelClass;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+  }
+}

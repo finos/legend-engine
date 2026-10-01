@@ -1,0 +1,9 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Firm: Relational
+  {
+    ~filter [model::relational::tests::dbInc]MissingFilter
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+)

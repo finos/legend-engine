@@ -1,0 +1,12 @@
+
+Class demo::ssj::Employee
+{
+  name: String[1];
+  firm: demo::ssj::Firm[1];
+}
+
+Class demo::ssj::Firm
+{
+  id: String[1];
+  legalName: String[1];
+}

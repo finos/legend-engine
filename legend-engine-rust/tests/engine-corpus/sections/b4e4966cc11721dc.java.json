@@ -1,0 +1,173 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Shift",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 39,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 4,
+        "startLine" : 39
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::ShiftDB",
+        "mainTableDb" : "demo::store::ShiftDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 45,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 38,
+          "startLine" : 45
+        },
+        "table" : "shiftTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 43,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 7,
+          "startLine" : 43
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::ShiftDB",
+          "mainTableDb" : "demo::store::ShiftDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 43,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 29,
+            "startLine" : 43
+          },
+          "table" : "shiftTable"
+        },
+        "tableAlias" : "shiftTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Shift",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 46,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 46,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 9,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ShiftDB",
+            "mainTableDb" : "demo::store::ShiftDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 46,
+              "sourceId" : "model/model.pure",
+              "startColumn" : 31,
+              "startLine" : 46
+            },
+            "table" : "shiftTable"
+          },
+          "tableAlias" : "shiftTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 46,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 7,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Shift",
+          "property" : "startedAt",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "startedAt",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 47,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 16,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ShiftDB",
+            "mainTableDb" : "demo::store::ShiftDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 47,
+              "sourceId" : "model/model.pure",
+              "startColumn" : 38,
+              "startLine" : 47
+            },
+            "table" : "shiftTable"
+          },
+          "tableAlias" : "shiftTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 47,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 14,
+          "startLine" : 47
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ShiftMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

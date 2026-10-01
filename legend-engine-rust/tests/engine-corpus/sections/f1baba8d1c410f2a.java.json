@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 28,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 23,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "EmployeeFirmDenormTable",
+        "values" : "id,name,firmId,legalName\n1,John Doe,1,Firm A\n2,Jane Smith,2,Firm B\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "table" : "FirmInfoTable",
+        "values" : "id,name,other\n1,Firm A,Info A\n2,Firm B,Info B\n"
+      } ]
+    },
+    "name" : "OtherwiseEmployeeData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

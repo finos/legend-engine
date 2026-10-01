@@ -1,0 +1,8 @@
+
+Class test::A
+[
+   $this.names->at(0)
+]
+{
+   names : String[*];
+}

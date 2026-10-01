@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Service mcpServer should be a valid identifier ([a-zA-Z_][a-zA-Z0-9_]*)",
+    "sourceInformation" : {
+      "endColumn" : 18,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 8
+    }
+  }
+}

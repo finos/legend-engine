@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 36
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 35
+        }
+      },
+      "element" : "test::store::FirmDB",
+      "elementSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 33
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 31
+      },
+      "type" : "H2"
+    },
+    "name" : "FirmConnection",
+    "package" : "test::runtime",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 31
+    }
+  } ],
+  "imports" : [ ]
+}

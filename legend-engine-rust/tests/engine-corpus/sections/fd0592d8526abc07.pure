@@ -1,0 +1,10 @@
+
+Mapping my::testMapping
+(
+  my::Person: Relation 
+  {
+    ~func my::someRelationFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE
+  }
+)

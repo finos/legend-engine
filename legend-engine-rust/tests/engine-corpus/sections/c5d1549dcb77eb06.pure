@@ -1,0 +1,12 @@
+
+Mapping simple::simpleRelationalMappingInc
+(
+  simple::Person: Relational
+  {
+    ~mainTable [simple::dbInc]personTable
+    firstName: [simple::dbInc]personTable.FIRSTNAME,
+    lastName: [simple::dbInc]personTable.LASTNAME,
+    age: [simple::dbInc]personTable.AGE,
+    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM
+  }
+)

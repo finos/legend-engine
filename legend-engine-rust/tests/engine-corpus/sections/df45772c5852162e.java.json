@@ -1,0 +1,139 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "TestService1",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "serializationFormat",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 46
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 46
+            }
+          }
+        } ],
+        "path" : "/testService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::TestBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 48
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 40
+        }
+      }, {
+        "_type" : "service",
+        "id" : "TestService2",
+        "method" : "POST",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "serializationFormat",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 58
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 58,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 58
+            }
+          }
+        } ],
+        "path" : "/testService",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "test::TestBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 54
+          },
+          "type" : "test::Person"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::TestBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 60
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 62,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 51
+        }
+      } ],
+      "id" : "TestServices",
+      "path" : "/testServices",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testServiceStoreCompilationWithSingleServiceGroup",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 64,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  } ]
+}

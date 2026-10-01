@@ -1,0 +1,10 @@
+
+Mapping mapping::test
+(
+  *anything::goes[anything_goes]: Pure
+  {
+    ~filter $src.fullName->substring(0, $src.fullName->indexOf(' '))
+    ~src anything::goes
+    ~filter $src.fullName->substring(0, $src.fullName->indexOf(' '))
+  }
+)

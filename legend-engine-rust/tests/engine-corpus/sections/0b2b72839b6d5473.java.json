@@ -1,0 +1,58 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 37
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 31
+        },
+        "testDataSetupSqls" : [ "Drop table if exists PersonTable;" ]
+      },
+      "element" : "store::TestDB",
+      "elementSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 29
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 27
+      },
+      "type" : "H2"
+    },
+    "name" : "MyConnection",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    }
+  } ],
+  "imports" : [ ]
+}

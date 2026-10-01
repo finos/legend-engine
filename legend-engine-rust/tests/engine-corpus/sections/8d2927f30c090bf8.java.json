@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Class",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Result",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 3
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        } ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "prop1",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

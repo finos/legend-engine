@@ -1,0 +1,118 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "DemoM2MModelChainConnectionRuntime",
+    "package" : "modelToModel::test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 68
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 68
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "modelToModel::test::OneMappingConnection",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 70
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 70
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "modelToModel::test::JsonConnection",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 71,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 71
+            }
+          },
+          "id" : "connection_2",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 71,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 71
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "modelToModel::test::XmlConnection",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 72
+            }
+          },
+          "id" : "connection_3",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 72
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "modelToModel::test::BridgeToDestMapping",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 64
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 60
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 75,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 60
+    }
+  } ],
+  "imports" : [ ]
+}

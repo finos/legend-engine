@@ -1,0 +1,12 @@
+
+Mapping my::testMapping
+(
+    *my::Person[person]: Relation
+    {
+        ~func my::testFunc():Relation<Any>[1]
+        ~primaryKey: [firstName, lastName]
+        firstName : firstName,
+        lastName : lastName,
+        firm : jsonColumn
+    }
+)

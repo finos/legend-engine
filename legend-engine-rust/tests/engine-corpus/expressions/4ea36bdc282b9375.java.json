@@ -1,0 +1,104 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "project",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "model::Person",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 32,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 1
+                }
+              } ],
+              "property" : "age",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 51,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 1
+            }
+          },
+          "name" : "Person Age",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 23,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 55,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

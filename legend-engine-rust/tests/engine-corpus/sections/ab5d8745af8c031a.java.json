@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'targetName' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 18,
+      "startLine" : 14
+    }
+  }
+}

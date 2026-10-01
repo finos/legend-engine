@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'runtime'. Valid alternatives: ['mapping']",
+    "sourceInformation" : {
+      "endColumn" : 13,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 8
+    }
+  }
+}

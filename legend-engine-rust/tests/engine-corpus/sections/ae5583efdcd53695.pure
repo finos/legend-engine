@@ -1,0 +1,11 @@
+
+Mapping test::Mapping
+(
+  *test::dest::Person: Pure
+  {
+    ~src test::src::Person
+    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+    firm: $src.firm
+  }
+)

@@ -1,0 +1,247 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::service::FirmService",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 119,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 119
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForGraphFetch",
+            "deleteFieldPath" : {
+              "path" : [ {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 132,
+                  "sourceId" : "",
+                  "startColumn" : 82,
+                  "startLine" : 132
+                }
+              }, {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "isDeleted",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 132,
+                  "sourceId" : "",
+                  "startColumn" : 92,
+                  "startLine" : 132
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 132,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 132
+              },
+              "startType" : "test::model::Firm"
+            },
+            "deleteValues" : [ "Yes", "true", "1" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 134,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 130
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 135,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 128
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 136,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 136
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "employees",
+            "sourceInformation" : {
+              "endColumn" : 75,
+              "endLine" : 126,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 126
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 126,
+              "sourceId" : "",
+              "startColumn" : 76,
+              "startLine" : 126
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 126
+          },
+          "startType" : "test::model::Firm"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "employees",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 122,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 122
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 122
+          },
+          "startType" : "test::model::Firm"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 137,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 122
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 140,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 122
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 179,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 115
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 177,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 144
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"Age\":12, \"Name\":\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 171,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 167
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 172,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 164
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 174,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 148
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/x.flatdata",
+              "data" : "FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 158,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 154
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 159,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 152
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 160,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 150
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,62 @@
+{
+  "elements" : [ {
+    "_type" : "dataQualityValidation",
+    "context" : {
+      "_type" : "dataSpaceDataQualityExecutionContext",
+      "_type" : "dataSpaceDataQualityExecutionContext",
+      "context" : "Local_Context",
+      "dataSpace" : {
+        "path" : "meta::external::dataquality::PersonDataSpace",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 4
+        },
+        "type" : "DATASPACE"
+      }
+    },
+    "dataQualityRootGraphFetchTree" : {
+      "_type" : "dataQualityRootGraphFetchTree",
+      "_type" : "dataQualityRootGraphFetchTree",
+      "class" : "Person",
+      "constraints" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 6
+      },
+      "subTrees" : [ {
+        "_type" : "dataQualityPropertyGraphFetchTree",
+        "_type" : "dataQualityPropertyGraphFetchTree",
+        "constraints" : [ "idMustBeValid" ],
+        "parameters" : [ ],
+        "property" : "addresses",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 7
+        },
+        "subTrees" : [ ],
+        "subTypeTrees" : [ ]
+      } ],
+      "subTypeTrees" : [ ]
+    },
+    "name" : "PersonDataQualityValidation",
+    "package" : "meta::external::dataquality",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,88 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 10
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::store::db",
+            "mainTableDb" : "model::store::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 10
+            },
+            "table" : "myTable"
+          },
+          "tableAlias" : "myTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 10
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMap",
+    "package" : "model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

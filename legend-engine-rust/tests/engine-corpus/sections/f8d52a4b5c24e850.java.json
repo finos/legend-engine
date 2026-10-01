@@ -1,0 +1,336 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "max",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 3
+        },
+        "values" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 3
+          },
+          "value" : "string1"
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 3
+          },
+          "value" : "string2"
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "testMaxString__Any_$0_1$_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "max",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 7
+        },
+        "values" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "value" : 1
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 7
+          },
+          "value" : 2
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 7
+      }
+    } ],
+    "name" : "testMaxInteger__Any_$0_1$_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 5
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "max",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 11
+        },
+        "values" : [ {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          },
+          "value" : 1.0
+        }, {
+          "_type" : "float",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 11
+          },
+          "value" : 2.0
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "testMaxFloat__Any_$0_1$_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 9
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "max",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 15
+        },
+        "values" : [ {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 15
+          },
+          "value" : "1999-01-01"
+        }, {
+          "_type" : "strictDate",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 15
+          },
+          "value" : "2000-01-01"
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 31,
+        "startLine" : 15
+      }
+    } ],
+    "name" : "testMaxDate__Any_$0_1$_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 13
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

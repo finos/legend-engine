@@ -1,0 +1,10 @@
+
+PersistenceContext test::TestPersistenceContext
+{
+  persistence: test::TestPersistence;
+  serviceParameters:
+  [
+    foo='hello'
+  ];
+  sinkConnection: test::TestConnection;
+}

@@ -1,0 +1,90 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::PositionGroupByMapping
+(
+  *demo::relation::domain::Position: Relation
+  {
+    ~func demo::relation::func::positions():Relation<Any>[1]
+    gsn: GSN,
+    productId: PRODUCT_ID,
+    totalQty: TOTAL_QTY,
+    avgQty: AVG_QTY
+  }
+
+  testSuites:
+  [
+    groupBySuite:
+    {
+      function: |demo::relation::domain::Position.all()
+                  ->sortBy(x | $x.gsn)
+                  ->project(
+                    [x | $x.gsn, x | $x.productId, x | $x.totalQty],
+                    ['GSN', 'Product ID', 'Total Qty']
+                  );
+      tests:
+      [
+        aggregatedTotals:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::PositionData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    multiAggregateSuite:
+    {
+      function: |demo::relation::domain::Position.all()
+                  ->sortBy(x | $x.gsn)
+                  ->project(
+                    [x | $x.gsn, x | $x.productId, x | $x.totalQty, x | $x.avgQty],
+                    ['GSN', 'Product ID', 'Total Qty', 'Avg Qty']
+                  );
+      tests:
+      [
+        multipleAggregatesWithPreFilter:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::PositionData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregateWithAverageAndExcludeZeroQty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300,"Avg Qty":150.0},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8,"Avg Qty":4.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

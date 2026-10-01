@@ -1,0 +1,131 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "param",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 12
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 28,
+                      "endLine" : 12,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 12
+                    }
+                  } ],
+                  "property" : "prop",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 30,
+                    "startLine" : 12
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 24,
+                  "startLine" : 12
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 10
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 8
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TestServiceGroup",
+            "serviceStore" : "test::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 6
+            }
+          },
+          "service" : "TestService",
+          "serviceStore" : "test::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 64,
+            "startLine" : 6
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "body",
+    "package" : "Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::ServiceStore::description::ServiceGroup::Service::path::requestBody::method::parameters::response::security::allowReserved::required::location::style::explode::enum",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

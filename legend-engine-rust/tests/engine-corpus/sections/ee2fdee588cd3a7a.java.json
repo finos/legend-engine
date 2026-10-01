@@ -1,0 +1,52 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section header: DelimitedWithoutHeadings\n{\n  delimiter: ' ';\n  scope.forNumberOfLines: 1;\n\n  Record\n  {\n    closeOfBusiness {3}: DATE(format='yyyyMMdd');\n  }\n}\n\nsection dataRows: DelimitedWithoutHeadings\n{\n  recordSeparator: '\\r\\n';\n  scope.untilEof;\n  delimiter: '~';\n\n  Record\n  {\n    Account_ID   {1}: INTEGER;\n    Synonym_Type {2}: STRING;\n    Synonym      {3}: STRING;\n    Currency     {4}: STRING;\n    Close_Price  {9}: DECIMAL;\n  }\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 504,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 42
+      },
+      "id" : "fd1",
+      "sourceInformation" : {
+        "endColumn" : 506,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 42
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::WholeLoanPriceFile", "test::WholeLoanPriceFile2", "test::Header", "test::PriceRow", "test::File_Header", "test::File_PriceRow" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaId" : "fd1",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 46
+    }
+  } ],
+  "imports" : [ ]
+}

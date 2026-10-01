@@ -1,0 +1,13 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);
+    validations: [
+      {
+         name: 'idLength';
+         description: 'id length';
+         assertion: row|$row.FIRSTNAME->toOne()->length();
+         type: ROW_LEVEL;
+      }
+    ];
+}

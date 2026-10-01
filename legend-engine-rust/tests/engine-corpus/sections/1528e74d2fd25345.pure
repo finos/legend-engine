@@ -1,0 +1,5 @@
+
+Class anything::goes
+{
+   s:String[1];
+}

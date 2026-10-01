@@ -1,0 +1,88 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "cast",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        },
+        "value" : 1
+      }, {
+        "_type" : "genericTypeInstance",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Float",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 3
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "cast__Float_1_",
+    "package" : "abc",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Float",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

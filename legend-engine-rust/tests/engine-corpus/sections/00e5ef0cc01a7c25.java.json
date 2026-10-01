@@ -1,0 +1,87 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "TestService",
+      "method" : "GET",
+      "parameters" : [ {
+        "location" : "QUERY",
+        "name" : "param1",
+        "serializationFormat" : { },
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 10
+        },
+        "type" : {
+          "_type" : "string",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 10
+          }
+        }
+      }, {
+        "location" : "PATH",
+        "name" : "param2",
+        "serializationFormat" : { },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 11
+        },
+        "type" : {
+          "_type" : "string",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 11
+          }
+        }
+      } ],
+      "path" : "/testService/{param2}",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "tests::store::exampleBinding",
+        "list" : false,
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 13
+        },
+        "type" : "ExampleClass"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testServiceStoreGrammarWithSingleService",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ]
+}

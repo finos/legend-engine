@@ -1,0 +1,10 @@
+
+Database demo::store::LiteralDB
+(
+  Table AccountTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    code VARCHAR(10)
+  )
+)

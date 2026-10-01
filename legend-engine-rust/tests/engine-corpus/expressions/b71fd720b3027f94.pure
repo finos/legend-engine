@@ -1,0 +1,10 @@
+#{
+  demo::Query{
+    firms{
+      legalName,
+      employees{
+        lastName
+      }
+    }
+  }
+}#

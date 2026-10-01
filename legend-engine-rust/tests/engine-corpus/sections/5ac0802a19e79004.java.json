@@ -1,0 +1,171 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ProductTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 10
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "id",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 17
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "app::db",
+              "mainTableDb" : "app::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 17
+              },
+              "table" : "ProductTable"
+            },
+            "tableAlias" : "ProductTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          }
+        }, {
+          "name" : "name",
+          "operation" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 18,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 18
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "app::db",
+              "mainTableDb" : "app::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 18,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 18
+              },
+              "table" : "ProductTable"
+            },
+            "tableAlias" : "ProductTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "ProductView",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        },
+        "stereotypes" : [ {
+          "profile" : "meta::pure::profiles::storeType",
+          "profileSourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 15
+          },
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 15
+          },
+          "value" : "type3"
+        } ]
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ]
+  } ]
+}

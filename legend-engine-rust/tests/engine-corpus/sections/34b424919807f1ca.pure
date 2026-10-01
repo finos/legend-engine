@@ -1,0 +1,58 @@
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    [
+      abc:
+      {
+        mapping: test::myMapping1;
+        runtime: test::myRuntime1;
+      },
+      xyz:
+      {
+        mapping: test::myMapping2;
+        runtime: test::myRuntime2;
+      }
+    ],
+    PROD:
+    [
+      abc:
+      {
+        mapping: test::myMapping3;
+        runtime: test::myRuntime3;
+      },
+      xyz:
+      {
+        mapping: test::myMapping4;
+        runtime:
+        #{
+          connections:
+          [
+            ModelStore:
+            [
+              id1: test::myConnection,
+              id2:
+              #{
+                JsonModelConnection
+                {
+                  class: meta::mySimpleClass;
+                  url: 'my_url';
+                }
+              }#,
+              id3:
+              #{
+                JsonModelConnection
+                {
+                  class: meta::mySimpleClass;
+                  url: 'my_url';
+                }
+              }#
+            ]
+          ];
+        }#;
+      }
+    ]
+  ];
+}

@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition", "test::firm::model::TargetPerson2" ]
+    },
+    "name" : "TestBinding",
+    "package" : "test::gen",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 117,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 107
+    }
+  } ],
+  "imports" : [ ]
+}

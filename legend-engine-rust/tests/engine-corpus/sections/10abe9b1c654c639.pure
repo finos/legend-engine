@@ -1,0 +1,30 @@
+
+Class test::Header
+{
+  closeOfBusiness: StrictDate[1];
+}
+
+Class test::PriceRow
+{
+  accountId: Integer[1];
+  synonymType: String[1];
+  synonym: String[1];
+  currency: String[1];
+  closePrice: Float[1];
+}
+
+Class test::WholeLoanPriceFile
+{
+}
+
+Association test::File_Header
+{
+  file: test::WholeLoanPriceFile[1];
+  header: test::Header[1];
+}
+
+Association test::File_PriceRow
+{
+  file: test::WholeLoanPriceFile[1];
+  dataRows: test::PriceRow[*];
+}

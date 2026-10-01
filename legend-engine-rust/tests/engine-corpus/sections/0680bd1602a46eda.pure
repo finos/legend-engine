@@ -1,0 +1,11 @@
+
+Mapping my::testMapping
+(
+  *my::PersonWithEmployeeType: Relation
+  {
+    ~func my::personWithEnumFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    employeeType: EMPLOYEE_TYPE
+  }
+)

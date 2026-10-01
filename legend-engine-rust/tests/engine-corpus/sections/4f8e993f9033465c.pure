@@ -1,0 +1,8 @@
+
+Data meta::data::MyData
+{
+   ExternalFormat
+   #{
+     contentType: 'application/x-protobuf';
+   }#
+}

@@ -1,0 +1,17 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 127
+expression: json
+---
+{
+  "_type": "class",
+  "name": "Empty",
+  "package": "model",
+  "sourceInformation": {
+    "endColumn": 1,
+    "endLine": 3,
+    "sourceId": "test.pure",
+    "startColumn": 1,
+    "startLine": 1
+  }
+}

@@ -1,0 +1,26 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 459
+expression: json
+---
+{
+  "_type": "func",
+  "function": "letFunction",
+  "parameters": [
+    {
+      "_type": "string",
+      "value": "x"
+    },
+    {
+      "_type": "integer",
+      "value": 42
+    }
+  ],
+  "sourceInformation": {
+    "endColumn": 18,
+    "endLine": 3,
+    "sourceId": "test.pure",
+    "startColumn": 5,
+    "startLine": 3
+  }
+}

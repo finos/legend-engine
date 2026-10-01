@@ -1,0 +1,38 @@
+
+Mapping test::Map
+(
+  test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::DB]PERSON.fullName
+    )
+    ~mainTable [test::DB]PERSON
+    fullName: [test::DB]PERSON.fullName,
+    birthTime: [test::DB]PERSON.birthTime,
+    firmName: [test::DB]PERSON.firmName
+  }
+   test::Address: Relational
+   {
+     ~mainTable [test::DB]Address
+     name: [test::DB]Address.name,
+     street: [test::DB]@Address_Street | Street.name
+   }
+   test::Location: Relational
+   {
+    ~primaryKey
+    (
+      [test::DB]Location.id
+    )
+    ~mainTable [test::DB]Location
+    id: [test::DB]Location.id,
+    city: EnumerationMapping LocationEnumMapping: [test::DB]Location.city
+   }
+test::LocationEnum: EnumerationMapping LocationEnumMapping
+  {
+    AMERICAS: ['NewYork', 'Dallas'],
+    EMEA: ['Paris', 'Stockholm'],
+    ASIA_PACIFIC: ['Singapore', 'HongKong']
+   }
+)
+

@@ -1,0 +1,21 @@
+
+RelationalDatabaseConnection runtime::connection::H2Connection
+{
+  store: store::CovidDataStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS COVID_DATA;\nDROP TABLE IF EXISTS DEMOGRAPHICS;\n\nCREATE TABLE DEMOGRAPHICS(\n  FIPS VARCHAR(200) PRIMARY KEY,\n  STATE VARCHAR(200)\n);\n\nCREATE TABLE COVID_DATA(\n  ID INT PRIMARY KEY,\n  FIPS VARCHAR(200),\n  DATE DATE,\n  CASE_TYPE VARCHAR(200),\n  CASES INT,\n  LAST_REPORTED_FLAG BIT,\n  FOREIGN KEY (FIPS) REFERENCES DEMOGRAPHICS(FIPS)\n);\n\nINSERT INTO DEMOGRAPHICS VALUES(\'1\', \'NY\');\nINSERT INTO DEMOGRAPHICS VALUES(\'2\', \'NJ\');\nINSERT INTO DEMOGRAPHICS VALUES(\'3\', \'CA\');\n\nINSERT INTO COVID_DATA VALUES(1, \'1\', \'2021-04-01\', \'Confirmed\', 405, 0);\nINSERT INTO COVID_DATA VALUES(2, \'2\', \'2021-04-01\', \'Active\', 290, 1);\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection runtime::connection::SnowflakeConnection
+{
+  store: store::CovidDataStore;
+  type: Snowflake;
+  specification: LocalH2{};
+  auth: DefaultH2;
+}

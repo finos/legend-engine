@@ -1,0 +1,175 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "meta::analytics::lineage::tests",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "FIRM_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTable",
+        "primaryKey" : [ "FIRM_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

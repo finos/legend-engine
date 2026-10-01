@@ -1,0 +1,70 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "dbInc",
+    "package" : "simple",
+    "schemas" : [ {
+      "name" : "'\"productSchema\"'",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "\"ID\"",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "\"productTable\"",
+        "primaryKey" : [ "\"ID\"" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

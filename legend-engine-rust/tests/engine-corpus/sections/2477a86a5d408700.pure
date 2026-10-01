@@ -1,0 +1,20 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  persister: Batch
+  {
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ModelClass;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+  }
+}

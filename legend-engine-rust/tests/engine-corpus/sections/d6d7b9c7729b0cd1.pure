@@ -1,0 +1,10 @@
+
+Class my::Class
+{
+}
+
+Association my::association
+{
+    toAny:Any[1];
+    toClass:my::Class[1];
+}

@@ -1,0 +1,7 @@
+#{
+  demo::Query{
+    firms{
+      legalName
+    }
+  }
+}#

@@ -1,0 +1,492 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 18,
+        "sourceId" : "mapping/personMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::PersonKeyDB",
+        "mainTableDb" : "demo::store::PersonKeyDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 25,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 42,
+          "startLine" : 25
+        },
+        "table" : "PersonTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "firstName",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 22,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PersonKeyDB",
+          "mainTableDb" : "demo::store::PersonKeyDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 22,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 33,
+            "startLine" : 22
+          },
+          "table" : "PersonTable"
+        },
+        "tableAlias" : "PersonTable"
+      }, {
+        "_type" : "column",
+        "column" : "lastName",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 23,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PersonKeyDB",
+          "mainTableDb" : "demo::store::PersonKeyDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 23,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 33,
+            "startLine" : 23
+          },
+          "table" : "PersonTable"
+        },
+        "tableAlias" : "PersonTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 26,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 26,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PersonKeyDB",
+            "mainTableDb" : "demo::store::PersonKeyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 26,
+              "sourceId" : "mapping/personMapping.pure",
+              "startColumn" : 42,
+              "startLine" : 26
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 26,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 27,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 27,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PersonKeyDB",
+            "mainTableDb" : "demo::store::PersonKeyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 27,
+              "sourceId" : "mapping/personMapping.pure",
+              "startColumn" : 41,
+              "startLine" : 27
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 27,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 27
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "mapping/personMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PersonKeyMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 64,
+      "sourceId" : "mapping/personMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::Person",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 34,
+                  "sourceId" : "demo::PersonKeyMapping",
+                  "startColumn" : 18,
+                  "startLine" : 34
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 30,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 48,
+                    "endLine" : 34,
+                    "sourceId" : "demo::PersonKeyMapping",
+                    "startColumn" : 47,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 34,
+                  "sourceId" : "demo::PersonKeyMapping",
+                  "startColumn" : 50,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 46,
+                "startLine" : 34
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 34,
+              "sourceId" : "demo::PersonKeyMapping",
+              "startColumn" : 38,
+              "startLine" : 34
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 100,
+              "endLine" : 34,
+              "sourceId" : "demo::PersonKeyMapping",
+              "startColumn" : 70,
+              "startLine" : 34
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 74,
+                    "endLine" : 34,
+                    "sourceId" : "demo::PersonKeyMapping",
+                    "startColumn" : 73,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 34,
+                  "sourceId" : "demo::PersonKeyMapping",
+                  "startColumn" : 76,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 84,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 72,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 34,
+                    "sourceId" : "demo::PersonKeyMapping",
+                    "startColumn" : 89,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 34,
+                  "sourceId" : "demo::PersonKeyMapping",
+                  "startColumn" : 92,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 88,
+                "startLine" : 34
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 34,
+              "sourceId" : "demo::PersonKeyMapping",
+              "startColumn" : 103,
+              "startLine" : 34
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 104,
+                "startLine" : 34
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 34,
+                "sourceId" : "demo::PersonKeyMapping",
+                "startColumn" : 118,
+                "startLine" : 34
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 34,
+            "sourceId" : "demo::PersonKeyMapping",
+            "startColumn" : 62,
+            "startLine" : 34
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 130,
+          "endLine" : 34,
+          "sourceId" : "demo::PersonKeyMapping",
+          "startColumn" : 17,
+          "startLine" : 34
+        }
+      },
+      "id" : "primaryKeySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 62,
+        "sourceId" : "mapping/personMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 32
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Jane\",\"Last Name\":\"Smith\"},{\"First Name\":\"John\",\"Last Name\":\"Doe\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 57,
+              "sourceId" : "mapping/personMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 53
+            }
+          },
+          "id" : "shouldResolve",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 58,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 50
+          }
+        } ],
+        "id" : "compositeKey",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 60,
+          "sourceId" : "mapping/personMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 37
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::PersonKeyData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 45,
+                "sourceId" : "mapping/personMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 42
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 45,
+              "sourceId" : "mapping/personMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 42
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 45,
+            "sourceId" : "mapping/personMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 41
+          },
+          "store" : {
+            "path" : "demo::store::PersonKeyDB",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 41,
+              "sourceId" : "mapping/personMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 41
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

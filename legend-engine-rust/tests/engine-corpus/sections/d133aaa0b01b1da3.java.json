@@ -1,0 +1,110 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 3
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "enumMappingId" : "a",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Firm",
+          "property" : "incType",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 3
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 84,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 51,
+          "startLine" : 3
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 84,
+              "startLine" : 3
+            },
+            "value" : 1
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 88,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 3
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CORP",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 1
+        } ]
+      }, {
+        "enumValue" : "LLC",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 2
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::IncType",
+        "sourceInformation" : {
+          "endColumn" : 104,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 92,
+          "startLine" : 3
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "a",
+      "sourceInformation" : {
+        "endColumn" : 169,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 92,
+        "startLine" : 3
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "a",
+    "sourceInformation" : {
+      "endColumn" : 170,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

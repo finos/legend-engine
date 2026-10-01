@@ -1,0 +1,16 @@
+
+Data demo::joins::data::LeftOuterJoinData
+{
+  Relational
+  #{
+    HR.EMPLOYEE:
+      'ID,NAME,DEPT_ID\n' +
+      '1,Alice,10\n' +
+      '2,Bob,20\n' +
+      '3,Carol,99\n';
+    HR.DEPARTMENT:
+      'ID,NAME,LOCATION\n' +
+      '10,Engineering,NYC\n' +
+      '20,Sales,LON\n';
+  }#
+}

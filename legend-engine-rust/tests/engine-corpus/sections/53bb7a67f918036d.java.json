@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "externalFormat",
+      "contentType" : "application/x-protobuf",
+      "data" : "1B4A 9DEA 230F FF20",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "MyData",
+    "package" : "meta::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

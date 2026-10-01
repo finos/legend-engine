@@ -1,0 +1,4 @@
+
+Class test::Firm
+{   name : String[1];
+}

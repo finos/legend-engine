@@ -1,0 +1,7 @@
+
+Database model::relational::tests::dbInc
+(
+   Schema "test"   (    Table personTable (ID INT PRIMARY KEY, FIRMID INT)
+    Table firmTable(ID INT PRIMARY KEY)
+   )
+)

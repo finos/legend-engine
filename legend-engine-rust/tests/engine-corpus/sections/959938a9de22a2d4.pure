@@ -1,0 +1,7 @@
+
+SnowflakeApp x::A
+{
+   function : a::f():String[1];   applicationName : 'MyApp';
+   permissionScheme : WHATSCHEME;
+   ownership : Deployment { identifier: 'pierre'};
+}

@@ -1,0 +1,400 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::joins::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 22,
+        "sourceId" : "mapping/crossTableFilterMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "distinct" : false,
+      "filter" : {
+        "filter" : {
+          "db" : "demo::store::JoinsDB",
+          "name" : "NycDeptFilter"
+        },
+        "joins" : [ {
+          "db" : "demo::store::JoinsDB",
+          "name" : "Emp_Dept",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 24,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 35,
+            "startLine" : 24
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 24,
+          "sourceId" : "mapping/crossTableFilterMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      },
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 29,
+          "sourceId" : "mapping/crossTableFilterMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 29
+        },
+        "table" : "EMPLOYEE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 27,
+          "sourceId" : "mapping/crossTableFilterMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 27
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 27,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 27
+          },
+          "table" : "EMPLOYEE"
+        },
+        "tableAlias" : "EMPLOYEE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 30,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 30,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 30
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 30,
+              "sourceId" : "mapping/crossTableFilterMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 30
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 30,
+          "sourceId" : "mapping/crossTableFilterMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 30
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "mapping/crossTableFilterMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "CrossTableFilterMapping",
+    "package" : "demo::joins",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 67,
+      "sourceId" : "mapping/crossTableFilterMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::joins::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 37,
+                  "sourceId" : "demo::joins::CrossTableFilterMapping",
+                  "startColumn" : 18,
+                  "startLine" : 37
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 37,
+                "sourceId" : "demo::joins::CrossTableFilterMapping",
+                "startColumn" : 39,
+                "startLine" : 37
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 37,
+                    "sourceId" : "demo::joins::CrossTableFilterMapping",
+                    "startColumn" : 58,
+                    "startLine" : 37
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 37,
+                  "sourceId" : "demo::joins::CrossTableFilterMapping",
+                  "startColumn" : 61,
+                  "startLine" : 37
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 37,
+                "sourceId" : "demo::joins::CrossTableFilterMapping",
+                "startColumn" : 56,
+                "startLine" : 37
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 37,
+              "sourceId" : "demo::joins::CrossTableFilterMapping",
+              "startColumn" : 47,
+              "startLine" : 37
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 88,
+              "endLine" : 37,
+              "sourceId" : "demo::joins::CrossTableFilterMapping",
+              "startColumn" : 76,
+              "startLine" : 37
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 37,
+                    "sourceId" : "demo::joins::CrossTableFilterMapping",
+                    "startColumn" : 81,
+                    "startLine" : 37
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 37,
+                  "sourceId" : "demo::joins::CrossTableFilterMapping",
+                  "startColumn" : 84,
+                  "startLine" : 37
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 37,
+                "sourceId" : "demo::joins::CrossTableFilterMapping",
+                "startColumn" : 79,
+                "startLine" : 37
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 37,
+              "sourceId" : "demo::joins::CrossTableFilterMapping",
+              "startColumn" : 91,
+              "startLine" : 37
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 97,
+                "endLine" : 37,
+                "sourceId" : "demo::joins::CrossTableFilterMapping",
+                "startColumn" : 92,
+                "startLine" : 37
+              },
+              "value" : "Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 37,
+            "sourceId" : "demo::joins::CrossTableFilterMapping",
+            "startColumn" : 68,
+            "startLine" : 37
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 37,
+          "sourceId" : "demo::joins::CrossTableFilterMapping",
+          "startColumn" : 17,
+          "startLine" : 37
+        }
+      },
+      "id" : "crossTableFilterSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 65,
+        "sourceId" : "mapping/crossTableFilterMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 35
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Alice\"},{\"Name\":\"Carol\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 60,
+              "sourceId" : "mapping/crossTableFilterMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 56
+            }
+          },
+          "id" : "shouldKeepOnlyEmployeesInNycDepartments",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 61,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 53
+          }
+        } ],
+        "id" : "onlyNycDepartmentEmployees",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 63,
+          "sourceId" : "mapping/crossTableFilterMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 40
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::joins::data::CrossTableFilterData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 48,
+                "sourceId" : "mapping/crossTableFilterMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 45
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 48,
+              "sourceId" : "mapping/crossTableFilterMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 45
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 48,
+            "sourceId" : "mapping/crossTableFilterMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 44
+          },
+          "store" : {
+            "path" : "demo::store::JoinsDB",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 44,
+              "sourceId" : "mapping/crossTableFilterMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 44
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

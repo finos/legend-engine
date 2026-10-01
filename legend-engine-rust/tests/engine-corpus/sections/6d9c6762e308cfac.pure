@@ -1,0 +1,14 @@
+
+Service test::Service
+{
+  pattern: '/url/myUrl/';
+  title: 'my Service';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::class.all()->project(x | $x.prop1, 'prop1');
+  }
+  mcpServer: ab;
+}

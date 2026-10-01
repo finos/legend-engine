@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "legend-local-snowflake-passphraseVaultReference-model-relational-tests-dbInc",
+        "privateKeyVaultReference" : "legend-local-snowflake-privateKeyVaultReference-model-relational-tests-dbInc",
+        "publicUserName" : "legend-local-snowflake-publicuserName-model-relational-tests-dbInc"
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "legend-local-snowflake-accountName-model-relational-tests-dbInc",
+        "cloudType" : "legend-local-snowflake-cloudType-model-relational-tests-dbInc",
+        "databaseName" : "legend-local-snowflake-databaseName-model-relational-tests-dbInc",
+        "region" : "legend-local-snowflake-region-model-relational-tests-dbInc",
+        "role" : "legend-local-snowflake-role-model-relational-tests-dbInc",
+        "warehouseName" : "legend-local-snowflake-warehouseName-model-relational-tests-dbInc"
+      },
+      "element" : "model::relational::tests::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 67
+      },
+      "localMode" : true,
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 70,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 65
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "StaticConnection",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    }
+  } ],
+  "imports" : [ ]
+}

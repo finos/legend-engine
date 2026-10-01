@@ -1,0 +1,36 @@
+
+Mapping test::crossPropertyMappingWithLocalProperties
+(
+     test::Person[p]: Pure {
+      ~src test::Person
+      +firmName: String[0..1] : '',
+      fullName: $src.fullName,
+      addressName: $src.addressName
+   }
+
+   test::Firm[f]: Pure {
+      ~src test::Firm
+      name: $src.name,
+      addressName: $src.addressName
+   }
+
+
+   test::Street[s]: Pure {
+       ~src test::Street
+       streetId: $src.streetId,
+       +address: String[*] : ''
+   }
+
+   test::Address[a]: Pure {
+      ~src test::Address
+      name: $src.name,
+      streetName: $src.streetName,
+      +streetId: String[1] : 'id'
+   }
+   test::Person_Address: XStore {
+      address[p, a]: $this.addressName == $that.name,
+      persons[a, p]: $this.name == $that.addressName
+   }
+
+)
+

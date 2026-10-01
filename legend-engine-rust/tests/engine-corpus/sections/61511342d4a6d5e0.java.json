@@ -1,0 +1,75 @@
+{
+  "elements" : [ {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ {
+      "databaseName" : "SnowflakeOrgDB",
+      "schemas" : [ {
+        "_type" : "Schema",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Org",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 24
+        }
+      } ]
+    } ],
+    "name" : "testMapper",
+    "package" : "test",
+    "schemaMappers" : [ {
+      "from" : {
+        "_type" : "Schema",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Product",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      },
+      "to" : "ProductSchemaNew"
+    }, {
+      "from" : {
+        "_type" : "Schema",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Org",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      },
+      "to" : "OrgSchemaNew"
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "tableMappers" : [ {
+      "from" : {
+        "_type" : "Table",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Org",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "table" : "Org"
+      },
+      "to" : "OrgNewTable"
+    } ]
+  } ],
+  "imports" : [ ]
+}

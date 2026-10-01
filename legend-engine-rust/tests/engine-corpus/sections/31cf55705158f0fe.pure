@@ -1,0 +1,8 @@
+
+Binding test::Binding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Person
+  ];
+}

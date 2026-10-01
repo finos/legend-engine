@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : "line one\nline two\n"
+    } ]
+  } ],
+  "imports" : [ ]
+}

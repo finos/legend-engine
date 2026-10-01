@@ -1,0 +1,820 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "IncType",
+    "package" : "model::target",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 27
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 27
+        },
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 27
+        },
+        "value" : "doc"
+      },
+      "value" : "Types of company"
+    } ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 29
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 29
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 29
+          },
+          "value" : "doc"
+        },
+        "value" : "Limited"
+      } ],
+      "value" : "LLC"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CORP"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Animal",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::experiment",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 33
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Human",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::experiment",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 39,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Animal",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 43
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 43
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 43
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 43
+          },
+          "value" : "doc"
+        },
+        "value" : "age"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 41
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 41
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 41
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 41
+        },
+        "value" : "doc"
+      },
+      "value" : "Animal class"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 48
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 48
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "lastName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 46
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::Animal",
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 55,
+        "startLine" : 46
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 46
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 46
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 46
+        },
+        "value" : "doc"
+      },
+      "value" : "Homo Sapien"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "LegalEntity",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 54
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 54
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 54
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 54
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 54
+          },
+          "value" : "doc"
+        },
+        "value" : "name of the entity"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 59
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "type",
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 59,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 59
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 59
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 59
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 59
+          },
+          "value" : "doc"
+        },
+        "value" : "type of firm: e.g. CORP, LTD"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 60,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 57
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::LegalEntity",
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 58,
+        "startLine" : 57
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 57
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 57,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 57
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 57,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 57
+        },
+        "value" : "doc"
+      },
+      "value" : "The Firm concept"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "_Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::target",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 64
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fullName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 64
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 62
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "_Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::target",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::target::_Person",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 69
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 69
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::target::IncType",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 70
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "type",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 70,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 70
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 71,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 71
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 71,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 71
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 72,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 67
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Firm_Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::Firm",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 76
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 76
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::Person",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 77
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "employees",
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 77,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 77
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 77
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 77
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 77
+          },
+          "value" : "doc"
+        },
+        "value" : "some doc for employees"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 74
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "NotRelevant",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 80
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

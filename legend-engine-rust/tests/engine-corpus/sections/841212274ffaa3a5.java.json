@@ -1,0 +1,29 @@
+{
+  "elements" : [ {
+    "_type" : "elasticsearch7Store",
+    "includedStores" : [ ],
+    "indices" : [ {
+      "indexName" : "index1",
+      "properties" : [ {
+        "property" : {
+          "keyword" : {
+            "_pure_protocol_type" : "keywordProperty",
+            "_pure_protocol_type" : "keywordProperty",
+            "type" : "keyword"
+          }
+        },
+        "propertyName" : "prop1"
+      } ]
+    } ],
+    "name" : "Store",
+    "package" : "abc::abc",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

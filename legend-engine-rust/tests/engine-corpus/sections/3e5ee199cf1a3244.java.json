@@ -1,0 +1,94 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::element",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 25
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 25
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyMapping",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 25
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyRuntime",
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 63,
+              "startLine" : 25
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 25
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

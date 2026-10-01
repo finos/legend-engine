@@ -1,0 +1,17 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  operationalMetadata: {
+    coverageRegions: [APAC, EMEA, NAMR];
+    updateFrequency: DAILY;
+  };
+}

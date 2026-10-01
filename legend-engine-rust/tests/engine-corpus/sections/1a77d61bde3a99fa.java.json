@@ -1,0 +1,63 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::element",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 10
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 10
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 10
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

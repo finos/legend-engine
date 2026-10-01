@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field ''store'' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

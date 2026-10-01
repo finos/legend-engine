@@ -1,0 +1,41 @@
+{
+  "elements" : [ {
+    "_type" : "text",
+    "content" : "this is just for context",
+    "name" : "myText",
+    "package" : "meta::pure",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "STRING"
+  }, {
+    "_type" : "text",
+    "content" : "<div>Inside Div</div>",
+    "name" : "anotherText",
+    "package" : "meta::pure",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "type" : "HTML"
+  }, {
+    "_type" : "text",
+    "content" : "<div>Inside Div</div>",
+    "name" : "anotherText2",
+    "package" : "meta::pure",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    }
+  } ]
+}

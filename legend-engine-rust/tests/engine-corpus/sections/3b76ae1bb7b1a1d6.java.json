@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "Simple",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"firstName\": {\n      \"type\": \"string\"\n    },\n    \"lastName\": {\n      \"type\": \"string\"\n    },\n    \"middleName\": {\n      \"type\": \"string\"\n    },\n    \"firm\": {\n      \"$ref\": \"#/definitions/demo::jsonSchema::Firm\"\n    }\n  },\n  \"required\": [\n    \"firstName\",\n    \"lastName\",\n    \"firm\"\n  ],\n  \"definitions\": {\n    \"demo::jsonSchema::Firm\": {\n      \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n      \"title\": \"demo::jsonSchema::Firm\",\n      \"type\": \"object\",\n      \"properties\": {\n        \"legalName\": {\n          \"type\": \"string\"\n        },\n        \"employeesCount\": {\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"legalName\",\n        \"employeesCount\"\n      ]\n    }\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 863,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 9
+      },
+      "id" : "Test",
+      "location" : "Test.json",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

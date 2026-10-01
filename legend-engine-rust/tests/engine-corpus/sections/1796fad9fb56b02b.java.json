@@ -1,0 +1,217 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "serialize",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "graphFetch",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "test::Person",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 146
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 146
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 148,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 148
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "test::Person",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 148,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 148
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 149,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 149
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "firm",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 150,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 150
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 14,
+                  "endLine" : 151,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 151
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 147
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 156,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 156
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::Person",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 156,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 156
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "fullName",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 157,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 157
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "firm",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 158,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 158
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 159,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 159
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 155,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 155
+      }
+    } ],
+    "name" : "fetch__String_1_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 144
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 163,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 144
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

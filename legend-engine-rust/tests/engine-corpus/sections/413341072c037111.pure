@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)->filter(i|$i.neid == 'ok')
+}

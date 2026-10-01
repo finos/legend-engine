@@ -1,0 +1,28 @@
+
+Class <<temporal.businesstemporal>> main::Person
+{
+  name: String[1];
+  firm: main::Firm[1];
+  firm1: main::Firm[1];
+}
+
+Class <<temporal.businesstemporal>> main::Firm1
+{
+}
+Class <<temporal.businesstemporal>> main::Firm extends main::Firm1
+{
+  name: String[1];
+  city: main::City[1];
+  test: main::City[1];
+  city(d: StrictDate[1]) {$this.testAllVersions-> toOne()}: main::City[1];
+}
+
+Class <<temporal.businesstemporal>> main::City
+{
+  name: String[1];
+}
+
+function main::walkTree(): Any[*]
+{
+   main::Person.all(%2021-11-12)->project([x| $x.firm.city(%2021-11-12)->filter(y | $y.name == '').name, x| $x.firm1.city(%2021-11-12)->filter(y | $y.name == '').name], ['City name1', 'City Name'])
+}

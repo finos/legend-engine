@@ -1,0 +1,21 @@
+
+import meta::*;
+Runtime meta::mySimpleRuntime
+{
+  connections:
+  [
+  ModelStore :   [
+  id3: mySimpleConnection,
+  id4: #{
+    JsonModelConnection
+    {
+      class: mySimpleClass2;
+      url: 'my_url';
+    }
+  }#
+  ]
+];
+  mappings   : 
+  [mySimpleMapping
+  ];
+}

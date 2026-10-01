@@ -1,0 +1,107 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 28
+            }
+          } ],
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 28
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 28
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 28
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 28
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 26
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "multiExecutionTest",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 31
+      },
+      "tests" : [ ]
+    }
+  } ],
+  "imports" : [ ]
+}

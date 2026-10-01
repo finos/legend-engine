@@ -1,0 +1,635 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "goes",
+      "classSourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "id" : "tiec",
+      "operation" : "STORE_UNION",
+      "parameters" : [ "tiec", "tiec" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "A",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "goes",
+      "classSourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 26
+      },
+      "id" : "anything_goes",
+      "operation" : "STORE_UNION",
+      "parameters" : [ "anything_goes", "tiec" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "goes",
+      "classSourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "id" : "cay",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "goes",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "cay",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 33
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 33
+              },
+              "value" : 0
+            }, {
+              "_type" : "func",
+              "function" : "indexOf",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 33,
+                    "sourceId" : "",
+                    "startColumn" : 43,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 33
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 33
+                },
+                "value" : " "
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 58,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "goes",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "source" : "cay",
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "cast",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 14,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 11,
+                    "startLine" : 34
+                  }
+                }, {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "goes",
+                      "sourceInformation" : {
+                        "endColumn" : 26,
+                        "endLine" : 34,
+                        "sourceId" : "",
+                        "startColumn" : 23,
+                        "startLine" : 34
+                      }
+                    },
+                    "typeArguments" : [ ],
+                    "typeVariableValues" : [ ]
+                  },
+                  "sourceInformation" : {
+                    "endColumn" : 26,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 22,
+                    "startLine" : 34
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 20,
+                  "endLine" : 34,
+                  "sourceId" : "",
+                  "startColumn" : 17,
+                  "startLine" : 34
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 29,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "func",
+              "function" : "plus",
+              "parameters" : [ {
+                "_type" : "collection",
+                "multiplicity" : {
+                  "lowerBound" : 2,
+                  "upperBound" : 2
+                },
+                "sourceInformation" : {
+                  "endColumn" : 79,
+                  "endLine" : 34,
+                  "sourceId" : "",
+                  "startColumn" : 77,
+                  "startLine" : 34
+                },
+                "values" : [ {
+                  "_type" : "func",
+                  "function" : "indexOf",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "src",
+                      "sourceInformation" : {
+                        "endColumn" : 52,
+                        "endLine" : 34,
+                        "sourceId" : "",
+                        "startColumn" : 49,
+                        "startLine" : 34
+                      }
+                    } ],
+                    "property" : "fullName",
+                    "sourceInformation" : {
+                      "endColumn" : 61,
+                      "endLine" : 34,
+                      "sourceId" : "",
+                      "startColumn" : 54,
+                      "startLine" : 34
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 74,
+                      "endLine" : 34,
+                      "sourceId" : "",
+                      "startColumn" : 72,
+                      "startLine" : 34
+                    },
+                    "value" : " "
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 70,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 64,
+                    "startLine" : 34
+                  }
+                }, {
+                  "_type" : "integer",
+                  "sourceInformation" : {
+                    "endColumn" : 79,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 79,
+                    "startLine" : 34
+                  },
+                  "value" : 1
+                } ]
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 77,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "func",
+              "function" : "length",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 82,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 34,
+                  "sourceId" : "",
+                  "startColumn" : 87,
+                  "startLine" : 34
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 102,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 97,
+                "startLine" : 34
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 34
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "srcClass" : "goes"
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "b",
+        "sourceValues" : [ {
+          "_type" : "enumSourceValue",
+          "enumeration" : "goes2",
+          "value" : "b"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "goes2",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 37
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "TargetTradeTypeMapping2",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 37
+      }
+    } ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "A",
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    } ],
+    "name" : "simpleModelMapping",
+    "package" : "meta::pure::mapping::modelToModel::test::simple",
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 54,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "tests" : [ {
+      "assert" : {
+        "_type" : "expectedOutputMappingTestAssert",
+        "expectedOutput" : "{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"anotherName 17\\\",\\\"oneDate\\\":\\\"2020-04-13\\\",\\\"anotherDate\\\":\\\"2020-02-25\\\",\\\"oneNumber\\\":27,\\\"anotherNumber\\\":28}\"}}}",
+        "sourceInformation" : {
+          "endColumn" : 311,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 52
+        }
+      },
+      "inputData" : [ {
+        "_type" : "object",
+        "data" : "{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}",
+        "inputType" : "JSON",
+        "sourceClass" : "goes",
+        "sourceInformation" : {
+          "endColumn" : 170,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 49
+        }
+      }, {
+        "_type" : "object",
+        "data" : "{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}",
+        "inputType" : "XML",
+        "sourceClass" : "goes",
+        "sourceInformation" : {
+          "endColumn" : 169,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 50
+        }
+      } ],
+      "name" : "test2",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetchChecked",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "goes",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 46,
+                  "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                  "startColumn" : 15,
+                  "startLine" : 46
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 46,
+                "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                "startColumn" : 19,
+                "startLine" : 46
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 46,
+                "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                "startColumn" : 47,
+                "startLine" : 46
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "goes",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 46,
+                  "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                  "startColumn" : 47,
+                  "startLine" : 46
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 46,
+                    "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                    "startColumn" : 52,
+                    "startLine" : 46
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 46,
+              "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+              "startColumn" : 27,
+              "startLine" : 46
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 77,
+              "endLine" : 46,
+              "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+              "startColumn" : 74,
+              "startLine" : 46
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "goes",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 46,
+                "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                "startColumn" : 74,
+                "startLine" : 46
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 82,
+                  "endLine" : 46,
+                  "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+                  "startColumn" : 79,
+                  "startLine" : 46
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 46,
+            "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+            "startColumn" : 62,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 46,
+          "sourceId" : "meta::pure::mapping::modelToModel::test::simple::simpleModelMapping",
+          "startColumn" : 14,
+          "startLine" : 46
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 44
+      }
+    } ]
+  } ],
+  "imports" : [ "anything", "anything::else" ]
+}

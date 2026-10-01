@@ -1,0 +1,19 @@
+
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::EmployeeTemporalLink
+{
+  businessRecord: demo::relation::domain::BusinessTemporalEmployee[1];
+  processingRecord: demo::relation::domain::TemporalEmployee[1];
+}
+
+Association demo::relation::domain::EmployeeDepartmentSameScheme
+{
+  employee: demo::relation::domain::TemporalEmployee[1];
+  department: demo::relation::domain::TemporalDepartment[1];
+}
+
+function demo::relation::func::sameSchemeDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.TemporalDepartmentTable}#
+}

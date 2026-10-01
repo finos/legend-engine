@@ -1,0 +1,19 @@
+
+Mapping test::modelJoinMapping2
+(
+   test::Person2[p]: Pure {
+      ~src test::Person2
+      +firmId: Integer[1]: 1,
+      name: $src.name
+   }
+   
+   test::Firm2[f]: Pure {
+      ~src test::Firm2
+      id: $src.id,
+      legalName: $src.legalName
+   }
+
+   test::Firm_Person2: ModelJoin {
+      {firm:test::Firm2[1], person:test::Person2[1]|$firm.id == $person.firmId}
+   }
+)

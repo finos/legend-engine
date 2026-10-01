@@ -1,0 +1,31 @@
+
+Runtime test::runtime::SFirmRuntime
+{
+  mappings:
+  [
+    test::mapping::FirmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection1: test::runtime::SFirmConnection
+    ]
+  ];
+}
+Runtime test::runtime::SFirmAndSPersonRuntime
+{
+  mappings:
+  [
+    test::mapping::FirmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection1: test::runtime::SFirmConnection,
+      connection2: test::runtime::SPersonConnection
+    ]
+  ];
+}
+

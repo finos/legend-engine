@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->filter(x|$x.name->greaterThanEqualAll(#>{a::A.other}#->select(~oname)))
+}

@@ -1,0 +1,21 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Person[person]: Relational
+  {
+    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,
+    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,
+    age: [model::relational::tests::dbInc]personTable.AGE
+  }
+  model::Firm[firm]: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+   model::Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees[firm,wrongID] : [model::relational::tests::dbInc]@Firm_Person,
+         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person
+      )
+   })

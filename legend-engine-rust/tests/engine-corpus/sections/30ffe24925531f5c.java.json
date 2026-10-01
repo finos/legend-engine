@@ -1,0 +1,58 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "elasticsearch7StoreConnection",
+      "authSpec" : {
+        "_type" : "userPassword",
+        "password" : {
+          "_type" : "systemproperties",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 8
+          },
+          "systemPropertyName" : "sys.prop.name"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "username" : "hello_user"
+      },
+      "element" : "test::esStore",
+      "elementSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "sourceSpec" : {
+        "url" : "http://dummyurl.com:1234/api"
+      }
+    },
+    "name" : "Connection",
+    "package" : "abc::abc",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

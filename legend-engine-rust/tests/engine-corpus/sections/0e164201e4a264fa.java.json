@@ -1,0 +1,238 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 90
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LEGALNAME",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 90
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 90,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 90
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 90,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 90
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 91,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myRelationalMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 104,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 86
+    },
+    "tests" : [ {
+      "assert" : {
+        "_type" : "expectedOutputMappingTestAssert",
+        "expectedOutput" : "[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]",
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 101
+        }
+      },
+      "inputData" : [ {
+        "_type" : "relational",
+        "data" : "Drop table if exists personTable;Create Table personTable(id INT, firstName INT);Insert into PersonTable (id, firstName) values (1, 'Doe\\;');Insert into PersonTable (id, lastName) values (2, 'Doe2');",
+        "database" : "test::DB",
+        "inputType" : "SQL",
+        "sourceInformation" : {
+          "endColumn" : 242,
+          "endLine" : 99,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 99
+        }
+      } ],
+      "name" : "test_1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::LegalEntity",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 96,
+                "sourceId" : "model::myRelationalMapping",
+                "startColumn" : 15,
+                "startLine" : 96
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 96,
+              "sourceId" : "model::myRelationalMapping",
+              "startColumn" : 33,
+              "startLine" : 96
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 96,
+              "sourceId" : "model::myRelationalMapping",
+              "startColumn" : 49,
+              "startLine" : 96
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 96,
+                    "sourceId" : "model::myRelationalMapping",
+                    "startColumn" : 52,
+                    "startLine" : 96
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 96,
+                  "sourceId" : "model::myRelationalMapping",
+                  "startColumn" : 55,
+                  "startLine" : 96
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 96,
+                "sourceId" : "model::myRelationalMapping",
+                "startColumn" : 51,
+                "startLine" : 96
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 96,
+              "sourceId" : "model::myRelationalMapping",
+              "startColumn" : 61,
+              "startLine" : 96
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 96,
+                "sourceId" : "model::myRelationalMapping",
+                "startColumn" : 62,
+                "startLine" : 96
+              },
+              "value" : "name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 96,
+            "sourceId" : "model::myRelationalMapping",
+            "startColumn" : 41,
+            "startLine" : 96
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 96,
+          "sourceId" : "model::myRelationalMapping",
+          "startColumn" : 14,
+          "startLine" : 96
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 94
+      }
+    } ]
+  } ],
+  "imports" : [ ]
+}

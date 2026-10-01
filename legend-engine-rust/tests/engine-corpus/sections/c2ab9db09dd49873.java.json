@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "test::model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 20
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 18
+      },
+      "url" : "executor:default"
+    },
+    "name" : "FirmConnection",
+    "package" : "test::runtime",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    }
+  } ],
+  "imports" : [ ]
+}

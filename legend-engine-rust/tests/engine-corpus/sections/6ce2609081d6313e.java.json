@@ -1,0 +1,339 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "toBytes",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "true::false::import::derivation::None::DateTime::PersistenceContext::persistence::platform::serviceParameters::sinkConnection::Persistence::doc::trigger::service::serviceOutputTargets::persister::notifier::tests::serviceOutput::target::Notifier::notifyees::Email::address::PagerDuty::url::isTestDataFromServiceOutput::graphFetchPath::testBatches::data::connection::asserts::TDS::keys::deduplication::datasetType::AnyVersion::MaxVersion::versionField::Snapshot::partitioning::Delta::actionIndicator::FieldBased::partitionFields::emptyDatasetHandling::NoOp::DeleteTargetData::DeleteIndicator::deleteField::deleteValues::Streaming::Batch::sink::targetShape::ingestMode::Relational::ObjectStorage::database::binding::modelClass::targetName::deduplicationStrategy::Flat::MultiFlat::transactionScope::parts::modelProperty::SINGLE_TARGET::ALL_TARGETS::DuplicateCount::duplicateCountName::NontemporalSnapshot::UnitemporalSnapshot::BitemporalSnapshot::NontemporalDelta::UnitemporalDelta::BitemporalDelta::AppendOnly::filterDuplicates::auditing::dateTimeName::transactionMilestoning::BatchId::BatchIdAndDateTime::batchIdInName::batchIdOutName::dateTimeInName::dateTimeOutName::SourceSpecifiesInDateTime::SourceSpecifiesInAndOutDateTime::sourceDateTimeInField::sourceDateTimeOutField::validityMilestoning::dateTimeFromName::dateTimeThruName::SourceSpecifiesFromDateTime::SourceSpecifiesFromAndThruDateTime::sourceDateTimeFromField::sourceDateTimeThruField::mergeStrategy::NoDeletes::all::let::allVersions::allVersionsInRange",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForTds",
+            "deleteField" : "isDeleted",
+            "deleteValues" : [ "Y", "1", "true" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 19
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 17
+          }
+        },
+        "deduplication" : {
+          "_type" : "anyVersion",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 16
+          }
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 10
+      }
+    }, {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "noPartitioning",
+            "emptyDatasetHandling" : {
+              "_type" : "noOp",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 43,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 43
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 39
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForGraphFetch",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 35
+          },
+          "versionFieldPath" : {
+            "path" : [ {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "prop",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 82,
+                "startLine" : 37
+              }
+            }, {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "version",
+              "sourceInformation" : {
+                "endColumn" : 94,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 87,
+                "startLine" : 37
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 99,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 37
+            },
+            "startType" : "test::example::MyType"
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "foo",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 33
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 33
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "bar",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 33
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 33
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 29
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 29
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 29
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 88,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 53
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"Age\":12, \"Name\":\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 76
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 73
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 83,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 57
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/x.flatdata",
+              "data" : "FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 67,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 63
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 61
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 59
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

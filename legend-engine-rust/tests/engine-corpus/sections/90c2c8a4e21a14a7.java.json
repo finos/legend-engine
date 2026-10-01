@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'filterDuplicates' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

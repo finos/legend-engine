@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Person" ]
+    },
+    "name" : "personServiceStoreSchemaBinding",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 72
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Firm" ]
+    },
+    "name" : "firmServiceStoreSchemaBinding",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 86,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 80
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Address" ]
+    },
+    "name" : "addressServiceStoreSchemaBinding",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 94,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 88
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::Street" ]
+    },
+    "name" : "streetServiceStoreSchemaBinding",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 102,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 96
+    }
+  } ],
+  "imports" : [ ]
+}

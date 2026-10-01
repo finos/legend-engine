@@ -1,0 +1,64 @@
+{
+  "elements" : [ {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "namespaceOverride",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "value" : {
+        "key1" : "mapValue1",
+        "key2" : "mapValue2"
+      }
+    }, {
+      "name" : "namespaceOverride2",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      },
+      "value" : {
+        "key1" : "true",
+        "key2" : "false"
+      }
+    }, {
+      "name" : "namespaceOverride2",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "value" : {
+        "key1" : "1",
+        "key2" : "2"
+      }
+    } ],
+    "name" : "AvroConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "avro",
+    "typeSourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

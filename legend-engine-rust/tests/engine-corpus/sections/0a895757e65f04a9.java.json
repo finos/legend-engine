@@ -1,0 +1,166 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "default"
+    },
+    "serviceParameters" : [ {
+      "name" : "con",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 54
+      },
+      "value" : {
+        "_type" : "connectionValue",
+        "connection" : {
+          "_type" : "connectionPointer",
+          "connection" : "test::TestConnection",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 54
+          }
+        }
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 48
+    }
+  }, {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "unitemporalDelta",
+        "mergeStrategy" : {
+          "_type" : "noDeletesMergeStrategy"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 68
+        },
+        "transactionMilestoning" : {
+          "_type" : "dateTimeTransactionMilestoning",
+          "dateTimeInName" : "IN_Z",
+          "dateTimeOutName" : "OUT_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesInDateTime",
+            "sourceDateTimeInField" : "dateTimeIn",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 78,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 75
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 71
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 67
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 67,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 65
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 63
+      },
+      "targetShape" : {
+        "_type" : "flatTarget",
+        "deduplicationStrategy" : {
+          "_type" : "noDeduplicationStrategy"
+        },
+        "modelClass" : "test::ServiceResult",
+        "partitionFields" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 85,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 81
+        },
+        "targetName" : "TestDataset1"
+      }
+    },
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 62
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 87,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 58
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "CovidDataMapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 119,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 117
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

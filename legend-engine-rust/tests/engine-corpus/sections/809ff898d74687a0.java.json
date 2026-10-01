@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::FirmEmployee",
+      "classSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 19
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::FirmEmployee",
+          "property" : "firmName",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 22
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 22
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 22
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 22
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : true,
+        "property" : {
+          "class" : "test::FirmEmployee",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 23
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 23
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 23,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 23
+                }
+              } ],
+              "property" : "employees",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 23
+              }
+            } ],
+            "property" : "fullName",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 23
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 21
+      },
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 19
+      },
+      "srcClass" : "test::Firm"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "createInstancesModelMappingOneMany",
+    "package" : "a",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

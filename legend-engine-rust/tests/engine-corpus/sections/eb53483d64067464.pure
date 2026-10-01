@@ -1,0 +1,60 @@
+
+Mapping test::map
+(
+  test::FiscalCalendar[b]: Pure
+  {
+    ~src test::FiscalCalendar
+    date: $src.date,
+    fiscalYear: $src.fiscalYear,
+    fiscalMonth: $src.fiscalMonth,
+    fiscalQtr: $src.fiscalQtr
+  }
+  test::Sales[a]: AggregationAware 
+  {
+    Views: [
+      (
+        ~modelOperation: {
+          ~canAggregate false,
+          ~groupByFunctions (
+            $this.salesDate.fiscalYear,
+            $this.salesDate.fiscalQtr
+          ),
+          ~aggregateValues (
+            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Pure
+        {
+          ~src test::Sales_By_Qtr
+          salesDate[b]: $src.salesQtrFirstDate,
+          revenue: $src.netRevenue
+        }
+      )
+,
+      (
+        ~modelOperation: {
+          ~canAggregate true,
+          ~groupByFunctions (
+            $this.salesDate
+          ),
+          ~aggregateValues (
+            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() ),
+            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Pure
+        {
+          ~src test::Sales_By_Date
+          salesDate[b]: $src.salesDate,
+          revenue: $src.netRevenue
+        }
+      )
+    ],
+    ~mainMapping: Pure
+    {
+      ~src test::Sales
+      salesDate[b]: $src.salesDate,
+      revenue: $src.revenue
+    }
+  }
+)

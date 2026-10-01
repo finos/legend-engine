@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token '<EOF>'",
+    "sourceInformation" : {
+      "endColumn" : 18,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 2
+    }
+  }
+}

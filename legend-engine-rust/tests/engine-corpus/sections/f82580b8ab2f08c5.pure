@@ -1,0 +1,6 @@
+
+Enum model::A
+{
+  'a value',
+  'another value'
+}

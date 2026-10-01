@@ -1,0 +1,5 @@
+
+Class anything::class
+{
+  ok : Integer[0..1];
+}

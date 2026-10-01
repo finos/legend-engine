@@ -1,0 +1,111 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "H2Runtime",
+    "package" : "flatten::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        },
+        "store" : {
+          "path" : "store",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "test",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 20
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 19,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 17
+              }
+            },
+            "element" : "store",
+            "elementSourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 15
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "queryGenerationConfigs" : [ {
+              "_type" : "generationFeaturesConfig",
+              "disabled" : [ "FEAT_3" ],
+              "enabled" : [ "FEAT_1", "FEAT_2" ],
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 22
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 13
+            },
+            "type" : "H2"
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 11
+          }
+        } ]
+      } ],
+      "mappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

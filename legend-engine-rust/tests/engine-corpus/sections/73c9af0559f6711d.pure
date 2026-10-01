@@ -1,0 +1,5 @@
+
+Profile meta::pure::profiles::storeType
+{
+  stereotypes: [type1, type2];
+}

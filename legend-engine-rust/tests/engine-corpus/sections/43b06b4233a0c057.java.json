@@ -1,0 +1,84 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "TestDb",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "TESTDB",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Double"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 2147483647
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 2147483647
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

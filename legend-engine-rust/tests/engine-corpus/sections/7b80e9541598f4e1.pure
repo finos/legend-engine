@@ -1,0 +1,40 @@
+
+Enum model::animal::Family
+{
+  UO,
+  OP
+}
+
+Class {doc.doc = ''} model::animal::reptile::Reptile extends model::animal::Animal2, model::animal::Animal
+{
+  hasFin: Boolean[1];
+}
+
+Class model::animal::Animal
+{
+  family: model::animal::Family[1];
+  noOfLegs: Number[1];
+  children: model::animal::GenericAnimal2[*];
+  something() {$this.noOfLegs > 4}: Boolean[1];
+  something2() {[]}: model::animal::GenericAnimal[0..1];
+}
+
+Class model::animal::GenericAnimal2
+{
+}
+
+Class model::animal::GenericAnimal
+{
+}
+
+Class model::animal::mammal::Mammal
+{
+  noOfLegs: String[1];
+}
+
+Class model::animal::Animal2
+{
+  name: String[1];
+  name2() {''}: String[1];
+}
+

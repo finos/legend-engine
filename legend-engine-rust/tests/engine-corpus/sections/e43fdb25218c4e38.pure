@@ -1,0 +1,11 @@
+
+Data test::data::FirmData
+{
+  test::store::FirmDB:
+    Relation
+    #{
+      default.FIRM_TABLE:
+        ID,NAME
+        1,Alice;
+    }#;
+}

@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "local",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 89,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 3
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 3
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "initials",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 3
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "person",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 3
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 89,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "stereotypes" : [ ]
+  } ]
+}

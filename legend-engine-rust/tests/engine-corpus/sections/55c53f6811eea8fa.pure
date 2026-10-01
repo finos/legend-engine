@@ -1,0 +1,25 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: p1: String[1]|service_parameters::_NPerson.all()->graphFetch(#{service_parameters::_NPerson{Age,Name}}#)->serialize(#{service_parameters::_NPerson{Age,Name,f1($p1)}}#);
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      { ['singleParameter', 22, Enum.Reference, -3.14, [1.8, 2, -3], %2019-05-24T00:00:00], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}

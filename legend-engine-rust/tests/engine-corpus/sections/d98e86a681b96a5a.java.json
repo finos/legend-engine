@@ -1,0 +1,99 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "integer",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "value" : 1
+    } ],
+    "name" : "new_Result_1__Any_1_",
+    "package" : "test",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ {
+          "lowerBound" : 1
+        } ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Result",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "meta::pure::metamodel::type::Any",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 1
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        } ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "res",
+      "sourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 76,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

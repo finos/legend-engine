@@ -1,0 +1,66 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "passRef",
+        "privateKeyVaultReference" : "privateKeyRef",
+        "publicUserName" : "myName",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "okilkol.asdasd",
+        "databaseName" : "test",
+        "enableQueryTags" : true,
+        "quotedIdentifiersIgnoreCase" : false,
+        "region" : "EMEA",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        },
+        "warehouseName" : "warehousename"
+      },
+      "element" : "store::Store",
+      "elementSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

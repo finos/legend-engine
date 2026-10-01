@@ -1,0 +1,355 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "test",
+    "package" : "sample",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 9
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "sample::test",
+              "mainTableDb" : "sample::test",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 9
+              },
+              "table" : "test"
+            },
+            "tableAlias" : "test"
+          },
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          }
+        }, {
+          "name" : "name",
+          "operation" : {
+            "_type" : "column",
+            "column" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 10
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "sample::test",
+              "mainTableDb" : "sample::test",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 10,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 10
+              },
+              "table" : "test"
+            },
+            "tableAlias" : "test"
+          },
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          }
+        }, {
+          "name" : "site_url_namespace",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "sample::test",
+              "name" : "sites",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 11
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "url_namespace",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "sample::test",
+                "mainTableDb" : "sample::test",
+                "schema" : "public",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 11
+                },
+                "table" : "sites"
+              },
+              "tableAlias" : "sites"
+            },
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 11
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          }
+        }, {
+          "name" : "prefix",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "plus",
+            "parameters" : [ {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 12
+              },
+              "value" : "/prefix/t/"
+            }, {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "sample::test",
+                "name" : "sites",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 12
+                }
+              } ],
+              "relationalElement" : {
+                "_type" : "column",
+                "column" : "url",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 12
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "sample::test",
+                  "mainTableDb" : "sample::test",
+                  "schema" : "public",
+                  "sourceInformation" : {
+                    "endColumn" : 52,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 41,
+                    "startLine" : 12
+                  },
+                  "table" : "sites"
+                },
+                "tableAlias" : "sites"
+              },
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 12
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 59,
+                "startLine" : 12
+              },
+              "value" : "/w/"
+            }, {
+              "_type" : "column",
+              "column" : "repository_url",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 12
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "sample::test",
+                "mainTableDb" : "sample::test",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 12
+                },
+                "table" : "public"
+              },
+              "tableAlias" : "public"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 89,
+                "startLine" : 12
+              },
+              "value" : "/"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 12
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          }
+        } ],
+        "distinct" : true,
+        "filter" : {
+          "filter" : {
+            "name" : "someFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "TEST",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 7
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "sample::test",
+            "mainTableDb" : "sample::test",
+            "schema" : "data",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 7
+            },
+            "table" : "SOMETHING"
+          },
+          "tableAlias" : "SOMETHING"
+        }, {
+          "_type" : "column",
+          "column" : "TEST",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 7
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "sample::test",
+            "mainTableDb" : "sample::test",
+            "schema" : "data",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 7
+            },
+            "table" : "SOMETHING_ELSE"
+          },
+          "tableAlias" : "SOMETHING_ELSE"
+        } ],
+        "name" : "SomeView",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

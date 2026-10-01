@@ -1,0 +1,27 @@
+
+import meta::pure::precisePrimitives::*;
+
+function model::RelationQuery(): meta::pure::metamodel::relation::Relation<(firstName:Varchar(200), lastName:Varchar(200))>[1]
+{
+  #>{store::TestDB.PersonTable}#->select(
+    ~[
+       firstName,
+       lastName
+     ]
+  )->from(
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+      Relation
+      #{
+        default.PersonTable.unknown:
+           id,firstName,lastName
+           1,I'm John,"Doe, Jr";
+      }#;
+    test_1 | RelationQuery() => (JSON) '[ {\n  "firstName" : "I\'m John",\n  "lastName" : "Doe, Jr"\n} ]';
+  )
+}

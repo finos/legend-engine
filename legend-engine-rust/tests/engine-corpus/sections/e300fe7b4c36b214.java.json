@@ -1,0 +1,323 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "relational::graphFetch::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 28
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "relational::graphFetch::dbInc",
+        "mainTableDb" : "relational::graphFetch::dbInc",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 34
+        },
+        "table" : "firmTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "FirmCode",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 32
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "relational::graphFetch::dbInc",
+          "mainTableDb" : "relational::graphFetch::dbInc",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 32
+          },
+          "table" : "firmTable"
+        },
+        "tableAlias" : "firmTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "relational::graphFetch::Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FirmName",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 35
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "relational::graphFetch::dbInc",
+            "mainTableDb" : "relational::graphFetch::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 35
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "relational::graphFetch::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FirmCode",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "relational::graphFetch::dbInc",
+            "mainTableDb" : "relational::graphFetch::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 36
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 36
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 28
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Relational_Mapping",
+    "package" : "relational::graphFetch",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 26
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "relational::graphFetch::Target_Firm",
+      "classSourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "relational::graphFetch::Target_Firm",
+          "property" : "firmName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 45
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "toUpper",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 45
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 45,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 45
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 45
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "relational::graphFetch::Target_Firm",
+          "property" : "firmCode",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 46
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 46
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 46
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 44
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "srcClass" : "relational::graphFetch::Firm"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2M_Mapping",
+    "package" : "relational::graphFetch",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 40
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

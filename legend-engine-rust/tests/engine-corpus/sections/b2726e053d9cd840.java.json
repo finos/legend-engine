@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "ui::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 17
+      },
+      "id" : "ui_Employee",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "ui::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 19
+          }
+        },
+        "source" : "ui_Employee",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 19
+            },
+            "value" : "test name"
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 17
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "ui",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

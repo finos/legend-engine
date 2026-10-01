@@ -1,0 +1,224 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "CircleFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "kind",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 23,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ShapeSingleDB",
+            "mainTableDb" : "demo::store::ShapeSingleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 27,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 23,
+              "startLine" : 27
+            },
+            "table" : "ShapeTable"
+          },
+          "tableAlias" : "ShapeTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 27,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 41,
+            "startLine" : 27
+          },
+          "value" : "circle"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 27,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 39,
+          "startLine" : 27
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 27,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 27
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "SquareFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "kind",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 23,
+            "startLine" : 28
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ShapeSingleDB",
+            "mainTableDb" : "demo::store::ShapeSingleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 28,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 23,
+              "startLine" : 28
+            },
+            "table" : "ShapeTable"
+          },
+          "tableAlias" : "ShapeTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 28,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 41,
+            "startLine" : 28
+          },
+          "value" : "square"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 28,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 39,
+          "startLine" : 28
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 28,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "ShapeSingleDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 29,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "kind",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 21,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 22,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "radius",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 23,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "side",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 24,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ShapeTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 25,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

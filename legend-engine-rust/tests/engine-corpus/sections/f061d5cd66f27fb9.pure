@@ -1,0 +1,5 @@
+
+function abc::to(): String[1]
+{
+  toVariant(1)->to('String')
+}

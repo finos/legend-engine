@@ -1,0 +1,11 @@
+
+Mapping my::testMapping
+(
+    *my::Person: Relation
+    {
+        ~func my::testFunc():Any[1]
+        firstName : firstName,
+        +firm : String[0..1] : firm,
+        +localProp : String[1] : localProp
+    }
+)

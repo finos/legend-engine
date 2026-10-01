@@ -1,0 +1,28 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name']);
+      executionContextKey: 'Context 1';
+      sampleValues: Relation
+        #{
+          Id, Name
+          1 , Alice
+          2 , Bob;
+        }#;
+    }
+  ];
+}

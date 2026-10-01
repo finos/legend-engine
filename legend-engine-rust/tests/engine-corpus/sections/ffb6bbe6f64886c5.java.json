@@ -1,0 +1,298 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "ProductBySynonymService",
+        "method" : "POST",
+        "path" : "/getProductBySynonym",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 135,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 135
+          },
+          "type" : "meta::external::store::service::showcase::domain::Synonym"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 161,
+            "endLine" : 137,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 137
+          },
+          "type" : "meta::external::store::service::showcase::domain::Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 138,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 131
+        }
+      } ],
+      "id" : "ProductServices",
+      "path" : "/products",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 139,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 127
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "TradesByDetailsService",
+        "method" : "POST",
+        "path" : "/getTradesByDetails",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 168,
+            "endLine" : 149,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 149
+          },
+          "type" : "meta::external::store::service::showcase::domain::TradeDetails"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 160,
+            "endLine" : 151,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 151
+          },
+          "type" : "meta::external::store::service::showcase::domain::Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 152,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 145
+        }
+      } ],
+      "id" : "TradeServices",
+      "path" : "/trades",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 153,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 141
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "FirmDetailsByName",
+        "method" : "POST",
+        "path" : "/firmDetailsByName",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 173,
+            "endLine" : 163,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 163
+          },
+          "type" : "meta::external::store::service::showcase::domain::FirmSearch"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 166,
+            "endLine" : 165,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 165
+          },
+          "type" : "meta::external::store::service::showcase::domain::Firm"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 166,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 159
+        }
+      } ],
+      "id" : "FirmServices",
+      "path" : "/firms",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 167,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 155
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "EmployeeDetailsById",
+        "method" : "POST",
+        "path" : "/employeeDetailsById",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 177,
+            "endLine" : 177,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 177
+          },
+          "type" : "meta::external::store::service::showcase::domain::EmployeeSearch"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 170,
+            "endLine" : 179,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 179
+          },
+          "type" : "meta::external::store::service::showcase::domain::Employee"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 180,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 173
+        }
+      }, {
+        "_type" : "service",
+        "id" : "EmployeeDetailsByFilters",
+        "method" : "POST",
+        "path" : "/employeeDetailsByFilters",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 186,
+            "endLine" : 186,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 186
+          },
+          "type" : "meta::external::store::service::showcase::domain::EmployeeSearchByFilters"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 170,
+            "endLine" : 188,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 188
+          },
+          "type" : "meta::external::store::service::showcase::domain::Employee"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 189,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 182
+        }
+      }, {
+        "_type" : "service",
+        "id" : "EmployeeDetailsByFirm",
+        "method" : "POST",
+        "path" : "/employeeDetailsByFirm",
+        "requestBody" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 173,
+            "endLine" : 195,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 195
+          },
+          "type" : "meta::external::store::service::showcase::domain::FirmSearch"
+        },
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 170,
+            "endLine" : 197,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 197
+          },
+          "type" : "meta::external::store::service::showcase::domain::Employee"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 198,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 191
+        }
+      } ],
+      "id" : "EmployeeServices",
+      "path" : "/employees",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 199,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 169
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "ServiceStoreWithPostServices",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 200,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 123
+    }
+  } ]
+}

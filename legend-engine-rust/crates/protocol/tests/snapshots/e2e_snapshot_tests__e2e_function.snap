@@ -1,0 +1,152 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 20,
+                "endLine": 19,
+                "sourceId": "function.pure",
+                "startColumn": 14,
+                "startLine": 19
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 19,
+                    "sourceId": "function.pure",
+                    "startColumn": 5,
+                    "startLine": 19
+                  },
+                  "value": "Hello "
+                },
+                {
+                  "_type": "var",
+                  "name": "name",
+                  "sourceInformation": {
+                    "endColumn": 20,
+                    "endLine": 19,
+                    "sourceId": "function.pure",
+                    "startColumn": 16,
+                    "startLine": 19
+                  }
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 19,
+            "sourceId": "function.pure",
+            "startColumn": 14,
+            "startLine": 19
+          }
+        }
+      ],
+      "name": "greet_String_1__String_1_",
+      "package": "my",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 31,
+                "endLine": 17,
+                "sourceId": "function.pure",
+                "startColumn": 26,
+                "startLine": 17
+              }
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "sourceInformation": {
+            "endColumn": 34,
+            "endLine": 17,
+            "sourceId": "function.pure",
+            "startColumn": 20,
+            "startLine": 17
+          }
+        }
+      ],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String",
+          "sourceInformation": {
+            "endColumn": 43,
+            "endLine": 17,
+            "sourceId": "function.pure",
+            "startColumn": 38,
+            "startLine": 17
+          }
+        }
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 20,
+        "sourceId": "function.pure",
+        "startColumn": 1,
+        "startLine": 17
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "my::greet_String_1__String_1_"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 16,
+            "sourceId": "function.pure",
+            "startColumn": 1,
+            "startLine": 16
+          }
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 7,
+        "endLine": 16,
+        "sourceId": "function.pure",
+        "startColumn": 1,
+        "startLine": 16
+      }
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

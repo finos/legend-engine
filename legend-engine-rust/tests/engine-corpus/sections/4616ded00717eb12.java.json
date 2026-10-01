@@ -1,0 +1,1274 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "SynonymType",
+    "package" : "meta::external::store::service::showcase::domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CUSIP"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "ISIN"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "productId",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "productName",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "description",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Synonym",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 32
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::SynonymType",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 33
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "type",
+      "sourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 33
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Trade",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 38
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "tradeId",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 39
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "traderKerb",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 40
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 40
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "this",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 41
+            }
+          } ],
+          "property" : "product",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 41
+          }
+        } ],
+        "property" : "productName",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 41
+        }
+      } ],
+      "name" : "productName",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 46,
+            "startLine" : 41
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "body" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "this",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 42
+          }
+        } ],
+        "property" : "product",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 42
+        }
+      } ],
+      "name" : "justProduct",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Product",
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 42
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 97,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 36
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Trader",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 47
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "kerberos",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 47
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 48
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 48
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 49
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "lastName",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 49
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 45
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Product_Synonym",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Product",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 54
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "product",
+      "sourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 54
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Synonym",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 55
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "synonyms",
+      "sourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 55
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Trade_Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Product",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 60
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "product",
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 60,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Trade",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 61
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "trades",
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 61
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 58
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Trade_Trader",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Trader",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 66
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "trader",
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 66
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::Trade",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 67
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "trades",
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 67
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 68,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 72
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_productId",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 72,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 72
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 73
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_quantity",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 73,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 73
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 74
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_productName",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 74
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 75
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_description",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 75
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::S_Synonym",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 76
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "s_synonyms",
+      "sourceInformation" : {
+        "endColumn" : 81,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 76
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 77,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 70
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Synonym",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 81
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_name",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 81
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 82,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 82
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_type",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 82
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 83,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 79
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "S_Trade",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 87
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_tradeId",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 87
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 88,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 88
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_traderDetails",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 89
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_tradeDetails",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 89
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 90,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 85
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "S_Trade_S_Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::external::store::service::showcase::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::S_Product",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 94
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s_product",
+      "sourceInformation" : {
+        "endColumn" : 77,
+        "endLine" : 94,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 94
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::external::store::service::showcase::domain::S_Trade",
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 95
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "s_trades",
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 95,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 95
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 96,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 92
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

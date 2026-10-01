@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type VARBINARY requires 1 parameter (size) in declaration 'clientIdVARBINARY(2,2)'",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 5
+    }
+  }
+}

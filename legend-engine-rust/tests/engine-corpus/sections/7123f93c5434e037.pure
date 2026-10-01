@@ -1,0 +1,13 @@
+
+Binding test::gen::TestBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::firm::model::Person,
+    test::firm::model::Address,
+    test::firm::model::AddressUse,
+    test::firm::model::GeographicPosition,
+    meta::pure::dataQuality::Checked
+,    meta::pure::dataQuality::Defect
+,    meta::pure::dataQuality::RelativePathNode  ];
+}

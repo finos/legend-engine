@@ -1,0 +1,156 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "model::C1",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "id" : "24ec35ba-8656-4561-93c5-c77a84ba5f4f",
+      "position" : {
+        "x" : 342.0,
+        "y" : 136.0
+      },
+      "rectangle" : {
+        "height" : 44.0,
+        "width" : 68.30224609375
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "class" : "model::C2",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "id" : "8ce9f436-2a96-4015-9572-cc3aeeeec404",
+      "position" : {
+        "x" : 532.0,
+        "y" : 237.0
+      },
+      "rectangle" : {
+        "height" : 30.0,
+        "width" : 35.33984375
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "Diag",
+    "package" : "model",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 549.669921875,
+          "y" : 252.0
+        }, {
+          "x" : 376.151123046875,
+          "y" : 158.0
+        } ]
+      },
+      "property" : {
+        "class" : "model::A",
+        "property" : "c1",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 18
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "sourceView" : "8ce9f436-2a96-4015-9572-cc3aeeeec404",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 19
+      },
+      "targetView" : "24ec35ba-8656-4561-93c5-c77a84ba5f4f",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 20
+      }
+    }, {
+      "line" : {
+        "points" : [ {
+          "x" : 376.151123046875,
+          "y" : 158.0
+        }, {
+          "x" : 549.669921875,
+          "y" : 252.0
+        } ]
+      },
+      "property" : {
+        "class" : "model::A",
+        "property" : "c2",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "sourceView" : "24ec35ba-8656-4561-93c5-c77a84ba5f4f",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 26
+      },
+      "targetView" : "8ce9f436-2a96-4015-9572-cc3aeeeec404",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 27
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

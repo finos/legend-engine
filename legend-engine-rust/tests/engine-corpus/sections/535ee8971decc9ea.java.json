@@ -1,0 +1,225 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "goes2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "anything",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "profile",
+    "name" : "goes",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 8
+      },
+      "value" : "test"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 9
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 9
+      },
+      "value" : "todo"
+    } ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "println",
+      "parameters" : [ {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 14
+        },
+        "value" : "ok"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      }
+    } ],
+    "name" : "f_goes2_1__goes2_1__goes2_1_",
+    "package" : "",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "goes2",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 12
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s",
+      "sourceInformation" : {
+        "endColumn" : 76,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 66,
+        "startLine" : 12
+      }
+    }, {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "goes2",
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 83,
+            "startLine" : 12
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s1",
+      "sourceInformation" : {
+        "endColumn" : 90,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 79,
+        "startLine" : 12
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "goes2",
+        "sourceInformation" : {
+          "endColumn" : 98,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 94,
+          "startLine" : 12
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ {
+      "profile" : "goes",
+      "profileSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 12
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 25,
+        "startLine" : 12
+      },
+      "tag" : {
+        "profile" : "goes",
+        "profileSourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 12
+        },
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 12
+        },
+        "value" : "doc"
+      },
+      "value" : "Tag Value for assoc prop"
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "anything" ]
+}

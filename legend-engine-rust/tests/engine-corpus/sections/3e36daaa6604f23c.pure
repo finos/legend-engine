@@ -1,0 +1,47 @@
+
+Class test::Firm
+{
+  legalName: String[1];
+  employees: test::Person[*];
+
+  employeeCount() {$this.employees->size()}: Integer[1];
+  employeesByFirstName(firstNames: String[*]) {$this.employees->filter(e | $e.firstName->in($firstNames))}: test::Person[*];
+  employeesByFirstNameAndCity(firstNames: String[*], cities: String[*]) {$this.employees->filter(e | $e.firstName->in($firstNames) && $e.city->in($cities))}: test::Person[*];
+}
+
+Class test::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  city: String[1]; 
+}
+
+function my::test():Any[*]
+{
+  #{
+    test::Firm {
+      legalName,
+      employeeCount(),
+      employeesByFirstName([]) {
+        firstName,
+        lastName
+      },
+      employeesByFirstName('Peter') {
+        firstName,
+        lastName
+      },
+      employeesByFirstName(['Peter']) {
+        firstName,
+        lastName
+      },
+      employeesByFirstName(['Peter', 'John']) {
+        firstName,
+        lastName
+      },
+      employeesByFirstNameAndCity(['Peter', 'John'], ['New York']) {
+        firstName,
+        lastName
+      }
+    }
+  }#
+}

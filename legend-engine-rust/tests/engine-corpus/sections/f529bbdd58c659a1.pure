@@ -1,0 +1,7 @@
+
+Enum my::Test
+{
+  TEST,
+  HELLO,
+  '360_ACT'
+}

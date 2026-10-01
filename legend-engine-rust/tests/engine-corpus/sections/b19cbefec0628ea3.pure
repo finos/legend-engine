@@ -1,0 +1,29 @@
+
+Mapping mapping::CovidDataMapping
+(
+  domain::Demographics: Relational
+  {
+    ~primaryKey
+    (
+      [store::CovidDataStore]DEMOGRAPHICS.FIPS
+    )
+    ~mainTable [store::CovidDataStore]DEMOGRAPHICS
+    fips: [store::CovidDataStore]DEMOGRAPHICS.FIPS,
+    state: [store::CovidDataStore]DEMOGRAPHICS.STATE
+  }
+  domain::COVIDData: Relational
+  {
+    ~primaryKey
+    (
+      [store::CovidDataStore]COVID_DATA.ID
+    )
+    ~mainTable [store::CovidDataStore]COVID_DATA
+    id: [store::CovidDataStore]COVID_DATA.ID,
+    fips: [store::CovidDataStore]COVID_DATA.FIPS,
+    date: [store::CovidDataStore]COVID_DATA.DATE,
+    caseType: [store::CovidDataStore]COVID_DATA.CASE_TYPE,
+    cases: [store::CovidDataStore]COVID_DATA.CASES,
+    lastReportedFlag: [store::CovidDataStore]COVID_DATA.LAST_REPORTED_FLAG,
+    demographics[domain_Demographics]: [store::CovidDataStore]@CovidDataDemographicsJoin
+  }
+)

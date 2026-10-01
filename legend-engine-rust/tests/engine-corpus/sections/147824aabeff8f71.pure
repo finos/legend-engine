@@ -1,0 +1,32 @@
+
+Binding test::personServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Person
+  ];
+}
+
+Binding test::firmServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Firm
+  ];
+}
+
+Binding test::addressServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Address
+  ];
+}
+
+Binding test::streetServiceStoreSchemaBinding
+{
+    contentType: 'application/json';
+    modelIncludes: [
+        test::Street
+    ];
+}

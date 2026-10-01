@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "DataQualityRuntime",
+    "package" : "meta::dataquality",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 58
+        },
+        "store" : {
+          "path" : "meta::dataquality::db",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 58
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "meta::dataquality::H2",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 60
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 60
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "meta::dataquality::dataquality::Mapping",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 54
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 50
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 50
+    }
+  } ],
+  "imports" : [ ]
+}

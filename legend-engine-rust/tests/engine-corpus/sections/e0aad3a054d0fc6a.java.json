@@ -1,0 +1,91 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "A",
+    "package" : "a",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 9
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          },
+          "stereotypes" : [ {
+            "profile" : "test::SampleProfile",
+            "profileSourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 10,
+              "startLine" : 13
+            },
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 13
+            },
+            "value" : "important"
+          }, {
+            "profile" : "test::SampleProfile",
+            "profileSourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 41,
+              "startLine" : 13
+            },
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 13
+            },
+            "value" : "deprecated"
+          } ],
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,50 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 47
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::mapping::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 46
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 43
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model::dataspace",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 40
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

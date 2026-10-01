@@ -1,0 +1,16 @@
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Employee 
+{ 
+  name: String[1]; 
+  firm: apps::Firm[1]; 
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Firm 
+{ 
+  name: String[1]; 
+} 
+Association apps::Employee_Firm 
+{ 
+  worksFor: apps::Firm[*]; 
+  employs: apps::Employee[*]; 
+} 

@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "clientId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 5
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 1
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ORDERS",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 1,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

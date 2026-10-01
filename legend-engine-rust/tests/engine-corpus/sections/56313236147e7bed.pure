@@ -1,0 +1,14 @@
+
+Mapping test::selfJoinMapping
+(
+   test::Employee[e]: Pure {
+      ~src test::Employee
+      id: $src.id,
+      managerId: $src.managerId,
+      name: $src.name
+   }
+
+   test::Employee_Manager: ModelJoin {
+      {a:test::Employee[1], b:test::Employee[1]|$b.managerId == $a.id}
+   }
+)

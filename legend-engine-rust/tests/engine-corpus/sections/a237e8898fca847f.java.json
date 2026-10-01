@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 64
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 61
+        }
+      },
+      "element" : "test::TestDatabase",
+      "elementSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 59,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 59
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 65,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 57
+      },
+      "type" : "H2"
+    },
+    "name" : "TestConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 57
+    }
+  } ],
+  "imports" : [ ]
+}

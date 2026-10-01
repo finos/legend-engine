@@ -1,0 +1,12 @@
+
+Data demo::view::data::SaleData
+{
+  Relational
+  #{
+    default.SALE_TABLE:
+      'ID,PRODUCT,AMOUNT\n' +
+      '1,Widget,100\n' +
+      '2,Gadget,250\n' +
+      '3,Trinket,50\n';
+  }#
+}

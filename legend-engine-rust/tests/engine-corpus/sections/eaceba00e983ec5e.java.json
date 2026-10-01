@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 29,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "SalesTable",
+        "values" : "id,salesPerson,revenue\n1,John,10\n2,John,20\n3,Jane,5\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 28,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "table" : "SalesByPersonTable",
+        "values" : "salesPerson,revenue\nJohn,30\nJane,5\n"
+      } ]
+    },
+    "name" : "AggSalesData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,29 @@
+
+import pure::a::b::*;
+import pure::a::d::*;
+import pure::a::e::*;
+Association myAssociation
+{
+  a: String[1];
+  b: a::c::A[1];
+}
+
+Enum A
+{
+}
+
+Profile meta::pure::profiles::doc
+{
+  stereotypes: [deprecated];
+  tags: [doc, todo];
+}
+
+Measure NewMeasure
+{
+  *UnitOne: x -> $x;
+}
+
+Class A2
+{
+}
+

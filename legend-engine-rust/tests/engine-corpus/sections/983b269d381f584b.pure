@@ -1,0 +1,34 @@
+
+SchemaSet meta::external::store::service::showcase::store::tradeSchemaSet
+{
+  format  : FlatData;
+  schemas : [
+    {
+        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_tradeId       : STRING;      s_traderDetails : STRING;      s_tradeDetails  : STRING;  }}';
+    }
+  ];
+}
+
+SchemaSet meta::external::store::service::showcase::store::productSchemaSet
+{
+  format  : FlatData;
+  schemas : [
+    {
+        content: 'section A: DelimitedWithHeadings{  scope.untilEof;  delimiter: \',\';  Record  {      s_productId   : STRING;      s_quantity   : STRING;      s_productName : STRING;      s_description : STRING;  }}';
+    }
+  ];
+}
+
+Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
+{
+  schemaSet     : meta::external::store::service::showcase::store::tradeSchemaSet;
+  contentType   : 'application/x.flatdata';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  schemaSet     : meta::external::store::service::showcase::store::productSchemaSet;
+  contentType   : 'application/x.flatdata';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Product ];
+}

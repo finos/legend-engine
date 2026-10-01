@@ -1,0 +1,8 @@
+
+RelationalDatabaseConnection test::runtime::FirmConnection
+{
+  store: test::store::FirmDB;
+  type: H2;
+  specification: LocalH2 {};
+  auth: DefaultH2;
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'mappings' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 33,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

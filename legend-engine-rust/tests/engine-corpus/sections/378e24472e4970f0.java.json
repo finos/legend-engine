@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Service Store Mapping does not support extends",
+    "sourceInformation" : {
+      "endColumn" : 31,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 29,
+      "startLine" : 4
+    }
+  }
+}

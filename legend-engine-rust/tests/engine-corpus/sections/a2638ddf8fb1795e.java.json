@@ -1,0 +1,33 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "Example1",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section readLines: ImmaterialLines\n{\n  scope.forNumberOfLines: 2;\n  recordSeparator: ';';\n}\n\nsection sectionName: DelimitedWithHeadings\n{\n  scope.untilEof;\n  recordSeparator: ';';\n  delimiter: '::';\n  quoteChar: '\\'';\n  escapingChar: '\\'';\n  nullString: 'null';\n  mayContainBlankLines;\n\n  Record\n  {\n    HEADING1: STRING;\n    HEADING2: INTEGER(optional);\n    HEADING3: BOOLEAN(trueString='Y', falseString='N', optional);\n    'My Fourth Heading': DECIMAL(optional);\n    HEADING5: DATE(format='MM-DD-EE');\n    HEADING6: DATETIME(format='MM-DD-EE');\n  }\n}\n\nsection sectionName2: DelimitedWithoutHeadings\n{\n  scope.forNumberOfLines: 1;\n  recordSeparator: '\\n';\n  delimiter: ',';\n  quoteChar: '\\'';\n  escapingChar: '\\'';\n  nullString: 'None';\n\n  Record\n  {\n    A {1}: STRING;\n    B {2}: INTEGER(format='#,##0', optional);\n    C {3}: DECIMAL(format='#,##0.0#', optional);\n    D {4}: BOOLEAN(optional);\n    E {5}: DATE(format='MM-DD-EE');\n    F {6}: DATETIME(format='MM-DD-EE');\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 1098,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 5
+      },
+      "sourceInformation" : {
+        "endColumn" : 1100,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 5
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

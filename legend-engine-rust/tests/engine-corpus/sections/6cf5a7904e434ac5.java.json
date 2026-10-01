@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "with quotes",
+    "package" : "meta::pure::profiles",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 3
+      },
+      "value" : "two words"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "value" : "s tag"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 4
+      },
+      "value" : "another tag"
+    } ]
+  } ],
+  "imports" : [ ]
+}

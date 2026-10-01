@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "SerializationFormat",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 49
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CSV"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 51
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "PURE"
+    } ]
+  } ],
+  "imports" : [ ]
+}

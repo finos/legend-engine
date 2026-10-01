@@ -1,0 +1,19 @@
+
+Data demo::joins::data::NestedJoinData
+{
+  Relational
+  #{
+    HR.EMPLOYEE:
+      'ID,NAME,DEPT_ID\n' +
+      '1,Alice,10\n' +
+      '2,Bob,20\n';
+    HR.DEPARTMENT:
+      'ID,NAME,LOCATION\n' +
+      '10,Engineering,NYC\n' +
+      '20,Sales,LON\n';
+    SALES.SALE:
+      'ID,EMP_ID,AMOUNT\n' +
+      '100,1,500\n' +
+      '200,2,300\n';
+  }#
+}

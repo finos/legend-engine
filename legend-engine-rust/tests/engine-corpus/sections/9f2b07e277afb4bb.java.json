@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'partitionFields' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 18,
+      "startLine" : 14
+    }
+  }
+}

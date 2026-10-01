@@ -1,0 +1,9 @@
+
+Enum test::A
+{
+   A, a 
+}
+Class test::B
+{
+   xza(s: String[1]){$src}:String[1];
+}

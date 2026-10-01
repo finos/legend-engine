@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token '''. Valid alternatives: ['&&', '||', '==', '!=', '->', '[', '.', ';', '+', '*', '-', '/', '<', '<=', '>', '>=']",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 3
+    }
+  }
+}

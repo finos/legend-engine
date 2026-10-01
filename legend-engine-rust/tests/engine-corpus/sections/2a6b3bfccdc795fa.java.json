@@ -1,0 +1,341 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Collateral piece ids per firm, as a relation, reached through a subType cast in the chain.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "chain::model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 39,
+                "sourceId" : "service/firmService.pure",
+                "startColumn" : 13,
+                "startLine" : 39
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 39,
+              "sourceId" : "service/firmService.pure",
+              "startColumn" : 31,
+              "startLine" : 39
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 115,
+              "endLine" : 39,
+              "sourceId" : "service/firmService.pure",
+              "startColumn" : 48,
+              "startLine" : 39
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 58,
+                        "endLine" : 39,
+                        "sourceId" : "service/firmService.pure",
+                        "startColumn" : 57,
+                        "startLine" : 39
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 61,
+                      "endLine" : 39,
+                      "sourceId" : "service/firmService.pure",
+                      "startColumn" : 60,
+                      "startLine" : 39
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 39,
+                    "sourceId" : "service/firmService.pure",
+                    "startColumn" : 55,
+                    "startLine" : 39
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 39,
+                  "sourceId" : "service/firmService.pure",
+                  "startColumn" : 49,
+                  "startLine" : 39
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 75,
+                        "endLine" : 39,
+                        "sourceId" : "service/firmService.pure",
+                        "startColumn" : 74,
+                        "startLine" : 39
+                      }
+                    } ],
+                    "property" : "name",
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 39,
+                      "sourceId" : "service/firmService.pure",
+                      "startColumn" : 77,
+                      "startLine" : 39
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 39,
+                    "sourceId" : "service/firmService.pure",
+                    "startColumn" : 72,
+                    "startLine" : 39
+                  }
+                },
+                "name" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 80,
+                  "endLine" : 39,
+                  "sourceId" : "service/firmService.pure",
+                  "startColumn" : 64,
+                  "startLine" : 39
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 97,
+                          "endLine" : 39,
+                          "sourceId" : "service/firmService.pure",
+                          "startColumn" : 96,
+                          "startLine" : 39
+                        }
+                      } ],
+                      "property" : "holdings",
+                      "sourceInformation" : {
+                        "endColumn" : 106,
+                        "endLine" : 39,
+                        "sourceId" : "service/firmService.pure",
+                        "startColumn" : 99,
+                        "startLine" : 39
+                      }
+                    } ],
+                    "property" : "pieceId",
+                    "sourceInformation" : {
+                      "endColumn" : 114,
+                      "endLine" : 39,
+                      "sourceId" : "service/firmService.pure",
+                      "startColumn" : 108,
+                      "startLine" : 39
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 39,
+                    "sourceId" : "service/firmService.pure",
+                    "startColumn" : 94,
+                    "startLine" : 39
+                  }
+                },
+                "name" : "pieceId",
+                "sourceInformation" : {
+                  "endColumn" : 114,
+                  "endLine" : 39,
+                  "sourceId" : "service/firmService.pure",
+                  "startColumn" : 83,
+                  "startLine" : 39
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 39,
+            "sourceId" : "service/firmService.pure",
+            "startColumn" : 39,
+            "startLine" : 39
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 116,
+          "endLine" : 39,
+          "sourceId" : "service/firmService.pure",
+          "startColumn" : 12,
+          "startLine" : 39
+        }
+      },
+      "mapping" : "chain::mapping::M2M",
+      "mappingSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 40,
+        "sourceId" : "service/firmService.pure",
+        "startColumn" : 14,
+        "startLine" : 40
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "chain::runtime::FirmRuntime",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 41,
+          "sourceId" : "service/firmService.pure",
+          "startColumn" : 14,
+          "startLine" : 41
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 42,
+        "sourceId" : "service/firmService.pure",
+        "startColumn" : 14,
+        "startLine" : 37
+      }
+    },
+    "name" : "FirmHoldingsRelationService",
+    "owners" : [ ],
+    "package" : "chain::service",
+    "pattern" : "/api/chain/firmHoldingsRelation",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "service/firmService.pure",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "holdingsRelationSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 80,
+        "sourceId" : "service/firmService.pure",
+        "startColumn" : 5,
+        "startLine" : 45
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "chain::data::FirmData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 55,
+                "sourceId" : "service/firmService.pure",
+                "startColumn" : 13,
+                "startLine" : 52
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 55,
+              "sourceId" : "service/firmService.pure",
+              "startColumn" : 13,
+              "startLine" : 52
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 55,
+            "sourceId" : "service/firmService.pure",
+            "startColumn" : 11,
+            "startLine" : 51
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 57,
+          "sourceId" : "service/firmService.pure",
+          "startColumn" : 7,
+          "startLine" : 47
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"id\":1,\"name\":\"FIRM X\",\"pieceId\":\"C1\"},{\"id\":1,\"name\":\"FIRM X\",\"pieceId\":\"C2\"},{\"id\":2,\"name\":\"FIRM Y\",\"pieceId\":\"C3\"},{\"id\":3,\"name\":\"FIRM Z\",\"pieceId\":null},{\"id\":1,\"name\":\"FIRM X\",\"pieceId\":null}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 75,
+              "sourceId" : "service/firmService.pure",
+              "startColumn" : 19,
+              "startLine" : 71
+            }
+          },
+          "id" : "shouldMatch",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 76,
+            "sourceId" : "service/firmService.pure",
+            "startColumn" : 15,
+            "startLine" : 68
+          }
+        } ],
+        "id" : "subTypeEmbeddedArrayAsRelation",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 78,
+          "sourceId" : "service/firmService.pure",
+          "startColumn" : 9,
+          "startLine" : 60
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

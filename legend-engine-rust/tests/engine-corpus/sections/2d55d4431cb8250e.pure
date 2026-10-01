@@ -1,0 +1,26 @@
+
+JsonModelConnection meta::mySimpleConnection1
+{
+  class: model::firm::Person;
+  url: 'my_url';
+}
+
+XmlModelConnection meta::mySimpleConnection2
+{
+  class: model::firm::Person;
+  url: 'my_url';
+}
+
+ModelChainConnection meta::modelChainConnection
+{
+  mappings: [
+    mapping::MyMapping1,
+    mapping::MyMapping2
+  ];
+}
+
+ModelChainConnection meta::modelChainConnection2
+{
+  mappings: [
+  ];
+}

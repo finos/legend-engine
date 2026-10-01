@@ -1,0 +1,991 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "relational",
+      "association" : {
+        "path" : "demo::Employment",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 39,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 39
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 43,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 43
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::FirmDB",
+            "name" : "PersonFirm",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 43,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 43
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 43,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 18,
+            "startLine" : 43
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 43,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 16,
+          "startLine" : 43
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 44,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 44
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::FirmDB",
+            "name" : "PersonFirm",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 44,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 34,
+              "startLine" : 44
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 44,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 44
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 44,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 44
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 46,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      },
+      "stores" : [ "demo::store::FirmDB" ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 18,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::FirmDB",
+        "mainTableDb" : "demo::store::FirmDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 24,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 37,
+          "startLine" : 24
+        },
+        "table" : "PersonTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 22,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::FirmDB",
+          "mainTableDb" : "demo::store::FirmDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 22,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 28,
+            "startLine" : 22
+          },
+          "table" : "PersonTable"
+        },
+        "tableAlias" : "PersonTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 25,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 25,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 25
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 25,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 26,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 26,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 26,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 26
+            },
+            "table" : "PersonTable"
+          },
+          "tableAlias" : "PersonTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 26,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 29,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::FirmDB",
+        "mainTableDb" : "demo::store::FirmDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 35,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 37,
+          "startLine" : 35
+        },
+        "table" : "FirmTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 33,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::FirmDB",
+          "mainTableDb" : "demo::store::FirmDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 33,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 28,
+            "startLine" : 33
+          },
+          "table" : "FirmTable"
+        },
+        "tableAlias" : "FirmTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 36,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 36,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::FirmDB",
+            "mainTableDb" : "demo::store::FirmDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 36,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 36
+            },
+            "table" : "FirmTable"
+          },
+          "tableAlias" : "FirmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 36,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 36
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "AssociationImplMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 113,
+      "sourceId" : "mapping/associationMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::Person",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 52,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 18,
+                  "startLine" : 52
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 30,
+                "startLine" : 52
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 48,
+                    "endLine" : 52,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 47,
+                    "startLine" : 52
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 52,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 50,
+                  "startLine" : 52
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 46,
+                "startLine" : 52
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 52,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 38,
+              "startLine" : 52
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 52,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 70,
+              "startLine" : 52
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 74,
+                    "endLine" : 52,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 73,
+                    "startLine" : 52
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 52,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 76,
+                  "startLine" : 52
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 84,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 72,
+                "startLine" : 52
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 90,
+                      "endLine" : 52,
+                      "sourceId" : "demo::AssociationImplMapping",
+                      "startColumn" : 89,
+                      "startLine" : 52
+                    }
+                  } ],
+                  "property" : "firm",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 52,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 92,
+                    "startLine" : 52
+                  }
+                } ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 105,
+                  "endLine" : 52,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 97,
+                  "startLine" : 52
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 105,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 88,
+                "startLine" : 52
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 52,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 109,
+              "startLine" : 52
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 110,
+                "startLine" : 52
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 52,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 124,
+                "startLine" : 52
+              },
+              "value" : "Firm"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 52,
+            "sourceId" : "demo::AssociationImplMapping",
+            "startColumn" : 62,
+            "startLine" : 52
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 52,
+          "sourceId" : "demo::AssociationImplMapping",
+          "startColumn" : 17,
+          "startLine" : 52
+        }
+      },
+      "id" : "associationSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 80,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 50
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Bob\",\"Firm\":\"Goldman\"},{\"First Name\":\"Jane\",\"Firm\":\"Finos\"},{\"First Name\":\"John\",\"Firm\":\"Finos\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 75,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 71
+            }
+          },
+          "id" : "shouldNavigate",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 76,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 68
+          }
+        } ],
+        "id" : "navigateToFirm",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 78,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 55
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::AssociationFirmData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 63,
+                "sourceId" : "mapping/associationMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 60
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 63,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 60
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 63,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 59
+          },
+          "store" : {
+            "path" : "demo::store::FirmDB",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 59,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 59
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 83,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 18,
+                  "startLine" : 83
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 28,
+                "startLine" : 83
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 83,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 45,
+                    "startLine" : 83
+                  }
+                } ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 83,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 48,
+                  "startLine" : 83
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 44,
+                "startLine" : 83
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 83,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 36,
+              "startLine" : 83
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 83,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 68,
+              "startLine" : 83
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 83,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 71,
+                    "startLine" : 83
+                  }
+                } ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 82,
+                  "endLine" : 83,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 74,
+                  "startLine" : 83
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 70,
+                "startLine" : 83
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 88,
+                      "endLine" : 83,
+                      "sourceId" : "demo::AssociationImplMapping",
+                      "startColumn" : 87,
+                      "startLine" : 83
+                    }
+                  } ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 83,
+                    "sourceId" : "demo::AssociationImplMapping",
+                    "startColumn" : 90,
+                    "startLine" : 83
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 83,
+                  "sourceId" : "demo::AssociationImplMapping",
+                  "startColumn" : 100,
+                  "startLine" : 83
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 86,
+                "startLine" : 83
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 131,
+              "endLine" : 83,
+              "sourceId" : "demo::AssociationImplMapping",
+              "startColumn" : 112,
+              "startLine" : 83
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 118,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 113,
+                "startLine" : 83
+              },
+              "value" : "Firm"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 130,
+                "endLine" : 83,
+                "sourceId" : "demo::AssociationImplMapping",
+                "startColumn" : 121,
+                "startLine" : 83
+              },
+              "value" : "Employee"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 83,
+            "sourceId" : "demo::AssociationImplMapping",
+            "startColumn" : 60,
+            "startLine" : 83
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 132,
+          "endLine" : 83,
+          "sourceId" : "demo::AssociationImplMapping",
+          "startColumn" : 17,
+          "startLine" : 83
+        }
+      },
+      "id" : "reverseAssociationSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 111,
+        "sourceId" : "mapping/associationMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 81
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Firm\":\"Finos\",\"Employee\":\"John\"},{\"Firm\":\"Finos\",\"Employee\":\"Jane\"},{\"Firm\":\"Goldman\",\"Employee\":\"Bob\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 106,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 102
+            }
+          },
+          "id" : "shouldNavigateReverse",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 107,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 99
+          }
+        } ],
+        "id" : "navigateToEmployees",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 109,
+          "sourceId" : "mapping/associationMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 86
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::AssociationFirmData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 94,
+                "sourceId" : "mapping/associationMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 91
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 94,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 91
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 94,
+            "sourceId" : "mapping/associationMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 90
+          },
+          "store" : {
+            "path" : "demo::store::FirmDB",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 90,
+              "sourceId" : "mapping/associationMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 90
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

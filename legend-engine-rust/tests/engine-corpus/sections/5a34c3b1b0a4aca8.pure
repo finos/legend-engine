@@ -1,0 +1,10 @@
+
+Class test::Report{country : String[1]; city: String[1]; year: Integer[1]; treePlanted: Integer[1];}function test::f():Any[*]
+{
+   test::Report.all()->project(~[
+        country: x|$x.country,
+        city : x|$x.city,
+        treePlanted: x|$x.treePlanted,
+        year: x|$x.year
+      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)
+}

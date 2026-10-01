@@ -1,0 +1,276 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "modelToModel::test::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "modelToModel::test::Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 24,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 24
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 13,
+                  "endLine" : 24,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 24
+                },
+                "value" : "|"
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 24,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 24
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 24,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 24
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 24,
+                  "sourceId" : "",
+                  "startColumn" : 29,
+                  "startLine" : 24
+                },
+                "value" : "|"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 24
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 23
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "srcClass" : "modelToModel::test::_Firm"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "BridgeToDestMapping",
+    "package" : "modelToModel::test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "modelToModel::test::_Firm",
+      "classSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "modelToModel::test::_Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 33
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 13,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 11,
+                  "startLine" : 33
+                },
+                "value" : "$"
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 33,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 33
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 29,
+                  "startLine" : 33
+                },
+                "value" : "$"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "srcClass" : "modelToModel::test::__Firm"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SrcToBridgeMapping",
+    "package" : "modelToModel::test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 28
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

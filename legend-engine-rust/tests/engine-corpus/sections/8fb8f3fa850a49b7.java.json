@@ -1,0 +1,122 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "relational",
+      "association" : {
+        "path" : "MissingAssociation",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "location",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "dbInc",
+            "name" : "location_PlaceOfInterest",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 8
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 8
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "property" : "placeOfInterest",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "dbInc",
+            "name" : "location_PlaceOfInterest",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 9
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 9
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stores" : [ "dbInc" ]
+    } ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myRelationalMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

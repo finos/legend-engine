@@ -1,0 +1,9 @@
+
+Mapping mappingPackage::myMapping
+(
+    Person: Relational
+    {
+        firstName : [db]personTable.firstName,
+        +localProp : String[1] : [db]personTable.firstName
+    }
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'executable' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 14
+    }
+  }
+}

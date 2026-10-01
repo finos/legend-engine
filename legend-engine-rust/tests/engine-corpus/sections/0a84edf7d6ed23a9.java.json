@@ -1,0 +1,64 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "default"
+    },
+    "serviceParameters" : [ {
+      "name" : "foo",
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "value" : {
+        "_type" : "primitiveTypeValue",
+        "primitiveType" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          },
+          "value" : "hello"
+        }
+      }
+    } ],
+    "sinkConnection" : {
+      "_type" : "connectionPointer",
+      "connection" : "test::TestConnection",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 9
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

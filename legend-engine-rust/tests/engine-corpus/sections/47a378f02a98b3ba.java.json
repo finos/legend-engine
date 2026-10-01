@@ -1,0 +1,59 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "prod",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::MyMapping",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "prod",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "MySpace",
+    "operationalMetadata" : {
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "updateFrequency" : "ON_DEMAND"
+    },
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,15 @@
+
+Class demo::vehicle::Vehicle
+{
+  registration: String[1];
+}
+
+Class demo::vehicle::Car extends demo::vehicle::Vehicle
+{
+  doors: Integer[1];
+}
+
+Class demo::vehicle::Truck extends demo::vehicle::Vehicle
+{
+  payloadTonnes: Integer[1];
+}

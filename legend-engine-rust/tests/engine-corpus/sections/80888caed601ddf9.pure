@@ -1,0 +1,130 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: isDeleted;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: TableA;
+      database: test::Database;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchIdAndDateTime
+        {
+          batchIdIn: x;
+          batchIdOut: y;
+          dateTimeIn: y;
+          dateTimeOut: y;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: x;
+          dateTimeEnd: y;
+          sourceFields: StartAndEnd
+          {
+            startField: timeIn;
+            endField: timeOut;
+          }
+        }
+      }
+    }#,
+    #/test::example::MyType/prop#
+    {
+      keys:
+      [
+        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: #/test::example::MyType/prop/version#;
+      }
+    }
+    ->
+    Relational
+    #{
+      table: TableB;
+      database: test::Database;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: batchIdIn;
+          batchIdOut: batchIdOut;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: startTime;
+          dateTimeEnd: endTime;
+          sourceFields: Start
+          {
+            startField: someTime;
+          }
+        }
+      }
+    }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"Age":12, "Name":"dummy"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

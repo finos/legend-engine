@@ -1,0 +1,18 @@
+
+Database com::entity::EntityDatabase
+(
+  Schema Entity
+  (
+    Table LegalEntity
+    (
+      ENTITY_ID VARCHAR(32) PRIMARY KEY,
+      name VARCHAR(32) NOT NULL
+    )
+
+    View LegalEntity_View
+    (
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,
+      name: Entity.LegalEntity.name
+    )
+  )
+)

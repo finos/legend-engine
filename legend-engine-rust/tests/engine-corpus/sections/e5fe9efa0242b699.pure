@@ -1,0 +1,12 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: #>{meta::dataquality::db.personTable}#;
+    validations: [
+      {
+         name: 'nonEmptyDataset';
+         description: 'dataset cannot be empty';
+         assertion: rel|$rel->assertRelationNotEmpty();
+      }
+    ];
+}

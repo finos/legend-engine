@@ -1,0 +1,13 @@
+
+Data meta::data::MyData
+{
+  my::data::MyData2;
+  my::database:
+    Relation
+    #{
+      default.PersonTable:
+          id, firstName , lastName
+          1 , "John, Jr", Doe;
+    }#;
+  my::data::MyData3;
+}

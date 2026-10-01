@@ -1,0 +1,145 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Person",
+          "property" : "weight",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "cast",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "newUnit",
+              "parameters" : [ {
+                "_type" : "unitType",
+                "fullPath" : "test::Mass~Kilogram",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 25
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 25,
+                    "sourceId" : "",
+                    "startColumn" : 42,
+                    "startLine" : 25
+                  }
+                } ],
+                "property" : "weightValue",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 25
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 25
+              }
+            }, {
+              "_type" : "genericTypeInstance",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "test::Mass~Kilogram"
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 25
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 25
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 24
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "srcClass" : "test::_Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "composeMapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

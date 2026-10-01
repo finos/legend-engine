@@ -1,0 +1,7 @@
+
+Class model::domain::Source {}Class model::domain::Target
+{
+    name : String[1];
+    date : StrictDate[0..1];
+    number : Integer[0..1];
+}

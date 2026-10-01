@@ -1,0 +1,1 @@
+{nameFilter:String[1]|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->filter(x|$x.fullName == $nameFilter)->from(demo::PersonMap, demo::PersonRuntime)}

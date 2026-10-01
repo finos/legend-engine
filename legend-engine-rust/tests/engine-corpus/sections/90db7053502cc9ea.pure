@@ -1,0 +1,11 @@
+
+Data test::data::Seed
+{
+  test::store::TestDB:
+    Relation
+    #{
+      default.PERSON_TABLE:
+        ID
+        2;
+    }#;
+}

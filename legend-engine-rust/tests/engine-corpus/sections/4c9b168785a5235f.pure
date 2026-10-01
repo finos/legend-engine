@@ -1,0 +1,55 @@
+
+Mapping demo::EmployeeMapping
+(
+  demo::EmployeeType: EnumerationMapping TypeMapping
+  {
+    FULL_TIME: ['FTE'],
+    CONTRACT:  ['FTC', 'FTO']
+  }
+
+  *demo::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::EmployeeDB]EmployeeTable.id
+    )
+    ~mainTable [demo::store::EmployeeDB]EmployeeTable
+    firstName: [demo::store::EmployeeDB]EmployeeTable.firstName,
+    type: EnumerationMapping TypeMapping: [demo::store::EmployeeDB]EmployeeTable.employeeType
+  }
+
+  testSuites:
+  [
+    enumSuite:
+    {
+      function: |demo::Employee.all()->sortBy(x|$x.firstName)->project([x|$x.firstName, x|$x.type], ['First Name', 'Type']);
+      tests:
+      [
+        enumMapping:
+        {
+          data:
+          [
+            demo::store::EmployeeDB:
+              Reference
+              #{
+                demo::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldMap:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Bob","Type":"CONTRACT"},{"First Name":"Jane","Type":"CONTRACT"},{"First Name":"John","Type":"FULL_TIME"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

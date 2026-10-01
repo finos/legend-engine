@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "Test",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "TEST"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "HELLO"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "360_ACT"
+    } ]
+  } ],
+  "imports" : [ ]
+}

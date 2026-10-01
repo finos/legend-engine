@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "functionJar",
+    "actions" : [ ],
+    "documentation" : "My jar",
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "MyFunctionJar",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "package1",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "a::A",
+      "profileSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 2
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "a::A",
+        "profileSourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 2
+        },
+        "value" : "val"
+      },
+      "value" : "ok"
+    } ]
+  } ],
+  "imports" : [ ]
+}

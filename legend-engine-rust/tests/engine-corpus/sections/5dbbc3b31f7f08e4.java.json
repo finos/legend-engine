@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "awsGlue",
+      "dataProcessingUnits" : 10,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 10
+      }
+    },
+    "serviceParameters" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    }
+  } ],
+  "imports" : [ ]
+}

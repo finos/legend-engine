@@ -1,0 +1,11 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService
+    (
+      ~path response.pathProperty
+    )
+  }
+)

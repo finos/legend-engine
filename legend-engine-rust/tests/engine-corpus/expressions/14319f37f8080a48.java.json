@@ -1,0 +1,69 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "plus",
+    "parameters" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 1
+      },
+      "values" : [ {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        },
+        "value" : "ok"
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 1
+        },
+        "value" : "b"
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 1
+        },
+        "value" : "c"
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 17,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

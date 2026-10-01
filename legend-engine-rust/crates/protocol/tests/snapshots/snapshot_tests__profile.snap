@@ -1,0 +1,32 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "profile",
+  "name": "doc",
+  "package": "meta::pure::profiles",
+  "sourceInformation": {
+    "endColumn": 1,
+    "endLine": 8,
+    "sourceId": "test.pure",
+    "startColumn": 1,
+    "startLine": 1
+  },
+  "stereotypes": [
+    {
+      "value": "deprecated"
+    },
+    {
+      "value": "experimental"
+    }
+  ],
+  "tags": [
+    {
+      "value": "description"
+    },
+    {
+      "value": "todo"
+    }
+  ]
+}

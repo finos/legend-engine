@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "no viable alternative at input '~path)'",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 9
+    }
+  }
+}

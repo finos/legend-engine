@@ -1,0 +1,72 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::lang::eval",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "meta::pure::functions::math::acos_Number_1__Float_1_",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "float",
+        "sourceInformation" : {
+          "endColumn" : 93,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 91,
+          "startLine" : 3
+        },
+        "value" : 0.5
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 89,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 57,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "func__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

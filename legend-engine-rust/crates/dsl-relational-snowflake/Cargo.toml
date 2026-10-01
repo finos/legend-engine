@@ -1,0 +1,31 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[package]
+name = "legend-pure-dsl-relational-snowflake"
+description = "Snowflake grammars for Legend Pure's relational connections: its datasource specification, authentication strategy and local mode"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+legend-pure-dsl-relational = { path = "../dsl-relational" }
+linkme = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+legend-pure-dsl-connection = { path = "../dsl-connection" }
+legend-pure-parser-parser = { path = "../parser" }
+legend-pure-parser-protocol = { path = "../protocol" }

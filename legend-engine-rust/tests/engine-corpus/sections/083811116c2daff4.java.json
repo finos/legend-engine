@@ -1,0 +1,86 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "values" : [ ]
+    } ],
+    "name" : "f_Type_1__String_$0_1$_",
+    "package" : "withPath",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "a::Type",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "s",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

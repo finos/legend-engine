@@ -1,0 +1,59 @@
+{
+  "elements" : [ {
+    "_type" : "elasticsearch7Store",
+    "includedStores" : [ ],
+    "indices" : [ {
+      "indexName" : "index1",
+      "properties" : [ {
+        "property" : {
+          "keyword" : {
+            "_pure_protocol_type" : "keywordProperty",
+            "_pure_protocol_type" : "keywordProperty",
+            "type" : "keyword"
+          }
+        },
+        "propertyName" : "prop1"
+      }, {
+        "property" : {
+          "keyword" : {
+            "_pure_protocol_type" : "keywordProperty",
+            "_pure_protocol_type" : "keywordProperty",
+            "fields" : {
+              "english" : {
+                "keyword" : {
+                  "_pure_protocol_type" : "keywordProperty",
+                  "_pure_protocol_type" : "keywordProperty",
+                  "type" : "keyword"
+                }
+              }
+            },
+            "type" : "keyword"
+          }
+        },
+        "propertyName" : "prop2"
+      } ]
+    }, {
+      "indexName" : "index-WrappedOnQuotes",
+      "properties" : [ {
+        "property" : {
+          "keyword" : {
+            "_pure_protocol_type" : "keywordProperty",
+            "_pure_protocol_type" : "keywordProperty",
+            "type" : "keyword"
+          }
+        },
+        "propertyName" : "prop1-wrapped"
+      } ]
+    } ],
+    "name" : "Nested",
+    "package" : "import::Elasticsearch7Cluster::indices::properties::fields::Keyword::Text::Date::Short::Byte::Integer::Long::Float::HalfFloat::Double::Boolean::Object",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    }
+  } ],
+  "imports" : [ "abc::abc" ]
+}

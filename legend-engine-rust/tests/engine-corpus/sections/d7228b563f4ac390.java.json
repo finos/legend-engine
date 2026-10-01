@@ -1,0 +1,515 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "models::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 54
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "stores::testRelationalJoinsDB",
+        "mainTableDb" : "stores::testRelationalJoinsDB",
+        "schema" : "testSchema",
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 57,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 57
+        },
+        "table" : "People"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 56
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "stores::testRelationalJoinsDB",
+          "mainTableDb" : "stores::testRelationalJoinsDB",
+          "schema" : "testSchema",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 56
+          },
+          "table" : "People"
+        },
+        "tableAlias" : "People"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 58
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 58,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 58
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 58,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 58
+            },
+            "table" : "People"
+          },
+          "tableAlias" : "People"
+        },
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 58,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 58
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 59
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "stores::testRelationalJoinsDB",
+            "name" : "FirmPerson",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 59
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 59
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 59
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Person",
+          "property" : "pet_name",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "stores::testRelationalJoinsDB",
+            "name" : "PersonPetWithNull",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 60
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 60
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 60
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 54
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "models::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 62
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "stores::testRelationalJoinsDB",
+        "mainTableDb" : "stores::testRelationalJoinsDB",
+        "schema" : "testSchema",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 65,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 65
+        },
+        "table" : "Firms"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 64
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "stores::testRelationalJoinsDB",
+          "mainTableDb" : "stores::testRelationalJoinsDB",
+          "schema" : "testSchema",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 64
+          },
+          "table" : "Firms"
+        },
+        "tableAlias" : "Firms"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Firm",
+          "property" : "firm_name",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 66
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firm_name",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 66
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 66
+            },
+            "table" : "Firms"
+          },
+          "tableAlias" : "Firms"
+        },
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 66
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 62
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "models::Pet",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 68
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "stores::testRelationalJoinsDB",
+        "mainTableDb" : "stores::testRelationalJoinsDB",
+        "schema" : "testSchema",
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 71
+        },
+        "table" : "Pets"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 70
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "stores::testRelationalJoinsDB",
+          "mainTableDb" : "stores::testRelationalJoinsDB",
+          "schema" : "testSchema",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 70
+          },
+          "table" : "Pets"
+        },
+        "tableAlias" : "Pets"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Pet",
+          "property" : "pet_name",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 72
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "pet_name",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 72,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 72
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 72
+            },
+            "table" : "Pets"
+          },
+          "tableAlias" : "Pets"
+        },
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 72,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 72
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "enumMappingId" : "PetTypeMapping",
+        "property" : {
+          "class" : "models::Pet",
+          "property" : "species",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 73
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "species",
+          "sourceInformation" : {
+            "endColumn" : 102,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 49,
+            "startLine" : 73
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::testRelationalJoinsDB",
+            "mainTableDb" : "stores::testRelationalJoinsDB",
+            "schema" : "testSchema",
+            "sourceInformation" : {
+              "endColumn" : 94,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 80,
+              "startLine" : 73
+            },
+            "table" : "Pets"
+          },
+          "tableAlias" : "Pets"
+        },
+        "sourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 73
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 68
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "DOG",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "DOG"
+        } ]
+      }, {
+        "enumValue" : "CAT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CAT"
+        } ]
+      }, {
+        "enumValue" : "RABBIT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "RABBIT"
+        } ]
+      }, {
+        "enumValue" : "HAMSTER",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "HAMSTER"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "models::PetType",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 75
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "PetTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 75
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "RelationalMapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

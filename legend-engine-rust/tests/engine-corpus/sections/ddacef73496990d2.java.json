@@ -1,0 +1,595 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::literal::Account",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 18,
+        "sourceId" : "mapping/accountMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::LiteralDB",
+        "mainTableDb" : "demo::store::LiteralDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 24,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "AccountTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 22,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::LiteralDB",
+          "mainTableDb" : "demo::store::LiteralDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 22,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "AccountTable"
+        },
+        "tableAlias" : "AccountTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::literal::Account",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 25,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::LiteralDB",
+            "mainTableDb" : "demo::store::LiteralDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 25,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 25
+            },
+            "table" : "AccountTable"
+          },
+          "tableAlias" : "AccountTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 25,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::literal::Account",
+          "property" : "source",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 26,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 26,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 26
+          },
+          "value" : "LEGEND"
+        },
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 26,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::literal::Account",
+          "property" : "tier",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 27,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "case",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "code",
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 27,
+                "sourceId" : "mapping/accountMapping.pure",
+                "startColumn" : 22,
+                "startLine" : 27
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::LiteralDB",
+                "mainTableDb" : "demo::store::LiteralDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/accountMapping.pure",
+                  "startColumn" : 46,
+                  "startLine" : 27
+                },
+                "table" : "AccountTable"
+              },
+              "tableAlias" : "AccountTable"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 27,
+                "sourceId" : "mapping/accountMapping.pure",
+                "startColumn" : 65,
+                "startLine" : 27
+              },
+              "value" : "A"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 27,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 16,
+              "startLine" : 27
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 27,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 71,
+              "startLine" : 27
+            },
+            "value" : "PREMIUM"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 27,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 82,
+              "startLine" : 27
+            },
+            "value" : "STANDARD"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 27,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 27
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 92,
+          "endLine" : 27,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 27
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "mapping/accountMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "AccountLiteralMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 64,
+      "sourceId" : "mapping/accountMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::literal::Account",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 34,
+                  "sourceId" : "demo::AccountLiteralMapping",
+                  "startColumn" : 18,
+                  "startLine" : 34
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 40,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 34,
+                    "sourceId" : "demo::AccountLiteralMapping",
+                    "startColumn" : 57,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 34,
+                  "sourceId" : "demo::AccountLiteralMapping",
+                  "startColumn" : 60,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 56,
+                "startLine" : 34
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 34,
+              "sourceId" : "demo::AccountLiteralMapping",
+              "startColumn" : 48,
+              "startLine" : 34
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 34,
+              "sourceId" : "demo::AccountLiteralMapping",
+              "startColumn" : 75,
+              "startLine" : 34
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 79,
+                    "endLine" : 34,
+                    "sourceId" : "demo::AccountLiteralMapping",
+                    "startColumn" : 78,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 34,
+                  "sourceId" : "demo::AccountLiteralMapping",
+                  "startColumn" : 81,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 84,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 77,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 34,
+                    "sourceId" : "demo::AccountLiteralMapping",
+                    "startColumn" : 89,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "source",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 34,
+                  "sourceId" : "demo::AccountLiteralMapping",
+                  "startColumn" : 92,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 97,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 88,
+                "startLine" : 34
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 103,
+                    "endLine" : 34,
+                    "sourceId" : "demo::AccountLiteralMapping",
+                    "startColumn" : 102,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "tier",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 34,
+                  "sourceId" : "demo::AccountLiteralMapping",
+                  "startColumn" : 105,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 101,
+                "startLine" : 34
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 137,
+              "endLine" : 34,
+              "sourceId" : "demo::AccountLiteralMapping",
+              "startColumn" : 112,
+              "startLine" : 34
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 118,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 113,
+                "startLine" : 34
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 121,
+                "startLine" : 34
+              },
+              "value" : "Source"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 34,
+                "sourceId" : "demo::AccountLiteralMapping",
+                "startColumn" : 131,
+                "startLine" : 34
+              },
+              "value" : "Tier"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 34,
+            "sourceId" : "demo::AccountLiteralMapping",
+            "startColumn" : 67,
+            "startLine" : 34
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 138,
+          "endLine" : 34,
+          "sourceId" : "demo::AccountLiteralMapping",
+          "startColumn" : 17,
+          "startLine" : 34
+        }
+      },
+      "id" : "literalSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 62,
+        "sourceId" : "mapping/accountMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 32
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Acme\",\"Source\":\"LEGEND\",\"Tier\":\"PREMIUM\"},{\"Name\":\"Beta\",\"Source\":\"LEGEND\",\"Tier\":\"STANDARD\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 57,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 53
+            }
+          },
+          "id" : "shouldEmitLiterals",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 58,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 50
+          }
+        } ],
+        "id" : "constantAndListLiterals",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 60,
+          "sourceId" : "mapping/accountMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 37
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::AccountData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 45,
+                "sourceId" : "mapping/accountMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 42
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 45,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 42
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 45,
+            "sourceId" : "mapping/accountMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 41
+          },
+          "store" : {
+            "path" : "demo::store::LiteralDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 41,
+              "sourceId" : "mapping/accountMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 41
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

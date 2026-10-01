@@ -1,0 +1,5 @@
+
+function f(s: Integer[1], s2: Interger[2]): String[1]
+{
+  let a = (1 - (4 * (2 + 3))) * 4
+}

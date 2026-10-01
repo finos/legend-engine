@@ -1,0 +1,133 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "serialize",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "graphFetch",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 2,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 3
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "Id",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 4
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Address",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "Id",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 7
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 1,
+    "endLine" : 13,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

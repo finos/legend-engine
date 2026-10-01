@@ -1,0 +1,21 @@
+
+Database test::Database
+(
+  Schema schemaA
+  (
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      time_in TIMESTAMP,
+      time_out TIMESTAMP
+    )
+  )
+  Schema schemaB
+  (
+    Table otherPersonTable
+    (
+      OTHER INTEGER PRIMARY KEY
+    )
+  )
+)

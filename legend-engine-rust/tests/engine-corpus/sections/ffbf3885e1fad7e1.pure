@@ -1,0 +1,83 @@
+
+Persistence org::dxl::ZooPersistence
+{
+  doc: 'A persistence specification for Zoos.';
+  trigger: Manual;
+  service: org::dxl::ZooService;
+  persister: Batch
+  {
+    sink: ObjectStorage
+    {
+      binding: test::Binding;
+    }
+    ingestMode: BitemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: deleted;
+        deleteValues: ['Y', 'true'];
+      }
+      transactionMilestoning: BatchIdAndDateTime
+      {
+        batchIdInName: 'batchIdIn';
+        batchIdOutName: 'batchIdOut';
+        dateTimeInName: 'IN_Z';
+        dateTimeOutName: 'OUT_Z';
+        derivation: SourceSpecifiesInAndOutDateTime
+        {
+          sourceDateTimeInField: 'dateTimeIn';
+          sourceDateTimeOutField: 'dateTimeOut';
+        }
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromAndThruDateTime
+        {
+          sourceDateTimeFromField: 'effectiveFrom';
+          sourceDateTimeThruField: 'effectiveThru';
+        }
+      }
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: org::dxl::Zoo;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: 'zookeeper';
+          targetName: 'PersonDataset1';
+          partitionFields: ['stripe1', 'stripe2'];
+          deduplicationStrategy: MaxVersion
+          {
+            versionField: version;
+          }
+        },
+        {
+          modelProperty: 'owner';
+          targetName: 'PersonDataset2';
+          deduplicationStrategy: DuplicateCount
+          {
+            duplicateCountName: 'duplicateCount';
+          }
+        }
+      ];
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'x.y@z.com';
+      },
+      PagerDuty
+      {
+        url: 'https://x.com';
+      }
+    ];
+  }
+}

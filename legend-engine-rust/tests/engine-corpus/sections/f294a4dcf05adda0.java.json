@@ -1,0 +1,212 @@
+{
+  "elements" : [ {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "includeNamespace",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "value" : true
+    }, {
+      "name" : "propertyProfile",
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "value" : [ "model::myProfile", "model::nextProfile" ]
+    } ],
+    "generationOutputPath" : "myAvroRoot",
+    "name" : "AvroConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "avro",
+    "typeSourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "useJavaPrimitives",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "value" : true
+    }, {
+      "name" : "optionals",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "value" : true
+    } ],
+    "name" : "JavaConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "type" : "java",
+    "typeSourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    }
+  }, {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "test",
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "value" : 2
+    } ],
+    "generationOutputPath" : "myProtobufRoot/wrapperDirc",
+    "name" : "ProtobufConfig",
+    "package" : "model",
+    "scopeElements" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "type" : "protobuf",
+    "typeSourceInformation" : {
+      "endColumn" : 8,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    }
+  }, {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ ],
+    "name" : "JSONSchemaConfig",
+    "package" : "model",
+    "scopeElements" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "type" : "jsonSchema",
+    "typeSourceInformation" : {
+      "endColumn" : 10,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    }
+  }, {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "_flags",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "value" : [ "flag1", "flag2", "flag3" ]
+    }, {
+      "name" : "includeAllRelatedClasses",
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "value" : true
+    }, {
+      "name" : "useArrayType",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "value" : true
+    } ],
+    "name" : "SlangConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "type" : "slang",
+    "typeSourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    }
+  }, {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ ],
+    "name" : "CDMConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 35
+    },
+    "type" : "cdm",
+    "typeSourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 35
+    }
+  } ],
+  "imports" : [ ]
+}

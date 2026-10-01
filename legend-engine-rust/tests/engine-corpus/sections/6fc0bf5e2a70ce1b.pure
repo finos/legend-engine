@@ -1,0 +1,12 @@
+
+Mapping model::dummyMapping
+(
+)
+
+Mapping test::M1 (
+   test::A[1]: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+)
+

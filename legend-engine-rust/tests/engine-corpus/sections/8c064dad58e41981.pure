@@ -1,0 +1,15 @@
+
+Mapping test::child (
+  test::Target[T]: Pure {
+    ~src test::TargetSrc
+    name: $src.name
+  }
+)
+Mapping test::parentPassThrough (
+  include test::child
+  *test::Holder: Pure {
+    ~src test::HolderSrc
+    label: $src.label,
+    target: $src.target
+  }
+)

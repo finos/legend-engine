@@ -1,0 +1,6 @@
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection
+{
+    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;
+    baseUrl : 'http://127.0.0.1:55034';
+}

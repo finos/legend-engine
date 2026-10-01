@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "meta::mySimpleClass",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 20
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 18
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    }
+  } ],
+  "imports" : [ ]
+}

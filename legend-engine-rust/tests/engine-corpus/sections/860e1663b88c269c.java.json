@@ -1,0 +1,770 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "filter",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "meta::external::store::service::showcase::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 139,
+                  "endLine" : 363,
+                  "sourceId" : "",
+                  "startColumn" : 82,
+                  "startLine" : 363
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 145,
+                "endLine" : 363,
+                "sourceId" : "",
+                "startColumn" : 140,
+                "startLine" : 363
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "and",
+                "parameters" : [ {
+                  "_type" : "func",
+                  "function" : "and",
+                  "parameters" : [ {
+                    "_type" : "func",
+                    "function" : "and",
+                    "parameters" : [ {
+                      "_type" : "func",
+                      "function" : "equal",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "e",
+                          "sourceInformation" : {
+                            "endColumn" : 22,
+                            "endLine" : 364,
+                            "sourceId" : "",
+                            "startColumn" : 21,
+                            "startLine" : 364
+                          }
+                        } ],
+                        "property" : "firstName",
+                        "sourceInformation" : {
+                          "endColumn" : 32,
+                          "endLine" : 364,
+                          "sourceId" : "",
+                          "startColumn" : 24,
+                          "startLine" : 364
+                        }
+                      }, {
+                        "_type" : "var",
+                        "name" : "firstName",
+                        "sourceInformation" : {
+                          "endColumn" : 46,
+                          "endLine" : 364,
+                          "sourceId" : "",
+                          "startColumn" : 37,
+                          "startLine" : 364
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 35,
+                        "endLine" : 364,
+                        "sourceId" : "",
+                        "startColumn" : 34,
+                        "startLine" : 364
+                      }
+                    }, {
+                      "_type" : "func",
+                      "function" : "equal",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "e",
+                          "sourceInformation" : {
+                            "endColumn" : 52,
+                            "endLine" : 364,
+                            "sourceId" : "",
+                            "startColumn" : 51,
+                            "startLine" : 364
+                          }
+                        } ],
+                        "property" : "lastName",
+                        "sourceInformation" : {
+                          "endColumn" : 61,
+                          "endLine" : 364,
+                          "sourceId" : "",
+                          "startColumn" : 54,
+                          "startLine" : 364
+                        }
+                      }, {
+                        "_type" : "var",
+                        "name" : "lastName",
+                        "sourceInformation" : {
+                          "endColumn" : 74,
+                          "endLine" : 364,
+                          "sourceId" : "",
+                          "startColumn" : 66,
+                          "startLine" : 364
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 64,
+                        "endLine" : 364,
+                        "sourceId" : "",
+                        "startColumn" : 63,
+                        "startLine" : 364
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 49,
+                      "endLine" : 364,
+                      "sourceId" : "",
+                      "startColumn" : 48,
+                      "startLine" : 364
+                    }
+                  }, {
+                    "_type" : "func",
+                    "function" : "equal",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "e",
+                        "sourceInformation" : {
+                          "endColumn" : 80,
+                          "endLine" : 364,
+                          "sourceId" : "",
+                          "startColumn" : 79,
+                          "startLine" : 364
+                        }
+                      } ],
+                      "property" : "designation",
+                      "sourceInformation" : {
+                        "endColumn" : 92,
+                        "endLine" : 364,
+                        "sourceId" : "",
+                        "startColumn" : 82,
+                        "startLine" : 364
+                      }
+                    }, {
+                      "_type" : "var",
+                      "name" : "designation",
+                      "sourceInformation" : {
+                        "endColumn" : 108,
+                        "endLine" : 364,
+                        "sourceId" : "",
+                        "startColumn" : 97,
+                        "startLine" : 364
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 95,
+                      "endLine" : 364,
+                      "sourceId" : "",
+                      "startColumn" : 94,
+                      "startLine" : 364
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 364,
+                    "sourceId" : "",
+                    "startColumn" : 76,
+                    "startLine" : 364
+                  }
+                }, {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e",
+                      "sourceInformation" : {
+                        "endColumn" : 114,
+                        "endLine" : 364,
+                        "sourceId" : "",
+                        "startColumn" : 113,
+                        "startLine" : 364
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 117,
+                      "endLine" : 364,
+                      "sourceId" : "",
+                      "startColumn" : 116,
+                      "startLine" : 364
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 124,
+                      "endLine" : 364,
+                      "sourceId" : "",
+                      "startColumn" : 122,
+                      "startLine" : 364
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 120,
+                    "endLine" : 364,
+                    "sourceId" : "",
+                    "startColumn" : 119,
+                    "startLine" : 364
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 364,
+                  "sourceId" : "",
+                  "startColumn" : 110,
+                  "startLine" : 364
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "e"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 124,
+                "endLine" : 364,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 364
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 364,
+              "sourceId" : "",
+              "startColumn" : 10,
+              "startLine" : 364
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 366,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 366
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "meta::external::store::service::showcase::domain::Employee",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 366,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 366
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 24,
+                  "endLine" : 367,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 367
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 368,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 368
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "kerberos",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 369,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 369
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "designation",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 370,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 370
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 371,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 371
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "age",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 372,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 372
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "addresses",
+                "sourceInformation" : {
+                  "endColumn" : 24,
+                  "endLine" : 373,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 373
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "street",
+                  "sourceInformation" : {
+                    "endColumn" : 25,
+                    "endLine" : 375,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 375
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "city",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 376,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 376
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "country",
+                  "sourceInformation" : {
+                    "endColumn" : 26,
+                    "endLine" : 377,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 377
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 365,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 365
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 381,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 381
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "meta::external::store::service::showcase::domain::Employee",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 381,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 381
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "firstName",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 382,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 382
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "lastName",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 383,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 383
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "kerberos",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 384,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 384
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "designation",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 385,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 385
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 386,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 386
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "age",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 387,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 387
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "addresses",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 388,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 388
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "street",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 390,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 390
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "city",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 391,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 391
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "country",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 392,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 392
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 380,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 380
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 363,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 363
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "firstName",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 363,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 363
+        }
+      }, {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 363,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 363
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "lastName",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 363,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 363
+        }
+      }, {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 363,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 363
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "id",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 363,
+          "sourceId" : "",
+          "startColumn" : 46,
+          "startLine" : 363
+        }
+      }, {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 77,
+              "endLine" : 363,
+              "sourceId" : "",
+              "startColumn" : 72,
+              "startLine" : 363
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "designation",
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 363,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 363
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 395,
+        "sourceId" : "",
+        "startColumn" : 81,
+        "startLine" : 363
+      }
+    } ],
+    "name" : "query__Any_1_",
+    "package" : "showcase",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 361,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 361
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 396,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 361
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

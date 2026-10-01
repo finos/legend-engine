@@ -1,0 +1,16 @@
+
+Database demo::store::VehicleDB
+(
+  Table CarTable
+  (
+    id INTEGER PRIMARY KEY,
+    registration VARCHAR(20),
+    doors INTEGER
+  )
+  Table TruckTable
+  (
+    id INTEGER PRIMARY KEY,
+    registration VARCHAR(20),
+    payloadTonnes INTEGER
+  )
+)

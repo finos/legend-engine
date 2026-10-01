@@ -1,0 +1,5 @@
+
+function test::getStrictDate(): StrictDate[1]
+{
+  %1970-01-01
+}

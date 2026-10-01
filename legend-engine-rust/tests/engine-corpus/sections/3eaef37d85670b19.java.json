@@ -1,0 +1,129 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          }
+        },
+        "propertyMappings" : [ {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "STREET",
+          "property" : {
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 10
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 10
+          }
+        }, {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "CITY",
+          "property" : {
+            "property" : "city",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 11
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 11
+          }
+        } ],
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 8
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,23 @@
+
+Class test::Person
+{
+  fullName: String[1];
+  birthTime: DateTime[0..1];
+  firmName: String[1];
+}
+Class test::Address
+{
+    name : String[1];
+    street : String[0..1];
+}
+Class test::Location
+{
+  id: String[1];
+  city: test::LocationEnum[1];
+}
+Enum test::LocationEnum
+{
+    AMERICAS,
+    EMEA,
+    ASIA_PACIFIC
+}

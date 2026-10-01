@@ -1,0 +1,6 @@
+
+Class model::Firm
+{
+  cases: Float[1];
+  fips: String[1];
+}

@@ -1,0 +1,42 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "FIRM_DETAILS" ],
+        "paths" : [ "default", "PERSON_TABLE" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "\"{\"\"legalName\"\":\"\"Firm X\"\",\"\"otherNames\"\":[\"\"FX\"\",\"\"FirmTen\"\"],\"\"addresses\"\":[{\"\"name\"\":\"\"HQ\"\",\"\"lines\"\":[{\"\"detail\"\":\"\"L1\"\"},{\"\"detail\"\":\"\"L2\"\"}]},{\"\"name\"\":\"\"Annex\"\",\"\"lines\"\":[{\"\"detail\"\":\"\"L3\"\"}]}]}\"" ]
+        }, {
+          "values" : [ "2", "Bob", "\"{\"\"legalName\"\":\"\"Firm A\"\",\"\"otherNames\"\":[\"\"FA\"\"],\"\"addresses\"\":[{\"\"name\"\":\"\"Main\"\",\"\"lines\"\":[{\"\"detail\"\":\"\"L9\"\"}]}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 133,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 28,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 24
+      }
+    },
+    "name" : "PersonData",
+    "package" : "demo::ssc::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

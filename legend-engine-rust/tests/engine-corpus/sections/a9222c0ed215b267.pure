@@ -1,0 +1,26 @@
+
+Database sample::test
+(
+  View SomeView
+  (
+    prefix: greaterThan(case(
+              equal(tab.val, 20), 1,
+              notEqual(tab.val, 20), 1,
+              lessThan(tab.val, 20), 1,
+              greaterThan(tab.val, 20), 1,
+              lessThanEqual(tab.val, 20), 1,
+              greaterThanEqual(tab.val, 20), 1,
+              notEqualAnsi(tab.val, 20), 1,
+              isNull(tab.val), 1,
+              isNotNull(tab.val), 1,
+              and(tab.val, tab.val), 1,
+              and(tab.val, group(or(tab.val, tab.val))), 1,
+              and(greaterThan(tab.val, 20), lessThan(tab.val, 100)), 1,
+              or(greaterThan(tab.val, 20), lessThanEqual(tab.val, 100)), 1,
+              or(group(and(greaterThan(tab.val, 20), lessThanEqual(tab.val, 100))), notEqualAnsi(tab.val, 2)), 1,
+              greaterThan(substring(tab.val), 100), 1,
+              sqlNull()
+            ), 2)
+  )
+  Join Abe(and(greaterThan([test::TEST_DB2]a.col1, 2), group(or(greaterThan([test::TEST_DB2]b.col1, 3), greaterThan([test::TEST_DB2]b.col1, 4)))))
+)

@@ -1,0 +1,9 @@
+
+Avro model::AvroConfig
+{
+  scopeElements: [model::MyClass, model];
+  scopeElements: [model::MyClass, model];
+  includeNamespace: true;
+  propertyProfile: ['model::myProfile', 'model::nextProfile'];
+}
+

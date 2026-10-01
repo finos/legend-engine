@@ -1,0 +1,290 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "ProductDatabase",
+    "package" : "model::store",
+    "schemas" : [ {
+      "name" : "productSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 20
+          },
+          "taggedValues" : [ {
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 20
+            },
+            "tag" : {
+              "profile" : "meta::pure::profiles::doc",
+              "profileSourceInformation" : {
+                "endColumn" : 9,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 20
+              },
+              "sourceInformation" : {
+                "endColumn" : 9,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 20
+              },
+              "value" : "doc"
+            },
+            "value" : {
+              "_type" : "string",
+              "multiLine" : true,
+              "value" : "The product identifier.\nAssigned upstream."
+            }
+          } ],
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "productTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 14
+        },
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 14
+          },
+          "tag" : {
+            "profile" : "meta::pure::profiles::doc",
+            "profileSourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 14
+            },
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 14
+            },
+            "value" : "doc"
+          },
+          "value" : {
+            "_type" : "string",
+            "multiLine" : true,
+            "value" : "One row per product.\nKeyed by ID."
+          }
+        } ]
+      } ],
+      "tabularFunctions" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 8
+        },
+        "tag" : {
+          "profile" : "meta::pure::profiles::doc",
+          "profileSourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 8
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 8
+          },
+          "value" : "doc"
+        },
+        "value" : {
+          "_type" : "string",
+          "multiLine" : true,
+          "value" : "The product schema.\nOwned by reference data."
+        }
+      } ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 35
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::store::ProductDatabase",
+              "mainTableDb" : "model::store::ProductDatabase",
+              "schema" : "productSchema",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 35
+              },
+              "table" : "productTable"
+            },
+            "tableAlias" : "productTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "productView",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 29
+        },
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 29
+          },
+          "tag" : {
+            "profile" : "meta::pure::profiles::doc",
+            "profileSourceInformation" : {
+              "endColumn" : 5,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 29
+            },
+            "sourceInformation" : {
+              "endColumn" : 5,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 29
+            },
+            "value" : "doc"
+          },
+          "value" : {
+            "_type" : "string",
+            "multiLine" : true,
+            "value" : "Products, flattened.\nFor reporting only."
+          }
+        } ]
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Product reference data.\nLoaded nightly."
+      }
+    } ]
+  } ]
+}

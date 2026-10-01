@@ -1,0 +1,2 @@
+
+function x::func(param1: Date[1], param2:Date[1]):Any[*]{   max([$param1, $param2])->toString()}

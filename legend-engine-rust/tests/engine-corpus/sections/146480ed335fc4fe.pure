@@ -1,0 +1,43 @@
+
+Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}
+
+Binding meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  schemaSet     : meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaSet;
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Product, meta::external::store::service::showcase::domain::S_Synonym ];
+}
+
+Binding meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm ];
+}
+
+Binding meta::external::store::service::showcase::store::personServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Person ];
+}
+
+SchemaSet meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaSet
+{
+  format: JSON;
+  schemas: [
+    {
+      id: S_Trade;
+      location: 'meta/external/store/service/showcase/domain/S_Trade.json';
+      content: '{\n  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n  "title": "meta::external::store::service::showcase::domain::S_Trade",\n  "type": "object",\n  "properties":   {\n    "s_trade.Id":     {\n      "type": "string"\n    },\n    "s_trader.Details":     {\n      "type": "string"\n    },\n    "s_trade.Details":     {\n      "type": "string"\n    }\n  },\n  "required": [\n"s_trade.Id",\n"s_trader.Details",\n"s_trade.Details"\n  ]\n}\n';
+    }
+  ];
+}

@@ -1,0 +1,12 @@
+
+Class my::TestClass
+[
+  myConstraint
+  (
+    ~function: isNotEmpty($this.var1 / 3)
+    ~enforcementLevel: Error
+  )
+]
+{
+  var1: Float[1];
+}

@@ -1,0 +1,113 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 33
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "model::element",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 33
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 33
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 33
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 30
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 21
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

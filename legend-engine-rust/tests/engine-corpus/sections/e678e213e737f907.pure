@@ -1,0 +1,14 @@
+
+Class model::C1
+{
+}
+
+Class model::C2
+{
+}
+
+Association model::A
+{
+  c1: model::C1[1];
+  c2: model::C2[1];
+}

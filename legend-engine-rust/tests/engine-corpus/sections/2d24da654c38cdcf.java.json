@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'method' is required",
+    "sourceInformation" : {
+      "endColumn" : 10,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 8
+    }
+  }
+}

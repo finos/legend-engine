@@ -1,0 +1,26 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "doc",
+    "package" : "meta::pure::profiles",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 4
+      },
+      "value" : "doc"
+    } ]
+  } ],
+  "imports" : [ ]
+}

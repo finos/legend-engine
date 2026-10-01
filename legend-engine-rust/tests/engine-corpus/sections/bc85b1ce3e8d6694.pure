@@ -1,0 +1,18 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+      testData:
+        DataspaceTestData
+        #{
+          model::nonexistantDataspace
+        }#;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

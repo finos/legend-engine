@@ -1,0 +1,7 @@
+
+BigQueryFunction xx::MyApp
+{
+   functionName : 'MyApp';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'myAppOwnership' };
+}

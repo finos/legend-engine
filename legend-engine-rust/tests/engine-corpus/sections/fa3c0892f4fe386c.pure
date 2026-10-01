@@ -1,0 +1,24 @@
+
+Database test::testEmptyDatabase
+(
+  Collection Person
+  (
+    validationLevel: strict;
+    validationAction: error;
+    jsonSchema: {
+      "bsonType": "object",
+      "title": "Record of Firm",
+      "properties": {
+        "name": {
+          "bsonType": "string",
+          "description": "name of the firm",
+          "minLength": 2
+        },
+        "id": {
+          "bsonType": "objectId"
+        }
+      },
+      "additionalProperties": false
+    };
+  )
+)

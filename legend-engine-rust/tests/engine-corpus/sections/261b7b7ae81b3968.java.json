@@ -1,0 +1,89 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ "FOO" ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 36
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

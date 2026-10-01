@@ -1,0 +1,4 @@
+
+function pack::f():Boolean[1]
+{
+   #SQL{select a frm abc}#;   true;}

@@ -1,0 +1,24 @@
+
+Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue
+{
+  value: String[1];
+  productCollection: my::domainModel::migration::test::product::ProductCollection[*];
+  getCategoryWithDatePropagation() {$this.productCollection(%2020-02-02).productType.category->joinStrings()}: String[1];
+}
+
+Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductCollection extends my::domainModel::migration::test::product::Collections
+{
+  collectionName: String[1];
+}
+Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::ProductType
+{
+   category: String[1];
+}
+Class <<temporal.businesstemporal>> {doc.doc = 'Product class'} my::domainModel::migration::test::product::Collections
+{
+  productType: my::domainModel::migration::test::product::ProductType[1];
+}
+Class my::domainModel::migration::test::product::Classification
+{
+  productType: my::domainModel::migration::test::product::ProductType[1];
+}

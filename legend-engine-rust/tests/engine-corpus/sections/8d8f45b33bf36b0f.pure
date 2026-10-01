@@ -1,0 +1,20 @@
+
+Class humanResourceModel::students
+{
+  name: String[1];
+}
+
+Class humanResourceModel::class
+{
+  studentname: String[1];
+}
+
+Class humanResourceModel::school
+{
+  studentname: String[1];
+}
+
+Class humanResourceModel::student
+{
+  firstName: String[1];
+}

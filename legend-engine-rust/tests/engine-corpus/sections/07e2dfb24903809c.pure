@@ -1,0 +1,25 @@
+
+Class test::model::Firm
+{
+  employees: test::model::Person[1..*];
+  legalName: String[1];
+}
+
+Class test::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  isDeleted: String[1];
+}
+
+Class test::store::S_Firm
+{
+  employees: test::store::S_Person[1..*];
+  legalName: String[1];
+}
+
+Class test::store::S_Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}

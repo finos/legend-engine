@@ -1,0 +1,11 @@
+
+DataQualityValidation meta::dataquality::PersonDataQualityValidation
+{
+    context: fromDataSpace(meta::dataquality::PersonDataspace, 'default');
+    filter: p:meta::dataquality::Person[1] | $p.name=='John';
+    validationTree: $[
+      meta::dataquality::Person<mustBeOfLegalAge>{
+        name
+      }
+    ]$;
+}

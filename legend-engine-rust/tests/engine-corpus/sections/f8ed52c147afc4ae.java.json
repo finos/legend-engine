@@ -1,0 +1,127 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "NewMeasure~UnitOne",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "unitOne",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "NewMeasure~UnitTwo",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "unitTwo",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "measure",
+    "canonicalUnit" : {
+      "measure" : "NewMeasure",
+      "name" : "UnitOne",
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      }
+    },
+    "name" : "NewMeasure",
+    "nonCanonicalUnits" : [ {
+      "measure" : "NewMeasure",
+      "name" : "UnitTwo",
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      }
+    }, {
+      "measure" : "NewMeasure",
+      "name" : "UnitThree",
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      }
+    } ],
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    }
+  } ],
+  "imports" : [ ]
+}

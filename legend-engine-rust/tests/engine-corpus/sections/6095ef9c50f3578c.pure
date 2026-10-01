@@ -1,0 +1,5 @@
+
+function t::f(): X<(a:Integer(200), z:V('ok'))>[0..1]
+{
+  []
+}

@@ -1,0 +1,12 @@
+
+Class demo::inline::Address
+{
+  line1: String[1];
+  postcode: String[1];
+}
+
+Class demo::inline::Employee
+{
+  name: String[1];
+  address: demo::inline::Address[1];
+}

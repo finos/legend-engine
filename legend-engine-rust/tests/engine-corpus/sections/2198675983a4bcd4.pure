@@ -1,0 +1,25 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ModelClass;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+  }
+}

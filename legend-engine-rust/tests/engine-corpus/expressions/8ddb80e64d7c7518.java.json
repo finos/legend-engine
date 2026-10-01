@@ -1,0 +1,76 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "select",
+    "parameters" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "a::A", "tb" ],
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "id",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "other",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 35,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

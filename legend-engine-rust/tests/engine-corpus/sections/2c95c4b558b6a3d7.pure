@@ -1,0 +1,12 @@
+
+DataSpace model::mySpace3
+{
+  executionContexts:
+  [
+    {
+      name: 'default';
+      mappingProvider: model::plainMapping3.someKey;
+    }
+  ];
+  defaultExecutionContext: 'default';
+}

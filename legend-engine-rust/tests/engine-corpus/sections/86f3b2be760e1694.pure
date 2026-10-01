@@ -1,0 +1,22 @@
+
+Mapping test::mapping
+(
+  CM1: Relational
+  {
+    scope([TEST_SCOPE]TEST.another)
+    (
+      name: stateProvNameTXT,
+      subdivisionCategory: if(equal(substring(stateProv, 1, 2), 'US'), 'STATE', sqlNull())
+    ),
+    scope([TEST_SCOPE]TEST.something)
+    (
+      code: nodeCODE,
+      scheme: @join_1,
+      parent: @join_2,
+      hierarchyLevel: case(equal(test_val, 20), 1, equal(test_val, 30), 2, equal(test_val, 40), 3, equal(test_val, 55), 4, equal(test_val, 60), 5, sqlNull()),
+      prop1: divide(if(equal([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), '0903'), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty(factor), 1.0, divide(1, factor))),
+      part[part_TEST]: [TEST_SCOPE]@join_1 > @join_2
+    ),
+    prop1: divide(if(equal([TEST_DB2]@join_1 > (OUTER) [TEST_DB2]@join_2 | toString([TEST_DB2]SOMETHING.something.toValue), '0903'), 0.0, [TEST_DB2]@join_3 > (INNER) [TEST_DB2]@join_4 | parseFloat([TEST_DB2]schema1.table2.col3)), if(isEmpty(table.factor), 1.0, divide(1, table.factor)))
+  }
+)

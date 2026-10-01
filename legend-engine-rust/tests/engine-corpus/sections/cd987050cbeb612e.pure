@@ -1,0 +1,11 @@
+
+Mapping 
+model::mapping::myMap
+(
+   model::Person: Relational
+   {
+      ~filter [model::store::db]myFilter 
+      name : [model::store::db]myTable.name,
+      + localProp : String[1] : [model::store::db]myTable.name
+   }
+)

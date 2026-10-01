@@ -1,0 +1,19 @@
+
+Class test::A {
+  prop1: String[1];
+  prop2: test::B[1];
+}
+
+Class test::_A {
+  prop1: String[1];
+  prop2: test::_B[1];
+}
+
+Class test::B
+{
+  prop: String[1];
+}
+Class test::_B
+{
+  prop: String[1];
+}

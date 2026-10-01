@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 29,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "PartyTable",
+        "values" : "id,name\n1,Acme Holdings\n2,John Doe\n3,Beta Corp\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 28,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "table" : "OrganisationTable",
+        "values" : "partyId,registrationNumber\n1,REG-001\n3,REG-003\n"
+      } ]
+    },
+    "name" : "PartyData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

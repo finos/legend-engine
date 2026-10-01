@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'persister' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    }
+  }
+}

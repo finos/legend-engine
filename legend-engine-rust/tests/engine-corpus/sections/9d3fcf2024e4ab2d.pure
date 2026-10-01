@@ -1,0 +1,9 @@
+
+Data request::response::method::url::urlPath::headerParameters::queryParameters::bodyPatterns::body::all::let::allVersions::allVersionsInRange::toBytes
+{
+  ServiceStore
+  #{
+    []
+  }#
+}
+

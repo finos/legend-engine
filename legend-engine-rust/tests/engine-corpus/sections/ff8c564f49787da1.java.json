@@ -1,0 +1,112 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Party",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joined",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 18,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 9,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 18,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Organisation",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::joined",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 23,
+            "sourceId" : "model/types.pure",
+            "startColumn" : 23,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "registrationNumber",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 23,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "model/types.pure",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::joined::Party",
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 21,
+        "sourceId" : "model/types.pure",
+        "startColumn" : 42,
+        "startLine" : 21
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

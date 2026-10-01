@@ -1,0 +1,126 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "anything",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "goes",
+      "profileSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ {
+      "path" : "B",
+      "sourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 72,
+        "startLine" : 2
+      },
+      "type" : "CLASS"
+    }, {
+      "path" : "B",
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 75,
+        "startLine" : 2
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 34,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "goes",
+        "profileSourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ]
+  }, {
+    "_type" : "profile",
+    "name" : "goes",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 8
+      },
+      "value" : "test"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 9
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 9
+      },
+      "value" : "todo"
+    } ]
+  } ],
+  "imports" : [ "anything" ]
+}

@@ -1,0 +1,109 @@
+
+import meta::external::store::service::showcase::domain::*;
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *Product[prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] ProductServices.ProductBySynonymService
+     (
+        ~request
+        (
+            body = ^Synonym(name = '38142Y716', type = 'CUSIP')
+        )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] ProductServices.ProductBySynonymService
+     (
+        ~request
+        (
+            body = ^Synonym(name = $this.productName, type = 'CUSIP')
+        )
+     )
+  }
+
+  *Trade[trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] TradeServices.TradesByDetailsService
+     (
+        ~request
+        (
+            body = ^TradeDetails(id = '1',
+                                 product = ^Product(productId = '30', productName = 'Product 30', description = 'Product 30 description'),
+                                 trader = ^Trader(kerberos = 'dummy', id = 1234))
+        )
+     )
+  }
+
+
+  *Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] FirmServices.FirmDetailsByName
+     (
+        ~request
+        (
+            body = ^FirmSearch(legalNames = ['Firm A', 'Firm B', 'Firm C', 'Firm D'])
+        )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] FirmServices.FirmDetailsByName
+     (
+         ~request
+         (
+             body = ^FirmSearch(legalNames = $this.legalName)
+         )
+     )
+  }
+
+  *Employee[employee_set]: ServiceStore
+  {
+     +firmName: String[1];
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsById
+     (
+         ~request
+         (
+             body = ^EmployeeSearch(ids = $this.id,
+                                    designationsToSearch = ['A', 'B', 'C', 'D'])
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsByFilters
+     (
+         ~request
+         (
+             body = ^EmployeeSearchByFilters
+                     (
+                        nameFilters = ^NameFilter(firstName = $this.firstName, lastName = $this.lastName),
+                        designationFilters = ^DesignationFilter(designation = $this.designation),
+                        idFilters = ^IdFilter(id = $this.id)
+                     )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsById
+     (
+         ~request
+         (
+             body = ^EmployeeSearch
+                     (
+                        ids = $this.id,
+                        designationsToSearch = ['A', 'B', 'C', 'D']
+                     )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] EmployeeServices.EmployeeDetailsByFirm
+     (
+         ~request
+         (
+             body = ^FirmSearch(legalNames = $this.firmName)
+         )
+     )
+  }
+
+  *Employment[firm_set]: XStore
+  {
+     employees[firm_set, employee_set]: $this.legalName == $that.firmName
+  }
+)

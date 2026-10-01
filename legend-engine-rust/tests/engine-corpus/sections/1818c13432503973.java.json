@@ -1,0 +1,134 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "Firm",
+      "classSourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 89
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 91
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LEGALNAME",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 91
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 91
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 91,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 91
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Firm",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 92
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ADDRESSID",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 92
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 92,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 92
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 92,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 92
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 93,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 89
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myRelationalMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 94,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 86
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ "model" ]
+}

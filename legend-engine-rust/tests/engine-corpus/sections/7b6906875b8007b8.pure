@@ -1,0 +1,21 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::class[1]|$src.prop1;
+    mapping: test::mapping2;
+    runtime: test::runtime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

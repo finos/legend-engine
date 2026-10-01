@@ -1,0 +1,529 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "COVIDData",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 84
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 84
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 85
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 85
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 86,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 86
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "date",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 86
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 87
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "caseType",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 87
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 88,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 88
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "cases",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 89
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "lastReportedFlag",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 89
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "domain::Demographics",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 90
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "demographics",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 90,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 90
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 91,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 82
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Demographics",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 95
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 95,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 95
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 96
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "state",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 96,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 96
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 97,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 93
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Class2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 101
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "propClass2",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 101,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 101
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 102,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 99
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 99,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 99
+      },
+      "sourceInformation" : {
+        "endColumn" : 57,
+        "endLine" : 99,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 99
+      },
+      "value" : "processingtemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Class1",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 106
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "propClass1",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 106
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 107,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 104
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 104
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "Class12Assoc",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "domain::Class1",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 111
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fromClass1",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 111,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 111
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "domain::Class2",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 112,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 112
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fromClass2",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 112,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 112
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 113,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 109
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,42 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "TestService",
+      "method" : "GET",
+      "path" : "/testService",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "test::Binding",
+        "list" : false,
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 55
+        },
+        "type" : "test::model::A"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "ServiceStore",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 49
+    }
+  } ]
+}

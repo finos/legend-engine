@@ -1,0 +1,15 @@
+
+Class test::Firm
+{   name : String[1];
+   employees : test::Person[*];
+}Class test::Person
+{
+   fullName : String[1];
+}
+Class test::FirmEmployee
+{
+   
+   firmName : String[1];
+   fullName : String[1];
+   
+}

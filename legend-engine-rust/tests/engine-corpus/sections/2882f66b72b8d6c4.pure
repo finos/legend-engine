@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunctionWithQuotedCol():Relation<Any>[1]
+    ~primaryKey: [FIRSTNAME]
+    firstName: FIRSTNAME,    firmId: 'FIRM ID'  }
+)

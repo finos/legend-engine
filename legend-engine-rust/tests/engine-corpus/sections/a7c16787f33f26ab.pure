@@ -1,0 +1,7 @@
+
+XmlModelConnection meta::mySimpleConnection
+{
+  class: model::firm::Person;
+  class: model::firm::Person;
+}
+

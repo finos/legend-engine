@@ -1,0 +1,9 @@
+
+function pack::f():Boolean[1]
+{
+   #TDS{
+   val,ok:String[1]
+   a,b
+   }#->extend(~n:z|$z.ok+'ww');
+   true;
+}

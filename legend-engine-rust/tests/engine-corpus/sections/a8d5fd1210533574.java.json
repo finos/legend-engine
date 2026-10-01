@@ -1,0 +1,101 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "Runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "store" : {
+          "path" : "test::DB",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 39
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 38
+              }
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 35
+            },
+            "type" : "H2"
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 34
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::Map",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 28
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 24
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    }
+  } ],
+  "imports" : [ ]
+}

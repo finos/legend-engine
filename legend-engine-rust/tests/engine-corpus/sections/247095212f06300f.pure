@@ -1,0 +1,11 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

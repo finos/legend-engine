@@ -1,0 +1,20 @@
+
+Class test::dest::Person
+{
+   firstName: String[1];
+   lastName: String[1];
+   firm: test::shared::Firm[1];
+}
+Class test::src::Person
+{
+   fullName: String[1];
+   firm: test::shared::BigFirm[1];
+}
+Class test::shared::Firm
+{
+   id: String[1];
+}
+Class test::shared::BigFirm extends test::shared::Firm
+{
+   size: Integer[1];
+}

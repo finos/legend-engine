@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "TestService",
+      "method" : "GET",
+      "parameters" : [ {
+        "enumeration" : "test::Enum",
+        "location" : "QUERY",
+        "name" : "serializationFormat",
+        "serializationFormat" : {
+          "explode" : true,
+          "explodeSourceInformation" : {
+            "endColumn" : 88,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 75,
+            "startLine" : 42
+          },
+          "style" : "simple",
+          "styleSourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 59,
+            "startLine" : 42
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 109,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 42
+        },
+        "type" : {
+          "_type" : "integer",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 42
+          }
+        }
+      } ],
+      "path" : "/testService",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "test::TestBinding",
+        "list" : false,
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 44
+        },
+        "type" : "test::Person"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testServiceStoreCompilationWithSingleService",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 47,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  } ]
+}

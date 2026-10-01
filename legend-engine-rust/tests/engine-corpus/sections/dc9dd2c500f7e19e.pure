@@ -1,0 +1,14 @@
+
+RelationalDatabaseConnection runtime::connection::H2Connection
+{
+  store: store::CovidDataStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS COVID_DATA;'
+      ];
+  };
+  auth: DefaultH2;
+}
+

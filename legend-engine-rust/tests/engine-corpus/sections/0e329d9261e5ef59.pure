@@ -1,0 +1,53 @@
+
+Mapping meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::mapping::enumerationMapping
+(
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetProductType: EnumerationMapping TargetProductTypeMapping
+  {
+    TP1: ['MP1'],
+    TP2: ['MP2', 'MP3']
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetProductType: EnumerationMapping TargetProductTypeMapping2
+  {
+    TP3: ['MP21'],
+    TP4: ['MP22', 'MP23']
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetTradeType: EnumerationMapping TargetTradeTypeMapping
+  {
+    TT1: [Enum.MT1],
+    TT2: [Enum.MT2, Enum.MT3]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::TargetTradeType: EnumerationMapping TargetTradeTypeMapping2
+  {
+    TT3: [My::Enum.MT21],
+    TT4: [My::Enum.MT22, My::Enum.MT23]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType: EnumerationMapping MiddleProductTypeMapping
+  {
+    MP1: [10],
+    MP2: [20],
+    MP3: [30, 40]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType: EnumerationMapping MiddleTradeTypeMapping
+  {
+    MT1: [100],
+    MT2: [200],
+    MT3: [300, 400]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleProductType2: EnumerationMapping MiddleProductType2Mapping
+  {
+    MP21: [10],
+    MP22: [20],
+    MP23: [30, 40]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::MiddleTradeType2: EnumerationMapping MiddleTradeType2Mapping
+  {
+    MT21: [100],
+    MT22: [200],
+    MT23: [300, 400]
+  }
+  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::DayCount: EnumerationMapping
+  {
+    '30_ACT': [My::DayCount.'30_ACT'],
+    '30_360': [My::DayCount.'30_360']
+  }
+)

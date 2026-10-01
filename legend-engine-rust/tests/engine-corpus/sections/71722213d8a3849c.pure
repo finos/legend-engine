@@ -1,0 +1,7 @@
+
+function test::fetch(): Any[1]
+{
+  {name:String[0..1] | test::Person.all()
+                        ->filter(p:test::Person[1] | $p.fullName->in($name))
+                        ->project([x | $x.fullName], ['fullName'])}
+}

@@ -1,0 +1,13 @@
+
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    AMOUNT INTEGER,
+    FROM_Z TIMESTAMP PRIMARY KEY,
+    THRU_Z TIMESTAMP,
+    BATCH_IN INTEGER PRIMARY KEY,
+    BATCH_OUT INTEGER
+  )
+)

@@ -1,0 +1,147 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::PersonWithEmployeeType",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::PersonWithEmployeeType",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::PersonWithEmployeeType",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMPLOYEE_TYPE",
+        "enumMappingId" : "employeeTypeMapping",
+        "property" : {
+          "class" : "my::PersonWithEmployeeType",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personWithEnumFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 22
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "C"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      }, {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "F"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "my::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 27
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "employeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

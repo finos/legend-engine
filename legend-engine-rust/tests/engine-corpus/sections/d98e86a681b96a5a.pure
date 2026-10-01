@@ -1,0 +1,5 @@
+
+function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]
+{
+  1
+}

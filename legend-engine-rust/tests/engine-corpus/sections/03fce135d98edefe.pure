@@ -1,0 +1,21 @@
+
+import abc::abc::*;
+Deephaven test::Store::foo
+(
+    Table xyz
+    (
+        prop1: STRING,
+        prop2: INT,
+        prop3: BOOLEAN,
+        prop4: DATETIME,
+        prop5: FLOAT
+    )
+)
+
+DeephavenApp test::MyDeephavenApp
+{
+    applicationName: 'TestApp';
+    function: test::myFunc():Any[*];
+    description: 'Test description';
+    ownership: Deployment { identifier: 'owner1' };
+}

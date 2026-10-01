@@ -1,0 +1,18 @@
+
+Class  example::SourcePersonWithFirstName
+{
+   id:Integer[1];
+   firstName:String[1];
+}
+
+
+Class example::SourcePersonWithLastName
+{
+   id:Integer[1];
+   lastName:String[1];
+}
+Class example::Person
+{
+   firstName:String[1];
+   lastName:String[1];
+}

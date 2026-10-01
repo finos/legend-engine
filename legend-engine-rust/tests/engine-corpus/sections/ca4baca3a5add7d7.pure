@@ -1,0 +1,11 @@
+
+Class test::gen::Data
+{
+  name        : String[1];
+  employed    : Boolean[0..1];
+  iq          : Integer[0..1];
+  weightKg    : Float[0..1];
+  heightM     : Decimal[1];
+  dateOfBirth : StrictDate[1];
+  timeOfDeath : DateTime[1];
+}

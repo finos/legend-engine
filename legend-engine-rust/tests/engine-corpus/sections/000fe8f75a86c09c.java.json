@@ -1,0 +1,50 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section A: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: ',';\n\n  Record\n  {\n    'alpha beta gamma': STRING;\n    'DELTA EPSILON'   : DECIMAL;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 198,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 11
+      },
+      "sourceInformation" : {
+        "endColumn" : 200,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 11
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::model::A" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    }
+  } ],
+  "imports" : [ ]
+}

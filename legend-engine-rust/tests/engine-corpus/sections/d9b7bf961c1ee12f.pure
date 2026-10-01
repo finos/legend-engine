@@ -1,0 +1,9 @@
+
+Database test::DB1
+(
+  Table personTable (
+    fullName VARCHAR(100) PRIMARY KEY,
+    firmName VARCHAR(100),
+    addressName VARCHAR(100)
+  )
+)

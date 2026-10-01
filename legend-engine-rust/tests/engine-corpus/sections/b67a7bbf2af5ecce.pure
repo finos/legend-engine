@@ -1,0 +1,64 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    ingestMode: BitemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: deleted;
+        deleteValues: ['Y', '1', 'true'];
+      }
+      transactionMilestoning: DateTime
+      {
+        dateTimeInName: 'inZ';
+        dateTimeOutName: 'outZ';
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromAndThruDateTime
+        {
+          sourceDateTimeFromField: sourceFrom;
+          sourceDateTimeThruField: sourceThru;
+        }
+      }
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: test::WrapperClass;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: property1;
+          targetName: 'TestDataset1';
+        },
+        {
+          modelProperty: property3;
+          targetName: 'TestDataset2';
+        }
+      ];
+    }
+  }
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

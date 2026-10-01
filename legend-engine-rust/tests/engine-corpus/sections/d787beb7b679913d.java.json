@@ -1,0 +1,89 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::model",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "pathOffset" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "pathProperty"
+          } ],
+          "startType" : "$service.response"
+        },
+        "service" : {
+          "parent" : {
+            "parent" : {
+              "serviceGroup" : "TestServiceGroup1",
+              "serviceStore" : "test::ServiceStore",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 6
+              }
+            },
+            "serviceGroup" : "TestServiceGroup2",
+            "serviceStore" : "test::ServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 6
+            }
+          },
+          "service" : "TestService",
+          "serviceStore" : "test::ServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 71,
+            "startLine" : 6
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

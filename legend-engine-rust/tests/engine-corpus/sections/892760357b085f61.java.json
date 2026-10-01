@@ -1,0 +1,86 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SourceToTargetM2M",
+    "package" : "model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "tests" : [ {
+      "assert" : {
+        "_type" : "expectedOutputMappingTestAssert",
+        "expectedOutput" : "{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}",
+        "sourceInformation" : {
+          "endColumn" : 291,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 14
+        }
+      },
+      "inputData" : [ {
+        "_type" : "object",
+        "data" : "{\"oneName\":\"oneName 2\"}",
+        "inputType" : "JSON",
+        "sourceClass" : "model::domain::Target",
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 13
+        }
+      } ],
+      "name" : "defaultTest",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::domain::Target",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 11,
+              "sourceId" : "model::mapping::SourceToTargetM2M",
+              "startColumn" : 18,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 11,
+            "sourceId" : "model::mapping::SourceToTargetM2M",
+            "startColumn" : 39,
+            "startLine" : 11
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 11,
+          "sourceId" : "model::mapping::SourceToTargetM2M",
+          "startColumn" : 17,
+          "startLine" : 11
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 9
+      }
+    } ]
+  } ],
+  "imports" : [ ]
+}

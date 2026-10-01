@@ -1,0 +1,11 @@
+
+ServiceStore test::testServiceStoreGrammarWithSingleService
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    response : ExampleClass <- tests::store::exampleBinding;
+    security : [];
+  )
+)

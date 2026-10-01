@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Missing table or alias for column 'factor'",
+    "sourceInformation" : {
+      "endColumn" : 140,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 135,
+      "startLine" : 7
+    }
+  }
+}

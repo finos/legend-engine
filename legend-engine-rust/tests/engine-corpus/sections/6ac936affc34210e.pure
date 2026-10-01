@@ -1,0 +1,66 @@
+
+Service <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc='testOpenapi'} test::TestService
+{
+  pattern: '/service/test';
+  owners:
+  [
+    'anonymous',
+    'testuser'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Person.all()->project(
+  [
+    x|$x.firstName,
+    x|$x.lastName
+  ],
+  [
+    'First Name',
+    'Last Name'
+  ]
+);
+    mapping: test::TestMapping;
+    runtime: test::TestRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              TESTDB.PERSON_TABLE:
+                'ID,FIRSTNAME,LASTNAME\n'+
+                '1,JOHN,DOE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\r\n  "columns" : [ {\r\n    "name" : "First Name",\r\n    "type" : "String"\r\n  }, {\r\n    "name" : "Last Name",\r\n    "type" : "String"\r\n  } ],\r\n  "rows" : [ {\r\n    "values" : [ "JOHN", "DOE" ]\r\n  } ]\r\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

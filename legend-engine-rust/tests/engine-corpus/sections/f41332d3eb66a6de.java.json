@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'faqUrl' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 13
+    }
+  }
+}

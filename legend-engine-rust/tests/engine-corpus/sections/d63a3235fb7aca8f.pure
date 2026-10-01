@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.other : y|$y->sum())
+}

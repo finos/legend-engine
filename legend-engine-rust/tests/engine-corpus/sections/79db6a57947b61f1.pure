@@ -1,0 +1,9 @@
+
+HostedService stereotypes::tags::HostedService::import::pattern::ownership::Deployment::identifier::UserList::users::activationConfiguration::documentation::autoActivateUpdates::generateLineage::storeModel::function::binding::contentType::testSuites::data::connections::tests::asserts::serializationFormat::parameters::keys::list::postValidations::description::params::assertions::actions::ExecutionEnvironment::mapping::runtime::executions::HostedServiceDeploymentConfiguration::stage::all::let::allVersions::allVersionsInRange::toBytes
+{
+   function : a::f():String[1];
+   pattern : 'sass';
+   ownership : UserList {users: ['user1']};
+   documentation : 'sass';
+   autoActivateUpdates : true;
+}

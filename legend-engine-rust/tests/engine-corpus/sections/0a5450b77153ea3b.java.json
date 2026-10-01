@@ -1,0 +1,185 @@
+{
+  "elements" : [ {
+    "_type" : "snowflakeM2MUdf",
+    "actions" : [ ],
+    "activationConfiguration" : {
+      "_type" : "snowflakeM2MUdfDeploymentConfiguration",
+      "activationConnection" : {
+        "_type" : "connectionPointer",
+        "connection" : "a::b::connection",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 10
+        }
+      }
+    },
+    "deploymentSchema" : "legend_native_apps_1",
+    "deploymentStage" : "snowflakeStage",
+    "description" : "A super nice app!",
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "MyUDF",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "pierre"
+    },
+    "package" : "xx",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "a::A",
+      "profileSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 2
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 32,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "a::A",
+        "profileSourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 37,
+          "startLine" : 2
+        },
+        "value" : "val"
+      },
+      "value" : "ok"
+    } ],
+    "udfName" : "MyUDF"
+  }, {
+    "_type" : "snowflakeM2MUdf",
+    "actions" : [ ],
+    "activationConfiguration" : {
+      "_type" : "snowflakeM2MUdfDeploymentConfiguration",
+      "activationConnection" : {
+        "_type" : "connectionPointer",
+        "connection" : "a::b::connection",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 21
+        }
+      }
+    },
+    "deploymentSchema" : "legend_native_apps_1",
+    "deploymentStage" : "snowflakeStage",
+    "description" : "A super nice app!",
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 16
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "MyUDF2",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "pierre"
+    },
+    "package" : "xx",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ {
+      "profile" : "a::A",
+      "profileSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 13
+      },
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 13
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 32,
+        "startLine" : 13
+      },
+      "tag" : {
+        "profile" : "a::A",
+        "profileSourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 13
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 37,
+          "startLine" : 13
+        },
+        "value" : "val"
+      },
+      "value" : "ok"
+    } ],
+    "udfName" : "MyUDF"
+  } ]
+}

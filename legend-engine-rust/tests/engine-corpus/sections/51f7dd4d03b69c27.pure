@@ -1,0 +1,12 @@
+
+Mapping testing::mapping
+(
+  MappingTests
+  [
+    test_1
+    (
+      assert: '{}';
+      data:[<Object, JSON, testing::other::NPerson, '{"firstName":"firstName 7","lastName":"lastName 55"}'>];
+    )
+  ]
+)

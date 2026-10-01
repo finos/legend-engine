@@ -1,0 +1,5 @@
+
+Enum test::A
+{
+   TEA,COFFEE,TEA,TEA,COFFEE
+}

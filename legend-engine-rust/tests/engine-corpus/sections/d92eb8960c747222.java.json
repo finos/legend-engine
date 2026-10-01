@@ -1,0 +1,116 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "mapping::SomeClass",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 6
+            },
+            "value" : true
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "mapping::SomeClass",
+          "property" : "p1",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "source" : "x",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "target" : "y"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 7
+            },
+            "value" : false
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "mapping::SomeClass",
+          "property" : "p2",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "source" : "y",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "target" : "x"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "test",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

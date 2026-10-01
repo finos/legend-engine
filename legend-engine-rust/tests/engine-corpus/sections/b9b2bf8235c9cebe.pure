@@ -1,0 +1,16 @@
+
+Database demo::store::ProductDB
+(
+  Table ListedProductTable
+  (
+    id INTEGER PRIMARY KEY,
+    code VARCHAR(20),
+    description VARCHAR(200)
+  )
+  Table OtcProductTable
+  (
+    id INTEGER PRIMARY KEY,
+    code VARCHAR(20),
+    description VARCHAR(200)
+  )
+)

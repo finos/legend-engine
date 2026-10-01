@@ -1,0 +1,47 @@
+
+function test::fetch(): Any[*]
+{
+  |test::DataTypesClass.all()
+    ->graphFetch(#{
+      test::DataTypesClass {
+         tinyInt,
+         smallInt,
+         integer,
+         bigInt,
+         varchar,
+         char,
+         date,
+         timestamp,
+         float,
+         double,
+         decimalAsFloat,
+         // real,
+         numericAsFloat,
+         bit,
+         decimal,
+         numeric,
+         floatAsDecimal
+      }
+   }#, 1)
+    ->serialize(#{
+      test::DataTypesClass {
+         tinyInt,
+         smallInt,
+         integer,
+         bigInt,
+         varchar,
+         char,
+         date,
+         timestamp,
+         float,
+         double,
+         decimalAsFloat,
+         // real,
+         numericAsFloat,
+         bit,
+         decimal,
+         numeric,
+         floatAsDecimal
+      }
+   }#)
+}

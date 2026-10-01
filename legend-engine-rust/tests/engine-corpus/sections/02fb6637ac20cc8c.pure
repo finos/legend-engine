@@ -1,0 +1,11 @@
+
+Class demo::dyna::Product
+{
+  label: String[1];
+  total: Integer[1];
+}
+
+// ProductView computes two columns with dynamic functions in the store definition:
+// concat(...) builds a string label and plus(...) sums two numeric columns. The
+// class mapping reads those computed columns, so store:relational-dyna-function is
+// exercised through to execution.

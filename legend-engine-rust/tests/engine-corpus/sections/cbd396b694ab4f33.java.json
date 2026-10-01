@@ -1,0 +1,493 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "default"
+    },
+    "serviceParameters" : [ {
+      "name" : "foo",
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 8
+      },
+      "value" : {
+        "_type" : "primitiveTypeValue",
+        "primitiveType" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          },
+          "value" : "hello"
+        }
+      }
+    }, {
+      "name" : "bar",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      },
+      "value" : {
+        "_type" : "primitiveTypeValue",
+        "primitiveType" : {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 9
+          },
+          "value" : 1
+        }
+      }
+    }, {
+      "name" : "con1",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 10
+      },
+      "value" : {
+        "_type" : "connectionValue",
+        "connection" : {
+          "_type" : "connectionPointer",
+          "connection" : "test::TestConnection",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 10
+          }
+        }
+      }
+    }, {
+      "name" : "con2",
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      },
+      "value" : {
+        "_type" : "connectionValue",
+        "connection" : {
+          "_type" : "RelationalDatabaseConnection",
+          "authenticationStrategy" : {
+            "_type" : "test",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 17
+            }
+          },
+          "databaseType" : "H2",
+          "datasourceSpecification" : {
+            "_type" : "h2Local",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 16
+            }
+          },
+          "element" : "test::TestDatabase",
+          "elementSourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 14
+          },
+          "postProcessorWithParameter" : [ ],
+          "postProcessors" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 12
+          },
+          "type" : "H2"
+        }
+      }
+    } ],
+    "sinkConnection" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 27
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 26
+        }
+      },
+      "element" : "test::TestDatabase",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 24
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      },
+      "type" : "H2"
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    }
+  }, {
+    "_type" : "persistence",
+    "documentation" : "test doc",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ {
+        "_type" : "emailNotifyee",
+        "address" : "x.y@z.com",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 107
+        }
+      }, {
+        "_type" : "pagerDutyNotifyee",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 114,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 111
+        },
+        "url" : "https://x.com"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 103
+      }
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "bitemporalDelta",
+        "mergeStrategy" : {
+          "_type" : "deleteIndicatorMergeStrategy",
+          "deleteField" : "deleted",
+          "deleteValues" : [ "Y", "1", "true" ]
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 43
+        },
+        "transactionMilestoning" : {
+          "_type" : "dateTimeTransactionMilestoning",
+          "dateTimeInName" : "inZ",
+          "dateTimeOutName" : "outZ",
+          "derivation" : {
+            "_type" : "sourceSpecifiesInAndOutDateTime",
+            "sourceDateTimeInField" : "sourceIn",
+            "sourceDateTimeOutField" : "sourceOut",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 58,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 54
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 50
+          }
+        },
+        "validityMilestoning" : {
+          "_type" : "dateTimeValidityMilestoning",
+          "dateTimeFromName" : "FROM_Z",
+          "dateTimeThruName" : "THRU_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesFromAndThruDateTime",
+            "sourceDateTimeFromField" : "sourceFrom",
+            "sourceDateTimeThruField" : "sourceThru",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 64
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 60
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 41
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 39
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 37
+      },
+      "targetShape" : {
+        "_type" : "multiFlatTarget",
+        "modelClass" : "meta::test::TestClass2",
+        "parts" : [ {
+          "deduplicationStrategy" : {
+            "_type" : "maxVersionDeduplicationStrategy",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 81
+            },
+            "versionField" : "updateDateTime"
+          },
+          "modelProperty" : "property1",
+          "partitionFields" : [ "propertyA", "propertyB" ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 77
+          },
+          "targetName" : "TestDataset1"
+        }, {
+          "deduplicationStrategy" : {
+            "_type" : "duplicateCountDeduplicationStrategy",
+            "duplicateCountName" : "duplicateCount",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 93,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 90
+            }
+          },
+          "modelProperty" : "property2",
+          "partitionFields" : [ "propertyA", "propertyB" ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 86
+          },
+          "targetName" : "TestDataset1"
+        }, {
+          "deduplicationStrategy" : {
+            "_type" : "noDeduplicationStrategy"
+          },
+          "modelProperty" : "property3",
+          "partitionFields" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 99,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 95
+          },
+          "targetName" : "TestDataset2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 71
+        },
+        "transactionScope" : "ALL_TARGETS"
+      }
+    },
+    "service" : {
+      "path" : "test::service::Service",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 153,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 152,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 119
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"Age\":12, \"Name\":\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 142
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 147,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 139
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 149,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 123
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/x.flatdata",
+              "data" : "FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 133,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 129
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 134,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 127
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 135,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 125
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ "test" ]
+}

@@ -1,0 +1,234 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 3
+        },
+        "value" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 3
+          },
+          "value" : "default"
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "stringProperty",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "defaultValue" : {
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 4
+        },
+        "value" : {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 4
+          },
+          "value" : false
+        }
+      },
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "booleanProperty",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "x"
+      }, {
+        "_type" : "func",
+        "function" : "new",
+        "parameters" : [ {
+          "_type" : "genericTypeInstance",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::pure::metamodel::type::Class"
+            },
+            "typeArguments" : [ {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "test::A"
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            } ],
+            "typeVariableValues" : [ ]
+          }
+        }, {
+          "_type" : "string",
+          "value" : ""
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "values" : [ {
+            "_type" : "keyExpression",
+            "add" : false,
+            "expression" : {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 36,
+                "startLine" : 9
+              },
+              "value" : true
+            },
+            "key" : {
+              "_type" : "string",
+              "value" : "booleanProperty"
+            }
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 9
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 9
+      }
+    } ],
+    "name" : "f__Any_1_",
+    "package" : "",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 7
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

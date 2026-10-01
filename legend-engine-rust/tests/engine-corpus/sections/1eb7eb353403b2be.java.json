@@ -1,0 +1,81 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 11
+          },
+          "value" : ""
+        } ],
+        "parameters" : [ ]
+      },
+      "mapping" : "model::dummyMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 12
+      },
+      "runtime" : {
+        "_type" : "engineRuntime",
+        "connectionStores" : [ ],
+        "connections" : [ ],
+        "mappings" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 15
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 9
+      }
+    },
+    "name" : "MyService",
+    "owners" : [ "test" ],
+    "package" : "model",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 18
+      }
+    },
+    "title" : "test"
+  } ],
+  "imports" : [ ]
+}

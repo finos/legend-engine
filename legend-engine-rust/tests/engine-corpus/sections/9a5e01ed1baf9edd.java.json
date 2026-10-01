@@ -1,0 +1,225 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Employee_Firm",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "PROFILE",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 46,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 48,
+              "startLine" : 46
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ssj::store::HrDB",
+              "mainTableDb" : "demo::ssj::store::HrDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 46,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 48,
+                "startLine" : 46
+              },
+              "table" : "EMPLOYEE"
+            },
+            "tableAlias" : "EMPLOYEE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 46,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 66,
+              "startLine" : 46
+            },
+            "value" : "employment.firmId"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 95,
+              "endLine" : 46,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 87,
+              "startLine" : 46
+            },
+            "value" : "VARCHAR"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 46,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 22,
+            "startLine" : 46
+          }
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 46,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 100,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssj::store::HrDB",
+            "mainTableDb" : "demo::ssj::store::HrDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 46,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 100,
+              "startLine" : 46
+            },
+            "table" : "FIRM"
+          },
+          "tableAlias" : "FIRM"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 46,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 98,
+          "startLine" : 46
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 107,
+        "endLine" : 46,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 46
+      }
+    } ],
+    "name" : "HrDB",
+    "package" : "demo::ssj::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 47,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 29
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 34,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "PROFILE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 35,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EMPLOYEE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 36,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 31
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "LEGAL_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 40,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FIRM",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 41,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 37
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 47,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ]
+  } ]
+}

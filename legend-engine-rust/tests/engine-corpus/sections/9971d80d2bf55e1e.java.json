@@ -1,0 +1,1421 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "test::Person_Firm",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 306,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 306
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 307,
+                  "sourceId" : "",
+                  "startColumn" : 38,
+                  "startLine" : 307
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 307,
+                "sourceId" : "",
+                "startColumn" : 44,
+                "startLine" : 307
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 307,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 307
+                }
+              } ],
+              "property" : "firmName",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 307,
+                "sourceId" : "",
+                "startColumn" : 58,
+                "startLine" : 307
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 307,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 307
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Person_Firm",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 307,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 307
+          }
+        },
+        "source" : "firm_set",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 307,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 307
+        },
+        "target" : "person_set"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 308,
+                  "sourceId" : "",
+                  "startColumn" : 33,
+                  "startLine" : 308
+                }
+              } ],
+              "property" : "firmName",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 308,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 308
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 308,
+                  "sourceId" : "",
+                  "startColumn" : 51,
+                  "startLine" : 308
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 308,
+                "sourceId" : "",
+                "startColumn" : 57,
+                "startLine" : 308
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 308,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 308
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Person_Firm",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 308,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 308
+          }
+        },
+        "source" : "person_set",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 308,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 308
+        },
+        "target" : "firm_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 309,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 306
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "test::Person_Address",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 311,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 311
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 312,
+                  "sourceId" : "",
+                  "startColumn" : 39,
+                  "startLine" : 312
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 312,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 312
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 312,
+                  "sourceId" : "",
+                  "startColumn" : 53,
+                  "startLine" : 312
+                }
+              } ],
+              "property" : "addressName",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 312,
+                "sourceId" : "",
+                "startColumn" : 59,
+                "startLine" : 312
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 312,
+              "sourceId" : "",
+              "startColumn" : 50,
+              "startLine" : 312
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Person_Address",
+          "property" : "persons",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 312,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 312
+          }
+        },
+        "source" : "address_set",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 312,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 312
+        },
+        "target" : "person_set"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 313,
+                  "sourceId" : "",
+                  "startColumn" : 39,
+                  "startLine" : 313
+                }
+              } ],
+              "property" : "addressName",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 313,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 313
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 313,
+                  "sourceId" : "",
+                  "startColumn" : 60,
+                  "startLine" : 313
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 313,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 313
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 313,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 313
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Person_Address",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 313,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 313
+          }
+        },
+        "source" : "person_set",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 313,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 313
+        },
+        "target" : "address_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 314,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 311
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "test::Firm_Address",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 316,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 316
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 317,
+                  "sourceId" : "",
+                  "startColumn" : 35,
+                  "startLine" : 317
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 317,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 317
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 53,
+                  "endLine" : 317,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 317
+                }
+              } ],
+              "property" : "addressName",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 317,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 317
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 317,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 317
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Firm_Address",
+          "property" : "firms",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 317,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 317
+          }
+        },
+        "source" : "address_set",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 317,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 317
+        },
+        "target" : "firm_set"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 318,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 318
+                }
+              } ],
+              "property" : "addressName",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 318,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 318
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 318,
+                  "sourceId" : "",
+                  "startColumn" : 58,
+                  "startLine" : 318
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 318,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 318
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 318,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 318
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Firm_Address",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 318,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 318
+          }
+        },
+        "source" : "firm_set",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 318,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 318
+        },
+        "target" : "address_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 319,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 316
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "test::Address_Street",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 321,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 321
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 322,
+                  "sourceId" : "",
+                  "startColumn" : 38,
+                  "startLine" : 322
+                }
+              } ],
+              "property" : "streetName",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 322,
+                "sourceId" : "",
+                "startColumn" : 44,
+                "startLine" : 322
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 322,
+                  "sourceId" : "",
+                  "startColumn" : 58,
+                  "startLine" : 322
+                }
+              } ],
+              "property" : "streetId",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 322,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 322
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 322,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 322
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Address_Street",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 322,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 322
+          }
+        },
+        "source" : "address_set",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 322,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 322
+        },
+        "target" : "street_set"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 323,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 323
+                }
+              } ],
+              "property" : "streetId",
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 323,
+                "sourceId" : "",
+                "startColumn" : 47,
+                "startLine" : 323
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 323,
+                  "sourceId" : "",
+                  "startColumn" : 59,
+                  "startLine" : 323
+                }
+              } ],
+              "property" : "streetName",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 323,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 323
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 323,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 323
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Address_Street",
+          "property" : "addresses",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 323,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 323
+          }
+        },
+        "source" : "street_set",
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 323,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 323
+        },
+        "target" : "address_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 324,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 321
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 232,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 232
+      },
+      "id" : "person_set",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "PersonService",
+            "serviceStore" : "test::serviceStore::caching::store::PersonService",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 233,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 233
+            }
+          },
+          "service" : "AllPersonsService",
+          "serviceStore" : "test::serviceStore::caching::store::PersonService",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 233,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 233
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 233,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 233
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 241,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 241
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 32,
+                      "endLine" : 241,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 241
+                    }
+                  } ],
+                  "property" : "fullName",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 241,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 241
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 241,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 241
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 242,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 239
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 243,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 237
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "PersonService",
+            "serviceStore" : "test::serviceStore::caching::store::PersonService",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 235,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 235
+            }
+          },
+          "service" : "PersonByNameService",
+          "serviceStore" : "test::serviceStore::caching::store::PersonService",
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 235,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 235
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 244,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 235
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "addressName",
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 252,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 252
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 35,
+                      "endLine" : 252,
+                      "sourceId" : "",
+                      "startColumn" : 31,
+                      "startLine" : 252
+                    }
+                  } ],
+                  "property" : "addressName",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 252,
+                    "sourceId" : "",
+                    "startColumn" : 37,
+                    "startLine" : 252
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 252,
+                  "sourceId" : "",
+                  "startColumn" : 31,
+                  "startLine" : 252
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 253,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 250
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 254,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 248
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "PersonService",
+            "serviceStore" : "test::serviceStore::caching::store::PersonService",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 246,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 246
+            }
+          },
+          "service" : "PersonsByAddressNameService",
+          "serviceStore" : "test::serviceStore::caching::store::PersonService",
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 246,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 246
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 255,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 246
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 256,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 232
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "test::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 259,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 259
+      },
+      "id" : "firm_set",
+      "localMappingProperties" : [ {
+        "multiplicity" : {
+          "lowerBound" : 0,
+          "upperBound" : 1
+        },
+        "name" : "addressName",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 260,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 260
+        },
+        "type" : "String"
+      } ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "FirmService",
+            "serviceStore" : "test::serviceStore::caching::store::FirmService",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 262,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 262
+            }
+          },
+          "service" : "AllFirmsService",
+          "serviceStore" : "test::serviceStore::caching::store::FirmService",
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 262,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 262
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 262,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 262
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "name",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 270,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 270
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 28,
+                      "endLine" : 270,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 270
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 270,
+                    "sourceId" : "",
+                    "startColumn" : 30,
+                    "startLine" : 270
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 270,
+                  "sourceId" : "",
+                  "startColumn" : 24,
+                  "startLine" : 270
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 271,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 268
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 272,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 266
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "FirmService",
+            "serviceStore" : "test::serviceStore::caching::store::FirmService",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 264,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 264
+            }
+          },
+          "service" : "FirmByNameService",
+          "serviceStore" : "test::serviceStore::caching::store::FirmService",
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 264,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 264
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 273,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 264
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 274,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 259
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "test::Address",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 276,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 276
+      },
+      "id" : "address_set",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "AddressService",
+            "serviceStore" : "test::serviceStore::caching::store::AddressService",
+            "sourceInformation" : {
+              "endColumn" : 80,
+              "endLine" : 277,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 277
+            }
+          },
+          "service" : "AllAddressesService",
+          "serviceStore" : "test::serviceStore::caching::store::AddressService",
+          "sourceInformation" : {
+            "endColumn" : 100,
+            "endLine" : 277,
+            "sourceId" : "",
+            "startColumn" : 82,
+            "startLine" : 277
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 100,
+          "endLine" : 277,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 277
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "name",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 285,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 285
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 28,
+                      "endLine" : 285,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 285
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 285,
+                    "sourceId" : "",
+                    "startColumn" : 30,
+                    "startLine" : 285
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 285,
+                  "sourceId" : "",
+                  "startColumn" : 24,
+                  "startLine" : 285
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 286,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 283
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 287,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 281
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "AddressService",
+            "serviceStore" : "test::serviceStore::caching::store::AddressService",
+            "sourceInformation" : {
+              "endColumn" : 80,
+              "endLine" : 279,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 279
+            }
+          },
+          "service" : "AddressByNameService",
+          "serviceStore" : "test::serviceStore::caching::store::AddressService",
+          "sourceInformation" : {
+            "endColumn" : 101,
+            "endLine" : 279,
+            "sourceId" : "",
+            "startColumn" : 82,
+            "startLine" : 279
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 288,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 279
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 289,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 276
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "test::Street",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 291,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 291
+      },
+      "id" : "street_set",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "StreetService",
+            "serviceStore" : "test::serviceStore::caching::store::StreetService",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 292,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 292
+            }
+          },
+          "service" : "AllStreetsService",
+          "serviceStore" : "test::serviceStore::caching::store::StreetService",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 292,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 292
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 292,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 292
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "streetId",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 300,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 300
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 32,
+                      "endLine" : 300,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 300
+                    }
+                  } ],
+                  "property" : "streetId",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 300,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 300
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 300,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 300
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 301,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 298
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 302,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 296
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "StreetService",
+            "serviceStore" : "test::serviceStore::caching::store::StreetService",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 294,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 294
+            }
+          },
+          "service" : "StreetByIDService",
+          "serviceStore" : "test::serviceStore::caching::store::StreetService",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 294,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 294
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 303,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 294
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 304,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 291
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Map",
+    "package" : "test::serviceStore::caching",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 326,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 230
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

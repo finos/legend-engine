@@ -1,0 +1,10 @@
+
+Mapping test::Mapping (  *test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::TestDatabase] personTable.ID
+    )
+    ~mainTable [test::TestDatabase] personTable
+    name: [test::TestDatabase] personTable.NAME
+  })

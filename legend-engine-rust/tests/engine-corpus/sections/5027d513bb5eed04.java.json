@@ -1,0 +1,117 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::math::max",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        },
+        "values" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 4,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 3
+          },
+          "value" : 1
+        }, {
+          "_type" : "var",
+          "name" : "input",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 3
+          }
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "somethingElse_Integer_1__Any_$0_1$_",
+    "package" : "example",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "input",
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 33,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

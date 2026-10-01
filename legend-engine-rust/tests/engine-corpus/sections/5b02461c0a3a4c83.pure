@@ -1,0 +1,14 @@
+
+import anything::*;
+Class anything::goes2
+{
+}
+Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}Association <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} ahh::myAsso
+{
+  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} a: goes2[1];
+  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} b: goes2[1];
+}

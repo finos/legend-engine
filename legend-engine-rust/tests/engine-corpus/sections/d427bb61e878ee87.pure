@@ -1,0 +1,19 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}

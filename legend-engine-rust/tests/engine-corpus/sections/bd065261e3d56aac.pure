@@ -1,0 +1,10 @@
+
+function my::functionParent():String[1]
+{
+    my::package_with_underscore::functionName();
+}
+
+function my::package_with_underscore::functionName():String[1]
+{
+ 'result';
+}

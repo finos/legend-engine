@@ -1,0 +1,13 @@
+
+Class my::TestClass
+[
+  myConstraint
+  (
+    ~function: 3->eq(3) && 3->eq($this.var2 / $this.var1)
+    ~enforcementLevel: Error
+  )
+]
+{
+  var1: Float[1];
+  var2: Float[1];
+}

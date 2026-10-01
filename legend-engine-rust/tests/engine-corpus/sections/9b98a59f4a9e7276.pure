@@ -1,0 +1,32 @@
+
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: ObjectStorage
+    {
+      binding: test::Binding;
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: test::ServiceResult;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: property1;
+          targetName: 'TestDataset1';
+        }
+      ];
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+  }
+}

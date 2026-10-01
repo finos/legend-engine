@@ -1,0 +1,25 @@
+
+Database stores::BaseDB
+(
+  Schema PeopleSchema
+  (
+    Table People
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200),
+      firm_id INTEGER
+    )
+  )
+)
+Database stores::ExtendedDB
+(
+  include stores::BaseDB
+  Schema FirmSchema
+  (
+    Table Firms
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200)
+    )
+  )
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "baseUrl should not end with '/'",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 5
+    }
+  }
+}

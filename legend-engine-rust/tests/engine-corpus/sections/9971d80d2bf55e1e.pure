@@ -1,0 +1,98 @@
+
+Mapping test::serviceStore::caching::Map
+(
+  test::Person[person_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.AllPersonsService
+
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.PersonByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                fullName = $this.fullName
+            )
+        )
+    )
+
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.PersonsByAddressNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                addressName = $this.addressName
+            )
+        )
+    )
+  }
+
+  // Need to create ServiceSet to enable querying
+  test::Firm[firm_set] : ServiceStore {
+    +addressName : String[0..1];
+
+    ~service [test::serviceStore::caching::store::FirmService] FirmService.AllFirmsService
+
+    ~service [test::serviceStore::caching::store::FirmService] FirmService.FirmByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                name = $this.name
+            )
+        )
+    )
+  }
+
+  test::Address[address_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::AddressService] AddressService.AllAddressesService
+
+    ~service [test::serviceStore::caching::store::AddressService] AddressService.AddressByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                name = $this.name
+            )
+        )
+    )
+  }
+
+  test::Street[street_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::StreetService] StreetService.AllStreetsService
+
+    ~service [test::serviceStore::caching::store::StreetService] StreetService.StreetByIDService
+    (
+        ~request
+        (
+            parameters
+            (
+                streetId = $this.streetId
+            )
+        )
+    )
+  }
+
+  test::Person_Firm : XStore {
+    employees[firm_set, person_set]: $this.name == $that.firmName,
+    firm[person_set, firm_set]: $this.firmName == $that.name
+  }
+
+  test::Person_Address : XStore {
+    persons[address_set, person_set]: $this.name == $that.addressName,
+    address[person_set, address_set]: $this.addressName == $that.name
+  }
+
+  test::Firm_Address : XStore {
+    firms[address_set, firm_set]: $this.name == $that.addressName,
+    address[firm_set, address_set]: $this.addressName == $that.name
+  }
+
+  test::Address_Street : XStore {
+    street[address_set, street_set]: $this.streetName == $that.streetId,
+    addresses[street_set, address_set]: $this.streetId == $that.streetName
+  }
+
+)

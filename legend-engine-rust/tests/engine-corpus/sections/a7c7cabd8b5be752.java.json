@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 3,
+        "upperBound" : 3
+      },
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "values" : [ {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 3
+        },
+        "value" : true
+      }, {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 3
+        },
+        "value" : false
+      }, {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 3
+        },
+        "value" : true
+      } ]
+    } ],
+    "name" : "a__String_MANY_",
+    "package" : "a",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

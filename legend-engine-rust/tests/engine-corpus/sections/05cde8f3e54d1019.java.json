@@ -1,0 +1,227 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "Runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 130,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 120
+        },
+        "store" : {
+          "path" : "test::DB1",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 120
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 127,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 127
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 126,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 126
+              }
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 128,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 123
+            },
+            "type" : "H2"
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 129,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 122
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 141,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 131
+        },
+        "store" : {
+          "path" : "test::DB2",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 131,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 131
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 138,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 138
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 137,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 137
+              }
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 139,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 134
+            },
+            "type" : "H2"
+          },
+          "id" : "c2",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 140,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 133
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 152,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 142
+        },
+        "store" : {
+          "path" : "test::DB3",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 142,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 142
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 149,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 149
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 148,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 148
+              }
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 150,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 145
+            },
+            "type" : "H2"
+          },
+          "id" : "c3",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 151,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 144
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::Map",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 116,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 116
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 154,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 112
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 154,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 112
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,5 @@
+
+function a::f():Any[*]{#TDS{
+a,b
+1,2
+3,4}#}

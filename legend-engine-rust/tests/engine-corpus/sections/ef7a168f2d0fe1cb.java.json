@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "equal",
+        "parameters" : [ {
+          "_type" : "dateTime",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 3
+          },
+          "value" : "2014"
+        }, {
+          "_type" : "dateTime",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 3
+          },
+          "value" : "2014"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 3
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "testYtd__Any_MANY_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 23,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

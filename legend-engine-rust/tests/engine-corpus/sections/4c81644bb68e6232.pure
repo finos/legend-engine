@@ -1,0 +1,27 @@
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    {
+      mapping: test::myMapping1;
+      runtimeComponents:
+      {
+        class: test::myClass;
+        binding: test::Binding;
+        runtime: test::myRuntime1;
+      }
+    },
+    PROD:
+    {
+      mapping: test::myMapping2;
+      runtimeComponents:
+      {
+        class: test::myClass;
+        binding: test::Binding;
+        runtime: test::myRuntime1;
+      }
+    }
+  ];
+}

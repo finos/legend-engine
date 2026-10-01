@@ -1,0 +1,167 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "assertRelationEmpty",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "rowsWithValueOutsideRange",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "rel",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 2
+        },
+        "type" : "colSpec",
+        "value" : {
+          "name" : "id",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 2
+          }
+        }
+      }, {
+        "_type" : "func",
+        "function" : "minus",
+        "parameters" : [ {
+          "_type" : "decimal",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 3
+          },
+          "value" : 1
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "decimal",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "value" : 5
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "id",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 7
+          }
+        }, {
+          "name" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 8
+          }
+        }, {
+          "name" : "age",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 9
+          }
+        }, {
+          "name" : "emailAddress",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 10
+          }
+        }, {
+          "name" : "annualSalary",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 11
+          }
+        }, {
+          "name" : "dateOfBirth",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 12
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 22,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 5
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "name" : "rel"
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 1,
+    "endLine" : 14,
+    "sourceId" : "",
+    "startColumn" : 4,
+    "startLine" : 1
+  }
+}
+}

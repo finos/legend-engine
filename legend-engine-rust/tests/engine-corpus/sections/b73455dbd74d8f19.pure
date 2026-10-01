@@ -1,0 +1,10 @@
+
+Mapping all::let::allVersions::allVersionsInRange::toBytes
+(
+  *meta::external::mongo::mapping[id1]: MongoDB
+    {
+      ~filter [mongo::test::db] activeRecords 
+      ~mainCollection [mongo::test::db] PersonRecord 
+      ~binding mongo::test::PersonBinding 
+    }
+)

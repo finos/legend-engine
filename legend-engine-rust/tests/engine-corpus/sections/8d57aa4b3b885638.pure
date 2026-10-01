@@ -1,0 +1,5 @@
+
+SnowflakeM2MUdf x::A
+{
+   ownership : Deployment { identifier: 'pierre'};
+}

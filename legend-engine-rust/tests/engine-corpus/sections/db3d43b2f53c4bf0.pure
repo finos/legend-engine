@@ -1,0 +1,3 @@
+
+function abc::abc::indexToTdsFunction(): TabularDataSet[1] {
+  indexToTDS(abc::abc::Store, 'index1')}

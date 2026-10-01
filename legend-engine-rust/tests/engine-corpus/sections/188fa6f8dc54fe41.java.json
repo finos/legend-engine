@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Multiple entries found for type: 'meta::Demo'",
+    "sourceInformation" : {
+      "endColumn" : 8,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 6,
+      "startLine" : 9
+    }
+  }
+}

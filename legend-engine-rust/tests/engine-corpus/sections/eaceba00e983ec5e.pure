@@ -1,0 +1,16 @@
+
+Data demo::data::AggSalesData
+{
+  Relational
+  #{
+    default.SalesTable:
+      'id,salesPerson,revenue\n' +
+      '1,John,10\n' +
+      '2,John,20\n' +
+      '3,Jane,5\n';
+    default.SalesByPersonTable:
+      'salesPerson,revenue\n' +
+      'John,30\n' +
+      'Jane,5\n';
+  }#
+}

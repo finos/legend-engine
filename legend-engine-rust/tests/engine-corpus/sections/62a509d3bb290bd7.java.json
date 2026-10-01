@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'runtime' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 10
+    }
+  }
+}

@@ -1,0 +1,13 @@
+
+Mapping model::myRelationalMapping
+(
+  MissingAssociation: Relational
+  {
+    AssociationMapping
+    (
+      location: [dbInc]@location_PlaceOfInterest,
+      placeOfInterest: [dbInc]@location_PlaceOfInterest
+    )
+  }
+
+)

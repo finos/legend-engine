@@ -1,0 +1,5 @@
+
+function my::test(): Any[*]
+{
+  #{test::Firm{legalName,->subType(@test::FirmSubType1){SubTypeName1},->subType(@test::FirmSubType2){SubTypeName2}}}#
+}

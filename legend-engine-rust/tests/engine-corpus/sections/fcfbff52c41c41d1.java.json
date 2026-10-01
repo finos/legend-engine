@@ -1,0 +1,132 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "time",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tradeTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 16
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "in_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "out_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "in_z",
+          "out" : "out_z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 21
+          }
+        } ],
+        "name" : "positionTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 20
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ]
+  } ]
+}

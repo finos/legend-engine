@@ -1,0 +1,190 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Person",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 15
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Order",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 13
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ {
+      "path" : "stores::DB",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ {
+      "name" : "Person_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::DB",
+            "mainTableDb" : "stores::DB",
+            "schema" : "mySchema",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 22
+            },
+            "table" : "Person"
+          },
+          "tableAlias" : "Person"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::DB",
+            "mainTableDb" : "stores::DB",
+            "schema" : "mySchema",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 22
+            },
+            "table" : "Order"
+          },
+          "tableAlias" : "Order"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 52,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    } ],
+    "name" : "SimpleDB",
+    "package" : "stores",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ]
+  } ]
+}

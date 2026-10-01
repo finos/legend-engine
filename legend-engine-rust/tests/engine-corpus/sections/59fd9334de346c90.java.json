@@ -1,0 +1,118 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "FirmRuntime",
+    "package" : "chain::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 27,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 24,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "chain::connection::FirmModelChainConnection",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 26,
+              "sourceId" : "runtime/runtime.pure",
+              "startColumn" : 14,
+              "startLine" : 26
+            }
+          },
+          "id" : "chain",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 26,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 7,
+            "startLine" : 26
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 31,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        },
+        "store" : {
+          "path" : "chain::store::DB",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 28,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "chain::connection::FirmH2Connection",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 30,
+              "sourceId" : "runtime/runtime.pure",
+              "startColumn" : 11,
+              "startLine" : 30
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 30,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 7,
+            "startLine" : 30
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "chain::mapping::M2M",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 20,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 33,
+        "sourceId" : "runtime/runtime.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "runtime/runtime.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    }
+  } ],
+  "imports" : [ ]
+}

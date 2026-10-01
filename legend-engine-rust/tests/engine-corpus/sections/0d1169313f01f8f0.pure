@@ -1,0 +1,8 @@
+
+Class test::model
+{
+    name: String[1];
+    id: String[1];
+}
+
+Class test::changedModel{    name: String[1];    id: Integer[1];}

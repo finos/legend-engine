@@ -1,0 +1,117 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 26
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 29
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 12,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 29
+                  }
+                } ],
+                "property" : "legalOwner",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 14,
+                  "startLine" : 29
+                }
+              } ],
+              "property" : "employer",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 29
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 29
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 28
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "srcClass" : "test::Firm_milestoned"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "referenceDataMapping",
+    "package" : "reporting::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

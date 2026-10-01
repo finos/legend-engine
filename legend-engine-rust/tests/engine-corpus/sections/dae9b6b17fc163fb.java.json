@@ -1,0 +1,159 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "oneOf",
+      "parameters" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        },
+        "values" : [ {
+          "_type" : "func",
+          "function" : "and",
+          "parameters" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 3
+            },
+            "value" : true
+          }, {
+            "_type" : "func",
+            "function" : "and",
+            "parameters" : [ {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 3,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 3
+              },
+              "value" : false
+            }, {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 3,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 3
+              },
+              "value" : false
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 3
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 3
+          }
+        }, {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 3
+          },
+          "value" : false
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 40,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "test_Any_$0_1$__Boolean_1_",
+    "package" : "package",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::metamodel::type::Any",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "value",
+      "sourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Boolean",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 72,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+Avro model::AvroConfig
+{
+  generationOutputPath: 'aa';
+  generationOutputPath: 'bbbb';
+  includeNamespace: true;
+  propertyProfile: ['model::myProfile', 'model::nextProfile'];
+}
+

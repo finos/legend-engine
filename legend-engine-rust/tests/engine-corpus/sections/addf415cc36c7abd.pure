@@ -1,0 +1,7 @@
+
+Class <<temporal.businesstemporal>> demo::relation::domain::BusinessTemporalEmployee
+{
+  id: Integer[1];
+  firstName: String[1];
+  salary: Float[0..1];
+}

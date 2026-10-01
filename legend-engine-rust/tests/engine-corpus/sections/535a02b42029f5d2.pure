@@ -1,0 +1,17 @@
+
+Class test::Person
+{
+   firstName: String[1];
+   tag: String[1];
+}
+
+Class test::Firm
+{
+   id: String[1];
+}
+
+Association test::Firm_Person
+{
+   employees: test::Person[*];
+   employer: test::Firm[1];
+}

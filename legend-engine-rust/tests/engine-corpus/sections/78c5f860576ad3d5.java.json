@@ -1,0 +1,29 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "somethingelse",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 2,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 12
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "A"
+    } ]
+  } ],
+  "imports" : [ ]
+}

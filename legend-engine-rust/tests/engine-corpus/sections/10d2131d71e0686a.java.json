@@ -1,0 +1,114 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::IncType",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "incType",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 43,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "Enumeration",
+    "name" : "IncType",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 73,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 45,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 64,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "CORP"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 70,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "LLC"
+    } ]
+  }, {
+    "_type" : "Enumeration",
+    "name" : "Other",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 95,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 75,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 94,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 92,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "bla"
+    } ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,47 @@
+
+Service test::service::FirmServiceMulti
+{
+  pattern: '/firm';
+  title: 'my Service';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: nameFilter: String[1] | test::model::Firm.all()->filter(f | $f.legalName->startsWith($nameFilter))->project(~[name: f | $f.legalName]);
+    key: 'env';
+    executions['prod']:
+    {
+      mapping: test::mapping::FirmMapping;
+      runtime: test::runtime::FirmRuntime;
+    }
+    executions['qa']:
+    {
+      mapping: test::mapping::FirmMapping;
+      runtime: test::runtime::FirmRuntime;
+    }
+  }
+  testSuites:
+  [
+    testSuite_1
+    (
+      test_all_envs (nameFilter = 'A') =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+      test_prod_only (nameFilter = 'B') ['prod'] : PURE_TDSOBJECT =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+      test_prod_and_qa (nameFilter = 'C') ['prod', 'qa'] =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+    )
+  ]
+}

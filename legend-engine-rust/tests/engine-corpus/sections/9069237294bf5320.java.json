@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported join type 'UNKNOWN_JOIN_TYPE'",
+    "sourceInformation" : {
+      "endColumn" : 76,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 60,
+      "startLine" : 6
+    }
+  }
+}

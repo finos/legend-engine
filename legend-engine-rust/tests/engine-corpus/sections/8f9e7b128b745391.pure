@@ -1,0 +1,20 @@
+
+Class demo::Person
+{
+  id: Integer[1];
+  fullName: String[1];
+  age: Integer[0..1];
+  emailAddress: String[0..1];
+  annualSalary: Float[0..1];
+  dateOfBirth: StrictDate[0..1];
+}
+
+Class demo::SampleData
+{
+  id: Integer[1];
+  strCol: String[0..1];
+  intCol: Integer[0..1];
+  floatCol: Float[0..1];
+  dateCol: StrictDate[0..1];
+  boolCol: Boolean[0..1];
+}

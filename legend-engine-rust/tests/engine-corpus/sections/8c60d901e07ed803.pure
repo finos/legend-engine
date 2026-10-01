@@ -1,0 +1,10 @@
+
+Profile meta::pure::profiles::doc
+{
+   stereotypes: [tests];
+   tags: [doc, todo];
+}
+Class test::A
+{
+<<meta::pure::profiles::doc.imMissing>> ok: Integer[0..1];
+}

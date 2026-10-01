@@ -1,0 +1,225 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Person",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 31
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 31
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 31
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 31,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 31
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 31
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 31
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 31
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 31
+              },
+              "value" : "Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 31
+          }
+        } ],
+        "parameters" : [ ]
+      },
+      "mapping" : "test::Mapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 32
+      },
+      "runtime" : {
+        "_type" : "engineRuntime",
+        "connectionStores" : [ ],
+        "connections" : [ {
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 61,
+            "startLine" : 35
+          },
+          "store" : {
+            "path" : "test::TestDatabase",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 35
+            },
+            "type" : "STORE"
+          },
+          "storeConnections" : [ {
+            "connection" : {
+              "_type" : "connectionPointer",
+              "connection" : "test::ServiceConnection",
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 95,
+                "startLine" : 35
+              }
+            },
+            "id" : "connection1",
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 35
+            }
+          } ]
+        } ],
+        "mappings" : [ {
+          "path" : "test::Mapping",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 35
+          },
+          "type" : "MAPPING"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 35
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 29
+      }
+    },
+    "name" : "Service",
+    "owners" : [ ],
+    "package" : "test",
+    "pattern" : "test",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "test",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 39
+      }
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,23 @@
+
+Database mapping::db(
+   Table personTable
+   (
+    id INT PRIMARY KEY,
+    firstName VARCHAR(200),
+    firmId INT,
+    legalName VARCHAR(200)
+   )
+   Table firmTable
+   (
+    id INT PRIMARY KEY,
+    legalName VARCHAR(200)
+   )
+   View personFirmView
+   (
+    id : personTable.id,
+    firstName : personTable.firstName,
+    firmId : personTable.firmId
+   )
+   Filter FirmFilter(firmTable.legalName = 'A')
+   Join Firm_Person(firmTable.id = personTable.firmId)
+)

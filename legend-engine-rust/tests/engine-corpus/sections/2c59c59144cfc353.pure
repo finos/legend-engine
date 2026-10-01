@@ -1,0 +1,7 @@
+
+ModelChainConnection meta::mySimpleConnection
+{
+  mappings: [model::firm::Person];
+  mappings: [model::firm::Person];
+}
+

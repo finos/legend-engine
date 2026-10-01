@@ -1,0 +1,281 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "project",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "filter",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Location",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 113,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 113
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 113
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "in",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "l",
+                  "sourceInformation" : {
+                    "endColumn" : 64,
+                    "endLine" : 114,
+                    "sourceId" : "",
+                    "startColumn" : 63,
+                    "startLine" : 114
+                  }
+                } ],
+                "property" : "city",
+                "sourceInformation" : {
+                  "endColumn" : 69,
+                  "endLine" : 114,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 114
+                }
+              }, {
+                "_type" : "var",
+                "name" : "cityList",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 114,
+                  "sourceId" : "",
+                  "startColumn" : 75,
+                  "startLine" : 114
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 114,
+                "sourceId" : "",
+                "startColumn" : 72,
+                "startLine" : 114
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "test::Location",
+                  "sourceInformation" : {
+                    "endColumn" : 56,
+                    "endLine" : 114,
+                    "sourceId" : "",
+                    "startColumn" : 43,
+                    "startLine" : 114
+                  }
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "name" : "l",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 114,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 114
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 114,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 114
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 114,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 114
+          }
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 115
+          },
+          "values" : [ {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 115,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 115
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 115,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 115
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 115
+            }
+          } ]
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 55,
+            "startLine" : 115
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 115
+            },
+            "value" : "Id"
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 115,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 115
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "test::LocationEnum",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 113
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 0
+        },
+        "name" : "cityList",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 113,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 113
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 115,
+        "sourceId" : "",
+        "startColumn" : 35,
+        "startLine" : 113
+      }
+    } ],
+    "name" : "fetch__Any_1_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 111,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 111
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 116,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 111
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

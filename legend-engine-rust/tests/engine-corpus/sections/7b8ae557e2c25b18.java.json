@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token '}'. Valid alternatives: ['runtime', 'runtimeComponents']",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 9
+    }
+  }
+}

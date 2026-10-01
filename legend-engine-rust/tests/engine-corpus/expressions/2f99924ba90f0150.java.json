@@ -1,0 +1,120 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "not",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "and",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "not",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 6,
+              "startLine" : 1
+            },
+            "value" : true
+          }, {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 1
+            },
+            "value" : false
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "func",
+        "function" : "equal",
+        "parameters" : [ {
+          "_type" : "boolean",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 1
+          },
+          "value" : true
+        }, {
+          "_type" : "func",
+          "function" : "not",
+          "parameters" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 1
+            },
+            "value" : false
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 37,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "A person in the system.\n\nIdentity is established by legalName."
+      }
+    } ]
+  } ],
+  "imports" : [ ]
+}

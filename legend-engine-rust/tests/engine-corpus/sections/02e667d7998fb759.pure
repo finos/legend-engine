@@ -1,0 +1,22 @@
+
+Elasticsearch7Cluster abc::abc::Store
+{
+  indices: [
+    index1: {
+      properties: [
+        prop1: Keyword,
+        prop2: Text,
+        prop3: Date,
+        prop4: Short,
+        prop5: Byte,
+        prop6: Integer,
+        prop7: Long,
+        prop8: Float,
+        prop9: HalfFloat,
+        prop10: Double,
+        prop11: Boolean
+      ];
+    }
+  ];
+}
+

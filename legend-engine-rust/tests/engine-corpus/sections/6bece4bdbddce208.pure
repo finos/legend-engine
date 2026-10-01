@@ -1,0 +1,31 @@
+
+Class A
+[
+  c1
+  (
+    ~function: if($this.'O.K.' == 'ok', |true, |false)
+    ~enforcementLevel: Warn
+  ),
+  c2
+  (
+    ~externalId: 'ext ID'
+    ~function: if($this.'O.K.' == 'ok', |true, |false)
+  ),
+  c3
+  (
+    ~function: if($this.'O.K.' == 'ok', |true, |false)
+    ~message: $this.'O.K.' + ' is not ok'
+  ),
+  c4
+  (
+    ~externalId: 'ext ID'
+    ~function: if($this.'O.K.' == 'ok', |true, |false)
+    ~enforcementLevel: Warn
+    ~message: $this.'O.K.' + ' is not ok'
+  )
+]
+{
+  name: String[45..*];
+  'O.K.': Integer[1..2];
+  xza(s: String[1]) {$s + 'ok'}: String[1];
+}

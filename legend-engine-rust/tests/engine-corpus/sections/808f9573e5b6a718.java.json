@@ -1,0 +1,61 @@
+{
+  "elements" : [ {
+    "_type" : "elasticsearch7Store",
+    "includedStores" : [ ],
+    "indices" : [ {
+      "indexName" : "index1",
+      "properties" : [ {
+        "property" : {
+          "nested" : {
+            "_pure_protocol_type" : "nestedProperty",
+            "_pure_protocol_type" : "nestedProperty",
+            "properties" : {
+              "nested1" : {
+                "keyword" : {
+                  "_pure_protocol_type" : "keywordProperty",
+                  "_pure_protocol_type" : "keywordProperty",
+                  "type" : "keyword"
+                }
+              },
+              "nested2" : {
+                "keyword" : {
+                  "_pure_protocol_type" : "keywordProperty",
+                  "_pure_protocol_type" : "keywordProperty",
+                  "type" : "keyword"
+                }
+              },
+              "nestedObject" : {
+                "nested" : {
+                  "_pure_protocol_type" : "nestedProperty",
+                  "_pure_protocol_type" : "nestedProperty",
+                  "properties" : {
+                    "nested1" : {
+                      "integer" : {
+                        "_pure_protocol_type" : "integerNumberProperty",
+                        "_pure_protocol_type" : "integerNumberProperty",
+                        "type" : "integer"
+                      }
+                    }
+                  },
+                  "type" : "nested"
+                }
+              }
+            },
+            "type" : "nested"
+          }
+        },
+        "propertyName" : "prop1"
+      } ]
+    } ],
+    "name" : "Store",
+    "package" : "abc::abc",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,14 @@
+
+Data demo::data::IncludeFirmData
+{
+  Relational
+  #{
+    default.PersonTable:
+      'id,firmId,firstName,lastName\n' +
+      '1,1,John,Doe\n' +
+      '2,1,Jane,Smith\n';
+    default.FirmTable:
+      'id,legalName\n' +
+      '1,Finos\n';
+  }#
+}

@@ -1,0 +1,45 @@
+{
+  "elements" : [ {
+    "_type" : "executionEnvironmentInstance",
+    "executionParameters" : [ {
+      "_type" : "singleExecutionParameters",
+      "key" : "PROD",
+      "mapping" : "test::mapping2",
+      "mappingSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 29
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::runtime",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 30
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 27
+      }
+    } ],
+    "name" : "executionEnvironment",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    }
+  } ],
+  "imports" : [ ]
+}

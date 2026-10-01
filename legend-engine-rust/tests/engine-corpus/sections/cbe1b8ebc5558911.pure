@@ -1,0 +1,27 @@
+
+Runtime test::serviceStore::caching::Runtime
+{
+  mappings:
+  [
+    test::serviceStore::caching::Map
+  ];
+  connections:
+  [
+    test::serviceStore::caching::store::PersonService:
+    [
+      c1: test::serviceStore::caching::connection::PersonConnection
+    ],
+    test::serviceStore::caching::store::FirmService:
+    [
+      c2: test::serviceStore::caching::connection::FirmConnection
+    ],
+    test::serviceStore::caching::store::AddressService:
+    [
+      c3: test::serviceStore::caching::connection::AddressConnection
+    ],
+    test::serviceStore::caching::store::StreetService:
+    [
+      c4: test::serviceStore::caching::connection::StreetConnection
+    ]
+  ];
+}

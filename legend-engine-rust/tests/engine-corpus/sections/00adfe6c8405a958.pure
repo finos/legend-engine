@@ -1,0 +1,26 @@
+
+Database sample::test
+(
+  View SomeView
+  (
+    prefix: case(
+              tab.val = 20, 1,
+              tab.val != 20, 1,
+              tab.val < 20, 1,
+              tab.val > 20, 1,
+              tab.val <= 20, 1,
+              tab.val >= 20, 1,
+              tab.val <> 20, 1,
+              tab.val is null, 1,
+              tab.val is not null, 1,
+              tab.val and tab.val, 1,
+              tab.val and tab.val or tab.val, 1,
+              tab.val > 20 and tab.val < 100, 1,
+              tab.val > 20 or tab.val <= 100, 1,
+              (tab.val > 20 and tab.val <= 100) or tab.val <> 2, 1,
+              substring(tab.val) > 100, 1,
+              sqlNull()
+            ) > 2
+  )
+  Join Abe([test::TEST_DB2]a.col1 > 2 and [test::TEST_DB2]b.col1 > 3 or [test::TEST_DB2]b.col1 > 4)
+)

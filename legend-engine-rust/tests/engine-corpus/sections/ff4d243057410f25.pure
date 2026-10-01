@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+    *Person: Relation
+    {
+        firstName : firstName,
+        firm : jsonColumn
+    }
+)

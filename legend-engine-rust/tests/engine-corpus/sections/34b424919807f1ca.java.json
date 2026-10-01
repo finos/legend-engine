@@ -1,0 +1,238 @@
+{
+  "elements" : [ {
+    "_type" : "executionEnvironmentInstance",
+    "executionParameters" : [ {
+      "_type" : "multiExecutionParameters",
+      "masterKey" : "UAT",
+      "singleExecutionParameters" : [ {
+        "_type" : "singleExecutionParameters",
+        "key" : "abc",
+        "mapping" : "test::myMapping1",
+        "mappingSourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 10
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::myRuntime1",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 11
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "singleExecutionParameters",
+        "key" : "xyz",
+        "mapping" : "test::myMapping2",
+        "mappingSourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 15
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::myRuntime2",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 16
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 13
+        }
+      } ]
+    }, {
+      "_type" : "multiExecutionParameters",
+      "masterKey" : "PROD",
+      "singleExecutionParameters" : [ {
+        "_type" : "singleExecutionParameters",
+        "key" : "abc",
+        "mapping" : "test::myMapping3",
+        "mappingSourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 23
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::myRuntime3",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 24
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "singleExecutionParameters",
+        "key" : "xyz",
+        "mapping" : "test::myMapping4",
+        "mappingSourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 28
+        },
+        "runtime" : {
+          "_type" : "engineRuntime",
+          "connectionStores" : [ ],
+          "connections" : [ {
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 52,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 33
+            },
+            "store" : {
+              "path" : "ModelStore",
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 33
+              },
+              "type" : "STORE"
+            },
+            "storeConnections" : [ {
+              "connection" : {
+                "_type" : "connectionPointer",
+                "connection" : "test::myConnection",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 35,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 35
+                }
+              },
+              "id" : "id1",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 35
+              }
+            }, {
+              "connection" : {
+                "_type" : "JsonModelConnection",
+                "class" : "meta::mySimpleClass",
+                "classSourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 40
+                },
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 42,
+                  "sourceId" : "",
+                  "startColumn" : 17,
+                  "startLine" : 38
+                },
+                "url" : "my_url"
+              },
+              "id" : "id2",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 43,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 36
+              }
+            }, {
+              "connection" : {
+                "_type" : "JsonModelConnection",
+                "class" : "meta::mySimpleClass",
+                "classSourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 48
+                },
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 50,
+                  "sourceId" : "",
+                  "startColumn" : 17,
+                  "startLine" : 46
+                },
+                "url" : "my_url"
+              },
+              "id" : "id3",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 51,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 44
+              }
+            } ]
+          } ],
+          "mappings" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 26
+        }
+      } ]
+    } ],
+    "name" : "executionEnvironment",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

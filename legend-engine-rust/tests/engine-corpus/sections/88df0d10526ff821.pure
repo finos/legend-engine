@@ -1,0 +1,12 @@
+
+'''
+A currency.
+'''
+Enum model::A
+{
+  '''
+  US dollar.
+  '''
+  USD,
+  EUR
+}

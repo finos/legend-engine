@@ -1,0 +1,27 @@
+ 
+Service test::Service 
+{ 
+  pattern: 'url/myUrl/'; 
+  title: 'my Service'; 
+  owners: ['ownerName']; 
+  documentation: 'test'; 
+  autoActivateUpdates: true; 
+  execution: Single 
+  { 
+    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); 
+    mapping: test::mapping; 
+    runtime: test::runtime; 
+  }
+  postValidations:
+  [
+    {
+      description: 'A good description of the validation';
+      params: [];
+      assertions: [
+          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('prop1')->startsWith('X'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no prop1 values to begin with the letter X');,
+          testAssert: tds: TabularDataSet[1]|true;,
+          testAssert2: tds: TabularDataSet[1]|false;
+      ];
+    }
+  ]
+}

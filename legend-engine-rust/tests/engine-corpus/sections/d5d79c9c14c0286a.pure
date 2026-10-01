@@ -1,0 +1,89 @@
+
+Database simple::dbInc
+(
+  Schema productSchema
+  (
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+  )
+
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table differentPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER,
+    CEOID INTEGER
+  )
+  Table otherFirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER
+  )
+  Table addressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    TYPE INTEGER,
+    NAME VARCHAR(200),
+    STREET VARCHAR(100),
+    COMMENTS VARCHAR(100)
+  )
+  Table locationTable
+  (
+    ID INTEGER PRIMARY KEY,
+    PERSONID INTEGER,
+    PLACE VARCHAR(200),
+    date DATE
+  )
+  Table placeOfInterestTable
+  (
+    ID INTEGER PRIMARY KEY,
+    locationID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+
+  TabularFunction personFunction
+  (
+    ID INTEGER,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+
+  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID = personTable.ADDRESSID)
+  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.YEEEEEE or addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.niketh)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.ADDRESSID)
+  Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+  Join Person_Location(personTable.ID = locationTable.PERSONID)
+  Join location_PlaceOfInterest(locationTable.ID = placeOfInterestTable.locationID)
+  Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
+)
+

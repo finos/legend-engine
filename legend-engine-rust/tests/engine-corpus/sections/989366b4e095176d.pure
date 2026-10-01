@@ -1,0 +1,27 @@
+
+Mapping test::Map
+(
+    test::DataTypesClass: Relational
+    {
+       scope([test::DataTypesDB] dataTable)
+       (
+          tinyInt: ti,
+          smallInt: si,
+          integer: int,
+          bigInt: bi,
+          varchar: vc,
+          char: c,
+          date : date,
+          timestamp : ts,
+          float: f,
+          double: d,
+          bit: bit,
+          decimalAsFloat: dec,
+          real: r,
+          numericAsFloat: n,
+          decimal: dec,
+          numeric: n,
+          floatAsDecimal: f
+       )
+    }
+)

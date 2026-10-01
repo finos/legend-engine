@@ -1,0 +1,5 @@
+
+function test::filterStockTrades(): Any[*]
+{
+    #>{test::DeephavenStore.stockTrades}#->filter(c | $c.City == 'New York')->filter(c | $c.IsBuy == true)->select(~[StockSymbol])->from(test::DeephavenRuntime)
+}

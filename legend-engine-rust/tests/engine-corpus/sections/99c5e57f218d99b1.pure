@@ -1,0 +1,10 @@
+
+Mapping test::mapping
+(
+  *test::model::A: ServiceStore
+  {
+    ~service [test::ServiceStore] TestService
+    (
+    )
+  }
+)

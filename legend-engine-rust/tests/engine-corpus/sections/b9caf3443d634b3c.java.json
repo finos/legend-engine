@@ -1,0 +1,921 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Trade",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "date",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 46,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 74,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 69,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 85,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "B",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "columnValueDifference",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "groupBy",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Trade",
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 110,
+                "startLine" : 1
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 126,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 121,
+              "startLine" : 1
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 184,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 144,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "adjust",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 148,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 147,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "date",
+                  "sourceInformation" : {
+                    "endColumn" : 153,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 150,
+                    "startLine" : 1
+                  }
+                }, {
+                  "_type" : "integer",
+                  "sourceInformation" : {
+                    "endColumn" : 163,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 163,
+                    "startLine" : 1
+                  },
+                  "value" : 0
+                }, {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "packageableElementPtr",
+                    "fullPath" : "DurationUnit",
+                    "sourceInformation" : {
+                      "endColumn" : 177,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 166,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "DAYS",
+                  "sourceInformation" : {
+                    "endColumn" : 182,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 179,
+                    "startLine" : 1
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 161,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 156,
+                  "startLine" : 1
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 183,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 146,
+                "startLine" : 1
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 263,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 193,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "agg",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 204,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 203,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "quantity",
+                  "sourceInformation" : {
+                    "endColumn" : 213,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 206,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 213,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 201,
+                  "startLine" : 1
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "sum",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y",
+                    "sourceInformation" : {
+                      "endColumn" : 221,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 220,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 226,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 224,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 228,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 218,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 197,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 195,
+                "startLine" : 1
+              }
+            }, {
+              "_type" : "func",
+              "function" : "agg",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 241,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 240,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 244,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 243,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 244,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 238,
+                  "startLine" : 1
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "count",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y",
+                    "sourceInformation" : {
+                      "endColumn" : 252,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 251,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 259,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 255,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 261,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 249,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 234,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 232,
+                "startLine" : 1
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 303,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 272,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 283,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 273,
+                "startLine" : 1
+              },
+              "value" : "tradeDate"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 294,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 285,
+                "startLine" : 1
+              },
+              "value" : "quantity"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 302,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 296,
+                "startLine" : 1
+              },
+              "value" : "count"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 142,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 136,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "func",
+          "function" : "groupBy",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Trade",
+              "sourceInformation" : {
+                "endColumn" : 357,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 347,
+                "startLine" : 1
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 363,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 358,
+              "startLine" : 1
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 429,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 389,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "adjust",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 393,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 392,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "date",
+                  "sourceInformation" : {
+                    "endColumn" : 398,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 395,
+                    "startLine" : 1
+                  }
+                }, {
+                  "_type" : "integer",
+                  "sourceInformation" : {
+                    "endColumn" : 408,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 408,
+                    "startLine" : 1
+                  },
+                  "value" : 0
+                }, {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "packageableElementPtr",
+                    "fullPath" : "DurationUnit",
+                    "sourceInformation" : {
+                      "endColumn" : 422,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 411,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "DAYS",
+                  "sourceInformation" : {
+                    "endColumn" : 427,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 424,
+                    "startLine" : 1
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 406,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 401,
+                  "startLine" : 1
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 428,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 391,
+                "startLine" : 1
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 516,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 446,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "agg",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 457,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 456,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "quantity",
+                  "sourceInformation" : {
+                    "endColumn" : 466,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 459,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 466,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 454,
+                  "startLine" : 1
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "sum",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y",
+                    "sourceInformation" : {
+                      "endColumn" : 474,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 473,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 479,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 477,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 481,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 471,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 450,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 448,
+                "startLine" : 1
+              }
+            }, {
+              "_type" : "func",
+              "function" : "agg",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 494,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 493,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "property" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 497,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 496,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 497,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 491,
+                  "startLine" : 1
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "count",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y",
+                    "sourceInformation" : {
+                      "endColumn" : 505,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 504,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 512,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 508,
+                    "startLine" : 1
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "y"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 514,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 502,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 487,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 485,
+                "startLine" : 1
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 564,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 533,
+              "startLine" : 1
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 544,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 534,
+                "startLine" : 1
+              },
+              "value" : "tradeDate"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 555,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 546,
+                "startLine" : 1
+              },
+              "value" : "quantity"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 563,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 557,
+                "startLine" : 1
+              },
+              "value" : "count"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 387,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 381,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 590,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 578,
+            "startLine" : 1
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 589,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 579,
+              "startLine" : 1
+            },
+            "value" : "tradeDate"
+          } ]
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "sourceInformation" : {
+            "endColumn" : 611,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 592,
+            "startLine" : 1
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 602,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 593,
+              "startLine" : 1
+            },
+            "value" : "quantity"
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 610,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 604,
+              "startLine" : 1
+            },
+            "value" : "count"
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 334,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 314,
+          "startLine" : 1
+        }
+      } ],
+      "name" : "z",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::tds::TabularDataSet",
+          "sourceInformation" : {
+            "endColumn" : 648,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 618,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 652,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 103,
+        "startLine" : 1
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 653,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 86,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

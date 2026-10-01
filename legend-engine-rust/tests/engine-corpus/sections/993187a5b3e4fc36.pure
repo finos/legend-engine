@@ -1,0 +1,10 @@
+
+RelationalDatabaseConnection import::store::type::mode::specification::auth::postProcessors::queryTimeOutInSeconds::timezone::quoteIdentifiers::queryGenerationConfigs
+{
+  store: model::firm::Person;
+  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };
+  timezone: +3000;
+  type: H2;
+  auth: DefaultH2;
+}
+

@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "externalFormat",
+      "contentType" : "application/json",
+      "data" : "{\"name\":\"john doe\",\"id\":\"77\"}",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      }
+    },
+    "name" : "MyData",
+    "package" : "test::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

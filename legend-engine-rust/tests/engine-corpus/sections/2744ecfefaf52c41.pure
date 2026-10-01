@@ -1,0 +1,7 @@
+
+import meta::pure::metamodel::relation::*;
+function demo::relation::func::fullTimeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    ->filter(r | $r.EMP_TYPE == 'FULL_TIME')
+}

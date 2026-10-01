@@ -1,0 +1,9 @@
+
+Class <<temporal.businesstemporal>> test::class
+{
+  prop1 : test::class2[0..1];
+}
+Class <<temporal.businesstemporal>> test::class2
+{
+  prop1 : Integer[0..1];
+}

@@ -1,0 +1,129 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "if",
+      "parameters" : [ {
+        "_type" : "boolean",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 3
+        },
+        "value" : true
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "letFunction",
+          "parameters" : [ {
+            "_type" : "string",
+            "value" : "test"
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 1,
+              "startLine" : 4
+            },
+            "value" : "test"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 1,
+            "startLine" : 4
+          }
+        }, {
+          "_type" : "var",
+          "name" : "test",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 1,
+            "startLine" : 5
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "value" : "fgh"
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 6
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "multiExpressions__String_$0_1$_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

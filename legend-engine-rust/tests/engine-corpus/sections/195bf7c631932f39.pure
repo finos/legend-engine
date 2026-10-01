@@ -1,0 +1,35 @@
+
+Mapping test::crossPropertyMappingIncludes
+(
+   include test::crossPropertyMappingWithLocalProperties
+   test::Firm[f]: Pure {
+      ~src test::Firm
+      name: $src.name,
+      addressName: $src.addressName
+   }
+
+   *test::Person[p2]: Pure {
+      ~src test::Person
+      +firmName: String[0..1] : '',
+      fullName: $src.fullName,
+      addressName: $src.addressName
+   }
+
+   test::Person[p3]: Pure {
+      ~src test::Person
+      fullName: $src.fullName->substring(
+        0,
+        $src.fullName->indexOf(' ')
+      ),
+      addressName: $src.addressName
+   }
+   test::Street[s]: Pure {
+       ~src test::Street
+       streetId: $src.streetId,
+       +address: String[*] : ''
+   }
+   test::Address_Street: XStore {
+      street: $this.streetName == $that.streetId,
+      addresses: $this.streetId == $that.streetName
+   }
+)

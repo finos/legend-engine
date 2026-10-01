@@ -1,0 +1,144 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "user::User",
+      "classSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 18
+      },
+      "id" : "51a08024-0583-457f-81f8-c028c4cff247",
+      "position" : {
+        "x" : 817.156494140625,
+        "y" : 602.2708129882812
+      },
+      "rectangle" : {
+        "height" : 103.0,
+        "width" : 135.53759765625
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      }
+    }, {
+      "class" : "animal::Animal",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 24
+      },
+      "id" : "464a4e74-60b8-4dd5-875e-e983aedf933a",
+      "position" : {
+        "x" : 399.0,
+        "y" : 251.90884399414062
+      },
+      "rectangle" : {
+        "height" : 211.0,
+        "width" : 233.31298828125
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "test",
+    "package" : "animal",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ ]
+      },
+      "property" : {
+        "class" : "animal::Animal",
+        "property" : "owner",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 28
+      },
+      "sourceView" : "464a4e74-60b8-4dd5-875e-e983aedf933a",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 31
+      },
+      "targetView" : "51a08024-0583-457f-81f8-c028c4cff247",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 32
+      }
+    }, {
+      "line" : {
+        "points" : [ ]
+      },
+      "property" : {
+        "class" : "animal::Animal",
+        "property" : "a",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 37
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "sourceView" : "464a4e74-60b8-4dd5-875e-e983aedf933a",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 38
+      },
+      "targetView" : "51a08024-0583-457f-81f8-c028c4cff247",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 39
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    }
+  } ],
+  "imports" : [ ]
+}

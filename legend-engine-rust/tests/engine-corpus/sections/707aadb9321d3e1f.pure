@@ -1,0 +1,20 @@
+
+Class test::model::A
+{
+  alpha   : String[1];
+  beta    : Boolean[1];
+  gamma   : Date[*];
+  epsilon : DateTime[1];
+  eta     : Decimal[1];
+  theta   : StrictDate[1];
+  iota    : DateTime[1];
+}
+Class test::model::Z
+{
+  alpha   : String[1];
+  epsilon : Decimal[1];
+  zeta    : DateTime[1];
+  eta     : Decimal[1];
+  theta   : StrictDate[1];
+  iota    : DateTime[1];
+}

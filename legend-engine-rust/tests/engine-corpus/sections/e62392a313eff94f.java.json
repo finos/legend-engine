@@ -1,0 +1,533 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "testing::Person",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "id" : "testing_Person",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "testing::Person",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "source" : "testing_Person",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 7
+              },
+              "values" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 7
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 7
+                },
+                "value" : " "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 7
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 43,
+                  "startLine" : 7
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "srcClass" : "testing::other::NPerson"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "testing",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 85,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "doc" : "myDoc",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 15,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 18,
+                "startLine" : 15
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 15,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 33,
+              "startLine" : 15
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 15,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 54,
+              "startLine" : 15
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 15,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 54,
+                "startLine" : 15
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 15,
+                  "sourceId" : "testing::mapping",
+                  "startColumn" : 70,
+                  "startLine" : 15
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 15,
+            "sourceId" : "testing::mapping",
+            "startColumn" : 41,
+            "startLine" : 15
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 15,
+          "sourceId" : "testing::mapping",
+          "startColumn" : 17,
+          "startLine" : 15
+        }
+      },
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"fullName\":[\"john doe\"]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 42,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 38
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 35
+          }
+        } ],
+        "doc" : "my test",
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 18
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "modelStore",
+            "modelData" : [ {
+              "_type" : "modelEmbeddedData",
+              "data" : {
+                "_type" : "reference",
+                "dataElement" : {
+                  "path" : "testMapping::TestData",
+                  "sourceInformation" : {
+                    "endColumn" : 16,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 26
+                  },
+                  "type" : "DATA"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 26
+                }
+              },
+              "model" : "test::example::model",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 25
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 23
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 23
+          },
+          "store" : {
+            "path" : "ModelStore",
+            "sourceInformation" : {
+              "endColumn" : 18,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 23
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "doc" : "myDoc",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 50,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 19,
+                "startLine" : 50
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 50,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 34,
+              "startLine" : 50
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 50,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 55,
+              "startLine" : 50
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 50,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 55,
+                "startLine" : 50
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 50,
+                  "sourceId" : "testing::mapping",
+                  "startColumn" : 71,
+                  "startLine" : 50
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 50,
+            "sourceId" : "testing::mapping",
+            "startColumn" : 42,
+            "startLine" : 50
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 50,
+          "sourceId" : "testing::mapping",
+          "startColumn" : 18,
+          "startLine" : 50
+        }
+      },
+      "id" : "testSuite2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 48
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"fullName\":[\"john doe\"]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 78,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 74
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 71
+          }
+        } ],
+        "doc" : "my test",
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 54
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "modelStore",
+            "modelData" : [ {
+              "_type" : "modelEmbeddedData",
+              "data" : {
+                "_type" : "reference",
+                "dataElement" : {
+                  "path" : "testMapping::TestData",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 65,
+                    "sourceId" : "",
+                    "startColumn" : 16,
+                    "startLine" : 62
+                  },
+                  "type" : "DATA"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 65,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 62
+                }
+              },
+              "model" : "test::example::model",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 65,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 61
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 59
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 59
+          },
+          "store" : {
+            "path" : "ModelStore",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 59
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

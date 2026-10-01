@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Path should start with '/' & should not end with '/'",
+    "sourceInformation" : {
+      "endColumn" : 24,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 12,
+      "startLine" : 6
+    }
+  }
+}

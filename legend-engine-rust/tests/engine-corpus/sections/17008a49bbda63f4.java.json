@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Type and/or multiplicity parameters are not authorized in Legend Engine",
+    "sourceInformation" : {
+      "endColumn" : 18,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 1
+    }
+  }
+}

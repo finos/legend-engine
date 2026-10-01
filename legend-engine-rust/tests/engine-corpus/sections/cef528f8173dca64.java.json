@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'auditing' is required",
+    "sourceInformation" : {
+      "endColumn" : 36,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

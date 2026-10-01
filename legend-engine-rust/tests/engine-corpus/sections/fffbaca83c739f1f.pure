@@ -1,0 +1,48 @@
+
+Class model::pure::changetoken::tests::SampleClass
+{
+  name: String[1] = 'Example';
+  nameDefault: String[1];
+  nameOverwrite: String[1] = 'Ignored';
+  optionalDefault: String[0..1];
+  optionalOverwrite: String[0..1];
+  optionalOverwriteNull: String[0..1];
+  arrayDefault: String[*];
+  arrayOverwrite: String[*];
+  arrayOverwriteEmpty: String[*];
+  booleanTrue: Boolean[1] = true;
+  booleanFalse: Boolean[1] = false;
+  booleanDefault: Boolean[1];
+  booleanOverwrite: Boolean[1];
+  number: Number[1] = 1.1;
+  numberDefault: Number[1];
+  numberOverwrite: Number[1];
+  integer: Integer[1] = 3;
+  integerDefault: Integer[1];
+  integerOverwrite: Integer[1] = 8;
+  integers: Integer[2] = [1, 2];
+  integersDefault: Integer[2];
+  integersOverwrite: Integer[2] = [3, 4];
+  value: Float[1] = 4.2;
+  valueDefault: Float[1];
+  valueOverwrite: Float[1];
+  values: Float[3] = [1.0, 2.0, 3.0];
+  valuesDefault: Float[3];
+  valuesOverwrite: Float[3];
+  date: Date[1] = %2024-01-15T17:30:00;
+  strictDate: StrictDate[1] = %2024-01-15;
+  dateTime: DateTime[1] = %2024-01-15T19:30:00;
+  dateTimeDefault: DateTime[1];
+  dateTimeOverwrite: DateTime[1];
+  point: model::pure::changetoken::tests::distance::PointOfInterest[1] = ^model::pure::changetoken::tests::distance::PointOfInterest(name='London', location=^model::pure::changetoken::tests::distance::GeographicCoordinate(latitude = 51.507356, longitude = minus(0.127706)));
+  pointDefault: model::pure::changetoken::tests::distance::PointOfInterest[1];
+  pointOverwrite: model::pure::changetoken::tests::distance::PointOfInterest[0..1];
+  points: model::pure::changetoken::tests::distance::PointOfInterest[2] = [^model::pure::changetoken::tests::distance::PointOfInterest(name='Beijing', location=^model::pure::changetoken::tests::distance::GeographicCoordinate(latitude = 39.905489, longitude = 116.397771)),    ^model::pure::changetoken::tests::distance::PointOfInterest(name='San Francisco', location=^model::pure::changetoken::tests::distance::GeographicCoordinate(latitude = 37.77493, longitude = -122.419416))];
+  pointsDefault: model::pure::changetoken::tests::distance::PointOfInterest[2];
+  pointsOverwrite: model::pure::changetoken::tests::distance::PointOfInterest[1..*];
+  side: model::pure::changetoken::tests::trade::Side[1] = model::pure::changetoken::tests::trade::Side.Buy;
+  sideDefault: model::pure::changetoken::tests::trade::Side[1];
+  sideOverwrite: model::pure::changetoken::tests::trade::Side[1];
+  sidesValid: model::pure::changetoken::tests::trade::Side[2] = [model::pure::changetoken::tests::trade::Side.Buy, model::pure::changetoken::tests::trade::Side.Sell];
+  sidesUnknown: model::pure::changetoken::tests::trade::Side[2];
+}

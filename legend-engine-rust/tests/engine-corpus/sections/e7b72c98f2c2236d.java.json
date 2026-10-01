@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type CHAR requires 1 parameter (size) in declaration 'clientIdCHAR'",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 5
+    }
+  }
+}

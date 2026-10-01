@@ -1,0 +1,30 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "test::B",
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 4
+      }
+    } ],
+    "name" : "A",
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

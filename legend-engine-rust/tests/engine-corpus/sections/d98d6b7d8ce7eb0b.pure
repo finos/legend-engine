@@ -1,0 +1,9 @@
+
+SnowflakeM2MUdf xx::MyUDF
+{
+   udfName : 'MyUDF';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'MyAppOwnership'};
+   deploymentSchema : 'legend_native_apps_1';
+   deploymentStage : 'snowflakeStage';
+}

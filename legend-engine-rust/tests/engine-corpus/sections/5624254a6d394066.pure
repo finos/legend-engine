@@ -1,0 +1,17 @@
+
+RelationalDatabaseConnection simple::H2Connection
+{
+  store: apps::pure::studio::relational::tests::dbInc;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: [];
+      disabled: [];
+    }
+  ];
+}

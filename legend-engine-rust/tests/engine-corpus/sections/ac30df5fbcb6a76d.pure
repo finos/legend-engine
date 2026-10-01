@@ -1,0 +1,12 @@
+
+Mapping test::passThrough (
+  test::Target[T]: Pure {
+    ~src test::TargetSrc
+    name: $src.name
+  }
+  *test::Holder: Pure {
+    ~src test::HolderSrc
+    label: $src.label,
+    target: $src.target
+  }
+)

@@ -1,0 +1,444 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "CM1",
+      "classSourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : true,
+      "filter" : {
+        "filter" : {
+          "db" : "TEST_DB",
+          "name" : "filter_1"
+        },
+        "joins" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      },
+      "groupBy" : [ {
+        "_type" : "column",
+        "column" : "test_3",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 10
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "TEST_DB2",
+          "mainTableDb" : "TEST_DB2",
+          "schema" : "test_1",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 10
+          },
+          "table" : "test_2"
+        },
+        "tableAlias" : "test_2"
+      }, {
+        "_type" : "column",
+        "column" : "test_1",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 11
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "TEST_DB3",
+          "mainTableDb" : "TEST_DB3",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 11
+          },
+          "table" : "test_1"
+        },
+        "tableAlias" : "test_1"
+      } ],
+      "id" : "CM1",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "TEST_DB00",
+        "mainTableDb" : "TEST_DB00",
+        "schema" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 18
+        },
+        "table" : "test2"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "test3",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "TEST_DB",
+          "mainTableDb" : "TEST_DB",
+          "schema" : "test1",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 15
+          },
+          "table" : "test2"
+        },
+        "tableAlias" : "test2"
+      }, {
+        "_type" : "column",
+        "column" : "test6",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "TEST_DB",
+          "mainTableDb" : "TEST_DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 16
+          },
+          "table" : "test4"
+        },
+        "tableAlias" : "test4"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 0
+          },
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 19
+          },
+          "type" : "test::Class"
+        },
+        "property" : {
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 19
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "someCol",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 19
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_DB",
+            "mainTableDb" : "TEST_DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 19
+            },
+            "table" : "test"
+          },
+          "tableAlias" : "test"
+        },
+        "source" : "CM1",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 19
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 0,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 20
+          },
+          "type" : "test::Class"
+        },
+        "property" : {
+          "property" : "prop2",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 20
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "someCol",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 20
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_DB",
+            "mainTableDb" : "TEST_DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 41,
+              "startLine" : 20
+            },
+            "table" : "test"
+          },
+          "tableAlias" : "test"
+        },
+        "source" : "CM1",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 20
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 7,
+            "upperBound" : 7
+          },
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 21
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "property" : "prop3",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 21
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "someCol",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 21
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_DB",
+            "mainTableDb" : "TEST_DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 21
+            },
+            "table" : "test"
+          },
+          "tableAlias" : "test"
+        },
+        "source" : "CM1",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "prop4",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "someCol",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_DB",
+            "mainTableDb" : "TEST_DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 22
+            },
+            "table" : "test"
+          },
+          "tableAlias" : "test"
+        },
+        "source" : "CM1",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "prop5",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "someCol",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 23
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_DB",
+            "mainTableDb" : "TEST_DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 23
+            },
+            "table" : "test"
+          },
+          "tableAlias" : "test"
+        },
+        "source" : "CM1",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 23
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

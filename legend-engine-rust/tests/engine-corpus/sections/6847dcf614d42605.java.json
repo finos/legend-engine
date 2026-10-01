@@ -1,0 +1,80 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 13
+          },
+          "value" : ""
+        } ],
+        "parameters" : [ ]
+      },
+      "mapping" : "anything::somethingelse",
+      "mappingSourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 14
+      },
+      "runtime" : {
+        "_type" : "engineRuntime",
+        "connectionStores" : [ ],
+        "connections" : [ ],
+        "mappings" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 17
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 11
+      }
+    },
+    "name" : "class",
+    "owners" : [ "test" ],
+    "package" : "anything",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 20
+      }
+    }
+  } ],
+  "imports" : [ ]
+}

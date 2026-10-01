@@ -1,0 +1,14 @@
+
+DataSpace model::dataSpace
+{
+  title: 'some title';
+  description: 'some description';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::Firm.all()->project([x|$x.id], ['Id']);
+    }
+  ];
+}

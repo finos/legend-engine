@@ -1,0 +1,12 @@
+
+Runtime test::runtime
+{
+  mappings:
+  [
+    test::mapping
+  ];
+  connections:
+      [
+        ModelStore: [id1: test::connection2]
+      ];
+}

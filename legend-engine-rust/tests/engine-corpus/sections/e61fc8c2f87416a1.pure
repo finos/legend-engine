@@ -1,0 +1,7 @@
+
+MemSqlFunction xx::A
+{
+   functionName : 'demoFunction';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'testDeployment' };
+}

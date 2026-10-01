@@ -1,0 +1,9 @@
+
+Mapping my::funcMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunctionTyped():Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>[1]
+    firstName: FIRSTNAME
+  }
+)

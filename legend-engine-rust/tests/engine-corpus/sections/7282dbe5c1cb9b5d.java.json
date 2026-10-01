@@ -1,0 +1,92 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 3
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Firm",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "subTrees" : [ ],
+        "subTypeTrees" : [ {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 3
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "SubTypeName",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 3
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::FirmSubType",
+          "subTypeTrees" : [ ]
+        } ]
+      }
+    } ],
+    "name" : "test__Any_MANY_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

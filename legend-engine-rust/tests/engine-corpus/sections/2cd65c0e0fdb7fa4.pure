@@ -1,0 +1,16 @@
+
+Database demo::store::CustomerDB
+(
+  Table EuCustomerTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    region VARCHAR(20)
+  )
+  Table UsCustomerTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    region VARCHAR(20)
+  )
+)
