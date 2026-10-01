@@ -18,15 +18,12 @@
 4ff54025b761042a  accepted: a connection's last field left without its `;`; ANTLR recovers by inserting it at the end of the value, and the engine's error listener, correcting the end-of-input token's end-before-start span, moves the error one column left of the `}`; Rust reports it at the `}`, as 88cf7500ed300bc6
 9af6a233d74ce934  accepted: a data space executable with neither a query nor an executable; the engine rejects it without a position, which a Rust error always has, so Rust reports it unsupported and the engine then parses the section
 3f46588323583c5e  accepted: a schema set in the format `Example`, which only the engine's tests define; Rust knows the formats the engine's modules define and reports another unsupported, for the engine to check against the formats it has
-024e8df2f691cbf4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 192e4a8912992ec3  unsupported: not ported yet: step 7.16 (the `###Text` section)
-1e92913c475ac2f0  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 4ddfa26b46305b46  unsupported: not ported yet: step 7.16 (the `###Text` section)
 50fc901713a1032f  accepted: the engine rejects a legacy test input of type `Objected`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 545ef1298dd6bc4a  unsupported: not ported yet: step 7.16 (the `###Text` section)
 5684d1bc292024ec  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 5a50a5d4628ccda1  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-5c33b806ccf794f4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 7c170dfd49f35bfa  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
 7e61052a44a56d92  unsupported: not ported yet: step 7.16 (the `###Text` section)
 9984a389b28753d7  unsupported: not ported yet: step 7.16 (the `###Text` section)
@@ -37,8 +34,5 @@ af6653c3bb096f1d  accepted: the engine rejects a query generation config of type
 b1f0017c83c207bb  accepted: the engine rejects a service store security scheme of type `INVALID`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 b5e5df0802ef7981  accepted: the engine rejects a persistence platform of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 d3be8c92e5bf6162  accepted: the engine rejects a mapping element of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
-da7c272c55445935  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
-e3c93e7e4f4b14d4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
-f03e838859ac1de8  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 f97ffa54b5d776c8  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
 fdf962a97b129789  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section

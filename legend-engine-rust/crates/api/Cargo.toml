@@ -31,6 +31,7 @@ serde_json = { workspace = true }
 # The island grammars register themselves when linked; api tests link them
 # the way a production aggregator (the JNI cdylib) does.
 legend-pure-dsl-authentication = { path = "../dsl-authentication" }
+legend-pure-dsl-bigquery-function = { path = "../dsl-bigquery-function" }
 legend-pure-dsl-connection = { path = "../dsl-connection" }
 legend-pure-dsl-data = { path = "../dsl-data" }
 legend-pure-dsl-data-space = { path = "../dsl-data-space" }

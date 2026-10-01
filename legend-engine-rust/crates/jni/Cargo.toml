@@ -32,6 +32,7 @@ crate-type = ["rlib", "cdylib"]
 legend-pure-parser-api = { path = "../api" }
 # Grammar plug-ins linked into this library (they self-register).
 legend-pure-dsl-authentication = { path = "../dsl-authentication" }
+legend-pure-dsl-bigquery-function = { path = "../dsl-bigquery-function" }
 legend-pure-dsl-connection = { path = "../dsl-connection" }
 legend-pure-dsl-data = { path = "../dsl-data" }
 legend-pure-dsl-data-space = { path = "../dsl-data-space" }

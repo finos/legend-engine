@@ -22,6 +22,7 @@ members = [
     "crates/protocol",
     "crates/api",
     "crates/dsl-authentication",
+    "crates/dsl-bigquery-function",
     "crates/dsl-connection",
     "crates/dsl-data",
     "crates/dsl-data-space",

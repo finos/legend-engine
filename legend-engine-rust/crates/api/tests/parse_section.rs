@@ -16,6 +16,7 @@
 //! the JNI library links them.
 
 use legend_pure_dsl_authentication as _;
+use legend_pure_dsl_bigquery_function as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
 use legend_pure_dsl_data_space as _;
@@ -67,6 +68,7 @@ fn capabilities_report_linked_grammars() {
         caps.sections,
         [
             "Pure",
+            "BigQuery",
             "Connection",
             "Data",
             "DataQualityValidation",

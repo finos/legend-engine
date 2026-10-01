@@ -53,6 +53,7 @@ use legend_pure_parser_api::{
 
 // Link the grammar plug-ins so their self-registrations are in this library.
 use legend_pure_dsl_authentication as _;
+use legend_pure_dsl_bigquery_function as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
 use legend_pure_dsl_data_space as _;
