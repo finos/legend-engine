@@ -80,3 +80,33 @@ tests:
     category: "aliases"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # A computed column aliased over a source column the select list does not project.
+  # Covers the "The relation contains duplicates: [X]" family.
+  - id: alias_over_source_sibling_reads_base
+    sql: "SELECT hire_date AS original_hire_date, id, COALESCE(row_number() OVER (ORDER BY id), -1) AS hire_date FROM persons ORDER BY id"
+    feature: "sibling select item reads the displaced base column"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: alias_over_source_subquery_star
+    sql: "SELECT * FROM (SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS hire_date FROM persons) q ORDER BY id"
+    feature: "displaced column must not escape the subquery"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: alias_over_source_two_collisions
+    sql: "SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS age, COALESCE(rank() OVER (ORDER BY id), -1) AS salary FROM persons ORDER BY id"
+    feature: "two computed columns aliased over two source columns"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: alias_over_source_control_no_collision
+    sql: "SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS next_hire_date FROM persons ORDER BY id"
+    feature: "control - no collision, no displacement"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
