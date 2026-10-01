@@ -69,7 +69,8 @@ fn capabilities_report_linked_grammars() {
             "Persistence",
             "Relational",
             "Runtime",
-            "Service"
+            "Service",
+            "ServiceStore"
         ]
     );
     assert!(

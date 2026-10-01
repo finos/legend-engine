@@ -77,7 +77,7 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 | `legend-pure-dsl-relational-snowflake` | The relational store's Snowflake extension: its datasource specification, authentication strategy and local mode in relational connections | dsl-relational |
 | `legend-pure-dsl-runtime` | The `###Runtime` section: runtimes, their mappings and connections, and the runtimes services hold (parser + protocol) | ast, lexer, parser, protocol, dsl-connection |
 | `legend-pure-dsl-service` | The engine's service extension: the `###Service` section's services (executions, test suites, legacy tests, post-validations) and execution environments (parser + protocol) | ast, lexer, parser, protocol, dsl-runtime |
-| `legend-pure-dsl-service-store` | The engine's service store extension: `ServiceStore` mapping elements, `ServiceStoreConnection`s and `ServiceStore #{…}#` test data (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection |
+| `legend-pure-dsl-service-store` | The engine's service store extension: the `###ServiceStore` section's stores, `ServiceStore` mapping elements, `ServiceStoreConnection`s and `ServiceStore #{…}#` test data (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection |
 | `legend-pure-dsl-sql` | SQL expression island `#SQL{…}#`, its text kept as written (parser + protocol) | ast, parser, protocol |
 | `legend-pure-dsl-tds` | TDS literal island `#TDS{…}#`, its CSV body kept as written (parser + protocol) | ast, parser, protocol |
 

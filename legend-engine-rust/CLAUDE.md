@@ -44,7 +44,7 @@ Which grammars are ported, and the order: [docs/porting-status.md](docs/porting-
 | `dsl-deephaven` | The engine's Deephaven extension: `DeephavenConnection`s (`connection.rs`; the walker positions the connection on its body, and Rust leaves URLs it can't judge as `java.net.URI` does to the engine) |
 | `dsl-elasticsearch` | The engine's Elasticsearch extension: `Elasticsearch7ClusterConnection`s (`connection.rs`; the cluster's `# URL { … }#`, checked with `dsl-connection`'s `uri`) |
 | `dsl-authentication` | The engine's authentication module: the `# Type { … }#` authentication specifications connections hold (`grammar.rs`, by type; `specifications.rs`) and their secrets and AWS credentials (`secret.rs`), read into the engine's protocol objects (`object.rs`) |
-| `dsl-service-store` | The engine's service store extension: `ServiceStore` mapping elements (`mapping.rs`), `ServiceStoreConnection`s (`connection.rs`) and `ServiceStore #{…}#` test data (`data.rs`) |
+| `dsl-service-store` | The engine's service store extension: the `###ServiceStore` section (`store/`, read and walked as `dsl-persistence`'s, its blocks in parentheses; security schemes unsupported), `ServiceStore` mapping elements (`mapping.rs`), `ServiceStoreConnection`s (`connection.rs`) and `ServiceStore #{…}#` test data (`data.rs`) |
 
 ## Build & Test
 

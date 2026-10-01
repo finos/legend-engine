@@ -79,6 +79,9 @@ pub enum Value {
     Lambda(Box<Expression>),
     /// A relation's first table.
     RelationElement(Box<RelationElement>),
+    /// A position, as a field other than the object's own
+    /// `sourceInformation` holds one (`styleSourceInformation`, …).
+    SourceInfo(SourceInfo),
     /// JSON already converted: a part a plug-in's protocol converts.
     Json(Json),
 }
@@ -189,6 +192,7 @@ impl Value {
             Self::RelationElement(element) => {
                 serde_json::to_value(convert_relation_element(element))?
             }
+            Self::SourceInfo(source_info) => json!(SourceInformation::from(source_info)),
             Self::Json(json) => json.clone(),
         })
     }

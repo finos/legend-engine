@@ -16,6 +16,10 @@
 //!
 //! The engine's service store extension (`legend-engine-xt-serviceStore`):
 //!
+//! - the `###ServiceStore` section: stores of services, in groups, with
+//!   their parameters and responses (`ServiceStoreParserGrammar`'s
+//!   `definition` and its `ServiceStoreParseTreeWalker`), the engine's
+//!   `ServiceStore`;
 //! - `ServiceStore` mapping elements: a class mapped from services' responses
 //!   (`ServiceStoreParserGrammar`'s `mapping` rule and its
 //!   `ServiceStoreParseTreeWalker`), the engine's
@@ -57,6 +61,10 @@
 //! - [`data`] — [`data::ServiceStoreDataParser`] and
 //!   [`data::ServiceStoreDataProtocol`] register as the parser's and the
 //!   protocol's embedded data grammar for `ServiceStore`.
+//! - [`store`] — the `###ServiceStore` section, its stores, services and
+//!   groups: [`store::section::ServiceStoreSectionParser`] and
+//!   [`store::section::ServiceStoreProtocol`] register as its section
+//!   grammar and element protocol.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
@@ -64,3 +72,4 @@
 pub mod connection;
 pub mod data;
 pub mod mapping;
+pub mod store;

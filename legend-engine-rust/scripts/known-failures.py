@@ -116,6 +116,8 @@ BY_NAME = {
     'relational post-processor': ('relational', {}, 'a post-processor'),
     'relational query generation config': ('relational', {}, 'a query generation config'),
     'test assertion': ('test', {}, 'a test assertion'),
+    'service store security scheme': ('section', {}, 'a service store security scheme'),
+    'data quality persistence strategy': ('section', {}, 'a data quality persistence strategy'),
     'embedded data': ('data', {}, 'embedded data'),
     'service execution': ('service', {}, 'a service execution'),
     'trigger': ('persistence', {}, 'a trigger'),

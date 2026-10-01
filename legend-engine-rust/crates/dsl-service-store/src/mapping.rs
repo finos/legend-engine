@@ -376,7 +376,7 @@ fn request_block(ctx: &mut ParserContext<'_>) -> Result<Request, ParseError> {
 }
 
 /// A parameter's name: a word, or a `"double-quoted"` name, unquoted.
-fn parameter_name(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
+pub(crate) fn parameter_name(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
     let token: Token = ctx.cursor().peek().clone();
     if is_word_kind(token.kind) {
         ctx.cursor().advance();

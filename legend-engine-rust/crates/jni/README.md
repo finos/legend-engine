@@ -24,18 +24,18 @@ the JVM cannot allocate the result string.
 ## Grammars and aggregators
 
 The library links the island grammars `dsl-graph` (`#{…}#`), `dsl-store`
-(`#>{…}#`), `dsl-sql` (`#SQL{…}#`) and `dsl-tds` (`#TDS{…}#`), the section
+(`#>{…}#`), `dsl-sql` (`#SQL{…}#`) and `dsl-tds` (`#TDS{…}#`); the section
 grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
-`dsl-mapping` (`###Mapping`), `dsl-relational` (`###Relational`),
-`dsl-runtime` (`###Runtime`), `dsl-service` (`###Service`) and
+`dsl-data-space` (`###DataSpace`), `dsl-dataquality`
+(`###DataQualityValidation`), `dsl-mapping` (`###Mapping`),
 `dsl-persistence` (`###Persistence`, with its extensions'
-`dsl-persistence-relational` and `dsl-persistence-cloud`) and
-`dsl-data-space` (`###DataSpace`) and `dsl-dataquality`
-(`###DataQualityValidation`), and the
-stores' mapping, connection and test data grammars in `dsl-relational`,
+`dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
+(`###Relational`), `dsl-runtime` (`###Runtime`), `dsl-service`
+(`###Service`) and `dsl-service-store` (`###ServiceStore`); the stores'
+mapping, connection and test data grammars in `dsl-relational`,
 `dsl-relational-snowflake`, `dsl-service-store`, `dsl-mongodb`,
-`dsl-deephaven` and `dsl-elasticsearch`, and the connections' authentication
-grammar `dsl-authentication`; they self-register. To add grammars (e.g.
+`dsl-deephaven` and `dsl-elasticsearch`; and the connections' authentication
+grammar `dsl-authentication`. They self-register. To add grammars (e.g.
 Legend Engine's own), build an aggregator `cdylib` that depends on this
 crate and the grammar crates, and force-links them:
 

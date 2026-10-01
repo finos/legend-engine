@@ -30,7 +30,8 @@ fn library_links_the_section_and_island_grammars() {
             "Persistence",
             "Relational",
             "Runtime",
-            "Service"
+            "Service",
+            "ServiceStore"
         ]
     );
     assert!(
