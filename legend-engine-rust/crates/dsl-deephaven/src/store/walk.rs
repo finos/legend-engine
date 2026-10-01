@@ -18,9 +18,10 @@
 //! fields by the lexer's literal names (`'tables'`), which its messages
 //! quote again.
 
+use legend_pure_dsl_function_activator::walk::{deployment_owner, function};
 use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_lexer::Token;
-use legend_pure_parser_parser::blocks::{ReadBlock, ReadField, ReadValue};
+use legend_pure_parser_parser::blocks::{ReadBlock, ReadField};
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::fields::{missing, required};
 use legend_pure_parser_protocol::v1::record::{Record, Value};
@@ -79,7 +80,7 @@ pub(crate) fn app(mut read: ReadBlock) -> R<Record> {
     let at = read.source_info.clone();
     let application_name = read.take("applicationName", &at)?.string()?;
     let function = function(read.take("function", &at)?)?;
-    let owner = read.take("ownership", &at)?.string()?;
+    let ownership = deployment_owner(read.take("ownership", &at)?)?;
     let description = read
         .take_optional("description", &at)?
         .map(ReadField::string)
@@ -88,20 +89,6 @@ pub(crate) fn app(mut read: ReadBlock) -> R<Record> {
         .at(&at)
         .with("applicationName", application_name)
         .with("function", function)
-        .with(
-            "ownership",
-            Record::new("DeploymentOwner").with("id", owner),
-        )
+        .with("ownership", ownership)
         .with_some("description", description))
-}
-
-/// The activated function, positioned on its identifier.
-fn function(field: ReadField) -> R<Record> {
-    let ReadValue::Text(path, at) = field.value else {
-        return Err(field.misread());
-    };
-    Ok(Record::untyped()
-        .with("type", "FUNCTION".to_string())
-        .with("path", path)
-        .at(&at))
 }

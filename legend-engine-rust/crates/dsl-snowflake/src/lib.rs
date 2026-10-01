@@ -35,19 +35,22 @@
 //! then its UDFs, as the walker walks them. Its deployment configurations
 //! are read and left out, as the walker leaves them.
 //!
+//! Its apps and UDFs are function activators, read, walked and converted
+//! as `dsl-function-activator` reads, walks and converts them.
+//!
 //! Crate layout:
 //!
-//! - [`ast`] — [`ast::SnowflakeElement`], a
-//!   [`DSLElement`](legend_pure_parser_ast::dsl::DSLElement).
 //! - [`section`] — [`section::SnowflakeSectionParser`] registers as
-//!   [`legend_pure_parser_parser::SectionParser`] for `Snowflake`, and
-//!   [`section::SnowflakeProtocol`] as
-//!   [`legend_pure_parser_protocol::ElementProtocol`] for its elements.
+//!   [`legend_pure_parser_parser::SectionParser`] for `Snowflake`, and an
+//!   `ActivatorProtocol` as [`legend_pure_parser_protocol::ElementProtocol`]
+//!   for its elements.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-pub mod ast;
 mod read;
 pub mod section;
 mod walk;
+
+/// The section kind, `###Snowflake`, which is also its elements' kind.
+pub const SECTION_KIND: &str = "Snowflake";

@@ -21,10 +21,12 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+legend-pure-dsl-function-activator = { path = "../dsl-function-activator" }
 legend-pure-parser-ast = { path = "../ast" }
 legend-pure-parser-lexer = { path = "../lexer" }
 legend-pure-parser-parser = { path = "../parser" }
 legend-pure-parser-protocol = { path = "../protocol" }
 linkme = { workspace = true }
+
+[dev-dependencies]
 serde_json = { workspace = true }
-smol_str = { workspace = true }

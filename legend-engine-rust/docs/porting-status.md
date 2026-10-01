@@ -228,7 +228,11 @@ them (the protocol record's `Double`: `2.23E10`, ties to even).
 from `dsl-relational-snowflake`, the relational store's Snowflake
 extension), read and walked the same way, its apps first, then its UDFs;
 its deployment configurations are read and left out, as the walker leaves
-them. A function's identifier, `my::f(String[1]):String[1]`, is read as
+them. What the function activators share, as their protocol does (the
+engine's `functionActivator` module), is `dsl-function-activator`'s: an
+activator's header (documentation, annotations, name), its `function` and
+`ownership: Deployment { … }` fields, read and walked, and its element and
+JSON. A function's identifier, `my::f(String[1]):String[1]`, is read as
 written without spaces, by the parser's `forms::function_identifier`
 (shared with `dsl-mapping`'s relation function mappings and the other
 function activators, but Deephaven's: see 7.12).

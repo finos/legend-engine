@@ -23,6 +23,7 @@ repository.workspace = true
 [dependencies]
 legend-pure-dsl-authentication = { path = "../dsl-authentication" }
 legend-pure-dsl-connection = { path = "../dsl-connection" }
+legend-pure-dsl-function-activator = { path = "../dsl-function-activator" }
 legend-pure-parser-ast = { path = "../ast" }
 legend-pure-parser-lexer = { path = "../lexer" }
 legend-pure-parser-parser = { path = "../parser" }

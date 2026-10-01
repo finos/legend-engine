@@ -18,37 +18,32 @@
 //! (`usageRole` is its `role`, `permissionScheme` its `scheme`,
 //! `activationConfiguration` its `activation`).
 
-use legend_pure_parser_ast::annotation::{StereotypePtr, TaggedValue};
-use legend_pure_parser_ast::source_info::SourceInfo;
-use legend_pure_parser_ast::type_ref::Package;
-use legend_pure_parser_lexer::{Token, TokenKind};
+use legend_pure_dsl_function_activator::read::{
+    ReadActivator, activator, deployment, documentation, function,
+};
+use legend_pure_parser_lexer::TokenKind;
 use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::blocks::{
-    ReadBlock, ReadValue, braces, identifier_value, path_value, simple, string_value,
+    ReadValue, identifier_value, path_value, simple, string_value,
 };
 use legend_pure_parser_parser::error::ParseError;
-use legend_pure_parser_parser::forms::function_identifier;
-use legend_pure_parser_parser::words::{
-    expect_word, is_string, is_word, qualified_name, unexpected,
-};
-use smol_str::SmolStr;
-
-use crate::ast::SnowflakeKind;
+use legend_pure_parser_parser::words::{expect_word, is_word, qualified_name, unexpected};
 
 type R<T> = Result<T, ParseError>;
 
-/// `'''doc''' Keyword <<s>> {t} my::E { field … }`.
+/// How a function is activated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SnowflakeKind {
+    /// `SnowflakeApp`: as a Snowflake app.
+    App,
+    /// `SnowflakeM2MUdf`: as a model-to-model UDF.
+    M2MUdf,
+}
+
+/// An app or a UDF, as read.
 pub(crate) struct ReadElement {
     pub kind: SnowflakeKind,
-    pub documentation: Option<Token>,
-    pub stereotypes: Vec<StereotypePtr>,
-    pub tagged_values: Vec<TaggedValue>,
-    pub package: Option<Package>,
-    pub name: SmolStr,
-    pub name_source_info: SourceInfo,
-    /// The fields; positioned from the documentation, or the keyword, to
-    /// `}`.
-    pub body: ReadBlock,
+    pub activator: ReadActivator,
 }
 
 /// An app or a UDF; or a deployment configuration, read and left out
@@ -66,63 +61,22 @@ pub(crate) fn element(ctx: &mut ParserContext<'_>) -> R<Option<ReadElement>> {
         ctx.cursor().expect(TokenKind::RBrace)?;
         return Ok(None);
     }
-    let documentation = is_string(ctx.cursor().peek()).then(|| ctx.cursor().advance().clone());
+    let documentation = documentation(ctx);
     let keyword = ctx.cursor().peek().clone();
-    let kind = if is_word(&keyword, "SnowflakeApp") {
-        SnowflakeKind::App
+    let (kind, activator) = if is_word(&keyword, "SnowflakeApp") {
+        (
+            SnowflakeKind::App,
+            activator(ctx, &start, documentation, app_field)?,
+        )
     } else if is_word(&keyword, "SnowflakeM2MUdf") {
-        SnowflakeKind::M2MUdf
+        (
+            SnowflakeKind::M2MUdf,
+            activator(ctx, &start, documentation, udf_field)?,
+        )
     } else {
         return Err(unexpected(&keyword));
     };
-    ctx.cursor().advance();
-    let stereotypes = if ctx.cursor().check(TokenKind::LessLess) {
-        ctx.parse_stereotypes()?
-    } else {
-        Vec::new()
-    };
-    let tagged_values = if ctx.cursor().check(TokenKind::LBrace) {
-        ctx.parse_tagged_values()?
-    } else {
-        Vec::new()
-    };
-    let (package, name, name_source_info) = ctx.parse_qualified_name()?;
-    let (_, fields) = match kind {
-        SnowflakeKind::App => braces(ctx, app_field)?,
-        SnowflakeKind::M2MUdf => braces(ctx, udf_field)?,
-    };
-    Ok(Some(ReadElement {
-        kind,
-        documentation,
-        stereotypes,
-        tagged_values,
-        package,
-        name,
-        name_source_info,
-        body: ReadBlock {
-            source_info: ctx.cursor().span_since(&start),
-            keyword,
-            fields,
-        },
-    }))
-}
-
-/// `my::f(Type[m], …):Type[m]`, as written without spaces.
-fn function(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
-    let start = ctx.cursor().current_source_info();
-    let text = function_identifier(ctx)?;
-    Ok(ReadValue::Text(text, ctx.cursor().span_since(&start)))
-}
-
-/// `Deployment { identifier: 'id' }`.
-fn ownership(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
-    expect_word(ctx, "Deployment")?;
-    ctx.cursor().expect(TokenKind::LBrace)?;
-    expect_word(ctx, "identifier")?;
-    ctx.cursor().expect(TokenKind::Colon)?;
-    let id = string_value(ctx)?;
-    ctx.cursor().expect(TokenKind::RBrace)?;
-    Ok(id)
+    Ok(Some(ReadElement { kind, activator }))
 }
 
 /// The fields both an app and a UDF have.
@@ -130,7 +84,7 @@ fn common_field(ctx: &mut ParserContext<'_>, name: &str) -> R<Option<(&'static s
     match name {
         "description" => simple(ctx, "description", string_value),
         "function" => simple(ctx, "function", function),
-        "ownership" => simple(ctx, "ownership", ownership),
+        "ownership" => simple(ctx, "ownership", deployment),
         "activationConfiguration" => simple(ctx, "activation", path_value),
         "deploymentSchema" => simple(ctx, "deploymentSchema", string_value),
         _ => Ok(None),

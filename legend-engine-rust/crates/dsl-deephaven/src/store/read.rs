@@ -20,6 +20,7 @@
 //! app's fields are read as blocks of fields (see
 //! [`legend_pure_parser_parser::blocks`]).
 
+use legend_pure_dsl_function_activator::read::deployment;
 use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_ast::type_ref::Package;
 use legend_pure_parser_lexer::{Token, TokenKind};
@@ -28,7 +29,7 @@ use legend_pure_parser_parser::blocks::{ReadBlock, ReadValue, braces, simple, st
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::forms::separated;
 use legend_pure_parser_parser::words::{
-    adjacent, expect_word, identifier, is_word, is_word_kind, qualified_name, unexpected,
+    adjacent, identifier, is_word, is_word_kind, qualified_name, unexpected,
 };
 use smol_str::SmolStr;
 
@@ -200,16 +201,7 @@ fn app_field(ctx: &mut ParserContext<'_>, name: &str) -> R<Option<(&'static str,
             let text = function_identifier(ctx)?;
             Ok(ReadValue::Text(text, ctx.cursor().span_since(&start)))
         }),
-        // `Deployment { identifier: 'id' }`.
-        "ownership" => simple(ctx, "ownership", |ctx| {
-            expect_word(ctx, "Deployment")?;
-            ctx.cursor().expect(TokenKind::LBrace)?;
-            expect_word(ctx, "identifier")?;
-            ctx.cursor().expect(TokenKind::Colon)?;
-            let id = string_value(ctx)?;
-            ctx.cursor().expect(TokenKind::RBrace)?;
-            Ok(id)
-        }),
+        "ownership" => simple(ctx, "ownership", deployment),
         "description" => simple(ctx, "description", string_value),
         _ => Ok(None),
     }

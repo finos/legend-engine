@@ -12,26 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `SectionParser` and `ElementProtocol` for `###Snowflake`: the engine's
-//! `SnowflakeParserGrammar` (the reader), then its `SnowflakeTreeWalker`
-//! (the walk), its apps first, then its UDFs; and the elements' JSON. The
-//! section has no imports.
+//! `SectionParser` for `###Snowflake`: the engine's `SnowflakeParserGrammar`
+//! (the reader), then its `SnowflakeTreeWalker` (the walk), its apps first,
+//! then its UDFs; and its elements' `ActivatorProtocol`. The section has no
+//! imports.
 
-use legend_pure_parser_ast::annotation::SpannedString;
+use legend_pure_dsl_function_activator::element::ActivatorProtocol;
+use legend_pure_dsl_function_activator::walk::activator;
 use legend_pure_parser_ast::dsl::DSLElement;
 use legend_pure_parser_lexer::TokenKind;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::{ParserContext, SectionParser};
-use legend_pure_parser_protocol::element_protocol::{
-    ConvertError, ELEMENT_PROTOCOLS, ElementProtocol, Result,
-};
-use legend_pure_parser_protocol::v1::annotation::TaggedValue;
-use legend_pure_parser_protocol::v1::convert::section_stereotype;
+use legend_pure_parser_protocol::element_protocol::{ELEMENT_PROTOCOLS, ElementProtocol};
 use linkme::distributed_slice;
-use serde_json::{Value, json};
 
-use crate::ast::{SECTION_KIND, SnowflakeElement, SnowflakeKind};
-use crate::read::{ReadElement, element};
+use crate::SECTION_KIND;
+use crate::read::{SnowflakeKind, element};
 use crate::walk;
 
 /// Parser for `###Snowflake` sections.
@@ -69,7 +65,10 @@ impl SectionParser for SnowflakeSectionParser {
             .partition(|element| element.kind == SnowflakeKind::App);
         let mut elements: Vec<Box<dyn DSLElement>> = Vec::new();
         for element in apps.into_iter().chain(udfs) {
-            match walk_element(element) {
+            let kind = element.kind;
+            match activator(element.activator, SECTION_KIND, |body| {
+                walk::element(kind, body)
+            }) {
                 Ok(element) => elements.push(Box::new(element)),
                 // The engine reports the first error.
                 Err(error) => {
@@ -82,78 +81,8 @@ impl SectionParser for SnowflakeSectionParser {
     }
 }
 
-/// The walker's `visit…` of an element: its annotations first.
-fn walk_element(read: ReadElement) -> std::result::Result<SnowflakeElement, ParseError> {
-    let source_info = read.body.source_info.clone();
-    let tagged_values = ParserContext::with_documentation(read.documentation, read.tagged_values)?;
-    let record = walk::element(read.kind, read.body)?;
-    Ok(SnowflakeElement {
-        kind: read.kind,
-        package: read.package,
-        name: SpannedString {
-            value: read.name,
-            source_info: read.name_source_info,
-        },
-        stereotypes: read.stereotypes,
-        tagged_values,
-        record,
-        source_info,
-    })
-}
-
 #[distributed_slice(legend_pure_parser_parser::section_parser::SECTION_PARSERS)]
 static SNOWFLAKE_SECTION_PARSER: &(dyn SectionParser + Send + Sync) = &SnowflakeSectionParser;
 
-/// Protocol converter for Snowflake apps and UDFs: their records' JSON,
-/// with their package, name and annotations (stereotypes positioned on
-/// their values, as the section walkers but the Pure one position them).
-pub struct SnowflakeProtocol;
-
-impl ElementProtocol for SnowflakeProtocol {
-    #[allow(clippy::unnecessary_literal_bound)]
-    fn kind(&self) -> &str {
-        SECTION_KIND
-    }
-
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
-        let element = element
-            .as_any()
-            .downcast_ref::<SnowflakeElement>()
-            .ok_or_else(|| {
-                ConvertError::plugin(
-                    format!(
-                        "SnowflakeProtocol: a '{}' element is not a SnowflakeElement",
-                        element.kind()
-                    ),
-                    None,
-                )
-            })?;
-        let mut json = element.record.to_json()?;
-        json["package"] = json!(
-            element
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(element.name.value.as_str());
-        json["stereotypes"] = serde_json::to_value(
-            element
-                .stereotypes
-                .iter()
-                .map(section_stereotype)
-                .collect::<Vec<_>>(),
-        )?;
-        json["taggedValues"] = serde_json::to_value(
-            element
-                .tagged_values
-                .iter()
-                .map(TaggedValue::from)
-                .collect::<Vec<_>>(),
-        )?;
-        Ok(json)
-    }
-}
-
 #[distributed_slice(ELEMENT_PROTOCOLS)]
-static SNOWFLAKE_PROTOCOL: &(dyn ElementProtocol + Send + Sync) = &SnowflakeProtocol;
+static SNOWFLAKE_PROTOCOL: &(dyn ElementProtocol + Send + Sync) = &ActivatorProtocol(SECTION_KIND);

@@ -16,12 +16,13 @@
 //! checked and built in the walker's order, into records shaped as the
 //! engine's protocol.
 
+use legend_pure_dsl_function_activator::walk::{deployment_owner, function};
 use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_parser::blocks::{ReadBlock, ReadField, ReadValue};
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::record::Record;
 
-use crate::ast::SnowflakeKind;
+use crate::read::SnowflakeKind;
 
 type R<T> = Result<T, ParseError>;
 
@@ -51,22 +52,6 @@ fn optional_string(read: &mut ReadBlock, name: &'static str, at: &SourceInfo) ->
         .transpose()
 }
 
-/// The activated function, positioned on its identifier.
-fn function(field: ReadField) -> R<Record> {
-    let ReadValue::Text(path, at) = field.value else {
-        return Err(misread("a function", &field.source_info));
-    };
-    Ok(Record::untyped()
-        .with("type", "FUNCTION".to_string())
-        .with("path", path)
-        .at(&at))
-}
-
-/// The owner, a deployment's.
-fn ownership(field: ReadField) -> R<Record> {
-    Ok(Record::new("DeploymentOwner").with("id", field.string()?))
-}
-
 /// The deployment configuration of `kind`, its connection positioned.
 fn activation(read: &mut ReadBlock, kind: &'static str, at: &SourceInfo) -> R<Option<Record>> {
     read.take_optional("activation", at)?
@@ -89,7 +74,7 @@ fn app(mut read: ReadBlock) -> R<Record> {
     let at = read.source_info.clone();
     let application_name = read.take("applicationName", &at)?.string()?;
     let function = function(read.take("function", &at)?)?;
-    let ownership = ownership(read.take("ownership", &at)?)?;
+    let ownership = deployment_owner(read.take("ownership", &at)?)?;
     let description = optional_string(&mut read, "description", &at)?;
     let usage_role = optional_string(&mut read, "role", &at)?;
     let permission_scheme = match read.take_optional("scheme", &at)? {
@@ -125,7 +110,7 @@ fn udf(mut read: ReadBlock) -> R<Record> {
     let at = read.source_info.clone();
     let udf_name = read.take("udfName", &at)?.string()?;
     let function = function(read.take("function", &at)?)?;
-    let ownership = ownership(read.take("ownership", &at)?)?;
+    let ownership = deployment_owner(read.take("ownership", &at)?)?;
     let description = optional_string(&mut read, "description", &at)?;
     let deployment_schema = read.take("deploymentSchema", &at)?.string()?;
     let deployment_stage = read.take("deploymentStage", &at)?.string()?;
