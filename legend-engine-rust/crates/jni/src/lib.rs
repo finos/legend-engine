@@ -80,6 +80,7 @@ use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
+use legend_pure_dsl_text as _;
 
 /// The capabilities of the grammars linked into this library.
 ///

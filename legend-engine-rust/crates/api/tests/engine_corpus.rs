@@ -46,6 +46,7 @@ use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
+use legend_pure_dsl_text as _;
 use legend_pure_parser_api::{
     ErrorKind, ExpressionKind, ExpressionRequest, SectionError, SectionRequest, parse_expression,
     parse_section,

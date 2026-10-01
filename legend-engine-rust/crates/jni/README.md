@@ -37,14 +37,14 @@ grammars `dsl-bigquery-function` (`###BigQuery`), `dsl-connection`
 its extensions' `dsl-persistence-relational` and `dsl-persistence-cloud`),
 `dsl-relational` (`###Relational` and `###QueryPostProcessor`),
 `dsl-runtime` (`###Runtime`), `dsl-service` (`###Service`),
-`dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
-(`###Snowflake`); the stores' mapping, connection and test data grammars
-in `dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,
-`dsl-mongodb`, `dsl-deephaven` and `dsl-elasticsearch`; and the
-connections' authentication grammar `dsl-authentication`. They
-self-register. To add grammars (e.g. Legend Engine's own), build an
-aggregator `cdylib` that depends on this crate and the grammar crates, and
-force-links them:
+`dsl-service-store` (`###ServiceStore`), `dsl-snowflake` (`###Snowflake`)
+and `dsl-text` (`###Text`); the stores' mapping, connection and test data
+grammars in `dsl-relational`, `dsl-relational-snowflake`,
+`dsl-service-store`, `dsl-mongodb`, `dsl-deephaven` and
+`dsl-elasticsearch`; and the connections' authentication grammar
+`dsl-authentication`. They self-register. To add grammars (e.g. Legend
+Engine's own), build an aggregator `cdylib` that depends on this crate and
+the grammar crates, and force-links them:
 
 ```rust
 use legend_pure_rust_parser as _;

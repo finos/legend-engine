@@ -50,6 +50,7 @@ members = [
     "crates/dsl-store",
     "crates/dsl-sql",
     "crates/dsl-tds",
+    "crates/dsl-text",
     "crates/jni",
 ]
 

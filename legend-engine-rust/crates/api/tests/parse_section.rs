@@ -43,6 +43,7 @@ use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
+use legend_pure_dsl_text as _;
 use legend_pure_parser_api::{
     ErrorKind, SectionRequest, capabilities, parse_section, parse_section_json,
 };
@@ -89,7 +90,8 @@ fn capabilities_report_linked_grammars() {
             "Runtime",
             "Service",
             "ServiceStore",
-            "Snowflake"
+            "Snowflake",
+            "Text"
         ]
     );
     assert!(

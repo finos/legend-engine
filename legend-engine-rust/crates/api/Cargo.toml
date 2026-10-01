@@ -58,3 +58,4 @@ legend-pure-dsl-service-store = { path = "../dsl-service-store" }
 legend-pure-dsl-snowflake = { path = "../dsl-snowflake" }
 legend-pure-dsl-sql = { path = "../dsl-sql" }
 legend-pure-dsl-tds = { path = "../dsl-tds" }
+legend-pure-dsl-text = { path = "../dsl-text" }

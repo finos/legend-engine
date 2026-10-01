@@ -121,7 +121,7 @@ legend-pure takes its own back:
   `dsl-bigquery-function`, `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`,
   `dsl-external-format`, `dsl-function-activator`, `dsl-generation`,
   `dsl-hosted-service`, `dsl-memsql-function`, `dsl-relational-snowflake`,
-  `dsl-service-store`, `dsl-snowflake`,
+  `dsl-service-store`, `dsl-snowflake`, `dsl-text`,
   `dsl-mongodb`, `dsl-deephaven`, `dsl-elasticsearch`,
   `dsl-authentication`; the data space include is read in `dsl-mapping`),
   depending on the legend-pure crates.

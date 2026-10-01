@@ -169,7 +169,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | Done: all match |
 | 7.14 | `###HostedService`: hosted services and execution environments | hostedService | 6 | 1 | Done: all match; what no test writes, test suites, post validations, post-deployment actions and deployment configurations, is unsupported |
 | 7.15 | `###BigQuery`: BigQuery functions | bigqueryFunction | 6 | 3 | Done: all match |
-| 7.16 | `###Text` | text | 6 | 3 | |
+| 7.16 | `###Text`: texts | text | 6 | 3 | Done: all match |
 | 7.17 | `###FunctionJar` | functionJar | 5 | 1 | |
 
 7.1's crates are `dsl-persistence` (the section; the `Manual` trigger and
@@ -311,4 +311,7 @@ hosted service.
 but for its ownership, which is optional and which the walker names `owner`
 (`Field 'owner' should be specified only once`). Its deployment
 configurations are unsupported, as 7.13's.
+
+7.16's crate is `dsl-text`: texts, a content and an optional type, read as
+blocks of fields and walked. The section has no imports.
 
