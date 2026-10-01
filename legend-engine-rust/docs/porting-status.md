@@ -18,7 +18,7 @@ over the corpus suites before it is marked done.
 | 4 | `###Mapping`, one subphase per mapping grammar (below) | `dsl-mapping` and the stores' crates | Done |
 | 5 | `###Connection` and `###Runtime`, one subphase per connection grammar (below) | `dsl-connection`, `dsl-runtime`, `dsl-authentication` and the stores' crates | Done |
 | 6 | `###Service` (below) | `dsl-service` | Done |
-| 7 | The other section types, by volume, one subphase each (below) | a `dsl-*` crate per engine module | In progress |
+| 7 | The other section types, by volume, one subphase each (below) | a `dsl-*` crate per engine module | Done |
 
 ## Step 4: `###Mapping`
 
@@ -150,7 +150,8 @@ whose connections and mapping elements step 4 and 5 ported).
 "Sections" counts the golden corpus's sections of the type (737 in all;
 dumped 2026-10-01 from the corpus suites and each type's own grammar modules,
 "Rejected" those the engine rejects). `tests/engine-corpus/known-failures.txt`
-names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
+named the subphase each waited for; since 7.17, every section type the
+engine has is ported, and the file lists accepted divergences only.
 
 | Subphase | Section type | Engine owner | Sections | Rejected | Status |
 |---|---|---|---|---|---|
@@ -170,7 +171,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.14 | `###HostedService`: hosted services and execution environments | hostedService | 6 | 1 | Done: all match; what no test writes, test suites, post validations, post-deployment actions and deployment configurations, is unsupported |
 | 7.15 | `###BigQuery`: BigQuery functions | bigqueryFunction | 6 | 3 | Done: all match |
 | 7.16 | `###Text`: texts | text | 6 | 3 | Done: all match |
-| 7.17 | `###FunctionJar` | functionJar | 5 | 1 | |
+| 7.17 | `###FunctionJar`: function jars | functionJar | 5 | 1 | Done: all match |
 
 7.1's crates are `dsl-persistence` (the section; the `Manual` trigger and
 `Default` platform), `dsl-persistence-relational` (the `Relational`
@@ -314,4 +315,10 @@ configurations are unsupported, as 7.13's.
 
 7.16's crate is `dsl-text`: texts, a content and an optional type, read as
 blocks of fields and walked. The section has no imports.
+
+7.17's crate is `dsl-function-jar`: function jars, read and walked as 7.7's
+with `dsl-function-activator`, their ownership a deployment's; their
+`activationConfiguration`, which the walker leaves out, is read and left
+out. The section has imports (not reproduced, as in 7.11: the walker keeps
+them only when the section has a function jar).
 

@@ -32,6 +32,7 @@ fn library_links_the_section_and_island_grammars() {
             "Elasticsearch",
             "ExternalFormat",
             "FileGeneration",
+            "FunctionJar",
             "GenerationSpecification",
             "HostedService",
             "Mapping",

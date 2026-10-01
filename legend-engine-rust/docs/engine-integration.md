@@ -118,12 +118,13 @@ legend-pure takes its own back:
   stores' mapping elements, connections and test data, and the xts islands
   (`#GQL{}#`, …): a `dsl-*` crate per engine module (`dsl-connection`,
   `dsl-runtime`, `dsl-service`, `dsl-persistence` and its extensions',
-  `dsl-bigquery-function`, `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`,
-  `dsl-external-format`, `dsl-function-activator`, `dsl-generation`,
-  `dsl-hosted-service`, `dsl-memsql-function`, `dsl-relational-snowflake`,
-  `dsl-service-store`, `dsl-snowflake`, `dsl-text`,
-  `dsl-mongodb`, `dsl-deephaven`, `dsl-elasticsearch`,
-  `dsl-authentication`; the data space include is read in `dsl-mapping`),
+  `dsl-bigquery-function`, `dsl-data-space`, `dsl-dataquality`,
+  `dsl-diagram`, `dsl-external-format`, `dsl-function-activator`,
+  `dsl-function-jar`, `dsl-generation`, `dsl-hosted-service`,
+  `dsl-memsql-function`, `dsl-relational-snowflake`, `dsl-service-store`,
+  `dsl-snowflake`, `dsl-text`, `dsl-mongodb`, `dsl-deephaven`,
+  `dsl-elasticsearch`, `dsl-authentication`; the data space include is read
+  in `dsl-mapping`),
   depending on the legend-pure crates.
 
 ### Native library assembly
@@ -331,7 +332,8 @@ M=legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure
 V="-Drevision=rust-parser-SNAPSHOT"
 # the library, whose section types are recorded
 L=$PWD/legend-engine-rust/target/debug/liblegend_pure_rust_parser.dylib
-# while step 7 ports them, the section types the library doesn't parse yet
+# step 7's section types: since 2026-10-01 the library parses them all;
+# listed so that a dump records them with an older library too
 T=Persistence,DataSpace,DataQualityValidation,ServiceStore,ExternalFormat,Diagram,Snowflake,Elasticsearch,MongoDB,FileGeneration,GenerationSpecification,QueryPostProcessor,Deephaven,MemSql,HostedService,BigQuery,Text,FunctionJar
 DUMP="$V -Dlegend.grammar.rust.mode=off -Dlegend.pure.rust.parser.lib=$L -Dlegend.grammar.rust.corpusSections=$T -Dlegend.grammar.rust.corpusDir=$C"
 CP=$PWD/$M/legend-engine-language-pure-grammar-rust/target/legend-engine-language-pure-grammar-rust-rust-parser-SNAPSHOT.jar

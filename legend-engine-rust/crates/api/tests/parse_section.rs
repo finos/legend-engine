@@ -25,6 +25,7 @@ use legend_pure_dsl_deephaven as _;
 use legend_pure_dsl_diagram as _;
 use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_external_format as _;
+use legend_pure_dsl_function_jar as _;
 use legend_pure_dsl_generation as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_hosted_service as _;
@@ -79,6 +80,7 @@ fn capabilities_report_linked_grammars() {
             "Elasticsearch",
             "ExternalFormat",
             "FileGeneration",
+            "FunctionJar",
             "GenerationSpecification",
             "HostedService",
             "Mapping",

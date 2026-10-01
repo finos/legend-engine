@@ -20,13 +20,8 @@
 3f46588323583c5e  accepted: a schema set in the format `Example`, which only the engine's tests define; Rust knows the formats the engine's modules define and reports another unsupported, for the engine to check against the formats it has
 50fc901713a1032f  accepted: the engine rejects a legacy test input of type `Objected`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 5684d1bc292024ec  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
-5a50a5d4628ccda1  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-7c170dfd49f35bfa  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-9e3d001b53816cf9  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-9ed1f8a476b8a2b4  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
 af6653c3bb096f1d  accepted: the engine rejects a query generation config of type `UnknownConfig`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 b1f0017c83c207bb  accepted: the engine rejects a service store security scheme of type `INVALID`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 b5e5df0802ef7981  accepted: the engine rejects a persistence platform of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 d3be8c92e5bf6162  accepted: the engine rejects a mapping element of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
-f97ffa54b5d776c8  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
 fdf962a97b129789  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section

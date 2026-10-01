@@ -30,11 +30,12 @@ grammars `dsl-bigquery-function` (`###BigQuery`), `dsl-connection`
 (`###DataSpace`), `dsl-dataquality` (`###DataQualityValidation`),
 `dsl-deephaven` (`###Deephaven`), `dsl-diagram` (`###Diagram`),
 `dsl-elasticsearch` (`###Elasticsearch`), `dsl-external-format`
-(`###ExternalFormat`), `dsl-generation` (`###FileGeneration` and
-`###GenerationSpecification`), `dsl-hosted-service` (`###HostedService`),
-`dsl-mapping` (`###Mapping`), `dsl-memsql-function` (`###MemSql`),
-`dsl-mongodb` (`###MongoDB`), `dsl-persistence` (`###Persistence`, with
-its extensions' `dsl-persistence-relational` and `dsl-persistence-cloud`),
+(`###ExternalFormat`), `dsl-function-jar` (`###FunctionJar`),
+`dsl-generation` (`###FileGeneration` and `###GenerationSpecification`),
+`dsl-hosted-service` (`###HostedService`), `dsl-mapping` (`###Mapping`),
+`dsl-memsql-function` (`###MemSql`), `dsl-mongodb` (`###MongoDB`),
+`dsl-persistence` (`###Persistence`, with its extensions'
+`dsl-persistence-relational` and `dsl-persistence-cloud`),
 `dsl-relational` (`###Relational` and `###QueryPostProcessor`),
 `dsl-runtime` (`###Runtime`), `dsl-service` (`###Service`),
 `dsl-service-store` (`###ServiceStore`), `dsl-snowflake` (`###Snowflake`)

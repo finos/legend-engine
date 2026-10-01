@@ -40,6 +40,7 @@ legend-pure-dsl-deephaven = { path = "../dsl-deephaven" }
 legend-pure-dsl-diagram = { path = "../dsl-diagram" }
 legend-pure-dsl-elasticsearch = { path = "../dsl-elasticsearch" }
 legend-pure-dsl-external-format = { path = "../dsl-external-format" }
+legend-pure-dsl-function-jar = { path = "../dsl-function-jar" }
 legend-pure-dsl-generation = { path = "../dsl-generation" }
 legend-pure-dsl-graph = { path = "../dsl-graph" }
 legend-pure-dsl-hosted-service = { path = "../dsl-hosted-service" }

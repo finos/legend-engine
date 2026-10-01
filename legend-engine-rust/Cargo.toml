@@ -32,6 +32,7 @@ members = [
     "crates/dsl-elasticsearch",
     "crates/dsl-external-format",
     "crates/dsl-function-activator",
+    "crates/dsl-function-jar",
     "crates/dsl-generation",
     "crates/dsl-graph",
     "crates/dsl-hosted-service",
