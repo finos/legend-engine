@@ -164,7 +164,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | Done: all match |
 | 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | Done: all match |
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | Done: all match |
-| 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | |
+| 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | Done: all match |
 | 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | |
 | 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | |
 | 7.14 | `###HostedService` | hostedService | 6 | 1 | |
@@ -258,4 +258,9 @@ grammar reads a field both as the generation's own and as a property
 (`scopeElements: ['a'];`, `generationOutputPath: 'p';`), it takes its own,
 and a property of either name is the walker's error. An integer too large
 for a Java `long` makes the engine fail, so Rust reports it unsupported.
+
+7.11's grammar joins the relational store's crate, `dsl-relational` (its
+`mapper` module): relational mappers, whose walker checks nothing its
+grammar doesn't, read into their records directly. Not reproduced: the
+walker keeps a section's imports only when it has a mapper.
 

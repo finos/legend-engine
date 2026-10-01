@@ -77,6 +77,7 @@ fn capabilities_report_linked_grammars() {
             "Mapping",
             "MongoDB",
             "Persistence",
+            "QueryPostProcessor",
             "Relational",
             "Runtime",
             "Service",

@@ -59,6 +59,10 @@
 //! - [`database_protocol`] — [`database_protocol::DatabaseProtocol`]
 //!   registers as [`legend_pure_parser_protocol::ElementProtocol`] for
 //!   databases.
+//! - [`mapper`] — the `###QueryPostProcessor` section's relational mappers:
+//!   [`mapper::QueryPostProcessorSectionParser`] and
+//!   [`mapper::RelationalMapperProtocol`] register as its section grammar and
+//!   element protocol.
 //! - [`parser`] — [`parser::RelationalDataParser`] registers as
 //!   [`legend_pure_parser_parser::EmbeddedDataParser`] for `Relational`.
 //! - [`protocol`] — [`protocol::RelationalDataProtocol`] registers as
@@ -70,6 +74,7 @@
 pub mod ast;
 pub mod connection;
 pub mod database_protocol;
+pub mod mapper;
 pub mod mapping;
 mod milestoning;
 pub mod operation;
