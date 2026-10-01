@@ -25,6 +25,7 @@ members = [
     "crates/dsl-connection",
     "crates/dsl-data",
     "crates/dsl-data-space",
+    "crates/dsl-dataquality",
     "crates/dsl-deephaven",
     "crates/dsl-elasticsearch",
     "crates/dsl-graph",

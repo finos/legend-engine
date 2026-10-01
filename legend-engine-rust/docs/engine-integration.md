@@ -118,7 +118,7 @@ legend-pure takes its own back:
   stores' mapping elements, connections and test data, and the xts islands
   (`#GQL{}#`, …): a `dsl-*` crate per engine module (`dsl-connection`,
   `dsl-runtime`, `dsl-service`, `dsl-persistence` and its extensions',
-  `dsl-data-space`, `dsl-relational-snowflake`, `dsl-service-store`,
+  `dsl-data-space`, `dsl-dataquality`, `dsl-relational-snowflake`, `dsl-service-store`,
   `dsl-mongodb`, `dsl-deephaven`, `dsl-elasticsearch`,
   `dsl-authentication`; the data space include is read in `dsl-mapping`),
   depending on the legend-pure crates.

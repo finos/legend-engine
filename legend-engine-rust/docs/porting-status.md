@@ -156,7 +156,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 |---|---|---|---|---|---|
 | 7.1 | `###Persistence`: persistences and persistence contexts, with their triggers, platforms and targets (the relational target and the cloud platforms are extensions of their own) | persistence | 205 | 81 | Done: all match but one the engine rejects for a platform type no grammar reads (accepted) |
 | 7.2 | `###DataSpace` | data-space | 142 | 29 | Done: all match but one the engine rejects without a position (accepted) |
-| 7.3 | `###DataQualityValidation`: data quality validations and relation validations | dataquality | 88 | 10 | |
+| 7.3 | `###DataQualityValidation`: data quality validations, relation validations and relation comparisons | dataquality | 88 | 10 | Done: all match |
 | 7.4 | `###ServiceStore`: service stores | serviceStore | 81 | 13 | |
 | 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | |
 | 7.6 | `###Diagram` | diagram | 36 | 20 | |
@@ -190,4 +190,12 @@ reference (to a `DATASPACE` element), which needs no protocol of its own.
 The engine fails without a position on an executable that has neither a
 query nor an executable; a Rust error always has one, so Rust reports it
 unsupported and the engine parses the section (accepted).
+
+7.3's crate is `dsl-dataquality`, read and walked the same way: class
+validations with their validation trees (`$[ my::Class<constraint>{ … } ]$`,
+whose property parameters and sub-type paths the walker leaves out),
+relation validations and relation comparisons, with their test suites. A
+persistence strategy, `# Type { … }#`, is unsupported: the engine reads it
+with an extension of its data quality grammar, and no module of the engine
+has one.
 
