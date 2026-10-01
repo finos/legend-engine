@@ -1,0 +1,353 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Interpreted-mode dev loop for the SQL e2e parity corpus: SQL parse, routing, plan generation and
+// dialect SQL emission run here in Pure so .pure edits are picked up by a warm LSP session without a
+// rebuild. Corpus access and reference Postgres execution stay in Java. This is a dev-loop tool, not
+// a CI signal - TestPostgresParity covers the real pg-wire path.
+
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::e2e::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::profiles::*;
+
+// Both is only meaningful for ad hoc SQL execution (executeAdhocSQL): run against both paths at once.
+// executeSQLE2ETest and runOneCase always take a single TDS or Relation path.
+Enum meta::external::query::sql::e2e::SqlE2EPath
+{
+  TDS,
+  Relation,
+  Both
+}
+
+// A corpus case crossed with one execution path, resolved down to what runOneCase needs to run it.
+Class meta::external::query::sql::e2e::SqlE2ECaseRef
+{
+  corpusId: String[1];
+  path: SqlE2EPath[1];
+  sql: String[0..1];            // rewritten for this path; empty if skip/bugReason/rewriteError is set
+  hasOrderBy: Boolean[1];
+  skip: String[0..1];
+  bugReason: String[0..1];      // Postgres rejected the reference SQL - a corpus bug, not a Legend one
+  rewriteError: String[0..1];
+  expectedStatus: String[0..1]; // the recorded baseline for this path
+}
+
+function meta::external::query::sql::e2e::displayId(ref:SqlE2ECaseRef[1]):String[1]
+{
+  $ref.corpusId + '|' + $ref.path.name
+}
+
+Class meta::external::query::sql::e2e::SqlE2EConnection
+{
+  host: String[1];
+  port: Integer[1];
+  databaseName: String[1];
+  user: String[1];
+  password: String[1];
+}
+
+// Not meta::pure::test::surveyor's types: a corpus case isn't a Pure test function, and BUG (the
+// reference SQL itself was rejected by Postgres) has no surveyor equivalent.
+Enum meta::external::query::sql::e2e::SqlE2ETestStatus
+{
+  PASS,
+  FAIL,
+  ERROR,
+  SKIP,
+  BUG
+}
+
+Class meta::external::query::sql::e2e::SqlE2ETestResult
+{
+  id: String[1];
+  status: SqlE2ETestStatus[1];
+  elapsed: Integer[1];
+  message: String[0..1];
+}
+
+Class meta::external::query::sql::e2e::SqlE2ETestReport
+{
+  results: SqlE2ETestResult[*];
+  totalElapsed: Integer[1];
+  passCount: Integer[1];
+  failCount: Integer[1];
+  errorCount: Integer[1];
+  skipCount: Integer[1];
+  bugCount: Integer[1];
+}
+
+// Pairs a fresh result with the corpus's recorded baseline, for divergence detection.
+Class meta::external::query::sql::e2e::SqlE2EOutcome
+{
+  id: String[1];
+  expected: String[0..1];
+  result: SqlE2ETestResult[1];
+}
+
+// Ad hoc SQL has no corpus baseline to classify against, only "did each side execute, and did they
+// agree" - hence its own shape rather than reusing SqlE2ETestResult.
+Class meta::external::query::sql::e2e::SqlE2EAdhocResult
+{
+  path: SqlE2EPath[1];
+  legendResultJson: String[0..1];
+  legendError: String[0..1];
+  referenceRows: String[0..1];
+  referenceError: String[0..1];
+  matched: Boolean[0..1];
+}
+
+// Every corpus case matching filter, crossed with both execution paths and resolved for each.
+native function meta::external::query::sql::e2e::resolveCaseRefs(filter:String[1]):SqlE2ECaseRef[*];
+
+// Runs and classifies one (case id, path) pair. Pure has no try/catch, so trapping and timing the
+// run happens here rather than in Pure - a single failing case must not abort a whole category run.
+native function meta::external::query::sql::e2e::executeSQLE2ETest(caseId:String[1], path:SqlE2EPath[1]):SqlE2ETestResult[1];
+
+// Runs sql against Postgres and against Legend (path Both runs both paths), trapping each side
+// independently so a failure on one does not hide whether the other executed.
+native function meta::external::query::sql::e2e::executeAdhocSQL(sql:String[1], path:SqlE2EPath[1]):SqlE2EAdhocResult[*];
+
+function meta::external::query::sql::e2e::runtimeFor(conn:SqlE2EConnection[1]):meta::core::runtime::Runtime[1]
+{
+  ^meta::core::runtime::EngineRuntime(
+    connectionStores = ^meta::core::runtime::ConnectionStore(
+      element = e2e::TestDB,
+      connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+        type = meta::relational::runtime::DatabaseType.Postgres,
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(
+          host = $conn.host,
+          port = $conn.port,
+          databaseName = $conn.databaseName
+        ),
+        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy(
+          baseVaultReference = 'e2e.',
+          userNameVaultReference = 'user',
+          passwordVaultReference = 'password'
+        )
+      )
+    )
+  )
+}
+
+// One SQLSource per zero-arg accessor function in the model, mirroring what E2eTestSourceProvider
+// resolves on the Java side. Parameterised accessors are skipped: no corpus case uses them.
+function meta::external::query::sql::e2e::sqlSources(prefix:String[1], conn:SqlE2EConnection[1]):SQLSource[*]
+{
+  let rt = meta::external::query::sql::e2e::runtimeFor($conn);
+  'e2e'->pathToElement()->cast(@Package).children
+    ->filter(c | $c->instanceOf(ConcreteFunctionDefinition))
+    ->cast(@ConcreteFunctionDefinition<Any>)
+    ->filter(f | $f.functionName->toOne()->startsWith($prefix) && $f->functionType().parameters->isEmpty())
+    ->map(f |
+      ^SQLSource(
+        type = 'func',
+        func = $f,
+        mapping = e2e::TestMapping,
+        runtime = $rt,
+        key = [^SQLSourceArgument(index = 0, value = 'e2e::' + $f.functionName->toOne())]
+      )
+    );
+}
+
+// Parses, plans and executes sql against Legend, returning the raw executePlanAsJSON TDS payload.
+function meta::external::query::sql::e2e::executeLegend(sql:String[1], prefix:String[1], conn:SqlE2EConnection[1], ext:Extension[*]):String[1]
+{
+  let query = meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql)->cast(@Query);
+  let res = getPlanResultFromSQL(meta::external::query::sql::e2e::sqlSources($prefix, $conn), $query, $ext);
+  let plan = if($res.plan->isNotEmpty(),
+               | $res.plan->toOne(),
+               | meta::pure::executionPlan::executionPlan(
+                   $res.lambda->toOne(),
+                   if($res.mapping->isNotEmpty(), | $res.mapping->toOne(), | meta::external::query::sql::transformation::compile::utils::emptyMapping()),
+                   $res.runtime->toOne(),
+                   ^meta::pure::runtime::ExecutionContext(),
+                   $ext,
+                   noDebug()
+                 )
+             );
+  let bound = $plan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
+  let protocolPlan = $bound->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($ext);
+  let planAsJson = $protocolPlan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+  meta::legend::executePlanAsJSON($planAsJson, []);
+}
+
+// Invoked by executeAdhocSQL with SQL already FROM-rewritten (the rewrite itself is plain text
+// manipulation, done in Java rather than here).
+function meta::external::query::sql::e2e::runOneAdhocLegend(rewrittenSql:String[1], prefix:String[1], conn:SqlE2EConnection[1]):String[1]
+{
+  meta::external::query::sql::e2e::executeLegend($rewrittenSql, $prefix, $conn, meta::relational::extension::relationalExtensions())
+}
+
+// Invoked by executeSQLE2ETest only when ref has real SQL to run (skip/bug/rewrite-error cases are
+// classified in Java without reaching here).
+function meta::external::query::sql::e2e::runOneCase(ref:SqlE2ECaseRef[1], conn:SqlE2EConnection[1]):String[1]
+{
+  assert($ref.path != SqlE2EPath.Both, | 'runOneCase requires a single path (TDS or Relation), got Both');
+  let prefix = if($ref.path == SqlE2EPath.TDS, | 'tds_', | 'rel_');
+  let ext = meta::relational::extension::relationalExtensions();
+  meta::external::query::sql::e2e::executeLegend($ref.sql->toOne(), $prefix, $conn, $ext);
+}
+
+function meta::external::query::sql::e2e::runOutcomeFor(ref:SqlE2ECaseRef[1]):SqlE2EOutcome[1]
+{
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($ref.corpusId, $ref.path);
+  ^SqlE2EOutcome(id = $ref->meta::external::query::sql::e2e::displayId(), expected = $ref.expectedStatus, result = $r);
+}
+
+function meta::external::query::sql::e2e::runQuiet(filter:String[1]):SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::resolveCaseRefs($filter)->map(ref | meta::external::query::sql::e2e::runOutcomeFor($ref))
+}
+
+function meta::external::query::sql::e2e::statusLabel(o:SqlE2EOutcome[1]):String[1]
+{
+  $o.result.status.name
+}
+
+function meta::external::query::sql::e2e::run(filter:String[1]):SqlE2EOutcome[*]
+{
+  let outcomes = meta::external::query::sql::e2e::runQuiet($filter);
+  $outcomes->map(o | println(meta::external::query::sql::e2e::statusLabel($o)
+                             + ' ' + $o.id
+                             + if($o.expected->isNotEmpty() && $o.expected->toOne() != meta::external::query::sql::e2e::statusLabel($o), | ' (baseline ' + $o.expected->toOne() + ')', | '')
+                             + if($o.result.message->isNotEmpty(), | '\n    ' + $o.result.message->toOne(), | '')));
+  let pass = $outcomes->filter(o | $o.result.status == SqlE2ETestStatus.PASS)->size();
+  println($pass->toString() + '/' + $outcomes->size()->toString() + ' matched reference Postgres');
+  $outcomes;
+}
+
+// A regression: the corpus baseline says PASS but this run did not reproduce it.
+function meta::external::query::sql::e2e::isDivergence(o:SqlE2EOutcome[1]):Boolean[1]
+{
+  $o.expected->isNotEmpty() && $o.expected->toOne() == 'PASS' && $o.result.status != SqlE2ETestStatus.PASS
+}
+
+function meta::external::query::sql::e2e::firstLine(s:String[1]):String[1]
+{
+  $s->split('\n')->at(0)
+}
+
+// Compact single-string report: one summary line, then one line per divergence.
+function meta::external::query::sql::e2e::divergenceReport(filter:String[1]):String[1]
+{
+  let outcomes = meta::external::query::sql::e2e::runQuiet($filter);
+  let divergent = $outcomes->filter(o | $o->meta::external::query::sql::e2e::isDivergence());
+  let summary = 'SUMMARY filter=' + $filter
+              + ' total=' + $outcomes->size()->toString()
+              + ' pass=' + $outcomes->filter(o | $o.result.status == SqlE2ETestStatus.PASS)->size()->toString()
+              + ' divergent=' + $divergent->size()->toString();
+  let lines = $divergent->map(o | 'DIVERGE ' + $o.id + '~|~' + meta::external::query::sql::e2e::statusLabel($o) + '~|~'
+                                 + if($o.result.message->isNotEmpty(), | $o.result.message->toOne()->meta::external::query::sql::e2e::firstLine(), | ''));
+  ([$summary]->concatenate($lines))->joinStrings('\n');
+}
+
+function meta::external::query::sql::e2e::executeSQLTests(refs:SqlE2ECaseRef[*]):SqlE2ETestReport[1]
+{
+  let results = $refs->map(ref | meta::external::query::sql::e2e::executeSQLE2ETest($ref.corpusId, $ref.path));
+  meta::external::query::sql::e2e::buildTestReport($results);
+}
+
+function meta::external::query::sql::e2e::executeSQLTestCategory(category:String[1]):SqlE2ETestReport[1]
+{
+  meta::external::query::sql::e2e::executeSQLTests(meta::external::query::sql::e2e::resolveCaseRefs($category))
+}
+
+function meta::external::query::sql::e2e::buildTestReport(results:SqlE2ETestResult[*]):SqlE2ETestReport[1]
+{
+  ^SqlE2ETestReport(
+    results = $results,
+    totalElapsed = $results->map(r | $r.elapsed)->plus(),
+    passCount = $results->filter(r | $r.status == SqlE2ETestStatus.PASS)->size(),
+    failCount = $results->filter(r | $r.status == SqlE2ETestStatus.FAIL)->size(),
+    errorCount = $results->filter(r | $r.status == SqlE2ETestStatus.ERROR)->size(),
+    skipCount = $results->filter(r | $r.status == SqlE2ETestStatus.SKIP)->size(),
+    bugCount = $results->filter(r | $r.status == SqlE2ETestStatus.BUG)->size()
+  );
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// Entry points the LSP can invoke directly. It binds String[1] literals only, so a mode arrives as
+// the name of a SqlE2EPath value rather than as the enum - which is what lets a case run from
+// `pure-sql-e2e` with no wrapper function generated into this file.
+// ---------------------------------------------------------------------------------------------
+
+function meta::external::query::sql::e2e::pathFromName(mode:String[1]):SqlE2EPath[1]
+{
+  meta::pure::functions::lang::extractEnumValue(SqlE2EPath, $mode)->cast(@SqlE2EPath)
+}
+
+// One case in one mode, shaped as a test: PASS passes, every other status fails. The corpus
+// baseline is deliberately not consulted - this reports what the case does now.
+function meta::external::query::sql::e2e::checkCase(caseId:String[1], mode:String[1]):Boolean[1]
+{
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($caseId, meta::external::query::sql::e2e::pathFromName($mode));
+  let label = $caseId + '|' + $mode;
+  println('STATUS|' + $label + '|' + $r.status.name + '|' + $r.elapsed->toString());
+  assert($r.status == SqlE2ETestStatus.PASS,
+         | $label + ' ' + $r.status.name
+           + if($r.message->isNotEmpty(), | ': ' + $r.message->toOne(), | ''));
+  true;
+}
+
+// filters is comma-separated so several ids or categories resolve in one call.
+function meta::external::query::sql::e2e::caseIndex(filters:String[1]):String[1]
+{
+  let out = $filters->split(',')
+    ->map(f | meta::external::query::sql::e2e::resolveCaseRefs($f->trim()))
+    ->map(r | $r.corpusId + '|' + $r.path.name)
+    ->removeDuplicates()
+    ->joinStrings('\n');
+  println($out);
+  $out;
+}
+
+function meta::external::query::sql::e2e::diagCase(caseId:String[1]):String[1]
+{
+  let rep = meta::external::query::sql::e2e::run($caseId)->map(o | 'STATUS=' + meta::external::query::sql::e2e::statusLabel($o) + ' ' + $o.id + if($o.result.message->isNotEmpty(), | '\n' + $o.result.message->toOne(), | ''))->joinStrings('\n---\n');
+  println($rep);
+  $rep;
+}
+
+function meta::external::query::sql::e2e::diagCase(caseId:String[1], mode:String[1]):String[1]
+{
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($caseId, meta::external::query::sql::e2e::pathFromName($mode));
+  let rep = 'STATUS=' + $r.status.name + ' ' + $r.id
+            + if($r.message->isNotEmpty(), | '\n' + $r.message->toOne(), | '');
+  println($rep);
+  $rep;
+}
+
+// Ad hoc SQL diagnostic - no corpus entry required. path is 'TDS', 'Relation', or 'Both'.
+function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], path:SqlE2EPath[1]):String[1]
+{
+  let results = meta::external::query::sql::e2e::executeAdhocSQL($sql, $path);
+  let rep = $results->map(r | 'PATH=' + $r.path.name
+      + if($r.matched->isNotEmpty(), | ' matched=' + $r.matched->toOne()->toString(), | '')
+      + if($r.legendError->isNotEmpty(), | '\n  legendError: ' + $r.legendError->toOne(), | '\n  legend: ' + if($r.legendResultJson->isNotEmpty(), | $r.legendResultJson->toOne(), | '(none)'))
+      + if($r.referenceError->isNotEmpty(), | '\n  referenceError: ' + $r.referenceError->toOne(), | '\n  reference:\n' + if($r.referenceRows->isNotEmpty(), | $r.referenceRows->toOne(), | '(none)'))
+    )->joinStrings('\n---\n');
+  println($rep);
+  $rep;
+}
+
+function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], mode:String[1]):String[1]
+{
+  meta::external::query::sql::e2e::diagAdhoc($sql, meta::external::query::sql::e2e::pathFromName($mode))
+}

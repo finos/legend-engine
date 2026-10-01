@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2026 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>legend-engine-xts-sql</artifactId>
+        <groupId>org.finos.legend.engine</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xt-sql-e2e-pure</artifactId>
+    <packaging>jar</packaging>
+    <name>Legend Engine - XT - SQL - E2E Pure (interpreted dev loop)</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- convergence pins inherited in spirit from legend-engine-xt-sql-e2e-tests;
+                 dependencyManagement is not transitive so they must be repeated here -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <version>1.9.10</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>5.17.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>1.27.0-alpha</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>17.0.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <!-- Pure code-repository dependencies: needed for PAR generation,
+                                     invisible to the Java bytecode analyzer -->
+                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-sql-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlParser-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure</dependency>
+                                <!-- was needed by tryEval's Function<{->String[1]}> lambda param;
+                                     kept declared for the Pure repository even though no Java
+                                     source in this module references it directly any more -->
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compiler</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_external_query_sql_e2e</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                    <repositories>
+                        <repository>core_external_query_sql_e2e</repository>
+                    </repositories>
+                    <extraRepositories>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_external_query_sql_e2e.definition.json
+                        </extraRepository>
+                    </extraRepositories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build-pure-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <!-- the harness: corpus, FROM-rewrite, reference Postgres -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-e2e-tests</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- required by the generated Pure-compiled Java for this repository -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlModel-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</artifactId>
+        </dependency>
+
+        <!-- Pure repositories this one depends on -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+    </dependencies>
+</project>

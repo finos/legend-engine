@@ -378,16 +378,16 @@ tests:
     sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.123456' AS result FROM dates LIMIT 1"
     function: date_literal
     signature: "TIMESTAMP 'SS.SSSSSS'"
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Nine fractional digits (nanoseconds)
   - id: date_literal__fractional_9_digits
     sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.123456789' AS result FROM dates LIMIT 1"
     function: date_literal
     signature: "TIMESTAMP 'SS.SSSSSSSSS'"
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # ===== Time variants =====
 
