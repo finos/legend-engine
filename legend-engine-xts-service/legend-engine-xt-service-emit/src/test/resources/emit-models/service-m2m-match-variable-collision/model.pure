@@ -1,0 +1,152 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class collide::model::Source
+{
+  id: String[1];
+  kind: String[1];
+}
+
+Class collide::model::Target
+{
+  id: String[1];
+  letO: String[1];
+  letM: String[1];
+  letX: String[1];
+  paramO: String[1];
+  letXAnd: Boolean[1];
+}
+
+function collide::model::letO(s: collide::model::Source[1]): String[1]
+{
+  let o = 'o-';
+  $s->match([v: collide::model::Source[1] | $o + $v.kind]);
+}
+
+function collide::model::letM(s: collide::model::Source[1]): String[1]
+{
+  let m = 'm-';
+  $s->match([v: collide::model::Source[1] | $m + $v.kind]);
+}
+
+function collide::model::letX(s: collide::model::Source[1]): String[1]
+{
+  let x = 'x-';
+  $s->match([v: collide::model::Source[1] | $x + $v.kind]);
+}
+
+function collide::model::paramO(o: collide::model::Source[1]): String[1]
+{
+  $o->match([v: collide::model::Source[1] | 'p-' + $v.kind]);
+}
+
+function collide::model::letXAnd(s: collide::model::Source[1]): Boolean[1]
+{
+  let x = $s.kind == 'a';
+  [$x, $s.id == 'r1']->and();
+}
+
+
+###Mapping
+Mapping collide::mapping::SourceToTarget
+(
+  *collide::model::Target: Pure
+  {
+    ~src collide::model::Source
+    id: $src.id,
+    letO: $src->collide::model::letO(),
+    letM: $src->collide::model::letM(),
+    letX: $src->collide::model::letX(),
+    paramO: $src->collide::model::paramO(),
+    letXAnd: $src->collide::model::letXAnd()
+  }
+)
+
+
+###Runtime
+Runtime collide::runtime::SourceRuntime
+{
+  mappings:
+  [
+    collide::mapping::SourceToTarget
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json:
+      #{
+        JsonModelConnection
+        {
+          class: collide::model::Source;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service collide::service::CollisionService
+{
+  pattern: '/collide';
+  documentation: 'M2M mapping calling functions whose variables share names with generator-introduced lambda parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |collide::model::Target.all()->graphFetch(#{collide::model::Target{id,letO,letM,letX,paramO,letXAnd}}#)->serialize(#{collide::model::Target{id,letO,letM,letX,paramO,letXAnd}}#);
+    mapping: collide::mapping::SourceToTarget;
+    runtime: collide::runtime::SourceRuntime;
+  }
+  testSuites:
+  [
+    collisions:
+    {
+      data:
+      [
+        connections:
+        [
+          json:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"id":"r1","kind":"a"},{"id":"r2","kind":"b"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        generatedJavaCompiles:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            valuesMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":"r1","letO":"o-a","letM":"m-a","letX":"x-a","paramO":"p-a","letXAnd":true},{"id":"r2","letO":"o-b","letM":"m-b","letX":"x-b","paramO":"p-b","letXAnd":false}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

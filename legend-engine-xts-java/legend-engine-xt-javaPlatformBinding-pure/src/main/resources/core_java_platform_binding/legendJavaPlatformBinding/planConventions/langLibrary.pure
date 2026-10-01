@@ -89,8 +89,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::matchPredicates(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
 {
    assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
-   let x          = j_parameter(javaObject(), 'x');
-   let m          = j_parameter(javaObject(), 'm');
+   let x          = j_parameter(javaObject(), '$x');
+   let m          = j_parameter(javaObject(), '$m');
    let predicates = $ctx.params->at(1)->cast(@InstanceValue).values->map(pv|                                                       
                                                         let v = $pv->match([f:Function<Any>[1]|$f, r:FunctionRoutedValueSpecification[1]|$r.originalFunction]);
                                                         let p            = $v->cast(@Function<Any>)->functionType().parameters->evaluateAndDeactivate()->toOne();
@@ -122,7 +122,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
    let inputMult = $ctx.params->at(0).multiplicity;
 
-   let o  = j_parameter(javaObject(), 'o');
+   let o  = j_parameter(javaObject(), '$o');
    
    let adapt = $ctx.params->at(1)->cast(@InstanceValue).values->map(pv|    
                                                    let v = $pv->match([f:Function<Any>[1]|$f, r:FunctionRoutedValueSpecification[1]|$r.originalFunction]);                                                                                                      
@@ -148,7 +148,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                                    let mainReturnType = $main.type->cast(@meta::external::language::java::metamodel::FunctionType).returnType;
                                                  
                                                    let andMain = $adaptInput->j_invoke('andThen', $main, javaFunction($type, $mainReturnType));
-                                                   let mp = j_parameter($mainReturnType->toBoxed(), 'm');                                           
+                                                   let mp = j_parameter($mainReturnType->toBoxed(), '$m');                                           
          
                                                    if ($ctx.returnType->isJavaList(),
                                                            | $andMain->j_invoke('andThen', j_lambda($mp, $mp->j_listOf($ctx.returnType)), javaFunction($mainReturnType, $ctx.returnType));,

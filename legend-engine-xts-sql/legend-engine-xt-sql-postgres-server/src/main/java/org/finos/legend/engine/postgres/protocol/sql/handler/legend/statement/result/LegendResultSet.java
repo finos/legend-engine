@@ -167,7 +167,7 @@ public class LegendResultSet implements PostgresResultSet
         );
 
         registerProcessor(
-                Lists.mutable.with(DATE, DATE_TIME),
+                Lists.mutable.with(DATE, DATE_TIME, TIMESTAMP),
                 (column, value) ->
                         extractValue(value, column, String.class, "Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)",
                                 f ->
@@ -181,20 +181,26 @@ public class LegendResultSet implements PostgresResultSet
         );
 
         registerProcessor(
-                Lists.mutable.with(INT),
+                Lists.mutable.with(INT, U_INT, SMALL_INT, U_SMALL_INT, TINY_INT, U_TINY_INT),
                 (column, value) -> extractValue(value, column, Number.class, "INT", f -> ((Number) value).intValue()),
                 processors
         );
 
         registerProcessor(
-                Lists.mutable.with(INTEGER),
+                Lists.mutable.with(INTEGER, BIG_INT, U_BIG_INT),
                 (column, value) -> extractValue(value, column, Number.class, "INTEGER", f -> ((Number) value).longValue()),
                 processors
         );
 
         registerProcessor(
-                Lists.mutable.with(FLOAT, DECIMAL, NUMBER),
+                Lists.mutable.with(FLOAT, DECIMAL, NUMBER, DOUBLE, NUMERIC),
                 (column, value) -> extractValue(value, column, Number.class, "DECIMAL (FLOAT/DOUBLE)", f -> ((Number) value).doubleValue()),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(FLOAT4),
+                (column, value) -> extractValue(value, column, Number.class, "FLOAT4", f -> ((Number) value).floatValue()),
                 processors
         );
 
@@ -205,7 +211,7 @@ public class LegendResultSet implements PostgresResultSet
         );
 
         registerProcessor(
-                Lists.mutable.with(STRING),
+                Lists.mutable.with(STRING, VARCHAR),
                 (column, value) -> extractValue(value, column, String.class, "STRING", f -> value),
                 processors
         );
