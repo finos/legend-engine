@@ -30,9 +30,10 @@ grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 (`###DataQualityValidation`), `dsl-deephaven` (`###Deephaven`),
 `dsl-diagram` (`###Diagram`), `dsl-elasticsearch` (`###Elasticsearch`),
 `dsl-external-format` (`###ExternalFormat`), `dsl-generation`
-(`###FileGeneration` and `###GenerationSpecification`), `dsl-mapping`
-(`###Mapping`), `dsl-memsql-function` (`###MemSql`), `dsl-mongodb`
-(`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
+(`###FileGeneration` and `###GenerationSpecification`),
+`dsl-hosted-service` (`###HostedService`), `dsl-mapping` (`###Mapping`),
+`dsl-memsql-function` (`###MemSql`), `dsl-mongodb` (`###MongoDB`),
+`dsl-persistence` (`###Persistence`, with its extensions'
 `dsl-persistence-relational` and `dsl-persistence-cloud`),
 `dsl-relational` (`###Relational` and `###QueryPostProcessor`),
 `dsl-runtime` (`###Runtime`), `dsl-service` (`###Service`),

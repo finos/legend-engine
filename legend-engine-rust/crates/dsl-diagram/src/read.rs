@@ -25,7 +25,7 @@ use legend_pure_parser_ast::type_ref::Package;
 use legend_pure_parser_lexer::TokenKind;
 use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::blocks::{
-    ReadBlock, ReadField, ReadValue, braces, keyword_block, simple, values,
+    ReadBlock, ReadField, ReadValue, boolean_value, braces, keyword_block, simple, values,
 };
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::words::{is_word, unexpected};
@@ -111,9 +111,9 @@ fn class_view_field(
         }),
         "position" => simple(ctx, "position", number_pair),
         "rectangle" => simple(ctx, "rectangle", number_pair),
-        "hideProperties" => simple(ctx, "hideProperties", boolean),
-        "hideTaggedValue" => simple(ctx, "hideTaggedValue", boolean),
-        "hideStereotype" => simple(ctx, "hideStereotype", boolean),
+        "hideProperties" => simple(ctx, "hideProperties", boolean_value),
+        "hideTaggedValue" => simple(ctx, "hideTaggedValue", boolean_value),
+        "hideStereotype" => simple(ctx, "hideStereotype", boolean_value),
         _ => Ok(None),
     }
 }
@@ -166,15 +166,4 @@ fn number_pair(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
         ReadValue::Text(first, first_at),
         ReadValue::Text(second, second_at),
     ]))
-}
-
-fn boolean(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
-    let token = ctx.cursor().peek().clone();
-    let value = match token.kind {
-        TokenKind::True => true,
-        TokenKind::False => false,
-        _ => return Err(unexpected(&token)),
-    };
-    ctx.cursor().advance();
-    Ok(ReadValue::Boolean(value))
 }

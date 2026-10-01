@@ -26,6 +26,7 @@ use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_external_format as _;
 use legend_pure_dsl_generation as _;
 use legend_pure_dsl_graph as _;
+use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
@@ -76,6 +77,7 @@ fn capabilities_report_linked_grammars() {
             "ExternalFormat",
             "FileGeneration",
             "GenerationSpecification",
+            "HostedService",
             "Mapping",
             "MemSql",
             "MongoDB",

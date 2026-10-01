@@ -179,6 +179,18 @@ impl ReadField {
         }
     }
 
+    /// A boolean.
+    ///
+    /// # Errors
+    ///
+    /// Not a boolean.
+    pub fn boolean(self) -> R<bool> {
+        match self.value {
+            ReadValue::Boolean(value) => Ok(value),
+            _ => Err(self.misread()),
+        }
+    }
+
     /// A qualified name's path, unquoted.
     ///
     /// # Errors
@@ -405,6 +417,22 @@ pub fn identifier_value(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
 /// Anything else next.
 pub fn path_value(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
     Ok(ReadValue::Path(qualified_name(ctx)?))
+}
+
+/// `true` or `false`: the grammars' `BOOLEAN`.
+///
+/// # Errors
+///
+/// Anything else next.
+pub fn boolean_value(ctx: &mut ParserContext<'_>) -> R<ReadValue> {
+    let token = ctx.cursor().peek().clone();
+    let value = match token.kind {
+        TokenKind::True => true,
+        TokenKind::False => false,
+        _ => return Err(unexpected(&token)),
+    };
+    ctx.cursor().advance();
+    Ok(ReadValue::Boolean(value))
 }
 
 /// A navigation path, `#/Type/property#`, read whole as one token of the
