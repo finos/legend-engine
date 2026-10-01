@@ -17,9 +17,12 @@ package org.finos.legend.engine.testable.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -34,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class TestTestableElementCoverageApi
 {
@@ -53,7 +55,7 @@ public class TestTestableElementCoverageApi
         service._package = "model";
         service.testSuites = Collections.singletonList(new ServiceTestSuite());
 
-        TestableElementInfo info = analyzeService(service);
+        TestableElementInfo info = analyzeSingle(service, "Service");
 
         Assert.assertEquals("model::MyService", info.path);
         Assert.assertEquals("Service", info.type);
@@ -71,7 +73,7 @@ public class TestTestableElementCoverageApi
         service.testSuites = null;
         service.test = null;
 
-        TestableElementInfo info = analyzeService(service);
+        TestableElementInfo info = analyzeSingle(service, "Service");
 
         Assert.assertFalse(info.hasTestSuites);
         Assert.assertFalse(info.hasLegacyTests);
@@ -86,7 +88,7 @@ public class TestTestableElementCoverageApi
         mapping._package = "model";
         mapping.testSuites = Collections.singletonList(new MappingTestSuite());
 
-        TestableElementInfo info = analyzeMapping(mapping);
+        TestableElementInfo info = analyzeSingle(mapping, "Mapping");
 
         Assert.assertEquals("model::MyMapping", info.path);
         Assert.assertEquals("Mapping", info.type);
@@ -103,7 +105,39 @@ public class TestTestableElementCoverageApi
         mapping.testSuites = null;
         mapping.tests = Collections.emptyList();
 
-        TestableElementInfo info = analyzeMapping(mapping);
+        TestableElementInfo info = analyzeSingle(mapping, "Mapping");
+
+        Assert.assertFalse(info.hasTestSuites);
+        Assert.assertFalse(info.hasLegacyTests);
+        Assert.assertEquals(0, info.testSuiteCount);
+    }
+
+    @Test
+    public void testPersistenceWithTests()
+    {
+        Persistence persistence = new Persistence();
+        persistence.name = "MyPersistence";
+        persistence._package = "model";
+        persistence.tests = Collections.singletonList(new PersistenceTest());
+
+        TestableElementInfo info = analyzeSingle(persistence, "Persistence");
+
+        Assert.assertEquals("model::MyPersistence", info.path);
+        Assert.assertEquals("Persistence", info.type);
+        Assert.assertTrue(info.hasTestSuites);
+        Assert.assertFalse(info.hasLegacyTests);
+        Assert.assertEquals(1, info.testSuiteCount);
+    }
+
+    @Test
+    public void testPersistenceWithoutTests()
+    {
+        Persistence persistence = new Persistence();
+        persistence.name = "MyPersistence";
+        persistence._package = "model";
+        persistence.tests = null;
+
+        TestableElementInfo info = analyzeSingle(persistence, "Persistence");
 
         Assert.assertFalse(info.hasTestSuites);
         Assert.assertFalse(info.hasLegacyTests);
@@ -113,19 +147,22 @@ public class TestTestableElementCoverageApi
     @Test
     public void testCoverageResultSummary()
     {
-        TestableElementInfo withTests = new TestableElementInfo("model::A", "Service", true, false, 1);
-        TestableElementInfo withoutTests = new TestableElementInfo("model::B", "Service", false, false, 0);
+        Service serviceWithTests = new Service();
+        serviceWithTests.name = "A";
+        serviceWithTests._package = "model";
+        serviceWithTests.testSuites = Collections.singletonList(new ServiceTestSuite());
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Arrays.asList(withTests, withoutTests),
-                Collections.emptyList()
-        );
+        Service serviceWithoutTests = new Service();
+        serviceWithoutTests.name = "B";
+        serviceWithoutTests._package = "model";
 
-        Assert.assertEquals(2, result.serviceCoverage.totalElements);
-        Assert.assertEquals(1, result.serviceCoverage.elementsWithTests);
-        Assert.assertEquals(0.5, result.serviceCoverage.coveragePercentage, 0.001);
-        Assert.assertEquals(0, result.mappingCoverage.totalElements);
-        Assert.assertEquals(0.0, result.mappingCoverage.coveragePercentage, 0.001);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(serviceWithTests, serviceWithoutTests)));
+
+        Assert.assertEquals(2, result.coverageByType.get("Service").totalElements);
+        Assert.assertEquals(1, result.coverageByType.get("Service").elementsWithTests);
+        Assert.assertEquals(0.5, result.coverageByType.get("Service").coveragePercentage, 0.001);
+        Assert.assertFalse(result.elementsByType.containsKey("Mapping"));
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -140,10 +177,8 @@ public class TestTestableElementCoverageApi
         service._package = "model";
         service.testSuites = Collections.singletonList(new ServiceTestSuite());
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Collections.singletonList(analyzeService(service)),
-                Collections.emptyList()
-        );
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(service)));
 
         assertJsonMatchesResource(result, "coverage/expected_service_with_test_suites.json");
     }
@@ -157,10 +192,8 @@ public class TestTestableElementCoverageApi
         service.testSuites = null;
         service.test = null;
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Collections.singletonList(analyzeService(service)),
-                Collections.emptyList()
-        );
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(service)));
 
         assertJsonMatchesResource(result, "coverage/expected_service_without_tests.json");
     }
@@ -173,10 +206,8 @@ public class TestTestableElementCoverageApi
         mapping._package = "model";
         mapping.testSuites = Collections.singletonList(new MappingTestSuite());
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Collections.emptyList(),
-                Collections.singletonList(analyzeMapping(mapping))
-        );
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(mapping)));
 
         assertJsonMatchesResource(result, "coverage/expected_mapping_with_test_suites.json");
     }
@@ -206,10 +237,8 @@ public class TestTestableElementCoverageApi
         mappingB.testSuites = null;
         mappingB.tests = Collections.emptyList();
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Arrays.asList(analyzeService(serviceA), analyzeService(serviceB)),
-                Arrays.asList(analyzeMapping(mappingA), analyzeMapping(mappingB))
-        );
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(serviceA, serviceB, mappingA, mappingB)));
 
         assertJsonMatchesResource(result, "coverage/expected_mixed_coverage.json");
     }
@@ -412,7 +441,7 @@ public class TestTestableElementCoverageApi
     public void testCoverageFromGrammarServiceWithTestSuite() throws IOException
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(SERVICE_WITH_TEST_SUITE_GRAMMAR);
-        TestableElementCoverageResult result = buildCoverageResult(modelData);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(modelData);
         assertJsonMatchesResource(result, "coverage/expected_grammar_service_with_test_suite.json");
     }
 
@@ -441,7 +470,7 @@ public class TestTestableElementCoverageApi
     public void testCoverageFromGrammarServiceWithLegacyTest() throws IOException
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(SERVICE_WITH_LEGACY_TEST_GRAMMAR);
-        TestableElementCoverageResult result = buildCoverageResult(modelData);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(modelData);
         assertJsonMatchesResource(result, "coverage/expected_grammar_service_with_legacy_test.json");
     }
 
@@ -465,7 +494,7 @@ public class TestTestableElementCoverageApi
     public void testCoverageFromGrammarServiceWithEmptyTestSuites() throws IOException
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(SERVICE_WITH_EMPTY_TEST_SUITES_GRAMMAR);
-        TestableElementCoverageResult result = buildCoverageResult(modelData);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(modelData);
         assertJsonMatchesResource(result, "coverage/expected_grammar_service_with_empty_test_suites.json");
     }
 
@@ -507,7 +536,7 @@ public class TestTestableElementCoverageApi
         Assert.assertTrue("untestedService should have empty testSuites", foundUntestedEmpty);
 
         // Verify coverage result matches golden JSON
-        TestableElementCoverageResult result = buildCoverageResult(modelData);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(modelData);
         assertJsonMatchesResource(result, "coverage/expected_grammar_mixed_services.json");
     }
 
@@ -515,37 +544,14 @@ public class TestTestableElementCoverageApi
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
 
-    private static TestableElementCoverageResult buildCoverageResult(PureModelContextData modelData)
+    private static TestableElementInfo analyzeSingle(PackageableElement element, String expectedType)
     {
-        List<TestableElementInfo> services = modelData.getElements().stream()
-                .filter(Service.class::isInstance)
-                .map(Service.class::cast)
-                .map(TestTestableElementCoverageApi::analyzeService)
-                .collect(Collectors.toList());
-
-        List<TestableElementInfo> mappings = modelData.getElements().stream()
-                .filter(Mapping.class::isInstance)
-                .map(Mapping.class::cast)
-                .map(TestTestableElementCoverageApi::analyzeMapping)
-                .collect(Collectors.toList());
-
-        return new TestableElementCoverageResult(services, mappings);
-    }
-
-    private static TestableElementInfo analyzeService(Service service)
-    {
-        boolean hasTestSuites = service.testSuites != null && !service.testSuites.isEmpty();
-        boolean hasLegacyTests = service.test != null;
-        int testSuiteCount = hasTestSuites ? service.testSuites.size() : 0;
-        return new TestableElementInfo(service.getPath(), "Service", hasTestSuites, hasLegacyTests, testSuiteCount);
-    }
-
-    private static TestableElementInfo analyzeMapping(Mapping mapping)
-    {
-        boolean hasTestSuites = mapping.testSuites != null && !mapping.testSuites.isEmpty();
-        boolean hasLegacyTests = mapping.tests != null && !mapping.tests.isEmpty();
-        int testSuiteCount = hasTestSuites ? mapping.testSuites.size() : 0;
-        return new TestableElementInfo(mapping.getPath(), "Mapping", hasTestSuites, hasLegacyTests, testSuiteCount);
+        TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(
+                PureModelContextData.newPureModelContextData(null, null, Arrays.asList(element)));
+        List<TestableElementInfo> elements = result.elementsByType.get(expectedType);
+        Assert.assertNotNull("Expected a '" + expectedType + "' bucket in the coverage result", elements);
+        Assert.assertEquals(1, elements.size());
+        return elements.get(0);
     }
 
     private static JsonNode findFirstElementByType(JsonNode root, String type)

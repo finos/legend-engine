@@ -132,6 +132,10 @@
     </dependency>
     <dependency>
         <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-testable-http-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-shared-core</artifactId>
     </dependency>
     <dependency>
@@ -159,6 +163,16 @@
         <artifactId>junit</artifactId>
     </dependency>
 
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-test-runner-service</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-test-runner-mapping</artifactId>
+        <scope>test</scope>
+    </dependency>
 
     <dependency>
         <groupId>org.finos.legend.pure</groupId>

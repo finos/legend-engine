@@ -61,6 +61,19 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        Service service = (Service) element;
+        return service.testSuites == null ? 0 : service.testSuites.size();
+    }
+
+    @Override
+    public boolean hasLegacyTests(PackageableElement element)
+    {
+        return ((Service) element).test != null;
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_legend_service_metamodel_Service)
