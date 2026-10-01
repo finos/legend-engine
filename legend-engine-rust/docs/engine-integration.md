@@ -113,12 +113,12 @@ legend-pure takes its own back:
   (`dsl-relational`), the engine core's embedded data types and
   `###Data` section (`dsl-data`), and the `###Mapping` section
   (`dsl-mapping`, with the engine core's mapping element grammars: step 4
-  of `porting-status.md`); Diagram later.
+  of `porting-status.md`).
 - **legend-engine:** Connection, Runtime, Service, DataSpace, the xts
   stores' mapping elements, connections and test data, and the xts islands
   (`#GQL{}#`, …): a `dsl-*` crate per engine module (`dsl-connection`,
   `dsl-runtime`, `dsl-service`, `dsl-persistence` and its extensions',
-  `dsl-data-space`, `dsl-dataquality`, `dsl-external-format`, `dsl-relational-snowflake`, `dsl-service-store`,
+  `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`, `dsl-external-format`, `dsl-relational-snowflake`, `dsl-service-store`,
   `dsl-mongodb`, `dsl-deephaven`, `dsl-elasticsearch`,
   `dsl-authentication`; the data space include is read in `dsl-mapping`),
   depending on the legend-pure crates.

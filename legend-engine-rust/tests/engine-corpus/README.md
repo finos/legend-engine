@@ -7,9 +7,9 @@ parse, with the engine's Java parser result.
 - `sections/`: every section body of the types the Rust parser has a grammar
   for (so far `###Pure`, `###Data`, `###Relational`, `###Mapping`,
   `###Connection`, `###Runtime`, `###Service`, `###Persistence`,
-  `###DataSpace`, `###DataQualityValidation`, `###ServiceStore` and
-  `###ExternalFormat`), and of the types step 7 of `docs/porting-status.md`
-  ports (all the others), that these suites parse:
+  `###DataSpace`, `###DataQualityValidation`, `###ServiceStore`,
+  `###ExternalFormat` and `###Diagram`), and of the types step 7 of
+  `docs/porting-status.md` ports (all the others), that these suites parse:
   - the 22 parser and roundtrip suites of `legend-engine-language-pure-grammar`,
     run by `TestRustParityCoreGrammar`;
   - the grammar-based compilation suites of

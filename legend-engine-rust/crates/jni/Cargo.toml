@@ -37,6 +37,7 @@ legend-pure-dsl-data = { path = "../dsl-data" }
 legend-pure-dsl-data-space = { path = "../dsl-data-space" }
 legend-pure-dsl-dataquality = { path = "../dsl-dataquality" }
 legend-pure-dsl-deephaven = { path = "../dsl-deephaven" }
+legend-pure-dsl-diagram = { path = "../dsl-diagram" }
 legend-pure-dsl-elasticsearch = { path = "../dsl-elasticsearch" }
 legend-pure-dsl-external-format = { path = "../dsl-external-format" }
 legend-pure-dsl-graph = { path = "../dsl-graph" }

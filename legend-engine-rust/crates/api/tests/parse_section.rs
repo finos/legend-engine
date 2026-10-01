@@ -21,6 +21,7 @@ use legend_pure_dsl_data as _;
 use legend_pure_dsl_data_space as _;
 use legend_pure_dsl_dataquality as _;
 use legend_pure_dsl_deephaven as _;
+use legend_pure_dsl_diagram as _;
 use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_external_format as _;
 use legend_pure_dsl_graph as _;
@@ -66,6 +67,7 @@ fn capabilities_report_linked_grammars() {
             "Data",
             "DataQualityValidation",
             "DataSpace",
+            "Diagram",
             "ExternalFormat",
             "Mapping",
             "Persistence",
@@ -166,8 +168,9 @@ fn native_function_is_unsupported() {
 
 #[test]
 fn unlinked_section_type_is_unsupported() {
-    let mut request = pure("\nDiagram a::D {}\n");
-    request.section_type = "Diagram";
+    // A type no grammar here reads, as an engine extension's may be.
+    let mut request = pure("\nWidget a::W {}\n");
+    request.section_type = "Widget";
     assert_eq!(
         parse_section(&request).expect_err("unsupported").kind,
         ErrorKind::Unsupported

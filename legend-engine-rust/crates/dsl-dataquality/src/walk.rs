@@ -345,7 +345,7 @@ fn expected_match(field: ReadField) -> R<Value> {
         return Err(misread("a float", &field.source_info));
     };
     let value: f64 = text.parse().map_err(|_| misread("a float", &at))?;
-    Ok(Value::Json(serde_json::Value::from(value)))
+    Ok(Value::Double(value))
 }
 
 // ── Test suites ──────────────────────────────────────────────────────────

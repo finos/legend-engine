@@ -60,6 +60,9 @@ pub enum Value {
     Bool(bool),
     /// A number.
     Integer(i64),
+    /// A Java `double`, written as the engine writes one
+    /// ([`java_double`]).
+    Double(f64),
     /// An object.
     Record(Box<Record>),
     /// Objects.
@@ -160,6 +163,7 @@ impl Value {
             Self::Texts(texts) => json!(texts),
             Self::Bool(value) => json!(value),
             Self::Integer(value) => json!(value),
+            Self::Double(value) => java_double(*value)?,
             Self::Record(record) => record.to_json()?,
             Self::Records(records) => {
                 Json::Array(records.iter().map(Record::to_json).collect::<Result<_>>()?)
@@ -196,6 +200,59 @@ impl Value {
             Self::Json(json) => json.clone(),
         })
     }
+}
+
+/// A `double` as the engine's JSON writes it, Java's `Double.toString`:
+/// its shortest digits (ties to even, as Java breaks them), in decimal
+/// notation from 10⁻³ to 10⁷ (`23.0`, `0.001`) and in scientific notation
+/// otherwise (`2.23E10`).
+///
+/// # Errors
+///
+/// Not a finite number, which has no JSON form.
+pub fn java_double(value: f64) -> Result<Json> {
+    let finite = |value: f64| {
+        serde_json::Number::from_f64(value)
+            .ok_or_else(|| ConvertError::plugin(format!("{value} has no JSON form"), None))
+    };
+    let sign = if value.is_sign_negative() { "-" } else { "" };
+    if value == 0.0 {
+        return Ok(serde_json::from_str(&format!("{sign}0.0"))?);
+    }
+    // The shortest digits, from the JSON writer's own (Ryu's), and the
+    // exponent of the first.
+    let shortest = finite(value.abs())?.to_string();
+    let (mantissa, scale) = match shortest.split_once(['e', 'E']) {
+        Some((mantissa, scale)) => (mantissa, scale.parse::<i32>().unwrap_or_default()),
+        None => (shortest.as_str(), 0),
+    };
+    let (integer, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    let all = format!("{integer}{fraction}");
+    let leading = all.len() - all.trim_start_matches('0').len();
+    let digits = all.trim_start_matches('0').trim_end_matches('0');
+    let exponent = scale + i32::try_from(integer.len()).unwrap_or_default()
+        - 1
+        - i32::try_from(leading).unwrap_or_default();
+    let text = if (-3..7).contains(&exponent) {
+        if exponent < 0 {
+            let zeros = "0".repeat(usize::try_from(-exponent - 1).unwrap_or_default());
+            format!("{sign}0.{zeros}{digits}")
+        } else {
+            let integer_length = usize::try_from(exponent + 1).unwrap_or_default();
+            if digits.len() > integer_length {
+                let (integer, fraction) = digits.split_at(integer_length);
+                format!("{sign}{integer}.{fraction}")
+            } else {
+                let zeros = "0".repeat(integer_length - digits.len());
+                format!("{sign}{digits}{zeros}.0")
+            }
+        }
+    } else {
+        let (first, rest) = digits.split_at(1);
+        let rest = if rest.is_empty() { "0" } else { rest };
+        format!("{sign}{first}.{rest}E{exponent}")
+    };
+    Ok(serde_json::from_str(&text)?)
 }
 
 /// A navigation path's `Path`: the value of the class instance the engine
@@ -244,5 +301,40 @@ impl From<Record> for Value {
 impl From<Vec<Record>> for Value {
     fn from(records: Vec<Record>) -> Self {
         Self::Records(records)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::java_double;
+
+    #[test]
+    fn a_double_is_written_as_java_writes_it() {
+        let text = |value: f64| {
+            java_double(value)
+                .map(|json| json.to_string())
+                .unwrap_or_default()
+        };
+        // Decimal notation from 10⁻³ to 10⁷, with a fraction.
+        assert_eq!(text(23.0), "23.0");
+        assert_eq!(text(-90.0), "-90.0");
+        assert_eq!(text(123.123), "123.123");
+        assert_eq!(text(0.3), "0.3");
+        assert_eq!(text(0.001), "0.001");
+        assert_eq!(text(9_999_999.0), "9999999.0");
+        assert_eq!(text(0.0), "0.0");
+        // Halfway between two shortest texts, the even one, as Java writes.
+        // 602.27081298828125 exactly.
+        assert_eq!(text(602.270_812_988_281_2), "602.2708129882812");
+        // Scientific notation otherwise, as the JSON reader reads it back.
+        assert_eq!(text(2.23e10), serde_json_text("2.23E10"));
+        assert_eq!(text(2.23e-8), serde_json_text("2.23E-8"));
+        assert_eq!(text(1e7), serde_json_text("1.0E7"));
+    }
+
+    fn serde_json_text(text: &str) -> String {
+        serde_json::from_str::<serde_json::Value>(text)
+            .map(|json| json.to_string())
+            .unwrap_or_default()
     }
 }
