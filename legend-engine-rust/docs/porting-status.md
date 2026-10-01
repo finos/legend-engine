@@ -158,7 +158,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.2 | `###DataSpace` | data-space | 142 | 29 | Done: all match but one the engine rejects without a position (accepted) |
 | 7.3 | `###DataQualityValidation`: data quality validations, relation validations and relation comparisons | dataquality | 88 | 10 | Done: all match |
 | 7.4 | `###ServiceStore`: service stores | serviceStore | 81 | 13 | Done: all match but one the engine rejects for a security scheme no grammar reads (accepted) |
-| 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | |
+| 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | Done: all match but one in a format only the engine's tests define (accepted) |
 | 7.6 | `###Diagram` | diagram | 36 | 20 | |
 | 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | |
 | 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | |
@@ -206,4 +206,12 @@ as the walker leaves it. A security scheme is unsupported, as the engine
 reads one with an extension of its grammar and none of its modules has
 one; so is an `explode` option of a parameter that isn't a list, on which
 the engine fails without a message.
+
+7.5's crate is `dsl-external-format`, read and walked the same way, its
+schema sets first, then its bindings, as the walker walks them. A schema
+set's format is checked against the formats the engine's modules define
+(their external format contracts' ids: `FlatData`, `JSON`, `XSD`, …); the
+engine checks it against the extensions on its classpath, so Rust reports
+another format unsupported, for the engine to check (a test's own format,
+`Example`, is accepted as such).
 

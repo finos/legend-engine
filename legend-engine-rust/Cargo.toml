@@ -28,6 +28,7 @@ members = [
     "crates/dsl-dataquality",
     "crates/dsl-deephaven",
     "crates/dsl-elasticsearch",
+    "crates/dsl-external-format",
     "crates/dsl-graph",
     "crates/dsl-mapping",
     "crates/dsl-mongodb",

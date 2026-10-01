@@ -22,6 +22,7 @@ use legend_pure_dsl_data_space as _;
 use legend_pure_dsl_dataquality as _;
 use legend_pure_dsl_deephaven as _;
 use legend_pure_dsl_elasticsearch as _;
+use legend_pure_dsl_external_format as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_mongodb as _;
@@ -65,6 +66,7 @@ fn capabilities_report_linked_grammars() {
             "Data",
             "DataQualityValidation",
             "DataSpace",
+            "ExternalFormat",
             "Mapping",
             "Persistence",
             "Relational",
