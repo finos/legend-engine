@@ -91,6 +91,10 @@ pub(crate) struct Parser {
     /// The offset the text was lexed with (see
     /// [`ParserContext::source_offset`]).
     pub(crate) offset: legend_pure_parser_ast::SourceOffset,
+    /// The section type of the body the text is, if it is one, without its
+    /// header (see [`crate::parse_section_body`]); otherwise the text is a
+    /// file of sections.
+    pub(crate) section_body: Option<SmolStr>,
 }
 
 impl Parser {
@@ -104,6 +108,7 @@ impl Parser {
             pending_documentation: None,
             deferred: None,
             offset: legend_pure_parser_ast::SourceOffset::default(),
+            section_body: None,
         }
     }
 
@@ -116,6 +121,7 @@ impl Parser {
             pending_documentation: None,
             deferred: None,
             offset: legend_pure_parser_ast::SourceOffset::default(),
+            section_body: None,
         }
     }
 
@@ -132,6 +138,7 @@ impl Parser {
             pending_documentation: None,
             deferred: None,
             offset: legend_pure_parser_ast::SourceOffset::default(),
+            section_body: None,
         }
     }
 
@@ -147,7 +154,19 @@ impl Parser {
         let mut sections = Vec::new();
         let mut errors = Vec::new();
 
-        while !self.cursor.check(TokenKind::Eof) {
+        if let Some(kind) = self.section_body.clone() {
+            // One section, to the end of the text: its grammar reads it all,
+            // or reports where it stops.
+            sections.push(self.parse_section_of(start.clone(), kind, &mut errors));
+            if errors.is_empty() && !self.cursor.check(TokenKind::Eof) {
+                let token = self.cursor.peek().clone();
+                errors.push(ParseError::unexpected(
+                    format!("Unexpected token '{}'", token.text),
+                    token.source_info,
+                ));
+            }
+        }
+        while self.section_body.is_none() && !self.cursor.check(TokenKind::Eof) {
             sections.push(self.parse_section(&mut errors));
         }
 
@@ -194,7 +213,16 @@ impl Parser {
         } else {
             SmolStr::new("Pure")
         };
+        self.parse_section_of(start, kind, errors)
+    }
 
+    /// A section of type `kind`, its header (if any) read, from `start`.
+    fn parse_section_of(
+        &mut self,
+        start: SourceInfo,
+        kind: SmolStr,
+        errors: &mut Vec<ParseError>,
+    ) -> Section {
         let plug_in = self
             .section_parsers
             .iter()

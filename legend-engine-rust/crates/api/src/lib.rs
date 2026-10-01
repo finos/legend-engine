@@ -16,7 +16,9 @@
 //!
 //! The engine-facing contract: parse one grammar **section body** into
 //! Protocol v1 elements, exactly as a Legend Engine `SectionParser`
-//! receives it (see `docs/engine-integration.md`).
+//! receives it, or a whole **model** as its `PureGrammarParser.parseModel`
+//! receives it ([`parse_model`]), its sections split as the engine splits
+//! them (see `docs/engine-integration.md`).
 //!
 //! - The body has no `###Section` header; positions are always reported,
 //!   in document coordinates using the engine's line/column offsets (the
@@ -34,6 +36,10 @@
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
+
+mod model;
+
+pub use model::{ModelRequest, ModelResult, parse_model};
 
 use legend_pure_parser_ast::element::{Element, FunctionTestExpected};
 use legend_pure_parser_ast::expression::{CodeBlock, Expression};
@@ -165,18 +171,23 @@ impl From<ConvertError> for SectionError {
 /// ([`ErrorKind::Unsupported`]), or an internal failure.
 pub fn parse_section(request: &SectionRequest<'_>) -> Result<SectionResult, SectionError> {
     let offset = source_offset(request.line_offset, request.column_offset)?;
-    let text = section_text(request)?;
+    require_linked(request.section_type)?;
     let has_imports = request.section_type == PURE_SECTION
         || discovered_section_parsers()
             .iter()
             .any(|p| p.kind() == request.section_type && p.imports());
-    let file = legend_pure_parser_parser::parse_with_offset(&text, request.source_id, offset)
-        .map_err(|partial| match partial.errors.first() {
-            // Parse errors are collected in source order; the engine
-            // reports the first one.
-            Some(first) => parse_error(first),
-            None => SectionError::new(ErrorKind::Internal, "parse failed without an error", None),
-        })?;
+    let file = legend_pure_parser_parser::parse_section_body(
+        request.code,
+        request.source_id,
+        offset,
+        request.section_type,
+    )
+    .map_err(|partial| match partial.errors.first() {
+        // Parse errors are collected in source order; the engine reports
+        // the first one.
+        Some(first) => parse_error(first),
+        None => SectionError::new(ErrorKind::Internal, "parse failed without an error", None),
+    })?;
 
     engine_profile(&file)?;
 
@@ -376,26 +387,19 @@ fn engine_profile(file: &SourceFile) -> Result<(), SectionError> {
     Ok(())
 }
 
-/// The text to hand the parser: the body itself for `###Pure` (headerless
-/// input is a Pure section), or the body behind its own header for a linked
-/// section grammar. The header goes on the body's first line — where it
-/// sits in the engine's document — so no line shifts.
-fn section_text(request: &SectionRequest<'_>) -> Result<String, SectionError> {
-    if request.section_type == PURE_SECTION {
-        return Ok(request.code.to_string());
-    }
-    if discovered_section_parsers()
-        .iter()
-        .any(|p| p.kind() == request.section_type)
+/// The section type's grammar: `Pure`'s, or a linked plug-in's; any other
+/// is unsupported.
+fn require_linked(section_type: &str) -> Result<(), SectionError> {
+    if section_type == PURE_SECTION
+        || discovered_section_parsers()
+            .iter()
+            .any(|p| p.kind() == section_type)
     {
-        return Ok(format!("###{}{}", request.section_type, request.code));
+        return Ok(());
     }
     Err(SectionError::new(
         ErrorKind::Unsupported,
-        format!(
-            "no section grammar is linked for '###{}'",
-            request.section_type
-        ),
+        format!("no section grammar is linked for '###{section_type}'"),
         None,
     ))
 }
@@ -412,6 +416,16 @@ pub fn capabilities_json() -> String {
 #[must_use]
 pub fn parse_section_json(request: &SectionRequest<'_>) -> String {
     match parse_section(request) {
+        Ok(result) => to_json(&result),
+        Err(error) => error_json(&error),
+    }
+}
+
+/// [`parse_model`] as a JSON string: `{"elements":[…]}` on success, the
+/// section index last, the [`parse_section_json`] error shape on failure.
+#[must_use]
+pub fn parse_model_json(request: &ModelRequest<'_>) -> String {
+    match parse_model(request) {
         Ok(result) => to_json(&result),
         Err(error) => error_json(&error),
     }

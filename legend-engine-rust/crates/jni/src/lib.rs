@@ -23,6 +23,7 @@
 //! | `String capabilities()` | [`legend_pure_parser_api::capabilities_json`] |
 //! | `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_section_json`] |
 //! | `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_expression_json`] |
+//! | `String parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_model_json`] |
 //!
 //! The surface is generic: adding a grammar never changes it. The grammars
 //! available are whatever crates are linked into the library — here every
@@ -48,7 +49,7 @@ use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jint, jstring};
 use legend_pure_parser_api::{
-    ErrorKind, ExpressionKind, ExpressionRequest, SectionError, SectionRequest,
+    ErrorKind, ExpressionKind, ExpressionRequest, ModelRequest, SectionError, SectionRequest,
 };
 
 // Link the grammar plug-ins so their self-registrations are in this library.
@@ -170,6 +171,31 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
                 column_offset,
             },
         ))
+    })
+}
+
+/// `static native String parseModel(String code, String sourceId,
+/// int lineOffset, int columnOffset)`.
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseModel<
+    'local,
+>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    code: JString<'local>,
+    source_id: JString<'local>,
+    line_offset: jint,
+    column_offset: jint,
+) -> jstring {
+    respond(&mut env, |env| {
+        let code = java_string(env, &code, "code")?;
+        let source_id = java_string(env, &source_id, "sourceId")?;
+        Ok(legend_pure_parser_api::parse_model_json(&ModelRequest {
+            code: &code,
+            source_id: &source_id,
+            line_offset,
+            column_offset,
+        }))
     })
 }
 

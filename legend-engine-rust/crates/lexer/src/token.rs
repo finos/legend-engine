@@ -212,6 +212,11 @@ pub enum TokenKind {
     /// `#` that opens neither a section (`###`), an island (`#tag{`) nor a
     /// path (`#/`).
     Hash,
+    /// Text no grammar reads, as the engine's lexers' `INVALID` token. The
+    /// lexer never makes one; the parser makes one of a `###` header inside
+    /// a section's body, where the engine, which splits a model into
+    /// sections at headers that start a line, leaves it.
+    Invalid,
 
     // -- End of file --
     /// End of input.
@@ -322,6 +327,7 @@ impl TokenKind {
             TokenKind::HashSlash => "'#/'",
             TokenKind::RBraceHash => "'}#'",
             TokenKind::Hash => "'#'",
+            TokenKind::Invalid => "invalid token",
             TokenKind::Eof => "end of file",
         }
     }

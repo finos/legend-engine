@@ -154,7 +154,44 @@ pub fn parse_with_offset(
     source_name: &str,
     offset: SourceOffset,
 ) -> Result<SourceFile, PartialSourceFile> {
-    let tokens = legend_pure_parser_lexer::tokenize_with_offset(source, source_name, offset)
+    parse_text(source, source_name, offset, None)
+}
+
+/// Parse `source` as the body of one `###kind` section (the text after its
+/// header), positioned as [`parse_with_offset`] positions it: what Legend
+/// Engine hands its section parsers. The result has that one section.
+///
+/// The engine splits a model into sections before parsing them, at headers
+/// that start a line, and leaves any other `###` in its section's text,
+/// where no grammar reads it: here too, such a header is a token no grammar
+/// reads, a syntax error at its first `#`.
+///
+/// # Errors
+///
+/// As for [`parse`].
+///
+/// # Panics
+///
+/// As for [`parse`].
+#[allow(clippy::result_large_err)]
+pub fn parse_section_body(
+    source: &str,
+    source_name: &str,
+    offset: SourceOffset,
+    kind: &str,
+) -> Result<SourceFile, PartialSourceFile> {
+    parse_text(source, source_name, offset, Some(kind))
+}
+
+/// Parse `source`: a file of sections, or the body of a `###body` section.
+#[allow(clippy::result_large_err)]
+fn parse_text(
+    source: &str,
+    source_name: &str,
+    offset: SourceOffset,
+    body: Option<&str>,
+) -> Result<SourceFile, PartialSourceFile> {
+    let mut tokens = legend_pure_parser_lexer::tokenize_with_offset(source, source_name, offset)
         .map_err(|e| PartialSourceFile {
             source_file: SourceFile {
                 sections: vec![],
@@ -162,6 +199,13 @@ pub fn parse_with_offset(
             },
             errors: vec![e.into()],
         })?;
+    if body.is_some() {
+        for token in &mut tokens {
+            if token.kind == legend_pure_parser_lexer::TokenKind::SectionHeader {
+                token.kind = legend_pure_parser_lexer::TokenKind::Invalid;
+            }
+        }
+    }
     let cursor = cursor::Cursor::new(tokens);
     let discovered_islands = crate::island::discovered_island_parsers();
     let discovered_sections = crate::section_parser::discovered_section_parsers();
@@ -170,6 +214,7 @@ pub fn parse_with_offset(
         // wrapper / boxing allocations entirely.
         let mut p = parser::Parser::new(cursor);
         p.offset = offset;
+        p.section_body = body.map(smol_str::SmolStr::new);
         return p.parse_source_file();
     }
     let islands: Vec<Box<dyn IslandParser>> = discovered_islands
@@ -182,6 +227,7 @@ pub fn parse_with_offset(
         .collect();
     let mut p = parser::Parser::with_plugins(cursor, islands, sections);
     p.offset = offset;
+    p.section_body = body.map(smol_str::SmolStr::new);
     p.parse_source_file()
 }
 
