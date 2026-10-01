@@ -10,9 +10,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Empty_Function_1__Boolean_1_",
     "expectedError" : "Too few arguments to function 'greatest'"
   }, {
-    "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "Too few arguments to function 'greatest'"
   }, {
@@ -31,9 +28,6 @@
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Empty_Function_1__Boolean_1_",
     "expectedError" : "Too few arguments to function 'least'"
   }, {
-    "test" : "meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_",
     "expectedError" : "Too few arguments to function 'least'"
   }, {
@@ -44,7 +38,7 @@
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
+    "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
@@ -55,20 +49,14 @@
     "test" : "meta::pure::functions::date::tests::max::testMax_Date_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
   }, {
-    "test" : "meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
-  }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
+    "expectedError" : "Invalid date string: '2025-01-10 15:25:30'"
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-01-10 15:25:30'"
-  }, {
-    "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
@@ -184,18 +172,6 @@
     "test" : "meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_",
     "expectedError" : "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'OVER (Partition By"
   }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
-  }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""
   }, {
@@ -210,18 +186,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
@@ -248,7 +212,7 @@
     "expectedError" : "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'OVER (Partition By "
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "Function 'for_testing.mode' is not defined"
+    "expectedError" : "Unused format args. [3] arguments provided to expression \"mode(%s)\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
     "expectedError" : "Function 'for_testing.mode' is not defined"

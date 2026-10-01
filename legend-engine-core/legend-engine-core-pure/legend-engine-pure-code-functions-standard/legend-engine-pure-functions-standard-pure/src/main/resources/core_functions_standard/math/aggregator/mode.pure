@@ -92,7 +92,7 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
 
 function <<PCT.test>> meta::pure::functions::math::tests::mode::testMode_Number<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEq(5, $f->eval(|mode([5])));
+   assertEq(5, $f->eval(|mode([5, 2.0, 5])));
    assertEq(3, $f->eval(|mode([3, 3.0, 3, 2, 2])));
    assertEq(2.0, $f->eval(|mode([3, 2, 3.0, 7.0, 2, 2, 3, 2.0, 2.0])));
 }
