@@ -30,16 +30,21 @@
 //! }
 //! ```
 //!
-//! The extension's `###Elasticsearch` section is still to come (step 7 of
-//! `docs/porting-status.md`).
+//! And the `###Elasticsearch` section: Elasticsearch 7 clusters, their
+//! indices and their properties' mappings (`ElasticsearchParserGrammar` and
+//! the extension's walker), the engine's `Elasticsearch7Store`.
 //!
 //! Crate layout:
 //!
 //! - [`connection`] — [`connection::ElasticsearchConnectionGrammar`]
 //!   registers as `dsl-connection`'s connection grammar for
 //!   `Elasticsearch7ClusterConnection`.
+//! - [`store`] — [`store::section::ElasticsearchSectionParser`] and
+//!   [`store::section::ElasticsearchProtocol`] register as the section's
+//!   grammar and its stores' protocol.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
 pub mod connection;
+pub mod store;

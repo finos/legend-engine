@@ -28,7 +28,8 @@ The library links the island grammars `dsl-graph` (`#{…}#`), `dsl-store`
 grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-data-space` (`###DataSpace`), `dsl-dataquality`
 (`###DataQualityValidation`), `dsl-diagram` (`###Diagram`),
-`dsl-external-format` (`###ExternalFormat`),
+`dsl-elasticsearch` (`###Elasticsearch`), `dsl-external-format`
+(`###ExternalFormat`),
 `dsl-mapping` (`###Mapping`),
 `dsl-persistence` (`###Persistence`, with its extensions'
 `dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`

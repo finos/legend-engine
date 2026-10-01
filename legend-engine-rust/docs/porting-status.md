@@ -161,7 +161,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | Done: all match but one in a format only the engine's tests define (accepted) |
 | 7.6 | `###Diagram` | diagram | 36 | 20 | Done: all match |
 | 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | Done: all match |
-| 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | |
+| 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | Done: all match |
 | 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | |
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | |
 | 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | |
@@ -232,4 +232,12 @@ them. A function's identifier, `my::f(String[1]):String[1]`, is read as
 written without spaces, by the parser's `forms::function_identifier`
 (shared with `dsl-mapping`'s relation function mappings and the other
 function activators).
+
+7.8's grammar joins the crate of the store's connection grammar,
+`dsl-elasticsearch` (its `store` module), read and walked the same way.
+Its walker names fields by the lexer's literal names, quoted again in its
+messages (`Field ''indices'' is required`); an index's or a property's name
+is a `VALID_STRING`, none of the grammar's keywords. A property's own
+properties and fields are maps: a name written twice makes the engine fail
+without a message (`Collectors.toMap`), so Rust reports it unsupported.
 
