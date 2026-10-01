@@ -627,6 +627,7 @@ public class TestExtensions
                 .with("core_functions_standard")
                 .with("core_functions_relation")
                 .with("core_functions_json")
+                .with("core_functions_preeval")
                 .with("core_persistence")
                 .with("core_persistence_cloud")
                 .with("core_persistence_relational")

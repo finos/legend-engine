@@ -81,7 +81,7 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
   meta::pure::functions::tracing::traceSpan({|
     let startTime = now();
 
-    let r = prevalInternal($f->evaluateAndDeactivate(), $state, $extensions)->toOne()->cast(@PrevalWrapper<FunctionDefinition<Any>>);
+    let r = prevalWithImplementation($f->evaluateAndDeactivate(), $state, $extensions, meta::pure::functions::preeval::preevalImplementation())->cast(@PrevalWrapper<FunctionDefinition<Any>>);
 
     let endTime = now();
 
@@ -115,7 +115,7 @@ function <<access.public>> meta::pure::router::preeval::preval(fe : FunctionExpr
 
     let startTime = now();
 
-    let r = prevalInternal($fe, $state, $extensions);
+    let r = prevalWithImplementation($fe, $state, $extensions, meta::pure::functions::preeval::preevalImplementation());
 
     let endTime = now();
 
@@ -131,6 +131,228 @@ function <<access.public>> meta::pure::router::preeval::preval(fe : FunctionExpr
 
     $r.value->cast(@ValueSpecification);  
   }, 'preval')
+}
+
+// ====================================================================================================================================================================
+// Implementation Switch
+// ====================================================================================================================================================================
+
+function meta::pure::router::preeval::prevalWithImplementation(item:Any[1], state:State[1], extensions:Extension[*], implementation:String[1]):PrevalWrapper<Any>[1]
+{
+  if($implementation == 'PURE',
+    | prevalInternal($item, $state, $extensions),
+    | if($implementation == 'JAVA',
+        | prevalJava($item, $state, $extensions),
+        | assert($implementation == 'SHADOW', | 'Unknown preeval implementation: ' + $implementation);
+          let pure = prevalInternal($item, $state, $extensions);
+          let java = prevalJava($item, $state, $extensions);
+          assertSamePrevalResult($pure, $java, $state.inScopeVars, $extensions);
+          $pure;
+      )
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::prevalJava(item:Any[1], state:State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  assert($state.inScopeTypeParams->keys()->isEmpty() && $state.path->isEmpty() && $state.depth->isEmpty(), | 'The Java preeval implementation requires a State with no type parameters, path or depth');
+  let r = meta::pure::functions::preeval::prevalNative($item, $state.inScopeVars, $state.rollingInScopeVars, $state->toPrevalHooks($extensions), $state.debug);
+  $r.value->match([
+    fd:FunctionDefinition<Any>[1] | ^PrevalWrapper<FunctionDefinition<Any>>(value = $fd, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified),
+    a:Any[1] | ^PrevalWrapper<Any>(value = $a, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified)
+  ]);
+}
+
+function meta::pure::router::preeval::toPrevalHooks(state:State[1], extensions:Extension[*]):meta::pure::functions::preeval::PrevalHooks[1]
+{
+  ^meta::pure::functions::preeval::PrevalHooks(
+    stopPreeval                    = $state.stopPreeval,
+    shouldInline                   = $state.shouldInlineFxn,
+    isGeneratedMilestoningProperty = {f:Function<Any>[1] | $f->instanceOf(AbstractProperty) && $f->cast(@AbstractProperty<Any>)->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()},
+    isGetAllFunction               = {f:Function<Any>[1] | meta::pure::router::routing::isGetAllFunction($f)},
+    resolveTdsSchema               = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | meta::pure::tds::schema::resolveSchema($vs, $vars, $extensions)}
+  );
+}
+
+function meta::pure::router::preeval::assertSamePrevalResult(pure:PrevalWrapper<Any>[1], java:PrevalWrapper<Any>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*]):Boolean[1]
+{
+  let pureDescription = $pure->describePrevalResult();
+  let javaDescription = $java->describePrevalResult();
+  assert($pureDescription == $javaDescription, | 'preeval SHADOW mismatch\nPURE: ' + $pureDescription + '\nJAVA: ' + $javaDescription);
+}
+
+function <<access.private>> meta::pure::router::preeval::describePrevalResult(r:PrevalWrapper<Any>[1]):String[1]
+{
+  let flags = 'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']');
+  $r.value->match([
+    fd:FunctionDefinition<Any>[1] | $flags + ', type=' + $fd->describeReturnTypeAndMultiplicity() + ', nodes='
+                                      + [('function (' + $fd->describeParameters() + ')')]->concatenate($fd->describeNodes('', []))->joinStrings('\n', '\n', ''),
+    vs:ValueSpecification[1]      | $flags + ', type=' + $vs->describeTypeAndMultiplicity() + ', nodes=' + $vs->describeNodes('', [])->joinStrings('\n', '\n', ''),
+    a:Any[1]                      | $flags + ', type=, value=' + $a->toString()
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeTypeAndMultiplicity(vs:ValueSpecification[1]):String[1]
+{
+  describeGenericTypeAndMultiplicity($vs.genericType, $vs.multiplicity);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeReturnTypeAndMultiplicity(f:FunctionDefinition<Any>[1]):String[1]
+{
+  let functionType = $f->functionType();
+  describeGenericTypeAndMultiplicity($functionType.returnType, $functionType.returnMultiplicity);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericTypeAndMultiplicity(genericType:GenericType[0..1], multiplicity:Multiplicity[0..1]):String[1]
+{
+  if($genericType->isEmpty(), |'<no genericType>', |$genericType->describeGenericType())
+    + if($multiplicity->isEmpty(), |'<no multiplicity>', |$multiplicity->describeMultiplicity());
+}
+
+function <<access.private>> meta::pure::router::preeval::describeMultiplicity(multiplicity:Multiplicity[0..1]):String[1]
+{
+  if($multiplicity->isEmpty(), |'?', |$multiplicity->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity());
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericType(genericType:GenericType[0..1]):String[1]
+{
+  if($genericType->isEmpty(),
+    | '?',
+    | $genericType->toOne()->match([
+        go:GenericTypeOperation[1] | '(' + $go.left->describeGenericType() + ' ' + if($go.type->isEmpty(), |'?', |$go.type->toOne()->toString()) + ' ' + $go.right->describeGenericType() + ')',
+        g:GenericType[1]           | $g->describeGenericTypeHead() + $g->describeGenericTypeArguments()
+      ])
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericTypeHead(genericType:GenericType[1]):String[1]
+{
+  if($genericType.rawType->isEmpty(),
+    | if($genericType.typeParameter->isEmpty(), |'?', |$genericType.typeParameter.name->toOne()),
+    | $genericType.rawType->toOne()->match([
+        f:FunctionType[1]         | '{' + $f.parameters->evaluateAndDeactivate()->map(p | $p.genericType->describeGenericType() + '[' + $p.multiplicity->describeMultiplicity() + ']')->joinStrings(', ')
+                                      + '->' + $f.returnType->describeGenericType() + '[' + $f.returnMultiplicity->describeMultiplicity() + ']}',
+        r:RelationType<Any>[1]    | '(' + $r.columns->map(c | $c->describeColumn())->joinStrings(', ') + ')',
+        t:Type[1]                 | $t->describeTypePath()
+      ])
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::describeColumn(column:Column<Nil,Any|*>[1]):String[1]
+{
+  let name = if($column.nameWildCard == true, |'?', |if($column.name->isEmpty(), |'<no name>', |$column.name->toOne()));
+  let columnType = $column.classifierGenericType;
+  let valueType = if($columnType->isEmpty() || ($columnType.typeArguments->size() < 2), |'?', |$columnType.typeArguments->at(1)->describeGenericType());
+  $name + ':' + $valueType + '[' + $columnType.multiplicityArguments->first()->describeMultiplicity() + ']';
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericTypeArguments(genericType:GenericType[1]):String[1]
+{
+  let arguments = if($genericType.typeArguments->isEmpty() && $genericType.multiplicityArguments->isEmpty(),
+    | '',
+    | '<' + $genericType.typeArguments->map(a | $a->describeGenericType())->joinStrings(', ')
+        + '|' + $genericType.multiplicityArguments->map(m | $m->describeMultiplicity())->joinStrings(', ') + '>'
+  );
+  let values = if($genericType.typeVariableValues->isEmpty(),
+    | '',
+    | '(' + $genericType.typeVariableValues->evaluateAndDeactivate()->map(v | $v->describeNodes('', [])->joinStrings(' '))->joinStrings(', ') + ')'
+  );
+  $arguments + $values;
+}
+
+function <<access.private>> meta::pure::router::preeval::describeParameters(f:FunctionDefinition<Any>[1]):String[1]
+{
+  $f->functionType().parameters->evaluateAndDeactivate()->map(p | $p.name + ':' + $p->describeTypeAndMultiplicity())->joinStrings(', ');
+}
+
+function <<access.private>> meta::pure::router::preeval::describeFunctionIdentity(f:Function<Any>[1], fallback:String[1]):String[1]
+{
+  $f->match([
+    pe:PackageableElement[1]         | $pe->elementToPath(),
+    p:AbstractProperty<Any>[1]       | 'property ' + $p.owner->match([o:PackageableElement[1] | $o->elementToPath(), o:Any[1] | '?']) + '.' + $p.name->toOne(),
+    c:Column<Nil,Any|*>[1]           | 'column ' + $c.name->toOne(),
+    a:Any[1]                         | $fallback
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeTypePath(type:Type[1]):String[1]
+{
+  $type->match([
+    pe:PackageableElement[1] | $pe->elementToPath(),
+    u:Unit[1]                | $u->elementToPath(),
+    t:Type[1]                | $t->class()->elementToPath()
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeNodes(value:Any[1], indent:String[1], ancestors:Any[*]):String[*]
+{
+  $value->match([
+    fd:FunctionDefinition<Any>[1] | $fd.expressionSequence->evaluateAndDeactivate()->map(e | $e->describeNodes($indent, $ancestors)),
+    fe:FunctionExpression[1]      | [($indent + 'fe ' + $fe->describeFunctionExpressionIdentity() + ' : ' + $fe->describeTypeAndMultiplicity())]
+                                      ->concatenate($fe.parametersValues->map(p | $p->describeNodes($indent + '  ', $ancestors))),
+    iv:InstanceValue[1]           | [($indent + 'iv : ' + $iv->describeTypeAndMultiplicity())]
+                                      ->concatenate($iv.values->map(v | $v->describeInstanceValueElement($indent + '  ', $ancestors))),
+    ve:VariableExpression[1]      | $indent + 'var ' + $ve.name + ' : ' + $ve->describeTypeAndMultiplicity(),
+    vs:ValueSpecification[1]      | $indent + $vs->class()->elementToPath() + ' : ' + $vs->describeTypeAndMultiplicity(),
+    a:Any[1]                      | []
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeFunctionExpressionIdentity(fe:FunctionExpression[1]):String[1]
+{
+  let functionName = if($fe.functionName->isEmpty(), |'?', |$fe.functionName->toOne());
+  if($fe.func->isEmpty(), |$functionName, |$fe.func->toOne()->describeFunctionIdentity($functionName));
+}
+
+function <<access.private>> meta::pure::router::preeval::describeInstanceValueElement(element:Any[1], indent:String[1], ancestors:Any[*]):String[*]
+{
+  $element->match([
+    l:LambdaFunction<Any>[1]  | [($indent + 'lambda (' + $l->describeParameters() + ') : ' + $l->describeReturnTypeAndMultiplicity())]
+                                  ->concatenate($l->describeNodes($indent + '  ', $ancestors)),
+    vs:ValueSpecification[1]  | $vs->describeNodes($indent, $ancestors),
+    k:KeyExpression[1]        | [($indent + 'key ' + $k.key.values->map(v | $v->toString())->joinStrings(','))]
+                                  ->concatenate($k.expression->describeNodes($indent + '  ', $ancestors)),
+    s:String[1]               | $indent + 'String \'' + $s + '\'',
+    b:Boolean[1]              | $indent + 'Boolean ' + $b->toString(),
+    n:Number[1]               | $indent + $n->type()->describeTypePath() + ' ' + $n->toString(),
+    d:Date[1]                 | $indent + $d->type()->describeTypePath() + ' ' + $d->toString(),
+    t:StrictTime[1]           | $indent + 'StrictTime ' + $t->toString(),
+    e:Enum[1]                 | $indent + 'enum ' + $e->type()->describeTypePath() + '.' + $e->toString(),
+    t:TDS<Any>[1]             | $indent + 'tds ' + $t->genericType()->describeGenericType() + ' ' + $t.csv,
+    ra:RelationElementAccessor<Any>[1] | $ra->describeInstance($indent, $ancestors),
+    r:Relation<Any>[1]        | $indent + 'relation ' + $r->genericType()->describeGenericType() + ' rows ' + $r->meta::pure::functions::relation::size()->toString(),
+    p:Path<Nil,Any|*>[1]      | $p->describePath($indent, $ancestors),
+    f:Function<Any>[1]        | $indent + 'function ' + $f->describeFunctionIdentity($f->type()->describeTypePath()),
+    pe:PackageableElement[1]  | $indent + 'element ' + $pe->elementToPath(),
+    a:Any[1]                  | $a->describeInstance($indent, $ancestors)
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeInstance(instance:Any[1], indent:String[1], ancestors:Any[*]):String[*]
+{
+  let type = $instance->type();
+  let header = $indent + 'instance ' + $type->describeTypePath();
+  if($ancestors->exists(a | $a->is($instance)),
+    | $header + ' <cycle>',
+    | if($ancestors->size() >= 16,
+        | $header + ' …',
+        | let properties = if($type->instanceOf(Class), |$instance->genericType()->properties()->removeAll(Any.properties)->sortBy(p | $p.name->toOne()), |[]);
+          let inside = $ancestors->concatenate($instance);
+          [$header]->concatenate($properties->map(p | [($indent + '  ' + $p.name->toOne() + ' =')]
+                                                        ->concatenate($p->eval($instance)->map(v | $v->describeInstanceValueElement($indent + '    ', $inside)))));
+      )
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::describePath(path:Path<Nil,Any|*>[1], indent:String[1], ancestors:Any[*]):String[*]
+{
+  let alias = if($path.name->isEmpty(), |'', |'!' + $path.name->toOne());
+  [($indent + 'path ' + $path.start->describeGenericType() + $alias)]
+    ->concatenate($path.path->map(e | $e->match([
+      p:PropertyPathElement[1] | [($indent + '  ' + $p.property->describeFunctionIdentity('?'))]
+                                   ->concatenate($p.parameters->map(v | $v->describeNodes($indent + '    ', $ancestors))),
+      c:CastPathElement[1]     | $indent + '  cast ' + $c.type->describeGenericType(),
+      a:Any[1]                 | $a->describeInstance($indent + '  ', $ancestors)
+    ])));
 }
 
 // ====================================================================================================================================================================
