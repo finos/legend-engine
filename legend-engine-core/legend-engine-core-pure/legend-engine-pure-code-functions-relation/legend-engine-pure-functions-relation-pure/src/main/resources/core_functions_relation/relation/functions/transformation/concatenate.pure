@@ -108,3 +108,186 @@ function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testS
                   '   7,qqwew\n'+
                   '#', $res->sort([~val->ascending(), ~str->ascending()])->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedRelations<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expected = '#TDS\n'+
+                   '   val,str\n'+
+                   '   1,a\n'+
+                   '   3,ewe\n'+
+                   '   5,qwea\n'+
+                   '   6,eeewe\n'+
+                   '#';
+
+    let expr = {
+               | #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                #->sort([~val->descending()])
+                ->concatenate
+                (
+                  #TDS
+                    val, str
+                    5, qwea
+                    6, eeewe
+                  #->sort([~val->ascending()]));
+              };
+
+    let res =  $f->eval($expr);
+    assertEquals($expected, $res->sort(~val->ascending())->toString());
+
+    let expr2 = {
+                | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                 #->sort([~val->descending()])
+                 ->concatenate
+                 (
+                   #TDS
+                     val, str
+                     5, qwea
+                     6, eeewe
+                   #);
+               };
+
+    let res2 =  $f->eval($expr2);
+    assertEquals($expected, $res2->sort(~val->ascending())->toString());
+
+    let expr3 = {
+                | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                 #
+                 ->concatenate
+                 (
+                   #TDS
+                     val, str
+                     5, qwea
+                     6, eeewe
+                   #->sort([~val->descending()]));
+               };
+
+    let res3 =  $f->eval($expr3);
+    assertEquals($expected, $res3->sort(~val->ascending())->toString());
+
+    let expr4 = {
+                | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                 #->sort([~val->descending()])
+                 ->concatenate
+                 (
+                   #TDS
+                     val, str
+                     5, qwea
+                     6, eeewe
+                   #->sort([~val->ascending()]))
+                 ->concatenate
+                 (
+                   #TDS
+                     val, str
+                     7, zz
+                   #->sort([~str->ascending()]));
+               };
+
+    let res4 =  $f->eval($expr4);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   5,qwea\n'+
+                  '   6,eeewe\n'+
+                  '   7,zz\n'+
+                  '#', $res4->sort(~val->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testSortOfConcatenateOfSortedRelations<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  3, c
+                  1, a
+                #->sort([~val->descending()])
+                ->concatenate
+                (
+                  #TDS
+                    val, str
+                    4, d
+                    2, b
+                  #->sort([~val->ascending()]))
+                ->sort([~val->ascending()]);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   2,b\n'+
+                  '   3,c\n'+
+                  '   4,d\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedLimitedRelations<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                #->sort([~val->ascending()])->limit(2)
+                ->concatenate
+                (
+                  #TDS
+                    val, str
+                    5, qwea
+                    6, eeewe
+                  #->sort([~val->descending()])->limit(1));
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   6,eeewe\n'+
+                  '#', $res->sort(~val->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testConcatenateOfDistinctRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  1, a
+                  1, a
+                  2, b
+                #->distinct()
+                ->concatenate
+                (
+                  #TDS
+                    val, str
+                    1, a
+                    3, c
+                  #);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   1,a\n'+
+                  '   2,b\n'+
+                  '   3,c\n'+
+                  '#', $res->sort([~val->ascending(), ~str->ascending()])->toString());
+}

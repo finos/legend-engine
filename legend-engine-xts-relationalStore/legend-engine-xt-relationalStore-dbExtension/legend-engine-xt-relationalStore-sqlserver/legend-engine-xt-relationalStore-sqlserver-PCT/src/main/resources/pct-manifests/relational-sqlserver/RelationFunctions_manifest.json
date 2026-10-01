@@ -121,6 +121,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testSortOfConcatenateOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
+  }, {
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [2] arguments provided to expression \"round(%s, 0)"
   }, {
