@@ -1020,10 +1020,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                     processOlapGroupBy($olapWindows, $olapSelect, $extensions, $havingExtensions, $groupByExtensions, $olapInputContext);,
                   | $group);
 
+  let postWindowContext = if ($postWindowExtendColumns->isEmpty(),
+    | [],
+    | let olapContext = clone(^$context(expression = $olapGroupBy), $context);
+      let namesToAdd = $postWindowExtendColumns->map(sc | extractNameFromSingleColumn($sc, []));
+      let displacementRenames = $olapContext.columns.name->filter(c | $namesToAdd->contains($c))->map(c |
+        ^SingleColumn(alias = '__sql_displaced_' + $c, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = $c))));
+
+      if ($displacementRenames->isEmpty(),
+        | $olapContext,
+        | clone(^$olapContext(expression = processRename($displacementRenames, $olapContext)), $olapContext););
+    );
+
   //after all window columns are computed, apply the rewritten outer expressions as extends
   //e.g. abs(row_number() OVER (...)) becomes extend(abs(__sql_window_col_0)) at this point
-  let postWindowExtend = if ($postWindowExtendColumns->isNotEmpty(),
-                  | processExtend($postWindowExtendColumns, [], clone(^$context(expression = $olapGroupBy), $context)),
+  let postWindowExtend = if ($postWindowContext->isNotEmpty(),
+                  | processExtend($postWindowExtendColumns, [], $postWindowContext->toOne()),
                   | $olapGroupBy);
 
   let distinctExp = if($select.distinct,
