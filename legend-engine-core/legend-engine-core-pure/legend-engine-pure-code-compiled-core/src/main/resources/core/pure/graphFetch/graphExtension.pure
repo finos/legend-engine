@@ -691,12 +691,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let withFoundProperties = $srcNode->addSubTrees($srcNodeProperties);
 
 
-         // copy common properties from base type tree to subtype trees at root level
-         let withRootSubTypes= if($srcNode->instanceOf(RootGraphFetchTree), //TODO : will be handled properly when property subtype gfts are moved within property access gfts
-                                   | let sourceNodeWithSubTypes = $srcNode->addSubTypeTrees($inlinedGraphTree.subTypeTrees);
-                                     ^$withFoundProperties(subTypeTrees=$sourceNodeWithSubTypes.subTypeTrees);, // copy properties except current one
-                                   | $withFoundProperties
-                                  );
+         // copy common properties from base type tree to subtype trees. When this set is a child set the source node is a
+         // property node; enrichSourceTreeNodeAtPath turns its subtype trees into ->subType() siblings of the property.
+         let sourceNodeWithSubTypes = $srcNode->addSubTypeTrees($inlinedGraphTree.subTypeTrees);
+         let withSubTypeTrees       = ^$withFoundProperties(subTypeTrees=$sourceNodeWithSubTypes.subTypeTrees); // copy properties except current one
 
          let withNextSetImpl     = $childSetImpls->fold({setImpl, res 
                                                         | let appendAtPaths = $propertyPaths->m2mCurrentPathsForChildSetImplementation($owner, $setImpl);
@@ -711,7 +709,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                                                     $res)
                                                           );
                                                         },
-                                                        pair($withRootSubTypes, $visitedFunctionsFromScanProperties)
+                                                        pair($withSubTypeTrees, $visitedFunctionsFromScanProperties)
                                                       );
 
          let visitedFunctionsFromEnrichedPaths = $withNextSetImpl.second;
@@ -808,7 +806,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(s
                                     let requiredSubTrees = $srcNode.subTrees->cast(@PropertyGraphFetchTree)->filter(st |$st.property == $head.property);
                                     $requiredSubTrees->fold({st, res
                                                             | let enrichedSubTree = $st->enrichSourceTreeNode($mapping, $setImplementation, $tgtPgft, $extensions, $res.second);
-                                                              let enrichedSourceNode = $res.first->addSubTree($enrichedSubTree.first->cast(@PropertyGraphFetchTree));
+                                                              let enrichedSourceNode = $res.first->addSubTrees($enrichedSubTree.first->cast(@PropertyGraphFetchTree)->liftSubTypeTrees());
                                                               pair($enrichedSourceNode, $enrichedSubTree.second);
                                                             },
                                                             pair($srcNode, $visitedFunctions)
@@ -820,13 +818,19 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(s
                                     let requiredSubTrees = $srcNode.subTrees->cast(@PropertyGraphFetchTree)->filter(st |$st.property == $head.property);
                                     $requiredSubTrees->fold({st, res
                                                             | let enrichedSubTree = $st->enrichSourceTreeNodeAtPath(list($tail), $mapping, $setImplementation, $tgtPgft, $extensions, $res.second);
-                                                              let enrichedSourceNode = $res.first->addSubTree($enrichedSubTree.first->cast(@PropertyGraphFetchTree));
+                                                              let enrichedSourceNode = $res.first->addSubTrees($enrichedSubTree.first->cast(@PropertyGraphFetchTree)->liftSubTypeTrees());
                                                               pair($enrichedSourceNode, $enrichedSubTree.second);
                                                             },
                                                             pair($srcNode, $visitedFunctions)
                                                             );
     ]
    )
+}
+
+// A property node in a source tree cannot hold subtype trees, so each one becomes a ->subType() sibling of the property.
+function <<access.private>> meta::pure::graphFetch::liftSubTypeTrees(pgft:PropertyGraphFetchTree[1]): PropertyGraphFetchTree[*]
+{
+   ^$pgft(subTypeTrees = [])->concatenate($pgft.subTypeTrees->map(st | ^$pgft(subType = $st.subTypeClass, subTrees = $st.subTrees, subTypeTrees = [])))
 }
 
 function <<access.private>> meta::pure::graphFetch::addPassThroughSubTrees(srcNode:GraphFetchTree[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
@@ -893,9 +897,15 @@ function <<access.private>>
    meta::pure::graphFetch::lookupIntermediateCandidates(t : Map<Type, List<AbstractProperty<Any>>>[1], target:Class<Any>[1]) : AbstractProperty<Any>[*]
 {
    let targetPath = $target->elementToPath();
-   $t->keyValues()
-     ->filter(kv | $kv.first->elementToPath() == $targetPath || $kv.first->isStrictSubType($target))
-     ->map(kv | $kv.second.values);
+   let reaching   = $t->keyValues()
+                      ->filter(kv | $kv.first->elementToPath() == $targetPath || $kv.first->isStrictSubType($target))
+                      ->map(kv | $kv.second.values);
+   // Otherwise accept a property returning a supertype of target: target is then reached by a cast on that
+   // property's value ($src.p->cast(@Sub).x), so its instances can be target instances.
+   if($reaching->isNotEmpty(),
+      | $reaching,
+      | $t->keyValues()->filter(kv | $target->isStrictSubType($kv.first))->map(kv | $kv.second.values)
+   );
 }
 
 function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]) : PropertyPathTree[*]
