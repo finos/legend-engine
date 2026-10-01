@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -31,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -39,7 +41,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Shadow-mode comparison of the Java and Rust parsers' results for one section or standalone expression.
+ * Shadow-mode comparison of the Java and Rust parsers' results for one section, standalone expression or whole model.
  *
  * <p>Both results are compared as protocol objects: the Rust JSON is deserialized into the engine's protocol classes
  * and both sides are serialized with the same mapper, so field order, omitted empty lists and nulls don't matter.
@@ -49,7 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *     <li>{@value #FAIL_ON_MISMATCH_PROPERTY}{@code =true}: a mismatch throws an {@link AssertionError};</li>
  *     <li>{@value #REPORT_DIR_PROPERTY}{@code =<dir>}: mismatches ({@code <dir>/mismatch}) and unsupported input
  *     ({@code <dir>/unsupported}) are written there, one file per section;</li>
- *     <li>a summary of the counts is printed to stderr when the JVM exits.</li>
+ *     <li>a summary of the counts is printed to stderr when the JVM exits, whole models' apart.</li>
  * </ul>
  */
 public final class RustGrammarParity
@@ -91,15 +93,26 @@ public final class RustGrammarParity
         UNAVAILABLE
     }
 
-    private static final Map<Outcome, AtomicLong> COUNTS = new EnumMap<>(Outcome.class);
+    private static final Map<Outcome, AtomicLong> COUNTS = newCounts();
+
+    /**
+     * Whole models' comparisons: in shadow mode, the engine's parser compares its sections too.
+     */
+    private static final Map<Outcome, AtomicLong> MODEL_COUNTS = newCounts();
 
     static
     {
+        Runtime.getRuntime().addShutdownHook(new Thread(RustGrammarParity::printSummary));
+    }
+
+    private static Map<Outcome, AtomicLong> newCounts()
+    {
+        Map<Outcome, AtomicLong> counts = new EnumMap<>(Outcome.class);
         for (Outcome outcome : Outcome.values())
         {
-            COUNTS.put(outcome, new AtomicLong());
+            counts.put(outcome, new AtomicLong());
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(RustGrammarParity::printSummary));
+        return counts;
     }
 
     private RustGrammarParity()
@@ -113,8 +126,23 @@ public final class RustGrammarParity
      */
     public static Map<Outcome, Long> counts()
     {
+        return snapshot(COUNTS);
+    }
+
+    /**
+     * The whole models' comparisons counted so far in this JVM.
+     *
+     * @return the count for each outcome
+     */
+    public static Map<Outcome, Long> modelCounts()
+    {
+        return snapshot(MODEL_COUNTS);
+    }
+
+    private static Map<Outcome, Long> snapshot(Map<Outcome, AtomicLong> counters)
+    {
         Map<Outcome, Long> counts = new EnumMap<>(Outcome.class);
-        COUNTS.forEach((outcome, count) -> counts.put(outcome, count.get()));
+        counters.forEach((outcome, count) -> counts.put(outcome, count.get()));
         return Collections.unmodifiableMap(counts);
     }
 
@@ -129,16 +157,16 @@ public final class RustGrammarParity
         RustSectionResult rust = RustSectionResult.parse(code, returnSourceInfo);
         if (rust.isUnsupported())
         {
-            unsupported(input, returnSourceInfo, rust.errorMessage);
+            unsupported(COUNTS, input, returnSourceInfo, rust.errorMessage);
             return;
         }
         JsonNode rustResult = rust.isError() ? null : render(rust.elements, rust.imports);
         if (javaError != null)
         {
-            compareErrors(input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
+            compareErrors(COUNTS, input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
             return;
         }
-        compareResults(input, returnSourceInfo, render(RustSectionResult.roundTrip(javaElements), RustSectionResult.imports(javaSection)), rust.errorKind, rust.errorMessage, rustResult);
+        compareResults(COUNTS, input, returnSourceInfo, render(RustSectionResult.roundTrip(javaElements), RustSectionResult.imports(javaSection)), rust.errorKind, rust.errorMessage, rustResult);
     }
 
     static <T> void compareExpression(RustExpression<T> expression, boolean returnSourceInfo, T javaValue, RuntimeException javaError)
@@ -152,21 +180,48 @@ public final class RustGrammarParity
         RustExpressionResult<T> rust = RustExpressionResult.parse(expression, returnSourceInfo);
         if (rust.isUnsupported())
         {
-            unsupported(input, returnSourceInfo, rust.errorMessage);
+            unsupported(COUNTS, input, returnSourceInfo, rust.errorMessage);
             return;
         }
         JsonNode rustResult = rust.isError() ? null : render(rust.value, expression.type);
         if (javaError != null)
         {
-            compareErrors(input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
+            compareErrors(COUNTS, input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
             return;
         }
-        compareResults(input, returnSourceInfo, render(roundTrip(javaValue, expression.type), expression.type), rust.errorKind, rust.errorMessage, rustResult);
+        compareResults(COUNTS, input, returnSourceInfo, render(roundTrip(javaValue, expression.type), expression.type), rust.errorKind, rust.errorMessage, rustResult);
     }
 
-    private static void unsupported(Input input, boolean returnSourceInfo, String message)
+    /**
+     * Compares a whole model: all its elements, the section index included. A Rust result holding a section of a type
+     * not among {@code sectionTypes}, those taken over, is unsupported, as {@code on} mode treats it.
+     */
+    static void compareModel(RustModel model, boolean returnSourceInfo, Collection<String> sectionTypes, PureModelContextData javaModel, RuntimeException javaError)
     {
-        COUNTS.get(Outcome.UNSUPPORTED).incrementAndGet();
+        if (!NativeGrammarParser.isAvailable())
+        {
+            MODEL_COUNTS.get(Outcome.UNAVAILABLE).incrementAndGet();
+            return;
+        }
+        Input input = Input.of(model);
+        RustModelResult rust = RustModelResult.parse(model, returnSourceInfo, sectionTypes);
+        if (rust.isUnsupported())
+        {
+            unsupported(MODEL_COUNTS, input, returnSourceInfo, rust.errorMessage);
+            return;
+        }
+        JsonNode rustResult = rust.isError() ? null : RustSectionResult.toJson(rust.elements);
+        if (javaError != null)
+        {
+            compareErrors(MODEL_COUNTS, input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
+            return;
+        }
+        compareResults(MODEL_COUNTS, input, returnSourceInfo, RustSectionResult.toJson(RustSectionResult.roundTrip(javaModel.getElements())), rust.errorKind, rust.errorMessage, rustResult);
+    }
+
+    private static void unsupported(Map<Outcome, AtomicLong> counts, Input input, boolean returnSourceInfo, String message)
+    {
+        counts.get(Outcome.UNSUPPORTED).incrementAndGet();
         report("unsupported", input, returnSourceInfo, message, null, null);
     }
 
@@ -174,19 +229,19 @@ public final class RustGrammarParity
      * Compares the rendered results when Java parsed the input: Rust must have too ({@code rust} is null when it
      * reported an error), with the same result.
      */
-    private static void compareResults(Input input, boolean returnSourceInfo, JsonNode java, String rustErrorKind, String rustErrorMessage, JsonNode rust)
+    private static void compareResults(Map<Outcome, AtomicLong> counts, Input input, boolean returnSourceInfo, JsonNode java, String rustErrorKind, String rustErrorMessage, JsonNode rust)
     {
         if (rust == null)
         {
-            mismatch(input, returnSourceInfo, "Java parsed the input; Rust reported " + rustErrorKind + ": " + rustErrorMessage, java, null);
+            mismatch(counts, input, returnSourceInfo, "Java parsed the input; Rust reported " + rustErrorKind + ": " + rustErrorMessage, java, null);
         }
         else if (java.equals(rust))
         {
-            COUNTS.get(Outcome.MATCH).incrementAndGet();
+            counts.get(Outcome.MATCH).incrementAndGet();
         }
         else
         {
-            mismatch(input, returnSourceInfo, "results differ at " + firstDifference(java, rust, ""), java, rust);
+            mismatch(counts, input, returnSourceInfo, "results differ at " + firstDifference(java, rust, ""), java, rust);
         }
     }
 
@@ -194,28 +249,28 @@ public final class RustGrammarParity
      * Compares the errors when Java rejected the input: Rust must report a parser error ({@code rust} is its result
      * when it parsed the input), at the same start position.
      */
-    private static void compareErrors(Input input, boolean returnSourceInfo, RuntimeException javaError, String rustErrorKind, String rustErrorMessage, SourceInformation rustPosition, JsonNode rust)
+    private static void compareErrors(Map<Outcome, AtomicLong> counts, Input input, boolean returnSourceInfo, RuntimeException javaError, String rustErrorKind, String rustErrorMessage, SourceInformation rustPosition, JsonNode rust)
     {
         EngineException engineException = EngineException.findException(javaError);
         String javaMessage = (engineException == null) ? String.valueOf(javaError.getMessage()) : engineException.getMessage();
         if (!RustSectionResult.PARSER_ERROR.equals(rustErrorKind))
         {
             String rustOutcome = (rust == null) ? (rustErrorKind + ": " + rustErrorMessage) : "parsed it";
-            mismatch(input, returnSourceInfo, "Java rejected the input (" + javaMessage + "); Rust " + rustOutcome, null, rust);
+            mismatch(counts, input, returnSourceInfo, "Java rejected the input (" + javaMessage + "); Rust " + rustOutcome, null, rust);
             return;
         }
         SourceInformation javaPosition = (engineException == null) ? null : engineException.getSourceInformation();
         if (returnSourceInfo && javaPosition != null && (rustPosition == null || javaPosition.startLine != rustPosition.startLine || javaPosition.startColumn != rustPosition.startColumn))
         {
-            mismatch(input, returnSourceInfo, "error position differs: Java " + position(javaPosition) + " (" + javaMessage + "), Rust " + position(rustPosition) + " (" + rustErrorMessage + ")", null, null);
+            mismatch(counts, input, returnSourceInfo, "error position differs: Java " + position(javaPosition) + " (" + javaMessage + "), Rust " + position(rustPosition) + " (" + rustErrorMessage + ")", null, null);
             return;
         }
-        COUNTS.get(Outcome.ERROR_MATCH).incrementAndGet();
+        counts.get(Outcome.ERROR_MATCH).incrementAndGet();
     }
 
-    private static void mismatch(Input input, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
+    private static void mismatch(Map<Outcome, AtomicLong> counts, Input input, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
     {
-        COUNTS.get(Outcome.MISMATCH).incrementAndGet();
+        counts.get(Outcome.MISMATCH).incrementAndGet();
         Path file = report("mismatch", input, returnSourceInfo, reason, java, rust);
         if (Boolean.getBoolean(FAIL_ON_MISMATCH_PROPERTY))
         {
@@ -409,14 +464,22 @@ public final class RustGrammarParity
         {
             return new Input(expression.hash(), "expression " + expression.kind, expression.sourceId, expression.lineOffset, expression.code);
         }
+
+        static Input of(RustModel model)
+        {
+            return new Input("model-" + model.hash(), "model", model.sourceId, model.lineOffset, model.code);
+        }
     }
 
     private static void printSummary()
     {
-        long total = COUNTS.values().stream().mapToLong(AtomicLong::get).sum();
-        if (total > 0)
+        if (COUNTS.values().stream().mapToLong(AtomicLong::get).sum() > 0)
         {
             System.err.println("[rust-parser parity] " + counts());
+        }
+        if (MODEL_COUNTS.values().stream().mapToLong(AtomicLong::get).sum() > 0)
+        {
+            System.err.println("[rust-parser parity: models] " + modelCounts());
         }
     }
 }

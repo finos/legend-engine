@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -36,10 +37,11 @@ import java.util.function.Function;
 
 /**
  * Dumps what is parsed to golden corpora for the Rust parser's own tests: every section, when
- * {@value #CORPUS_DIR_PROPERTY} is set, and every standalone expression, when {@value #EXPRESSION_CORPUS_DIR_PROPERTY}
- * is. Each entry is {@code <hash>.pure} (the text), {@code <hash>.meta.json} (section type or expression kind, source
- * id, offsets) and {@code <hash>.java.json}, the Java parser's result with source information: a section's elements
- * and imports, an expression's {@code value}, or the {@code error}. Needs no native library.
+ * {@value #CORPUS_DIR_PROPERTY} is set, every standalone expression, when {@value #EXPRESSION_CORPUS_DIR_PROPERTY}
+ * is, and every whole model, when {@value #MODEL_CORPUS_DIR_PROPERTY} is. Each entry is {@code <hash>.pure} (the
+ * text), {@code <hash>.meta.json} (section type or expression kind, source id, offsets) and {@code <hash>.java.json},
+ * the Java parser's result with source information: a section's elements and imports, an expression's {@code value},
+ * a model's elements, its section index last, or the {@code error}. Needs no native library.
  */
 public final class RustGrammarCorpus
 {
@@ -52,6 +54,12 @@ public final class RustGrammarCorpus
      * System property: directory to write the standalone expression corpus to.
      */
     public static final String EXPRESSION_CORPUS_DIR_PROPERTY = "legend.grammar.rust.expressionCorpusDir";
+
+    /**
+     * System property: directory to write the whole model corpus to. Whole models are recorded in the {@code off} and
+     * {@code shadow} modes only: in {@code on} mode, the engine's parser parses with the Rust parser's sections.
+     */
+    public static final String MODEL_CORPUS_DIR_PROPERTY = "legend.grammar.rust.modelCorpusDir";
 
     private RustGrammarCorpus()
     {
@@ -118,6 +126,32 @@ public final class RustGrammarCorpus
         write(dir, expression.hash(), expression.code, meta, expected);
     }
 
+    /**
+     * Records a whole model; {@code java} parses it with the engine's parser, with or without source information.
+     */
+    static void recordModel(RustModel model, Function<Boolean, PureModelContextData> java)
+    {
+        String dir = System.getProperty(MODEL_CORPUS_DIR_PROPERTY);
+        if (dir == null || dir.isEmpty())
+        {
+            return;
+        }
+        byte[] expected;
+        try
+        {
+            expected = render(new ParsedModel(RustSectionResult.roundTrip(java.apply(true).getElements())));
+        }
+        catch (RuntimeException e)
+        {
+            expected = render(error(e));
+        }
+        ObjectNode meta = RustSectionResult.MAPPER.createObjectNode();
+        meta.put("sourceId", model.sourceId);
+        meta.put("lineOffset", model.lineOffset);
+        meta.put("columnOffset", model.columnOffset);
+        write(dir, model.hash(), model.code, meta, expected);
+    }
+
     private static ObjectNode error(RuntimeException e)
     {
         EngineException engineException = EngineException.findException(e);
@@ -172,6 +206,20 @@ public final class RustGrammarCorpus
         {
             this.elements = elements;
             this.imports = imports;
+        }
+    }
+
+    /**
+     * A parsed model as the corpus records it: its elements, the section index last, each written with its
+     * {@code _type}, as for {@link Parsed}.
+     */
+    static final class ParsedModel
+    {
+        public final List<PackageableElement> elements;
+
+        ParsedModel(List<PackageableElement> elements)
+        {
+            this.elements = elements;
         }
     }
 }

@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParserOverride;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ModelParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
@@ -32,9 +33,10 @@ import java.util.List;
 /**
  * Takes over, with Rust-backed parsers ({@link RustSectionParser}), the section types the Rust library parses, each
  * keeping the Java parser it replaces, whether the engine's own or another extension's, and standalone expressions
- * likewise ({@link RustExpressionParser}). In the default mode ({@code off}) everything parses exactly as without this
- * extension. The section types are fixed when the extension loads; the mode is read on every parse
- * (see {@link RustGrammarMode}).
+ * likewise ({@link RustExpressionParser}), and whole models ({@link RustModelParser}), which the Rust parser parses
+ * whole with the {@code rust} section parse strategy. In the default mode ({@code off}) everything parses exactly as
+ * without this extension. The section types are fixed when the extension loads; the mode and the strategy are read on
+ * every parse (see {@link RustGrammarMode} and {@link SectionParseStrategy}).
  */
 public class RustGrammarParserExtension implements PureGrammarParserExtension
 {
@@ -113,6 +115,12 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
     public Iterable<? extends ExpressionParserOverride> getExpressionParserOverrides()
     {
         return Lists.immutable.with(RustExpressionParser::new);
+    }
+
+    @Override
+    public Iterable<? extends ModelParserOverride> getModelParserOverrides()
+    {
+        return Lists.immutable.with(replaced -> new RustModelParser(this.sectionTypes, replaced));
     }
 
     private static SectionParserOverride override(String sectionType)

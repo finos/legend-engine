@@ -38,6 +38,7 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, SectionParser> sectionParsers;
     private final MapIterable<String, SectionParserOverride> sectionParserOverrides;
     private final ExpressionParserOverride expressionParserOverride;
+    private final ModelParserOverride modelParserOverride;
     private final MapIterable<String, ConnectionValueParser> connectionParsers;
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
@@ -53,6 +54,7 @@ public class PureGrammarParserExtensions
         this.sectionParsers = indexExtraSectionParsers(this.extensions);
         this.sectionParserOverrides = indexSectionParserOverrides(this.extensions);
         this.expressionParserOverride = findExpressionParserOverride(this.extensions);
+        this.modelParserOverride = findModelParserOverride(this.extensions);
         this.connectionParsers = indexExtraConnectionValueParsers(this.extensions);
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
@@ -91,6 +93,16 @@ public class PureGrammarParserExtensions
     public ExpressionParserOverride getExpressionParserOverride()
     {
         return this.expressionParserOverride;
+    }
+
+    /**
+     * The override taking over whole models, if an extension has one.
+     *
+     * @return the override, or {@code null}
+     */
+    public ModelParserOverride getModelParserOverride()
+    {
+        return this.modelParserOverride;
     }
 
     public ConnectionValueParser getConnectionValueParser(String type)
@@ -177,6 +189,16 @@ public class PureGrammarParserExtensions
         if (overrides.size() > 1)
         {
             throw new IllegalArgumentException("Conflicting expression parser overrides: " + overrides.size());
+        }
+        return overrides.getFirst();
+    }
+
+    private static ModelParserOverride findModelParserOverride(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        MutableList<ModelParserOverride> overrides = Lists.mutable.withAll(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getModelParserOverrides));
+        if (overrides.size() > 1)
+        {
+            throw new IllegalArgumentException("Conflicting model parser overrides: " + overrides.size());
         }
         return overrides.getFirst();
     }

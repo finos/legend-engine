@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 public class TestRustSectionTakeover
 {
-    private static final String SUPPORTED = "Class a::A\n" +
+    static final String SUPPORTED = "Class a::A\n" +
             "{\n" +
             "  name: String[1];\n" +
             "}\n" +
@@ -79,11 +79,11 @@ public class TestRustSectionTakeover
             "  connections: [ModelStore: [c: a::C]];\n" +
             "}\n";
 
-    private static final String JAVA_ONLY_SECTION = "\n" +
+    static final String JAVA_ONLY_SECTION = "\n" +
             "###TestJavaOnly\n" +
             "whatever the extension reads\n";
 
-    private static final String MODEL = SUPPORTED +
+    static final String MODEL = SUPPORTED +
             "\n" +
             "###Connection\n" +
             "TestJavaOnlyConnection a::T\n" +
@@ -94,7 +94,7 @@ public class TestRustSectionTakeover
     /**
      * Grammar only Java reads: a section type, and a connection type.
      */
-    private static final PureGrammarParserExtension JAVA_ONLY = new PureGrammarParserExtension()
+    static final PureGrammarParserExtension JAVA_ONLY = new PureGrammarParserExtension()
     {
         @Override
         public Iterable<? extends SectionParser> getExtraSectionParsers()
@@ -121,7 +121,7 @@ public class TestRustSectionTakeover
         }
     };
 
-    private static final PureGrammarParser JAVA = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), JAVA_ONLY));
+    static final PureGrammarParser JAVA = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), JAVA_ONLY));
     private static final PureGrammarParser TAKEN_OVER = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), JAVA_ONLY, new RustGrammarParserExtension("Pure", "Data", "Mapping", "Connection", "Runtime")));
 
     private String previousMode;

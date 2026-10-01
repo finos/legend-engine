@@ -25,6 +25,8 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParserOverride;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ModelParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ModelParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
@@ -104,7 +106,7 @@ public class PureGrammarParser
 
     public PureModelContextData parseModel(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getModelParser().parseModel(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public PureModelContextData parseModel(String code, boolean returnSourceInformation)
@@ -114,7 +116,7 @@ public class PureGrammarParser
 
     public PureModelContextData parseModel(String code)
     {
-        return this.parse(code, this.parsers, "", 0, 0, true);
+        return this.parseModel(code, "", 0, 0, true);
     }
 
     public LambdaFunction parseLambda(String code)
@@ -236,6 +238,17 @@ public class PureGrammarParser
     public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         return this.getExpressionParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    /**
+     * The parser for whole models: the engine's own, which splits the code into sections and parses each with its
+     * section type's parser, unless an extension overrides it (see {@link ModelParserOverride}).
+     */
+    private ModelParser getModelParser()
+    {
+        ModelParser engineParser = (code, sourceId, lineOffset, columnOffset, returnSourceInfo) -> this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        ModelParserOverride override = this.extensions.getModelParserOverride();
+        return (override == null) ? engineParser : override.override(engineParser);
     }
 
     /**

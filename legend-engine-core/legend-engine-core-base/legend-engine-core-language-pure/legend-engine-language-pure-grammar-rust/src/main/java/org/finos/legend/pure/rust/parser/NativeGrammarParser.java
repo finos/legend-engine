@@ -102,6 +102,20 @@ public final class NativeGrammarParser
      */
     public static native String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset);
 
+    /**
+     * Parses a whole model into Protocol v1 elements, as the engine's {@code PureGrammarParser.parseModel} does: the
+     * code split into sections as the engine splits it (the first section's {@code ###Pure} header optional), every
+     * section parsed, then the section index.
+     *
+     * @param code         the model's code
+     * @param sourceId     the source id reported in source information
+     * @param lineOffset   added to every line number
+     * @param columnOffset added to column numbers on the code's first line
+     * @return JSON {@code {"elements":[...]}} (the section index last), or the error JSON {@link #parseSection}
+     *     returns; null only if the result could not be allocated
+     */
+    public static native String parseModel(String code, String sourceId, int lineOffset, int columnOffset);
+
     private static String load()
     {
         String path = System.getProperty(LIBRARY_PATH_PROPERTY);
