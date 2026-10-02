@@ -34,7 +34,6 @@ import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -151,7 +150,7 @@ public class Library
             throw new IllegalArgumentException("Cannot get day of year for " + date.toString());
         }
 
-        return date.toLocalDate().getDayOfYear();
+        return date.getCalendar().get(Calendar.DAY_OF_YEAR);
     }
 
 
@@ -161,8 +160,41 @@ public class Library
         {
             throw new IllegalArgumentException("Cannot get day of week for " + date);
         }
-        // DayOfWeek numbers Monday 1 through Sunday 7, which is the numbering this function returns.
-        return date.toLocalDate().getDayOfWeek().getValue();
+        switch (date.getCalendar().get(Calendar.DAY_OF_WEEK))
+        {
+            case Calendar.MONDAY:
+            {
+                return 1;
+            }
+            case Calendar.TUESDAY:
+            {
+                return 2;
+            }
+            case Calendar.WEDNESDAY:
+            {
+                return 3;
+            }
+            case Calendar.THURSDAY:
+            {
+                return 4;
+            }
+            case Calendar.FRIDAY:
+            {
+                return 5;
+            }
+            case Calendar.SATURDAY:
+            {
+                return 6;
+            }
+            case Calendar.SUNDAY:
+            {
+                return 7;
+            }
+            default:
+            {
+                throw new IllegalArgumentException("Error getting day of week for " + date);
+            }
+        }
     }
 
     public static PureDate firstDayOfWeek(PureDate date)
@@ -252,10 +284,7 @@ public class Library
         {
             throw new IllegalArgumentException("Cannot get week of year for " + date);
         }
-        // ISO 8601 numbering: a week starts on Monday, and week 1 is the one holding the year's first
-        // Thursday. Fixed rather than read from the JVM locale, so a query answers the same wherever
-        // it runs, and answers what the relational stores do when it is pushed down to them.
-        return date.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear());
+        return date.getCalendar().get(Calendar.WEEK_OF_YEAR);
     }
 
     public static PureDate mostRecentDayOfWeek(PureDate date, DayOfWeek dayOfWeek)
