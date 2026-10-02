@@ -1269,10 +1269,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         // try_cast only tags the array itself as ARRAY<VARIANT>, not its elements), so the next hop
         // still needs the colon reset, exactly like the very first hop off a column. Only an actual
         // preceding property hop is "nested" and should continue with '.'.
-        let isNestedNavigation = $s.operand->instanceOf(SemiStructuredPropertyAccess);
+        let isNestedNavigation = $s.operand->match([
+           p: SemiStructuredPropertyAccess[1] | $p.property->instanceOf(Literal),
+           o: RelationalOperationElement[1]   | false
+        ]);
 
         let elementAccess = $s->match([
-           p: SemiStructuredPropertyAccess[1]     | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+           p: SemiStructuredPropertyAccess[1]     | $p.property->match([
+                                                       l: Literal[1]                    | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $l.value->cast(@String) + '`',
+                                                       k: RelationalOperationElement[1] | 'try_element_at(try_cast(' + $processedOperand + ' as map<string, variant>), ' + $k->processOperation($sgc) + ')'
+                                                    ]) + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),           
            // A bare VARIANT (e.g. straight out of parse_json(...)) is still generically VARIANT
            // until cast to a concrete complex type - Databricks requires a concrete STRUCT/ARRAY/MAP
            // before subscripting with '[index]' (bracket-indexing a bare VARIANT raises
