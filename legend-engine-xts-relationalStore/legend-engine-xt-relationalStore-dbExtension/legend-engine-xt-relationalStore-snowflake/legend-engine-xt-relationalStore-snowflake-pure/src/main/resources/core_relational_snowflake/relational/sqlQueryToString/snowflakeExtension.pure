@@ -604,7 +604,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    let processedOperand = $s.operand->processOperation($sgc);
 
    let elementAccess = $processedOperand + $s->match([
-      p: SemiStructuredPropertyAccess[1]     | '[\'' + $p.property->cast(@Literal).value->cast(@String) + '\']' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+      p: SemiStructuredPropertyAccess[1]     | '[' + $p.property->processOperation($sgc) + ']' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
       a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
    ]);
 

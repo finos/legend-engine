@@ -70,6 +70,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
   }, {

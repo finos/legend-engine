@@ -85,6 +85,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse"
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
   }, {

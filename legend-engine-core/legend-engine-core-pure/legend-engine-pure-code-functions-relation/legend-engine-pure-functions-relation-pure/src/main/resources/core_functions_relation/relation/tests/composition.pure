@@ -2972,3 +2972,47 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
       0.01
     );
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, field, payload:meta::pure::metamodel::variant::Variant
+     1, a, '{"a":"x1"}'
+     2, b, '{"b":"y2"}'
+   #;
+
+   let expr = {|
+                  $tds->extend(~value:x | $x.payload->get($x.field->toOne())->to(@String))
+                      ->select(~[id, value])
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,value\n'+
+                '   1,x1\n'+
+                '   2,y2\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, field, payload
+     1, a, '{"a":"x1"}'
+     2, b, '{"b":"y2"}'
+   #;
+
+   let expr = {|
+                  $tds->extend(~value:x | $x.payload->toOne()->fromJson()->get($x.field->toOne())->to(@String))
+                      ->select(~[id, value])
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,value\n'+
+                '   1,x1\n'+
+                '   2,y2\n'+
+                '#', $res->toString());
+}

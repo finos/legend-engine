@@ -97,6 +97,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
+  },{
+    "test" : "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
+  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
   }, {
