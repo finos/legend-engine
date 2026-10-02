@@ -17,6 +17,7 @@
 
 use legend_pure_dsl_mapping as _;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The mapping `###Mapping\nMapping my::M\n(\n{element}\n)\n` defines.
@@ -60,11 +61,10 @@ fn a_merge_validation_is_parsed_again_where_the_function_starts() {
     // Its text without spaces, `{a:my::A[1],b:my::B[1]|$a.id==$b.id}`,
     // starting at the function's column, 5: `a` is at 6, `b` at 17.
     let si = |node: &Value| {
-        (
-            node["sourceInformation"]["startLine"].clone(),
-            node["sourceInformation"]["startColumn"].clone(),
-        )
+        let si: SourceInformation =
+            serde_json::from_value(node["sourceInformation"].clone()).expect("positioned");
+        (si.start_line, si.start_column)
     };
-    assert_eq!(si(&lambda["parameters"][0]), (json!(6), json!(6)));
-    assert_eq!(si(&lambda["parameters"][1]), (json!(6), json!(17)));
+    assert_eq!(si(&lambda["parameters"][0]), (6, 6));
+    assert_eq!(si(&lambda["parameters"][1]), (6, 17));
 }

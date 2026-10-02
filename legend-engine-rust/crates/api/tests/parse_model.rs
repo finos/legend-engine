@@ -20,6 +20,7 @@ use legend_pure_dsl_mapping as _;
 use legend_pure_parser_api::{
     ErrorKind, ModelRequest, SectionError, parse_model, parse_model_json,
 };
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 fn request(code: &str) -> ModelRequest<'_> {
@@ -41,11 +42,17 @@ fn error(request: &ModelRequest<'_>) -> SectionError {
 
 /// `start_line:start_column-end_line:end_column`.
 fn span(value: &Value) -> String {
-    let si = &value["sourceInformation"];
+    let si = position(value);
     format!(
         "{}:{}-{}:{}",
-        si["startLine"], si["startColumn"], si["endLine"], si["endColumn"]
+        si.start_line, si.start_column, si.end_line, si.end_column
     )
+}
+
+/// A JSON node's source information.
+fn position(value: &Value) -> SourceInformation {
+    serde_json::from_value(value["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {value}: {e}"))
 }
 
 /// The elements but the index: `path span`.
@@ -267,10 +274,7 @@ fn offsets_shift_lines_and_the_first_line_s_columns() {
             "importAware Pure 11:2-13:13 [\"a::A\"] []",
         ]
     );
-    assert_eq!(
-        parsed[2]["sections"][0]["sourceInformation"]["sourceId"],
-        "src"
-    );
+    assert_eq!(position(&parsed[2]["sections"][0]).source_id, "src");
     let parsed = model(&with_offsets(
         "Class a::A{}\n###Mapping\nMapping a::M\n(\n)\n",
     ));

@@ -25,7 +25,7 @@
 //!     "associationMappings": [ … ],
 //!     "tests": [ { "name": …, "query": …, "inputData": [ … ], "assert": … } ],
 //!     "testSuites": [ { "_type": "mappingTestSuite", … } ],
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!
@@ -43,7 +43,7 @@ use legend_pure_parser_protocol::v1::convert::{
 };
 use legend_pure_parser_protocol::v1::data::EmbeddedData;
 use legend_pure_parser_protocol::v1::element::PackageableElementPointer;
-use legend_pure_parser_protocol::v1::source_info::SourceInformation;
+use legend_pure_parser_protocol::v1::source_info::{SourceInformation, edit_positions};
 use legend_pure_parser_protocol::v1::test_assertion::TestAssertion;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
 use linkme::distributed_slice;
@@ -340,29 +340,10 @@ fn lambda(expression: &Expression, mapping_path: &str) -> Result<serde_json::Val
         }),
     };
     let mut json = serde_json::to_value(lambda)?;
-    retarget(&mut json, mapping_path);
+    edit_positions(&mut json, &mut |position| {
+        position.source_id = mapping_path.to_string();
+    })?;
     Ok(json)
-}
-
-/// Names `source_id` the source of every position in `json`.
-fn retarget(json: &mut serde_json::Value, source_id: &str) {
-    match json {
-        serde_json::Value::Object(map) => {
-            for (key, value) in map.iter_mut() {
-                if key == "sourceId" {
-                    *value = serde_json::Value::String(source_id.to_string());
-                } else {
-                    retarget(value, source_id);
-                }
-            }
-        }
-        serde_json::Value::Array(items) => {
-            for item in items {
-                retarget(item, source_id);
-            }
-        }
-        _ => {}
-    }
 }
 
 #[distributed_slice(ELEMENT_PROTOCOLS)]

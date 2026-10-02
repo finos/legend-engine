@@ -19,6 +19,7 @@
 use legend_pure_dsl_connection as _;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The elements of the section `###Connection\n{body}`.
@@ -41,17 +42,13 @@ fn error(body: &str) -> ParseError {
 }
 
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"))
-    };
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 
@@ -65,7 +62,16 @@ fn a_model_connection_names_its_class_and_url() {
     let connection = &elements(
         "JsonModelConnection my::People\n{\n  class: my::Person;\n  url: 'data:application/json,{\"a\":\\'b\\'}';\n}\n",
     )[0];
-    let si = |sl, sc, el, ec| json!({"sourceId": "c.pure", "startLine": sl, "startColumn": sc, "endLine": el, "endColumn": ec});
+    let si = |start_line, start_column, end_line, end_column| {
+        serde_json::to_value(SourceInformation {
+            source_id: "c.pure".into(),
+            start_line,
+            start_column,
+            end_line,
+            end_column,
+        })
+        .expect("a position serializes")
+    };
     // The value is positioned as the whole connection; a packageable model
     // connection's store is the model store.
     assert_eq!(

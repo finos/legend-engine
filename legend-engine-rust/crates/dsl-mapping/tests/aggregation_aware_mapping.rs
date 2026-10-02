@@ -18,6 +18,7 @@
 use legend_pure_dsl_mapping as _;
 use legend_pure_parser_ast::SourceOffset;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 const ELEMENT: &str = "  *my::Sales: AggregationAware\n  {\n    Views: [\n      (\n        ~modelOperation: {\n          ~canAggregate true,\n          ~groupByFunctions($this.date),\n          ~aggregateValues((~mapFn: $this.amount, ~aggregateFn: $mapped->sum()))\n        },\n        ~aggregateMapping: Pure\n        {\n          ~src my::DailySales\n          date: $src.day\n        }\n      )\n    ],\n    ~mainMapping: Pure\n    {\n      ~src my::RawSales\n      date: $src.date,\n      amount[a, b]: $src.amount\n    }\n  }";
@@ -33,13 +34,13 @@ fn mapping(element: &str, offset: SourceOffset) -> Value {
 }
 
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| si[key].as_u64().unwrap_or_else(|| panic!("no {key}"));
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 
@@ -93,13 +94,9 @@ fn a_nested_mapping_is_positioned_through_the_elements_body() {
     assert_eq!(span(class_mapping), (4, 3, 26, 3));
     let main = &class_mapping["mainSetImplementation"];
     assert_eq!(span(main), (8, 3, 30, 3));
-    assert_eq!(
-        (
-            main["classSourceInformation"]["startLine"].clone(),
-            main["classSourceInformation"]["startColumn"].clone()
-        ),
-        (json!(8), json!(4))
-    );
+    let class: SourceInformation =
+        serde_json::from_value(main["classSourceInformation"].clone()).expect("positioned");
+    assert_eq!((class.start_line, class.start_column), (8, 4));
     // From the section's own text: the section's lines don't count twice.
     let m = mapping(ELEMENT, SourceOffset::new(10, 0).expect("offset"));
     let class_mapping = &m["classMappings"][0];

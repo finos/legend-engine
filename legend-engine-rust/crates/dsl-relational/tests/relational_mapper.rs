@@ -18,6 +18,7 @@
 use legend_pure_dsl_relational as _;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The mapper of the section `###QueryPostProcessor\n{body}`.
@@ -37,13 +38,14 @@ fn error(body: &str) -> ParseError {
 }
 
 fn si(start_line: u32, start_column: u32, end_line: u32, end_column: u32) -> Value {
-    json!({
-        "sourceId": "q.pure",
-        "startLine": start_line,
-        "startColumn": start_column,
-        "endLine": end_line,
-        "endColumn": end_column,
+    serde_json::to_value(SourceInformation {
+        source_id: "q.pure".into(),
+        start_line,
+        start_column,
+        end_line,
+        end_column,
     })
+    .expect("a position serializes")
 }
 
 fn position(error: &ParseError) -> (u32, u32, u32, u32) {

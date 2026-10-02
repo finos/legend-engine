@@ -18,6 +18,7 @@
 
 use legend_pure_dsl_tds as _;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The JSON of the first expression of the function `source` defines.
@@ -41,11 +42,12 @@ fn a_tds_literal_keeps_its_body_as_written() {
         json!({"tdsString": "\n    id, name:String[1]\n    1, I'm here\n  "})
     );
     // Positioned on the whole island, `#TDS{` to `}#`.
-    let si = &tds["sourceInformation"];
-    assert_eq!(si["startLine"], 3);
-    assert_eq!(si["startColumn"], 3);
-    assert_eq!(si["endLine"], 6);
-    assert_eq!(si["endColumn"], 4);
+    let si: SourceInformation =
+        serde_json::from_value(tds["sourceInformation"].clone()).expect("positioned");
+    assert_eq!(si.start_line, 3);
+    assert_eq!(si.start_column, 3);
+    assert_eq!(si.end_line, 6);
+    assert_eq!(si.end_column, 4);
 }
 
 #[test]

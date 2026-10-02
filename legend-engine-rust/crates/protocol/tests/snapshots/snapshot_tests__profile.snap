@@ -6,13 +6,7 @@ expression: json
   "_type": "profile",
   "name": "doc",
   "package": "meta::pure::profiles",
-  "sourceInformation": {
-    "endColumn": 1,
-    "endLine": 8,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 1
-  },
+  "sourceInformation": "test.pure:1:1-8:1",
   "stereotypes": [
     {
       "value": "deprecated"

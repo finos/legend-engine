@@ -18,7 +18,19 @@
 use legend_pure_dsl_persistence_cloud as _;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
-use serde_json::json;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
+use serde_json::{Value, json};
+
+fn si(start_line: u32, start_column: u32, end_line: u32, end_column: u32) -> Value {
+    serde_json::to_value(SourceInformation {
+        source_id: "p.pure".into(),
+        start_line,
+        start_column,
+        end_line,
+        end_column,
+    })
+    .expect("a position serializes")
+}
 
 fn source(platform: &str) -> String {
     format!(
@@ -49,7 +61,7 @@ fn a_platform_counts_its_data_processing_units() {
             "dataProcessingUnits": 10,
             // To the end of the body the walker parses, two characters short
             // of `}#`, whose `<EOF>` ANTLR counts.
-            "sourceInformation": {"sourceId": "p.pure", "startLine": 7, "startColumn": 5, "endLine": 8, "endColumn": 5},
+            "sourceInformation": si(7, 5, 8, 5),
         })
     );
 }

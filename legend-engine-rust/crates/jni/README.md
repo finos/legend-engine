@@ -20,6 +20,8 @@ into a Java array, where a Java string would be converted twice.
 `kind` is `parser` (syntax error), `unsupported` (valid input this build
 cannot convert — fall back to the Java parser) or `internal`. The contract
 itself is `legend_pure_parser_api`; see `docs/engine-integration.md`.
+Positions in this JSON are strings: `sourceId:line:column-column` on one
+line, `sourceId:line:column-line:column` otherwise.
 
 Every failure — argument errors and panics included — comes back as error
 JSON; nothing unwinds across the FFI boundary. `null` is returned only if

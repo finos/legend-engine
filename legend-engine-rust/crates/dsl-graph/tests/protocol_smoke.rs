@@ -22,6 +22,7 @@ use legend_pure_dsl_graph::protocol::default_island_protocols;
 use legend_pure_parser_ast::element::Element;
 use legend_pure_parser_ast::expression::Expression;
 use legend_pure_parser_protocol::dispatch_island_convert;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::ValueSpecification;
 
 #[test]
@@ -94,8 +95,10 @@ fn graph_fetch_booleans_are_literals() {
     assert_eq!(full_name["_type"], "boolean");
     assert_eq!(full_name["value"], true);
     // `true` is columns 46 to 49 of line 2.
-    assert_eq!(full_name["sourceInformation"]["startColumn"], 46);
-    assert_eq!(full_name["sourceInformation"]["endColumn"], 49);
+    let si: SourceInformation =
+        serde_json::from_value(full_name["sourceInformation"].clone()).expect("positioned");
+    assert_eq!(si.start_column, 46);
+    assert_eq!(si.end_column, 49);
     let name = &json["value"]["subTrees"][1]["parameters"];
     assert_eq!(name[0]["value"], false);
     assert_eq!(name[1]["_type"], "enumValue");

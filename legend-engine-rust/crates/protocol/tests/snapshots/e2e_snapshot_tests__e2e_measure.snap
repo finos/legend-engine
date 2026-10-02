@@ -13,13 +13,7 @@ expression: json
             {
               "_type": "var",
               "name": "x",
-              "sourceInformation": {
-                "endColumn": 19,
-                "endLine": 19,
-                "sourceId": "measure.pure",
-                "startColumn": 18,
-                "startLine": 19
-              }
+              "sourceInformation": "measure.pure:19:18-19"
             }
           ],
           "parameters": [
@@ -31,13 +25,7 @@ expression: json
         },
         "measure": "pkg::Distance",
         "name": "Meter",
-        "sourceInformation": {
-          "endColumn": 20,
-          "endLine": 19,
-          "sourceId": "measure.pure",
-          "startColumn": 6,
-          "startLine": 19
-        }
+        "sourceInformation": "measure.pure:19:6-20"
       },
       "name": "Distance",
       "nonCanonicalUnits": [
@@ -55,46 +43,22 @@ expression: json
                       "lowerBound": 2,
                       "upperBound": 2
                     },
-                    "sourceInformation": {
-                      "endColumn": 29,
-                      "endLine": 20,
-                      "sourceId": "measure.pure",
-                      "startColumn": 24,
-                      "startLine": 20
-                    },
+                    "sourceInformation": "measure.pure:20:24-29",
                     "values": [
                       {
                         "_type": "var",
                         "name": "x",
-                        "sourceInformation": {
-                          "endColumn": 22,
-                          "endLine": 20,
-                          "sourceId": "measure.pure",
-                          "startColumn": 21,
-                          "startLine": 20
-                        }
+                        "sourceInformation": "measure.pure:20:21-22"
                       },
                       {
                         "_type": "integer",
-                        "sourceInformation": {
-                          "endColumn": 29,
-                          "endLine": 20,
-                          "sourceId": "measure.pure",
-                          "startColumn": 26,
-                          "startLine": 20
-                        },
+                        "sourceInformation": "measure.pure:20:26-29",
                         "value": 1000
                       }
                     ]
                   }
                 ],
-                "sourceInformation": {
-                  "endColumn": 29,
-                  "endLine": 20,
-                  "sourceId": "measure.pure",
-                  "startColumn": 24,
-                  "startLine": 20
-                }
+                "sourceInformation": "measure.pure:20:24-29"
               }
             ],
             "parameters": [
@@ -106,23 +70,11 @@ expression: json
           },
           "measure": "pkg::Distance",
           "name": "Kilometer",
-          "sourceInformation": {
-            "endColumn": 30,
-            "endLine": 20,
-            "sourceId": "measure.pure",
-            "startColumn": 5,
-            "startLine": 20
-          }
+          "sourceInformation": "measure.pure:20:5-30"
         }
       ],
       "package": "pkg",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 21,
-        "sourceId": "measure.pure",
-        "startColumn": 1,
-        "startLine": 17
-      }
+      "sourceInformation": "measure.pure:17:1-21:1"
     },
     {
       "_type": "sectionIndex",
@@ -135,22 +87,10 @@ expression: json
             "pkg::Distance"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "measure.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "measure.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "measure.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "measure.pure:16:1-7"
     }
   ],
   "serializer": {

@@ -31,7 +31,7 @@
 //!         …
 //!     },
 //!     "testSuites": [ { "_type": "serviceTestSuite", … } ],
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!

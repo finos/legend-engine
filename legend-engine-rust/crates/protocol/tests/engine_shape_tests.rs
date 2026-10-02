@@ -18,6 +18,7 @@
 
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
 use legend_pure_parser_protocol::v1::from_protocol;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The converted elements of `code`, as JSON, without source information.
@@ -86,7 +87,16 @@ fn a_unit_as_a_value_is_the_engine_unit_type() {
     let file = legend_pure_parser_parser::parse(code, "shapes.pure").expect("parses");
     let pmcd = convert_source_file(&file).expect("converts");
     let body = &serde_json::to_value(&pmcd.elements[0]).expect("serializes")["body"][0];
-    let si = |start: u32, end: u32| json!({"sourceId": "shapes.pure", "startLine": 3, "startColumn": start, "endLine": 3, "endColumn": end});
+    let si = |start_column: u32, end_column: u32| {
+        serde_json::to_value(SourceInformation {
+            source_id: "shapes.pure".into(),
+            start_line: 3,
+            start_column,
+            end_line: 3,
+            end_column,
+        })
+        .expect("a position serializes")
+    };
     // From the measure to the unit.
     assert_eq!(
         body["parameters"][0]["parameters"][0],

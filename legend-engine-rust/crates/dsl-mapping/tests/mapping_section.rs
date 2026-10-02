@@ -20,6 +20,7 @@
 use legend_pure_dsl_mapping as _;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::{SourceInformation, edit_positions};
 use serde_json::{Value, json};
 
 /// The first mapping `body`, a `###Mapping` section's, defines.
@@ -44,36 +45,28 @@ fn position(error: &ParseError) -> (u32, u32, u32, u32) {
     (si.start_line, si.start_column, si.end_line, si.end_column)
 }
 
+/// A JSON node's source information.
+fn source_information(node: &Value) -> SourceInformation {
+    serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"))
+}
+
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"))
-    };
+    let si = source_information(node);
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 
-/// Every `sourceId` in `node`.
+/// The source id of every position in `node`.
 fn source_ids(node: &Value, ids: &mut Vec<String>) {
-    match node {
-        Value::Object(map) => {
-            for (key, value) in map {
-                if key == "sourceId" {
-                    ids.push(value.as_str().expect("a string").to_string());
-                } else {
-                    source_ids(value, ids);
-                }
-            }
-        }
-        Value::Array(items) => items.iter().for_each(|item| source_ids(item, ids)),
-        _ => {}
-    }
+    edit_positions(&mut node.clone(), &mut |position| {
+        ids.push(position.source_id.clone());
+    })
+    .expect("positions");
 }
 
 #[test]
@@ -178,7 +171,7 @@ fn a_legacy_test_reads_its_query_as_a_source_of_the_mappings() {
     assert_eq!(input["inputType"], "JSON");
     assert_eq!(input["sourceClass"], "my::S");
     assert_eq!(input["data"], "{\"a\":\\'1\\'}{}");
-    assert_eq!(input["sourceInformation"]["sourceId"], "m.pure");
+    assert_eq!(source_information(input).source_id, "m.pure");
     assert_eq!(span(input), (9, 14, 9, 56));
     // The expected output as written too.
     let assert = &test["assert"];

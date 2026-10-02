@@ -18,6 +18,7 @@
 
 use legend_pure_dsl_sql as _;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The JSON of the first expression of the function `source` defines.
@@ -40,11 +41,12 @@ fn a_sql_expression_keeps_its_text_as_written() {
         json!({"sql": "select a from csv('a,b\n1,2')"})
     );
     // Positioned on the whole island, `#SQL{` to `}#`.
-    let si = &sql["sourceInformation"];
-    assert_eq!(si["startLine"], 3);
-    assert_eq!(si["startColumn"], 3);
-    assert_eq!(si["endLine"], 4);
-    assert_eq!(si["endColumn"], 7);
+    let si: SourceInformation =
+        serde_json::from_value(sql["sourceInformation"].clone()).expect("positioned");
+    assert_eq!(si.start_line, 3);
+    assert_eq!(si.start_column, 3);
+    assert_eq!(si.end_line, 4);
+    assert_eq!(si.end_column, 7);
 }
 
 #[test]

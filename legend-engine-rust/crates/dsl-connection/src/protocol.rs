@@ -20,7 +20,7 @@
 //!     "package": "my",
 //!     "name": "PeopleConnection",
 //!     "connectionValue": { "_type": "JsonModelConnection", … },
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!

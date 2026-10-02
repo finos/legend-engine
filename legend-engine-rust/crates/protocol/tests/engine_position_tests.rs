@@ -17,6 +17,7 @@
 //! (`tests/engine-corpus`) found them.
 
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::Value;
 
 /// The converted elements of `code`, as JSON.
@@ -32,15 +33,11 @@ fn elements(code: &str) -> Vec<Value> {
 /// The source text `node`'s source information covers (1-based lines and
 /// columns, inclusive end).
 fn covered(code: &str, node: &Value) -> String {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        let n = si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"));
-        usize::try_from(n).expect("position fits")
-    };
-    let (start_line, start_column) = (at("startLine"), at("startColumn"));
-    let (end_line, end_column) = (at("endLine"), at("endColumn"));
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
+    let at = |n: u32| usize::try_from(n).expect("position fits");
+    let (start_line, start_column) = (at(si.start_line), at(si.start_column));
+    let (end_line, end_column) = (at(si.end_line), at(si.end_column));
     let lines: Vec<&str> = code.split('\n').collect();
     let mut text = String::new();
     for (i, line) in lines.iter().enumerate().take(end_line).skip(start_line - 1) {
@@ -226,11 +223,9 @@ fn navigation_paths_are_positioned_as_the_engine_does() {
     let code = "function f(): Any[*]\n{\n  #/model::Person/lastName#\n}";
     let path = &elements(code)[0]["body"][0];
     let si = |node: &Value| {
-        let s = &node["sourceInformation"];
-        (
-            s["startColumn"].as_u64().unwrap(),
-            s["endColumn"].as_u64().unwrap(),
-        )
+        let s: SourceInformation =
+            serde_json::from_value(node["sourceInformation"].clone()).unwrap();
+        (s.start_column, s.end_column)
     };
     // The token spans columns 3 to 27 (length 25).
     assert_eq!(si(path), (28, 55));

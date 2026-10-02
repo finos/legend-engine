@@ -20,9 +20,9 @@
 //! {
 //!     "_type": "relationalCSVData",
 //!     "tables": [
-//!         { "schema": "default", "table": "PersonTable", "values": "id,name\n1,John\n", "sourceInformation": { … } }
+//!         { "schema": "default", "table": "PersonTable", "values": "id,name\n1,John\n", "sourceInformation": "…" }
 //!     ],
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 

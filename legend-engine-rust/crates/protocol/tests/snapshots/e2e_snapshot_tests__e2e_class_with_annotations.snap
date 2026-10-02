@@ -14,13 +14,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 16,
-                "endLine": 19,
-                "sourceId": "class_with_annotations.pure",
-                "startColumn": 11,
-                "startLine": 19
-              }
+              "sourceInformation": "class_with_annotations.pure:19:11-16"
             }
           },
           "multiplicity": {
@@ -28,26 +22,14 @@ expression: json
             "upperBound": 1
           },
           "name": "name",
-          "sourceInformation": {
-            "endColumn": 20,
-            "endLine": 19,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 5,
-            "startLine": 19
-          }
+          "sourceInformation": "class_with_annotations.pure:19:5-20"
         },
         {
           "genericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer",
-              "sourceInformation": {
-                "endColumn": 16,
-                "endLine": 20,
-                "sourceId": "class_with_annotations.pure",
-                "startColumn": 10,
-                "startLine": 20
-              }
+              "sourceInformation": "class_with_annotations.pure:20:10-16"
             }
           },
           "multiplicity": {
@@ -55,80 +37,32 @@ expression: json
             "upperBound": 1
           },
           "name": "age",
-          "sourceInformation": {
-            "endColumn": 23,
-            "endLine": 20,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 5,
-            "startLine": 20
-          }
+          "sourceInformation": "class_with_annotations.pure:20:5-23"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 21,
-        "sourceId": "class_with_annotations.pure",
-        "startColumn": 1,
-        "startLine": 17
-      },
+      "sourceInformation": "class_with_annotations.pure:17:1-21:1",
       "stereotypes": [
         {
           "profile": "temporal",
-          "profileSourceInformation": {
-            "endColumn": 16,
-            "endLine": 17,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 9,
-            "startLine": 17
-          },
-          "sourceInformation": {
-            "endColumn": 33,
-            "endLine": 17,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 9,
-            "startLine": 17
-          },
+          "profileSourceInformation": "class_with_annotations.pure:17:9-16",
+          "sourceInformation": "class_with_annotations.pure:17:9-33",
           "value": "businesstemporal"
         }
       ],
       "superTypes": [
         {
           "path": "model::domain::LegalEntity",
-          "sourceInformation": {
-            "endColumn": 130,
-            "endLine": 17,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 105,
-            "startLine": 17
-          },
+          "sourceInformation": "class_with_annotations.pure:17:105-130",
           "type": "CLASS"
         }
       ],
       "taggedValues": [
         {
-          "sourceInformation": {
-            "endColumn": 72,
-            "endLine": 17,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 38,
-            "startLine": 17
-          },
+          "sourceInformation": "class_with_annotations.pure:17:38-72",
           "tag": {
             "profile": "doc",
-            "profileSourceInformation": {
-              "endColumn": 40,
-              "endLine": 17,
-              "sourceId": "class_with_annotations.pure",
-              "startColumn": 38,
-              "startLine": 17
-            },
-            "sourceInformation": {
-              "endColumn": 52,
-              "endLine": 17,
-              "sourceId": "class_with_annotations.pure",
-              "startColumn": 42,
-              "startLine": 17
-            },
+            "profileSourceInformation": "class_with_annotations.pure:17:38-40",
+            "sourceInformation": "class_with_annotations.pure:17:42-52",
             "value": "description"
           },
           "value": "A person entity"
@@ -146,22 +80,10 @@ expression: json
             "model::domain::Person"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "class_with_annotations.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "class_with_annotations.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "class_with_annotations.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "class_with_annotations.pure:16:1-7"
     }
   ],
   "serializer": {

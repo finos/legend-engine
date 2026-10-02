@@ -117,7 +117,9 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn -pl legend-engine-core/legend-engi
   grammar without imports (`SectionParser::imports` false, e.g. `###Data`)
   is a `DefaultCodeSection`.
 - Positions: 1-based, inclusive end column, offsets applied like the
-  engine's `ParseTreeWalkerSourceInformation`.
+  engine's `ParseTreeWalkerSourceInformation`. In JSON one string:
+  `sourceId:line:column-column` on one line, `sourceId:line:column-line:column`
+  otherwise (`v1::source_info`, which reads the engine's object form too).
 - Never emit a placeholder for something that can't be converted: return
   `ConvertError::Unsupported` at its position so the engine falls back to
   its own parser.

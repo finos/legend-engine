@@ -16,11 +16,5 @@ expression: json
       "value": 42
     }
   ],
-  "sourceInformation": {
-    "endColumn": 18,
-    "endLine": 3,
-    "sourceId": "test.pure",
-    "startColumn": 5,
-    "startLine": 3
-  }
+  "sourceInformation": "test.pure:3:5-18"
 }

@@ -48,6 +48,7 @@ use legend_pure_dsl_text as _;
 use legend_pure_parser_api::{
     ErrorKind, SectionRequest, capabilities, parse_section, parse_section_json,
 };
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 
 /// A `###Pure` body as the engine hands it over for headerless code:
 /// `"\n###Pure\n"` was prepended, so the body starts with a newline and
@@ -116,7 +117,7 @@ fn a_section_without_imports_has_none() {
     assert_eq!(result.imports, None);
     assert_eq!(result.elements[0]["_type"], "dataElement");
     // Positioned in the document: the body's first line follows the header.
-    assert_eq!(result.elements[0]["sourceInformation"]["startLine"], 1);
+    assert_eq!(position(&result.elements[0]).start_line, 1);
     let json = parse_section_json(&SectionRequest {
         section_type: "Data",
         ..pure("\nData my::D\n{\n}\n")
@@ -137,9 +138,9 @@ fn elements_and_imports_with_document_positions() {
     assert_eq!(class["package"], "a");
     assert_eq!(class["name"], "Person");
     // Caller's line 2 (after the import on line 1).
-    assert_eq!(class["sourceInformation"]["startLine"], 2);
-    assert_eq!(class["sourceInformation"]["sourceId"], "model.pure");
-    assert_eq!(class["properties"][0]["sourceInformation"]["startLine"], 4);
+    assert_eq!(position(class).start_line, 2);
+    assert_eq!(position(class).source_id, "model.pure");
+    assert_eq!(position(&class["properties"][0]).start_line, 4);
 }
 
 #[test]
@@ -206,7 +207,7 @@ fn json_shapes() {
     let err: serde_json::Value =
         serde_json::from_str(&parse_section_json(&pure("\nClass a::A { p: }\n"))).expect("json");
     assert_eq!(err["error"]["kind"], "parser");
-    assert_eq!(err["error"]["sourceInformation"]["startLine"], 1);
+    assert_eq!(position(&err["error"]).start_line, 1);
 }
 
 #[test]
@@ -261,19 +262,20 @@ fn a_function_test_must_call_its_function() {
     assert_eq!((si.start_line, si.start_column), (6, 12));
 }
 
+/// A JSON node's source information.
+fn position(node: &serde_json::Value) -> SourceInformation {
+    serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"))
+}
+
 /// Where a JSON node's source information starts and ends.
 fn span(node: &serde_json::Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"))
-    };
+    let si = position(node);
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 

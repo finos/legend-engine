@@ -22,7 +22,7 @@
 //! {
 //!     "_type": ">",
 //!     "path": ["my::mainDb", "PersonTable"],
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!

@@ -22,7 +22,7 @@
 //!     "_type": "classInstance",
 //!     "type": "TDS",
 //!     "value": { "tdsString": "\n  id, name\n  1, Alice\n" },
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 

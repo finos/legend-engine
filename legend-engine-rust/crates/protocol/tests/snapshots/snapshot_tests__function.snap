@@ -48,11 +48,5 @@ expression: json
     "lowerBound": 1,
     "upperBound": 1
   },
-  "sourceInformation": {
-    "endColumn": 1,
-    "endLine": 6,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 2
-  }
+  "sourceInformation": "test.pure:2:1-6:1"
 }

@@ -7,11 +7,5 @@ expression: json
   "_type": "class",
   "name": "Empty",
   "package": "model",
-  "sourceInformation": {
-    "endColumn": 1,
-    "endLine": 3,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 1
-  }
+  "sourceInformation": "test.pure:1:1-3:1"
 }

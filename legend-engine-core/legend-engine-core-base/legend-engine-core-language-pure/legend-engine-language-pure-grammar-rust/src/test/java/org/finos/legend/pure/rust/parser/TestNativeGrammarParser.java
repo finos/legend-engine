@@ -55,7 +55,7 @@ public class TestNativeGrammarParser
         // A section body as the engine hands it over: after the header, line offset -1.
         String json = text(NativeGrammarParser.parseSection("Pure", "\nClass a::A {}\n", "test.pure", -1, 0));
         Assert.assertTrue(json, json.contains("\"_type\":\"class\""));
-        Assert.assertTrue(json, json.contains("\"startLine\":1"));
+        Assert.assertTrue(json, json.contains("\"sourceInformation\":\"test.pure:1:1-13\""));
         Assert.assertFalse(json, json.contains("\"error\""));
     }
 

@@ -29,8 +29,8 @@ use super::source_info::SourceInformation;
 /// {
 ///   "profile": "meta::pure::profiles::temporal",
 ///   "value": "businesstemporal",
-///   "sourceInformation": { ... },
-///   "profileSourceInformation": { ... }
+///   "sourceInformation": "…",
+///   "profileSourceInformation": "…"
 /// }
 /// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

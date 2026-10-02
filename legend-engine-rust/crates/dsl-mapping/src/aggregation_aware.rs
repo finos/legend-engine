@@ -48,7 +48,7 @@ use legend_pure_parser_parser::words::{Name, eat_command, expect_word, identifie
 use legend_pure_parser_parser::{Block, ParserContext};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
-use legend_pure_parser_protocol::v1::source_info::SourceInformation;
+use legend_pure_parser_protocol::v1::source_info::{SourceInformation, edit_positions};
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
 use serde::Serialize;
 use serde_json::Value;
@@ -515,7 +515,13 @@ fn specification_json(
             parameters: Vec::new(),
             source_information: None,
         }))?;
-        move_lines_up(&mut json, specification.line_shift);
+        let lines = specification.line_shift;
+        if lines > 0 {
+            edit_positions(&mut json, &mut |position| {
+                position.start_line = position.start_line.saturating_sub(lines);
+                position.end_line = position.end_line.saturating_sub(lines);
+            })?;
+        }
         Ok(json)
     };
     let group_by_functions = specification
@@ -542,25 +548,4 @@ fn specification_json(
         group_by_functions,
         aggregate_values,
     })
-}
-
-/// Moves every position in `json` `lines` lines up.
-fn move_lines_up(json: &mut Value, lines: u32) {
-    if lines == 0 {
-        return;
-    }
-    match json {
-        Value::Object(map) => {
-            for (key, value) in map.iter_mut() {
-                match (key.as_str(), value.as_u64()) {
-                    ("startLine" | "endLine", Some(line)) => {
-                        *value = Value::from(line.saturating_sub(u64::from(lines)));
-                    }
-                    _ => move_lines_up(value, lines),
-                }
-            }
-        }
-        Value::Array(items) => items.iter_mut().for_each(|item| move_lines_up(item, lines)),
-        _ => {}
-    }
 }

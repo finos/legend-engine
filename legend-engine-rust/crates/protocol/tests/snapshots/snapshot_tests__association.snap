@@ -33,11 +33,5 @@ expression: json
       "name": "person"
     }
   ],
-  "sourceInformation": {
-    "endColumn": 1,
-    "endLine": 5,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 1
-  }
+  "sourceInformation": "test.pure:1:1-5:1"
 }

@@ -19,13 +19,7 @@ expression: json
         "model::common"
       ],
       "parserName": "Pure",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 20,
-        "sourceId": "test.pure",
-        "startColumn": 1,
-        "startLine": 1
-      }
+      "sourceInformation": "test.pure:1:1-20:1"
     },
     {
       "_type": "default",
@@ -33,20 +27,8 @@ expression: json
         "model::store::MyStore"
       ],
       "parserName": "Relational",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 40,
-        "sourceId": "test.pure",
-        "startColumn": 1,
-        "startLine": 21
-      }
+      "sourceInformation": "test.pure:21:1-40:1"
     }
   ],
-  "sourceInformation": {
-    "endColumn": 1,
-    "endLine": 40,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 1
-  }
+  "sourceInformation": "test.pure:1:1-40:1"
 }

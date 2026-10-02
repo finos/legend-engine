@@ -59,7 +59,7 @@ Each protocol shape has its serde recipe:
 | an always-empty list (`postProcessorWithParameter`, `stores`) | a `[(); 0]` field |
 | fields keyed by names (service store parameters) | a small `Serialize` impl over `serialize_map` |
 | lambdas and expressions | typed `ValueSpecification` (`convert_expression_typed`) |
-| positions | typed `SourceInformation` (`SourceInformation::from`) |
+| positions | typed `SourceInformation` (`SourceInformation::from`), written as one string: `sourceId:line:column-column` on one line, `sourceId:line:column-line:column` otherwise |
 | a large enum variant (pedantic `large_enum_variant`) | box it |
 
 Three things to watch:
@@ -120,7 +120,11 @@ the value is never copied.
 nested mappings, reposition their lambdas and read the main mapping's property
 mappings, so they read the nested grammar's text back into a `Value`. That's the
 one deliberate re-read. Edit such JSON with `Value`'s accessors and `Value::from`,
-never `json!`.
+never `json!`. Its positions are strings: edit them with
+`source_info::edit_positions`, which finds every field named `sourceInformation`
+or `*SourceInformation` (islands' opaque JSON included) and reads and writes it
+through the typed `SourceInformation`. A mapping test's query uses it too, to
+name its positions' source after the mapping, as the engine's walker does.
 
 **The `api` crate keeps two paths:**
 

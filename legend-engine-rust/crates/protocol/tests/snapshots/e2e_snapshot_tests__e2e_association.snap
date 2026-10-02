@@ -14,13 +14,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "model::Person",
-              "sourceInformation": {
-                "endColumn": 25,
-                "endLine": 19,
-                "sourceId": "association.pure",
-                "startColumn": 13,
-                "startLine": 19
-              }
+              "sourceInformation": "association.pure:19:13-25"
             }
           },
           "multiplicity": {
@@ -28,48 +22,24 @@ expression: json
             "upperBound": 1
           },
           "name": "person",
-          "sourceInformation": {
-            "endColumn": 29,
-            "endLine": 19,
-            "sourceId": "association.pure",
-            "startColumn": 5,
-            "startLine": 19
-          }
+          "sourceInformation": "association.pure:19:5-29"
         },
         {
           "genericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "model::Address",
-              "sourceInformation": {
-                "endColumn": 29,
-                "endLine": 20,
-                "sourceId": "association.pure",
-                "startColumn": 16,
-                "startLine": 20
-              }
+              "sourceInformation": "association.pure:20:16-29"
             }
           },
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "addresses",
-          "sourceInformation": {
-            "endColumn": 33,
-            "endLine": 20,
-            "sourceId": "association.pure",
-            "startColumn": 5,
-            "startLine": 20
-          }
+          "sourceInformation": "association.pure:20:5-33"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 21,
-        "sourceId": "association.pure",
-        "startColumn": 1,
-        "startLine": 17
-      }
+      "sourceInformation": "association.pure:17:1-21:1"
     },
     {
       "_type": "sectionIndex",
@@ -82,22 +52,10 @@ expression: json
             "model::PersonAddress"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "association.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "association.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "association.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "association.pure:16:1-7"
     }
   ],
   "serializer": {

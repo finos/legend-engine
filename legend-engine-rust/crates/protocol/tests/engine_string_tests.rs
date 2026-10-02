@@ -16,6 +16,7 @@
 //! `PureGrammarParserUtility` derives them.
 
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 
 fn elements(source: &str) -> Vec<serde_json::Value> {
     let file = legend_pure_parser_parser::parse(source, "doc.pure").expect("parses");
@@ -49,15 +50,9 @@ fn documentation_is_a_leading_doc_tagged_value() {
         serde_json::json!({"_type": "string", "multiLine": true, "value": "A person.\n\nIdentity is \\d+."})
     );
     // Spans the literal: from its opening quotes to its closing quotes.
-    let si = &tagged[0]["sourceInformation"];
-    assert_eq!(
-        (
-            si["startLine"].as_u64(),
-            si["endLine"].as_u64(),
-            si["endColumn"].as_u64()
-        ),
-        (Some(1), Some(5), Some(5))
-    );
+    let si: SourceInformation =
+        serde_json::from_value(tagged[0]["sourceInformation"].clone()).expect("positioned");
+    assert_eq!((si.start_line, si.end_line, si.end_column), (1, 5, 5));
     assert_eq!(tagged[1]["value"], "x");
     let property = &class["properties"][0];
     assert_eq!(property["taggedValues"][0]["value"]["value"], "The name.");

@@ -32,7 +32,9 @@ The section parser receives `SectionSourceCode`:
   `\n###Pure\n` prepended, the header sits on line 1, and
   `lineOffset = headerLine - 2`.
 - Positions are 1-based with an inclusive end column (ANTLR semantics).
-  `columnOffset` applies to the first line only.
+  `columnOffset` applies to the first line only. In the JSON a position is
+  one string, `sourceId:line:column-column` when it starts and ends on one
+  line, `sourceId:line:column-line:column` otherwise (see "Positions" below).
   `returnSourceInfo = false` means no `sourceInformation` anywhere: the Rust
   parser always emits positions, and the engine's binding drops every
   `SourceInformation` when it reads the JSON for a caller that asked for none.
@@ -188,6 +190,18 @@ array, which Jackson reads as it is, where a Java string would be converted
 twice on its way out of the library (to modified UTF-8, then to Latin-1 or
 UTF-16) and read through a `Reader`.
 
+**Positions** are strings in this JSON, not the engine's objects: one token
+for Jackson rather than twelve, and the whole JSON about a third smaller. The engine's
+`SourceInformation` reads both forms (a `@JsonCreator` taking the string,
+`fromString`) and still writes objects, so nothing the engine sends out
+changes. A source id may hold `:` and `-`; both sides read the string from
+its end. The position format needs no lockstep between library and binding:
+an engine that reads strings reads a library that writes objects, and a
+library that writes strings, given an engine that can't read them, fails as
+a protocol divergence (`INTERNAL_ERROR`, then the fallback), not as
+undefined behaviour. The native methods' signatures still must match their
+library.
+
 - `capabilities()` returns `{"sections":[…],"islands":[…]}`.
 - `parseSection(sectionType, code, sourceId, lineOffset, columnOffset)`
   returns JSON: `{"elements":[…],"imports":[…]}` (`imports` absent when
@@ -340,8 +354,9 @@ expression kind, source id, line and column offsets) and `<hash>.java.json`
 `parse_expression` (positions on) and compares, with no JVM:
 
 - **Results:** the JSON must be equal once nulls and empty arrays, which the
-  engine reads back as absent, are dropped on both sides. Nothing else is
-  normalized. A section's class is compared first: `imports` is recorded
+  engine reads back as absent, are dropped on both sides, and the engine's
+  position objects are written as the Rust parser writes positions, through
+  the protocol's `SourceInformation`. Nothing else is normalized. A section's class is compared first: `imports` is recorded
   only for an `ImportAwareCodeSection`.
 - **Errors:** Rust must report a `parser` error at the engine's start
   position.

@@ -19,6 +19,7 @@ use legend_pure_dsl_graph as _;
 use legend_pure_parser_api::{
     ErrorKind, ExpressionKind, ExpressionRequest, parse_expression, parse_expression_json,
 };
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::Value;
 
 fn request(kind: ExpressionKind, code: &str) -> ExpressionRequest<'_> {
@@ -33,17 +34,13 @@ fn request(kind: ExpressionKind, code: &str) -> ExpressionRequest<'_> {
 
 /// Where a JSON node's source information starts and ends.
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"))
-    };
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 

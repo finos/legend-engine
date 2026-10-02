@@ -24,9 +24,9 @@
 //!         "mappings": [ { "type": "MAPPING", "path": "my::Mapping", … } ],
 //!         "connections": [ { "store": { "type": "STORE", … }, "storeConnections": [ … ], … } ],
 //!         "connectionStores": [ { "connectionPointer": { … }, "storePointers": [ … ], … } ],
-//!         "sourceInformation": { … }
+//!         "sourceInformation": "…"
 //!     },
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!

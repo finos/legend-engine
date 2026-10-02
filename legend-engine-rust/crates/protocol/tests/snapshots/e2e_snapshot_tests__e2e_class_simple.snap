@@ -14,13 +14,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 21,
-                "endLine": 19,
-                "sourceId": "class_simple.pure",
-                "startColumn": 16,
-                "startLine": 19
-              }
+              "sourceInformation": "class_simple.pure:19:16-21"
             }
           },
           "multiplicity": {
@@ -28,26 +22,14 @@ expression: json
             "upperBound": 1
           },
           "name": "firstName",
-          "sourceInformation": {
-            "endColumn": 25,
-            "endLine": 19,
-            "sourceId": "class_simple.pure",
-            "startColumn": 5,
-            "startLine": 19
-          }
+          "sourceInformation": "class_simple.pure:19:5-25"
         },
         {
           "genericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 20,
-                "endLine": 20,
-                "sourceId": "class_simple.pure",
-                "startColumn": 15,
-                "startLine": 20
-              }
+              "sourceInformation": "class_simple.pure:20:15-20"
             }
           },
           "multiplicity": {
@@ -55,26 +37,14 @@ expression: json
             "upperBound": 1
           },
           "name": "lastName",
-          "sourceInformation": {
-            "endColumn": 24,
-            "endLine": 20,
-            "sourceId": "class_simple.pure",
-            "startColumn": 5,
-            "startLine": 20
-          }
+          "sourceInformation": "class_simple.pure:20:5-24"
         },
         {
           "genericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer",
-              "sourceInformation": {
-                "endColumn": 16,
-                "endLine": 21,
-                "sourceId": "class_simple.pure",
-                "startColumn": 10,
-                "startLine": 21
-              }
+              "sourceInformation": "class_simple.pure:21:10-16"
             }
           },
           "multiplicity": {
@@ -82,22 +52,10 @@ expression: json
             "upperBound": 1
           },
           "name": "age",
-          "sourceInformation": {
-            "endColumn": 23,
-            "endLine": 21,
-            "sourceId": "class_simple.pure",
-            "startColumn": 5,
-            "startLine": 21
-          }
+          "sourceInformation": "class_simple.pure:21:5-23"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 22,
-        "sourceId": "class_simple.pure",
-        "startColumn": 1,
-        "startLine": 17
-      }
+      "sourceInformation": "class_simple.pure:17:1-22:1"
     },
     {
       "_type": "sectionIndex",
@@ -110,22 +68,10 @@ expression: json
             "model::Person"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "class_simple.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "class_simple.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "class_simple.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "class_simple.pure:16:1-7"
     }
   ],
   "serializer": {

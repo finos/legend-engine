@@ -14,13 +14,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 16,
-                "endLine": 19,
-                "sourceId": "multi_element.pure",
-                "startColumn": 11,
-                "startLine": 19
-              }
+              "sourceInformation": "multi_element.pure:19:11-16"
             }
           },
           "multiplicity": {
@@ -28,53 +22,23 @@ expression: json
             "upperBound": 1
           },
           "name": "name",
-          "sourceInformation": {
-            "endColumn": 20,
-            "endLine": 19,
-            "sourceId": "multi_element.pure",
-            "startColumn": 5,
-            "startLine": 19
-          }
+          "sourceInformation": "multi_element.pure:19:5-20"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 20,
-        "sourceId": "multi_element.pure",
-        "startColumn": 1,
-        "startLine": 17
-      }
+      "sourceInformation": "multi_element.pure:17:1-20:1"
     },
     {
       "_type": "Enumeration",
       "name": "Status",
       "package": "model",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 26,
-        "sourceId": "multi_element.pure",
-        "startColumn": 1,
-        "startLine": 22
-      },
+      "sourceInformation": "multi_element.pure:22:1-26:1",
       "values": [
         {
-          "sourceInformation": {
-            "endColumn": 10,
-            "endLine": 24,
-            "sourceId": "multi_element.pure",
-            "startColumn": 5,
-            "startLine": 24
-          },
+          "sourceInformation": "multi_element.pure:24:5-10",
           "value": "ACTIVE"
         },
         {
-          "sourceInformation": {
-            "endColumn": 12,
-            "endLine": 25,
-            "sourceId": "multi_element.pure",
-            "startColumn": 5,
-            "startLine": 25
-          },
+          "sourceInformation": "multi_element.pure:25:5-12",
           "value": "INACTIVE"
         }
       ]
@@ -92,23 +56,11 @@ expression: json
                 "lowerBound": 2,
                 "upperBound": 2
               },
-              "sourceInformation": {
-                "endColumn": 22,
-                "endLine": 30,
-                "sourceId": "multi_element.pure",
-                "startColumn": 14,
-                "startLine": 30
-              },
+              "sourceInformation": "multi_element.pure:30:14-22",
               "values": [
                 {
                   "_type": "string",
-                  "sourceInformation": {
-                    "endColumn": 12,
-                    "endLine": 30,
-                    "sourceId": "multi_element.pure",
-                    "startColumn": 5,
-                    "startLine": 30
-                  },
+                  "sourceInformation": "multi_element.pure:30:5-12",
                   "value": "Hello "
                 },
                 {
@@ -117,34 +69,16 @@ expression: json
                     {
                       "_type": "var",
                       "name": "p",
-                      "sourceInformation": {
-                        "endColumn": 17,
-                        "endLine": 30,
-                        "sourceId": "multi_element.pure",
-                        "startColumn": 16,
-                        "startLine": 30
-                      }
+                      "sourceInformation": "multi_element.pure:30:16-17"
                     }
                   ],
                   "property": "name",
-                  "sourceInformation": {
-                    "endColumn": 22,
-                    "endLine": 30,
-                    "sourceId": "multi_element.pure",
-                    "startColumn": 19,
-                    "startLine": 30
-                  }
+                  "sourceInformation": "multi_element.pure:30:19-22"
                 }
               ]
             }
           ],
-          "sourceInformation": {
-            "endColumn": 22,
-            "endLine": 30,
-            "sourceId": "multi_element.pure",
-            "startColumn": 14,
-            "startLine": 30
-          }
+          "sourceInformation": "multi_element.pure:30:14-22"
         }
       ],
       "name": "greetPerson_Person_1__String_1_",
@@ -156,13 +90,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "model::Person",
-              "sourceInformation": {
-                "endColumn": 44,
-                "endLine": 28,
-                "sourceId": "multi_element.pure",
-                "startColumn": 32,
-                "startLine": 28
-              }
+              "sourceInformation": "multi_element.pure:28:32-44"
             }
           },
           "multiplicity": {
@@ -170,39 +98,21 @@ expression: json
             "upperBound": 1
           },
           "name": "p",
-          "sourceInformation": {
-            "endColumn": 47,
-            "endLine": 28,
-            "sourceId": "multi_element.pure",
-            "startColumn": 29,
-            "startLine": 28
-          }
+          "sourceInformation": "multi_element.pure:28:29-47"
         }
       ],
       "returnGenericType": {
         "rawType": {
           "_type": "packageableType",
           "fullPath": "String",
-          "sourceInformation": {
-            "endColumn": 56,
-            "endLine": 28,
-            "sourceId": "multi_element.pure",
-            "startColumn": 51,
-            "startLine": 28
-          }
+          "sourceInformation": "multi_element.pure:28:51-56"
         }
       },
       "returnMultiplicity": {
         "lowerBound": 1,
         "upperBound": 1
       },
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 31,
-        "sourceId": "multi_element.pure",
-        "startColumn": 1,
-        "startLine": 28
-      }
+      "sourceInformation": "multi_element.pure:28:1-31:1"
     },
     {
       "_type": "sectionIndex",
@@ -217,22 +127,10 @@ expression: json
             "model::greetPerson_Person_1__String_1_"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "multi_element.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "multi_element.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "multi_element.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "multi_element.pure:16:1-7"
     }
   ],
   "serializer": {

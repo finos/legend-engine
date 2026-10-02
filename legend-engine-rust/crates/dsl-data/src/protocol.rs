@@ -23,7 +23,7 @@
 //!     "taggedValues": [],
 //!     "data": { "_type": "externalFormat", … },
 //!     "dataResolvers": [ { "_type": "referenceDataResolver", … } ],
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 //!

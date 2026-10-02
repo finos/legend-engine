@@ -8,42 +8,18 @@ expression: json
       "_type": "Enumeration",
       "name": "Color",
       "package": "model",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 22,
-        "sourceId": "enumeration.pure",
-        "startColumn": 1,
-        "startLine": 17
-      },
+      "sourceInformation": "enumeration.pure:17:1-22:1",
       "values": [
         {
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 19,
-            "sourceId": "enumeration.pure",
-            "startColumn": 5,
-            "startLine": 19
-          },
+          "sourceInformation": "enumeration.pure:19:5-7",
           "value": "RED"
         },
         {
-          "sourceInformation": {
-            "endColumn": 9,
-            "endLine": 20,
-            "sourceId": "enumeration.pure",
-            "startColumn": 5,
-            "startLine": 20
-          },
+          "sourceInformation": "enumeration.pure:20:5-9",
           "value": "GREEN"
         },
         {
-          "sourceInformation": {
-            "endColumn": 8,
-            "endLine": 21,
-            "sourceId": "enumeration.pure",
-            "startColumn": 5,
-            "startLine": 21
-          },
+          "sourceInformation": "enumeration.pure:21:5-8",
           "value": "BLUE"
         }
       ]
@@ -59,22 +35,10 @@ expression: json
             "model::Color"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "enumeration.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "enumeration.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "enumeration.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "enumeration.pure:16:1-7"
     }
   ],
   "serializer": {

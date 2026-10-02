@@ -9,32 +9,14 @@ expression: json
   "parameters": [
     {
       "_type": "integer",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 1,
-        "sourceId": "test.pure",
-        "startColumn": 1,
-        "startLine": 1
-      },
+      "sourceInformation": "test.pure:1:1-1",
       "value": 1
     },
     {
       "_type": "integer",
-      "sourceInformation": {
-        "endColumn": 5,
-        "endLine": 1,
-        "sourceId": "test.pure",
-        "startColumn": 5,
-        "startLine": 1
-      },
+      "sourceInformation": "test.pure:1:5-5",
       "value": 2
     }
   ],
-  "sourceInformation": {
-    "endColumn": 5,
-    "endLine": 1,
-    "sourceId": "test.pure",
-    "startColumn": 1,
-    "startLine": 1
-  }
+  "sourceInformation": "test.pure:1:1-5"
 }

@@ -52,6 +52,7 @@ use legend_pure_parser_api::{
     ErrorKind, ExpressionKind, ExpressionRequest, SectionError, SectionRequest, parse_expression,
     parse_section,
 };
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::fs;
@@ -251,7 +252,7 @@ fn check(
             Err(format!("rust: unsupported: {}", one_line(&e.message)))
         }
         (None, Ok(rust)) => {
-            let (java, rust) = (canonical(java), canonical(rust));
+            let (java, rust) = (canonical(compact_positions(java)), canonical(rust));
             if java == rust {
                 return Ok(());
             }
@@ -281,23 +282,63 @@ fn check(
             let Some(java_si) = error.get("sourceInformation") else {
                 return Ok(());
             };
-            let java_start = (&java_si["startLine"], &java_si["startColumn"]);
-            let rust_start = e.source_information.as_ref().map(|si| {
-                let si = serde_json::to_value(si).expect("source information serializes");
-                (si["startLine"].clone(), si["startColumn"].clone())
-            });
+            let java_start = (
+                java_si["startLine"].as_u64(),
+                java_si["startColumn"].as_u64(),
+            );
+            let rust_start = e
+                .source_information
+                .as_ref()
+                .map(|si| (u64::from(si.start_line), u64::from(si.start_column)));
             match rust_start {
-                Some((line, column)) if (&line, &column) == java_start => Ok(()),
+                Some((line, column)) if (Some(line), Some(column)) == java_start => Ok(()),
                 _ => Err(format!(
                     "error position differs: java {}:{} ({java_message}), rust {} ({})",
-                    java_start.0,
-                    java_start.1,
+                    java_si["startLine"],
+                    java_si["startColumn"],
                     rust_start.map_or_else(|| "(none)".to_string(), |(l, c)| format!("{l}:{c}")),
                     one_line(&e.message)
                 )),
             }
         }
     }
+}
+
+/// The engine's result with its position objects in the compact form the
+/// Rust parser writes, through `SourceInformation`, which reads the one and
+/// writes the other. Only the engine's side: a position the Rust parser left
+/// an object is a difference.
+fn compact_positions(value: Value) -> Value {
+    match value {
+        Value::Object(map) if is_position(&map) => {
+            let object = Value::Object(map);
+            serde_json::from_value::<SourceInformation>(object.clone()).map_or(object, |position| {
+                serde_json::to_value(position).expect("a position serializes")
+            })
+        }
+        Value::Object(map) => Value::Object(
+            map.into_iter()
+                .map(|(key, value)| (key, compact_positions(value)))
+                .collect(),
+        ),
+        Value::Array(items) => Value::Array(items.into_iter().map(compact_positions).collect()),
+        other => other,
+    }
+}
+
+/// The engine's position object: `sourceId`, `startLine`, `startColumn`,
+/// `endLine` and `endColumn`, nothing else.
+fn is_position(map: &serde_json::Map<String, Value>) -> bool {
+    map.len() == 5
+        && [
+            "sourceId",
+            "startLine",
+            "startColumn",
+            "endLine",
+            "endColumn",
+        ]
+        .iter()
+        .all(|key| map.contains_key(*key))
 }
 
 /// Drops what the engine reads back as absent: nulls (its mapper omits

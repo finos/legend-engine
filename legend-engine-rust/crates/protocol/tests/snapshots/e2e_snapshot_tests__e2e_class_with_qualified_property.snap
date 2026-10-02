@@ -14,13 +14,7 @@ expression: json
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 21,
-                "endLine": 19,
-                "sourceId": "class_with_qualified_property.pure",
-                "startColumn": 16,
-                "startLine": 19
-              }
+              "sourceInformation": "class_with_qualified_property.pure:19:16-21"
             }
           },
           "multiplicity": {
@@ -28,26 +22,14 @@ expression: json
             "upperBound": 1
           },
           "name": "firstName",
-          "sourceInformation": {
-            "endColumn": 25,
-            "endLine": 19,
-            "sourceId": "class_with_qualified_property.pure",
-            "startColumn": 5,
-            "startLine": 19
-          }
+          "sourceInformation": "class_with_qualified_property.pure:19:5-25"
         },
         {
           "genericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 20,
-                "endLine": 20,
-                "sourceId": "class_with_qualified_property.pure",
-                "startColumn": 15,
-                "startLine": 20
-              }
+              "sourceInformation": "class_with_qualified_property.pure:20:15-20"
             }
           },
           "multiplicity": {
@@ -55,13 +37,7 @@ expression: json
             "upperBound": 1
           },
           "name": "lastName",
-          "sourceInformation": {
-            "endColumn": 24,
-            "endLine": 20,
-            "sourceId": "class_with_qualified_property.pure",
-            "startColumn": 5,
-            "startLine": 20
-          }
+          "sourceInformation": "class_with_qualified_property.pure:20:5-24"
         }
       ],
       "qualifiedProperties": [
@@ -77,13 +53,7 @@ expression: json
                     "lowerBound": 3,
                     "upperBound": 3
                   },
-                  "sourceInformation": {
-                    "endColumn": 47,
-                    "endLine": 23,
-                    "sourceId": "class_with_qualified_property.pure",
-                    "startColumn": 25,
-                    "startLine": 23
-                  },
+                  "sourceInformation": "class_with_qualified_property.pure:23:25-47",
                   "values": [
                     {
                       "_type": "property",
@@ -91,34 +61,16 @@ expression: json
                         {
                           "_type": "var",
                           "name": "this",
-                          "sourceInformation": {
-                            "endColumn": 13,
-                            "endLine": 23,
-                            "sourceId": "class_with_qualified_property.pure",
-                            "startColumn": 9,
-                            "startLine": 23
-                          }
+                          "sourceInformation": "class_with_qualified_property.pure:23:9-13"
                         }
                       ],
                       "property": "firstName",
-                      "sourceInformation": {
-                        "endColumn": 23,
-                        "endLine": 23,
-                        "sourceId": "class_with_qualified_property.pure",
-                        "startColumn": 15,
-                        "startLine": 23
-                      }
+                      "sourceInformation": "class_with_qualified_property.pure:23:15-23"
                     },
                     {
                       "_type": "var",
                       "name": "sep",
-                      "sourceInformation": {
-                        "endColumn": 30,
-                        "endLine": 23,
-                        "sourceId": "class_with_qualified_property.pure",
-                        "startColumn": 27,
-                        "startLine": 23
-                      }
+                      "sourceInformation": "class_with_qualified_property.pure:23:27-30"
                     },
                     {
                       "_type": "property",
@@ -126,34 +78,16 @@ expression: json
                         {
                           "_type": "var",
                           "name": "this",
-                          "sourceInformation": {
-                            "endColumn": 38,
-                            "endLine": 23,
-                            "sourceId": "class_with_qualified_property.pure",
-                            "startColumn": 34,
-                            "startLine": 23
-                          }
+                          "sourceInformation": "class_with_qualified_property.pure:23:34-38"
                         }
                       ],
                       "property": "lastName",
-                      "sourceInformation": {
-                        "endColumn": 47,
-                        "endLine": 23,
-                        "sourceId": "class_with_qualified_property.pure",
-                        "startColumn": 40,
-                        "startLine": 23
-                      }
+                      "sourceInformation": "class_with_qualified_property.pure:23:40-47"
                     }
                   ]
                 }
               ],
-              "sourceInformation": {
-                "endColumn": 47,
-                "endLine": 23,
-                "sourceId": "class_with_qualified_property.pure",
-                "startColumn": 25,
-                "startLine": 23
-              }
+              "sourceInformation": "class_with_qualified_property.pure:23:25-47"
             }
           ],
           "name": "fullName",
@@ -164,13 +98,7 @@ expression: json
                 "rawType": {
                   "_type": "packageableType",
                   "fullPath": "String",
-                  "sourceInformation": {
-                    "endColumn": 24,
-                    "endLine": 21,
-                    "sourceId": "class_with_qualified_property.pure",
-                    "startColumn": 19,
-                    "startLine": 21
-                  }
+                  "sourceInformation": "class_with_qualified_property.pure:21:19-24"
                 }
               },
               "multiplicity": {
@@ -178,48 +106,24 @@ expression: json
                 "upperBound": 1
               },
               "name": "sep",
-              "sourceInformation": {
-                "endColumn": 27,
-                "endLine": 21,
-                "sourceId": "class_with_qualified_property.pure",
-                "startColumn": 14,
-                "startLine": 21
-              }
+              "sourceInformation": "class_with_qualified_property.pure:21:14-27"
             }
           ],
           "returnGenericType": {
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String",
-              "sourceInformation": {
-                "endColumn": 13,
-                "endLine": 24,
-                "sourceId": "class_with_qualified_property.pure",
-                "startColumn": 8,
-                "startLine": 24
-              }
+              "sourceInformation": "class_with_qualified_property.pure:24:8-13"
             }
           },
           "returnMultiplicity": {
             "lowerBound": 1,
             "upperBound": 1
           },
-          "sourceInformation": {
-            "endColumn": 17,
-            "endLine": 24,
-            "sourceId": "class_with_qualified_property.pure",
-            "startColumn": 5,
-            "startLine": 21
-          }
+          "sourceInformation": "class_with_qualified_property.pure:21:5-24:17"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 25,
-        "sourceId": "class_with_qualified_property.pure",
-        "startColumn": 1,
-        "startLine": 17
-      }
+      "sourceInformation": "class_with_qualified_property.pure:17:1-25:1"
     },
     {
       "_type": "sectionIndex",
@@ -232,22 +136,10 @@ expression: json
             "model::domain::Person"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "class_with_qualified_property.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "class_with_qualified_property.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "class_with_qualified_property.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "class_with_qualified_property.pure:16:1-7"
     }
   ],
   "serializer": {

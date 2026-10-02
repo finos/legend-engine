@@ -20,6 +20,7 @@
 //! fixture `SimpleMixedBooleanArithmeticConstraint.json`.
 
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 
 /// Renders a protocol value compactly: `plus([1, 2])`, `$x.name`, …
 /// With `positions`, operator nodes and collections carry `@line:col-line:col`.
@@ -32,9 +33,10 @@ fn show(v: &serde_json::Value, positions: bool) -> String {
         if s.is_null() {
             return "@-".to_string();
         }
+        let s: SourceInformation = serde_json::from_value(s.clone()).expect("a position");
         format!(
             "@{}:{}-{}:{}",
-            s["startLine"], s["startColumn"], s["endLine"], s["endColumn"]
+            s.start_line, s.start_column, s.end_line, s.end_column
         )
     };
     let all = |xs: &serde_json::Value| -> Vec<String> {

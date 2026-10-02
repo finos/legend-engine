@@ -20,6 +20,7 @@ use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The mapping `###Mapping\nMapping my::M\n(\n{body}\n)\n` defines.
@@ -39,11 +40,9 @@ fn error(body: &str) -> ParseError {
 }
 
 fn start(node: &Value) -> (u64, u64) {
-    let si = &node["sourceInformation"];
-    (
-        si["startLine"].as_u64().expect("line"),
-        si["startColumn"].as_u64().expect("column"),
-    )
+    let si: SourceInformation =
+        serde_json::from_value(node["sourceInformation"].clone()).expect("positioned");
+    (si.start_line.into(), si.start_column.into())
 }
 
 #[test]

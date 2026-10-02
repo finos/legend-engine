@@ -22,7 +22,7 @@
 //!     "_type": "classInstance",
 //!     "type": "SQL",
 //!     "value": { "sql": "select a from csv('a,b\n1,2')" },
-//!     "sourceInformation": { … }
+//!     "sourceInformation": "…"
 //! }
 //! ```
 

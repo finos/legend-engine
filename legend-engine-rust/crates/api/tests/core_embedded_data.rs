@@ -17,6 +17,7 @@
 //! its errors, at its positions.
 
 use legend_pure_parser_api::{ErrorKind, SectionError, SectionRequest, parse_section};
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The data line's number in the document.
@@ -53,17 +54,13 @@ fn column(data: &str, needle: &str) -> u64 {
 }
 
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| {
-        si[key]
-            .as_u64()
-            .unwrap_or_else(|| panic!("no {key} in {node}"))
-    };
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 

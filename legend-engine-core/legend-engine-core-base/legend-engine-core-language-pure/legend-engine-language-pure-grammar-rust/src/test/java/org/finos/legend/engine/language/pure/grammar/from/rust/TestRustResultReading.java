@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.junit.Assert;
@@ -57,12 +58,29 @@ public class TestRustResultReading
     @Test
     public void testErrorKeepsItsPositionWithoutSourceInformation()
     {
-        RustSectionResult result = RustSectionResult.read(json("{'error':{'kind':'parser','message':'unexpected token','sourceInformation':{'sourceId':'s','startLine':1,'startColumn':2,'endLine':3,'endColumn':4}}}"), false);
+        RustSectionResult result = RustSectionResult.read(json("{'error':{'kind':'parser','message':'unexpected token','sourceInformation':'s:1:2-3:4'}}"), false);
         Assert.assertTrue(result.isError());
         Assert.assertEquals(RustSectionResult.PARSER_ERROR, result.errorKind);
         Assert.assertEquals("unexpected token", result.errorMessage);
         Assert.assertEquals(1, result.errorSourceInformation.startLine);
         Assert.assertEquals(4, result.errorSourceInformation.endColumn);
+    }
+
+    @Test
+    public void testPositionsAreCompact()
+    {
+        RustModelResult result = RustModelResult.read(json("{'elements':[{'_type':'class','package':'a','name':'B','sourceInformation':'a.pure:1:1-3:2'}]}"), true);
+        Assert.assertFalse(result.errorMessage, result.isError());
+        SourceInformation position = result.elements.get(0).sourceInformation;
+        Assert.assertEquals(Arrays.asList("a.pure", 1, 1, 3, 2), Arrays.asList(position.sourceId, position.startLine, position.startColumn, position.endLine, position.endColumn));
+    }
+
+    @Test
+    public void testPositionNotCompactIsAnInternalError()
+    {
+        RustModelResult result = RustModelResult.read(json("{'elements':[{'_type':'class','package':'a','name':'B','sourceInformation':'a.pure:1:1'}]}"), true);
+        Assert.assertEquals(RustSectionResult.INTERNAL_ERROR, result.errorKind);
+        Assert.assertTrue(result.errorMessage, result.errorMessage.startsWith("Rust protocol JSON does not match the engine protocol: "));
     }
 
     @Test

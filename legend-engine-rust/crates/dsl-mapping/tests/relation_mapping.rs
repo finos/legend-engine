@@ -17,6 +17,7 @@
 
 use legend_pure_dsl_mapping as _;
 use legend_pure_parser_protocol::v1::convert::convert_source_file;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde_json::{Value, json};
 
 /// The mapping `###Mapping\nMapping my::M\n(\n{element}\n)\n` defines.
@@ -28,13 +29,13 @@ fn mapping(element: &str) -> Value {
 }
 
 fn span(node: &Value) -> (u64, u64, u64, u64) {
-    let si = &node["sourceInformation"];
-    let at = |key: &str| si[key].as_u64().unwrap_or_else(|| panic!("no {key}"));
+    let si: SourceInformation = serde_json::from_value(node["sourceInformation"].clone())
+        .unwrap_or_else(|e| panic!("no position in {node}: {e}"));
     (
-        at("startLine"),
-        at("startColumn"),
-        at("endLine"),
-        at("endColumn"),
+        si.start_line.into(),
+        si.start_column.into(),
+        si.end_line.into(),
+        si.end_column.into(),
     )
 }
 

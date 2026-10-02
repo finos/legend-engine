@@ -8,54 +8,24 @@ expression: json
       "_type": "profile",
       "name": "doc",
       "package": "meta::pure::profiles",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 21,
-        "sourceId": "profile.pure",
-        "startColumn": 1,
-        "startLine": 17
-      },
+      "sourceInformation": "profile.pure:17:1-21:1",
       "stereotypes": [
         {
-          "sourceInformation": {
-            "endColumn": 28,
-            "endLine": 19,
-            "sourceId": "profile.pure",
-            "startColumn": 19,
-            "startLine": 19
-          },
+          "sourceInformation": "profile.pure:19:19-28",
           "value": "deprecated"
         },
         {
-          "sourceInformation": {
-            "endColumn": 42,
-            "endLine": 19,
-            "sourceId": "profile.pure",
-            "startColumn": 31,
-            "startLine": 19
-          },
+          "sourceInformation": "profile.pure:19:31-42",
           "value": "experimental"
         }
       ],
       "tags": [
         {
-          "sourceInformation": {
-            "endColumn": 22,
-            "endLine": 20,
-            "sourceId": "profile.pure",
-            "startColumn": 12,
-            "startLine": 20
-          },
+          "sourceInformation": "profile.pure:20:12-22",
           "value": "description"
         },
         {
-          "sourceInformation": {
-            "endColumn": 28,
-            "endLine": 20,
-            "sourceId": "profile.pure",
-            "startColumn": 25,
-            "startLine": 20
-          },
+          "sourceInformation": "profile.pure:20:25-28",
           "value": "todo"
         }
       ]
@@ -71,22 +41,10 @@ expression: json
             "meta::pure::profiles::doc"
           ],
           "parserName": "Pure",
-          "sourceInformation": {
-            "endColumn": 7,
-            "endLine": 16,
-            "sourceId": "profile.pure",
-            "startColumn": 1,
-            "startLine": 16
-          }
+          "sourceInformation": "profile.pure:16:1-7"
         }
       ],
-      "sourceInformation": {
-        "endColumn": 7,
-        "endLine": 16,
-        "sourceId": "profile.pure",
-        "startColumn": 1,
-        "startLine": 16
-      }
+      "sourceInformation": "profile.pure:16:1-7"
     }
   ],
   "serializer": {
