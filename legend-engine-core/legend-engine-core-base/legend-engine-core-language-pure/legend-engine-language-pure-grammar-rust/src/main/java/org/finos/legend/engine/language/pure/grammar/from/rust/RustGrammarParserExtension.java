@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -26,6 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParse
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,7 +76,7 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
             {
                 new ObjectMapper().readTree(NativeGrammarParser.capabilities()).path("sections").forEach(type -> types.add(type.asText()));
             }
-            catch (JsonProcessingException e)
+            catch (IOException e)
             {
                 throw new IllegalStateException("cannot read the Rust parser's capabilities", e);
             }

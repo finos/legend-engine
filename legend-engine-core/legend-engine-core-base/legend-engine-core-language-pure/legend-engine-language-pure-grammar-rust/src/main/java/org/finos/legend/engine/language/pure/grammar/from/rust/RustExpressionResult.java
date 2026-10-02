@@ -14,12 +14,14 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.UnknownClassInstanceTypeException;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
+
+import java.io.IOException;
 
 /**
  * The Rust parser's result for one standalone expression, read from the JSON
@@ -57,35 +59,51 @@ final class RustExpressionResult<T>
      */
     static <T> RustExpressionResult<T> parse(RustExpression<T> expression, boolean returnSourceInfo)
     {
-        String json = NativeGrammarParser.parseExpression(expression.kind, expression.code, expression.sourceId, expression.lineOffset, expression.columnOffset);
+        return read(NativeGrammarParser.parseExpression(expression.kind, expression.code, expression.sourceId, expression.lineOffset, expression.columnOffset), expression.type, returnSourceInfo);
+    }
+
+    /**
+     * Reads the JSON {@link NativeGrammarParser#parseExpression} returns, its value as a {@code type}.
+     */
+    static <T> RustExpressionResult<T> read(byte[] json, Class<T> type, boolean returnSourceInfo)
+    {
         if (json == null)
         {
             return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser returned no result", null);
         }
-        try
+        ObjectMapper mapper = RustSectionResult.mapper(returnSourceInfo);
+        try (JsonParser parser = mapper.getFactory().createParser(json))
         {
-            JsonNode root = RustSectionResult.MAPPER.readTree(json);
-            JsonNode error = root.get("error");
-            if (error != null)
+            T value = null;
+            for (String field = RustSectionResult.firstField(parser); field != null; field = RustSectionResult.nextField(parser))
             {
-                JsonNode si = error.get("sourceInformation");
-                return error(error.path("kind").asText(RustSectionResult.INTERNAL_ERROR), error.path("message").asText(""), (si == null) ? null : RustSectionResult.MAPPER.treeToValue(si, SourceInformation.class));
+                if ("error".equals(field))
+                {
+                    RustSectionResult.RustError error = RustSectionResult.RustError.read(parser);
+                    return error(error.kind, error.message, error.sourceInformation);
+                }
+                if ("value".equals(field))
+                {
+                    value = RustSectionResult.readValue(parser, mapper, type);
+                }
+                else
+                {
+                    parser.skipChildren();
+                }
             }
-            String absentType = RustSectionResult.absentClassInstanceType(root.path("value"));
-            if (absentType != null)
-            {
-                return error(RustSectionResult.UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
-            }
-            ObjectMapper mapper = returnSourceInfo ? RustSectionResult.MAPPER : RustSectionResult.MAPPER_WITHOUT_SOURCE_INFORMATION;
-            return new RustExpressionResult<>(mapper.treeToValue(root.path("value"), expression.type), null, null, null);
+            return new RustExpressionResult<>(value, null, null, null);
+        }
+        catch (UnknownClassInstanceTypeException e)
+        {
+            return error(RustSectionResult.UNSUPPORTED, RustSectionResult.unsupported(e), null);
         }
         catch (InvalidTypeIdException e)
         {
-            return error(RustSectionResult.UNSUPPORTED, "no protocol extension for type '" + e.getTypeId() + "'", null);
+            return error(RustSectionResult.UNSUPPORTED, RustSectionResult.unsupported(e), null);
         }
-        catch (JsonProcessingException e)
+        catch (IOException e)
         {
-            return error(RustSectionResult.INTERNAL_ERROR, "Rust protocol JSON does not match the engine protocol: " + e.getOriginalMessage(), null);
+            return error(RustSectionResult.INTERNAL_ERROR, RustSectionResult.divergence(e), null);
         }
     }
 

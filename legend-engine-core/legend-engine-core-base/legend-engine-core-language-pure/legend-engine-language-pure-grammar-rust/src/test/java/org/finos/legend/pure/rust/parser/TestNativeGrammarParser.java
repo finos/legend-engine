@@ -19,6 +19,8 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Smoke test of the JNI contract: the Java declarations bind to the native library's symbols and the JSON comes
  * back. Skipped when the native library is not available, unless {@code -Dlegend.pure.rust.parser.required=true}
@@ -43,7 +45,7 @@ public class TestNativeGrammarParser
     @Test
     public void testCapabilitiesListPure()
     {
-        String capabilities = NativeGrammarParser.capabilities();
+        String capabilities = text(NativeGrammarParser.capabilities());
         Assert.assertTrue(capabilities, capabilities.contains("\"sections\":[\"Pure\""));
     }
 
@@ -51,7 +53,7 @@ public class TestNativeGrammarParser
     public void testParseSection()
     {
         // A section body as the engine hands it over: after the header, line offset -1.
-        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A {}\n", "test.pure", -1, 0);
+        String json = text(NativeGrammarParser.parseSection("Pure", "\nClass a::A {}\n", "test.pure", -1, 0));
         Assert.assertTrue(json, json.contains("\"_type\":\"class\""));
         Assert.assertTrue(json, json.contains("\"startLine\":1"));
         Assert.assertFalse(json, json.contains("\"error\""));
@@ -60,7 +62,7 @@ public class TestNativeGrammarParser
     @Test
     public void testSyntaxErrorIsReportedAsJson()
     {
-        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A { p: }\n", "test.pure", -1, 0);
+        String json = text(NativeGrammarParser.parseSection("Pure", "\nClass a::A { p: }\n", "test.pure", -1, 0));
         Assert.assertTrue(json, json.contains("\"kind\":\"parser\""));
     }
 
@@ -68,7 +70,7 @@ public class TestNativeGrammarParser
     public void testParseModel()
     {
         // A whole model, as PureGrammarParser.parseModel parses it: its sections' elements, then the section index.
-        String json = NativeGrammarParser.parseModel("Class a::A {}\n###Pure\nClass a::B {}\n", "test.pure", 0, 0);
+        String json = text(NativeGrammarParser.parseModel("Class a::A {}\n###Pure\nClass a::B {}\n", "test.pure", 0, 0));
         Assert.assertTrue(json, json.startsWith("{\"elements\":["));
         Assert.assertTrue(json, json.contains("\"_type\":\"sectionIndex\""));
         Assert.assertFalse(json, json.contains("\"error\""));
@@ -77,17 +79,30 @@ public class TestNativeGrammarParser
     @Test
     public void testParseExpression()
     {
-        String json = NativeGrammarParser.parseExpression("lambda", "x|$x + 1", "query", 0, 0);
+        String json = text(NativeGrammarParser.parseExpression("lambda", "x|$x + 1", "query", 0, 0));
         Assert.assertTrue(json, json.startsWith("{\"value\":{"));
         Assert.assertTrue(json, json.contains("\"_type\":\"lambda\""));
-        String unknown = NativeGrammarParser.parseExpression("sql", "1", "query", 0, 0);
+        String unknown = text(NativeGrammarParser.parseExpression("sql", "1", "query", 0, 0));
         Assert.assertTrue(unknown, unknown.contains("\"kind\":\"unsupported\""));
+    }
+
+    @Test
+    public void testResultIsUtf8()
+    {
+        String json = text(NativeGrammarParser.parseSection("Pure", "\nClass {meta::pure::profiles::doc.doc = 'été'} a::A {}\n", "test.pure", -1, 0));
+        Assert.assertTrue(json, json.contains("été"));
     }
 
     @Test
     public void testNullArgumentIsAnInternalError()
     {
-        String json = NativeGrammarParser.parseSection("Pure", null, "test.pure", -1, 0);
+        String json = text(NativeGrammarParser.parseSection("Pure", null, "test.pure", -1, 0));
         Assert.assertTrue(json, json.contains("\"kind\":\"internal\""));
+    }
+
+    private static String text(byte[] json)
+    {
+        Assert.assertNotNull(json);
+        return new String(json, StandardCharsets.UTF_8);
     }
 }

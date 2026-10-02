@@ -22,8 +22,9 @@ package org.finos.legend.pure.rust.parser;
  * {@code java.library.path}. Loading never throws: check {@link #isAvailable()} before calling the native
  * methods.</p>
  *
- * <p>The methods return JSON. The surface is generic: which grammars are available depends only on what was linked
- * into the native library (see {@link #capabilities()}).</p>
+ * <p>The methods return JSON as UTF-8 bytes: one copy into a Java array, which Jackson reads as it is, where a Java
+ * string would be converted twice on its way out of the library. The surface is generic: which grammars are available
+ * depends only on what was linked into the native library (see {@link #capabilities()}).</p>
  */
 public final class NativeGrammarParser
 {
@@ -66,9 +67,9 @@ public final class NativeGrammarParser
     /**
      * The grammars linked into the native library.
      *
-     * @return JSON {@code {"sections":[...],"islands":[...]}}
+     * @return JSON {@code {"sections":[...],"islands":[...]}}, UTF-8
      */
-    public static native String capabilities();
+    public static native byte[] capabilities();
 
     /**
      * Parses one grammar section body into Protocol v1 elements.
@@ -83,9 +84,9 @@ public final class NativeGrammarParser
      * @param columnOffset     added to column numbers on the body's first line
      * @return JSON {@code {"elements":[...],"imports":[...]}} ({@code imports} absent when the section's grammar has
      *     none), or {@code {"error":{"kind","message",...}}} where kind is {@code parser}, {@code unsupported} or
-     *     {@code internal}; null only if the result could not be allocated
+     *     {@code internal}; UTF-8; null only if the result could not be allocated
      */
-    public static native String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset);
+    public static native byte[] parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset);
 
     /**
      * Parses a standalone expression into Protocol v1, as the engine's {@code PureGrammarParser} parses lambdas
@@ -98,9 +99,9 @@ public final class NativeGrammarParser
      * @param lineOffset       added to every line number
      * @param columnOffset     added to column numbers on the text's first line
      * @return JSON {@code {"value":...}} (a lambda, a value specification or a root graph fetch tree), or the error
-     *     JSON {@link #parseSection} returns; null only if the result could not be allocated
+     *     JSON {@link #parseSection} returns; UTF-8; null only if the result could not be allocated
      */
-    public static native String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset);
+    public static native byte[] parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset);
 
     /**
      * Parses a whole model into Protocol v1 elements, as the engine's {@code PureGrammarParser.parseModel} does: the
@@ -112,9 +113,9 @@ public final class NativeGrammarParser
      * @param lineOffset   added to every line number
      * @param columnOffset added to column numbers on the code's first line
      * @return JSON {@code {"elements":[...]}} (the section index last), or the error JSON {@link #parseSection}
-     *     returns; null only if the result could not be allocated
+     *     returns; UTF-8; null only if the result could not be allocated
      */
-    public static native String parseModel(String code, String sourceId, int lineOffset, int columnOffset);
+    public static native byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset);
 
     private static String load()
     {

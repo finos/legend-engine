@@ -14,15 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.UnknownClassInstanceTypeException;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,7 +70,7 @@ final class RustModelResult
      */
     static RustModelResult parse(RustModel model, boolean returnSourceInfo)
     {
-        String json;
+        byte[] json;
         try
         {
             json = NativeGrammarParser.parseModel(model.code, model.sourceId, model.lineOffset, model.columnOffset);
@@ -79,39 +80,51 @@ final class RustModelResult
             // A library older than whole models: every model falls back, as its log says.
             return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser library does not parse whole models (it predates them; rebuild it): " + e.getMessage(), null);
         }
+        return read(json, returnSourceInfo);
+    }
+
+    /**
+     * Reads the JSON {@link NativeGrammarParser#parseModel} returns.
+     */
+    static RustModelResult read(byte[] json, boolean returnSourceInfo)
+    {
         if (json == null)
         {
             return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser returned no result", null);
         }
-        try
+        ObjectMapper mapper = RustSectionResult.mapper(returnSourceInfo);
+        try (JsonParser parser = mapper.getFactory().createParser(json))
         {
-            JsonNode root = RustSectionResult.MAPPER.readTree(json);
-            JsonNode error = root.get("error");
-            if (error != null)
-            {
-                JsonNode si = error.get("sourceInformation");
-                return error(error.path("kind").asText(RustSectionResult.INTERNAL_ERROR), error.path("message").asText(""), (si == null) ? null : RustSectionResult.MAPPER.treeToValue(si, SourceInformation.class));
-            }
-            String absentType = RustSectionResult.absentClassInstanceType(root.path("elements"));
-            if (absentType != null)
-            {
-                return error(RustSectionResult.UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
-            }
-            ObjectMapper mapper = returnSourceInfo ? RustSectionResult.MAPPER : RustSectionResult.MAPPER_WITHOUT_SOURCE_INFORMATION;
             List<PackageableElement> elements = new ArrayList<>();
-            for (JsonNode element : root.path("elements"))
+            for (String field = RustSectionResult.firstField(parser); field != null; field = RustSectionResult.nextField(parser))
             {
-                elements.add(mapper.treeToValue(element, PackageableElement.class));
+                if ("error".equals(field))
+                {
+                    RustSectionResult.RustError error = RustSectionResult.RustError.read(parser);
+                    return error(error.kind, error.message, error.sourceInformation);
+                }
+                if ("elements".equals(field))
+                {
+                    RustSectionResult.readElements(parser, mapper, elements);
+                }
+                else
+                {
+                    parser.skipChildren();
+                }
             }
             return new RustModelResult(elements, null, null, null);
         }
+        catch (UnknownClassInstanceTypeException e)
+        {
+            return error(RustSectionResult.UNSUPPORTED, RustSectionResult.unsupported(e), null);
+        }
         catch (InvalidTypeIdException e)
         {
-            return error(RustSectionResult.UNSUPPORTED, "no protocol extension for type '" + e.getTypeId() + "'", null);
+            return error(RustSectionResult.UNSUPPORTED, RustSectionResult.unsupported(e), null);
         }
-        catch (JsonProcessingException e)
+        catch (IOException e)
         {
-            return error(RustSectionResult.INTERNAL_ERROR, "Rust protocol JSON does not match the engine protocol: " + e.getOriginalMessage(), null);
+            return error(RustSectionResult.INTERNAL_ERROR, RustSectionResult.divergence(e), null);
         }
     }
 

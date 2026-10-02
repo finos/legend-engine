@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
@@ -32,7 +35,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.UnknownClassInstanceTypeException;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
@@ -43,11 +46,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The Rust parser's result for one section, read from the JSON {@link NativeGrammarParser#parseSection} returns and
- * deserialized into protocol objects.
+ * deserialized into protocol objects. The JSON, UTF-8 bytes, is read as a stream: each element goes straight into its
+ * protocol object, with no JSON tree in between.
  */
 final class RustSectionResult
 {
@@ -74,10 +77,9 @@ final class RustSectionResult
             .registerModule(new SimpleModule("rustParserWithoutSourceInformation")
                     .addDeserializer(SourceInformation.class, new SourceInformationAsNull()));
 
-    /**
-     * The class instance types the protocol extensions on this classpath map to protocol classes.
-     */
-    private static final Set<String> CLASS_INSTANCE_TYPES = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings().keySet();
+    private static final TypeReference<List<String>> STRINGS = new TypeReference<List<String>>()
+    {
+    };
 
     static final String PARSER_ERROR = "parser";
     static final String UNSUPPORTED = "unsupported";
@@ -118,74 +120,170 @@ final class RustSectionResult
     static RustSectionResult parse(SectionSourceCode code, boolean returnSourceInfo)
     {
         ParseTreeWalkerSourceInformation walker = code.walkerSourceInformation;
-        String json = NativeGrammarParser.parseSection(code.sectionType, code.code, walker.getSourceId(), walker.getLineOffset(), walker.getColumnOffset());
+        return read(NativeGrammarParser.parseSection(code.sectionType, code.code, walker.getSourceId(), walker.getLineOffset(), walker.getColumnOffset()), returnSourceInfo);
+    }
+
+    /**
+     * Reads the JSON {@link NativeGrammarParser#parseSection} returns.
+     */
+    static RustSectionResult read(byte[] json, boolean returnSourceInfo)
+    {
         if (json == null)
         {
             return internalError("the Rust parser returned no result");
         }
-        try
+        ObjectMapper mapper = mapper(returnSourceInfo);
+        try (JsonParser parser = mapper.getFactory().createParser(json))
         {
-            JsonNode root = MAPPER.readTree(json);
-            JsonNode error = root.get("error");
-            if (error != null)
-            {
-                JsonNode si = error.get("sourceInformation");
-                return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), error.path("kind").asText(INTERNAL_ERROR), error.path("message").asText(""), (si == null) ? null : MAPPER.treeToValue(si, SourceInformation.class));
-            }
-            String absentType = absentClassInstanceType(root.path("elements"));
-            if (absentType != null)
-            {
-                // An island whose engine extension is not on this classpath: the Java parser reports that.
-                return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
-            }
-            ObjectMapper mapper = returnSourceInfo ? MAPPER : MAPPER_WITHOUT_SOURCE_INFORMATION;
             List<PackageableElement> elements = new ArrayList<>();
-            for (JsonNode element : root.path("elements"))
-            {
-                elements.add(mapper.treeToValue(element, PackageableElement.class));
-            }
             List<String> imports = null;
-            if (root.has("imports"))
+            for (String field = firstField(parser); field != null; field = nextField(parser))
             {
-                imports = new ArrayList<>();
-                for (JsonNode i : root.get("imports"))
+                if ("error".equals(field))
                 {
-                    imports.add(i.asText());
+                    RustError error = RustError.read(parser);
+                    return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), error.kind, error.message, error.sourceInformation);
+                }
+                if ("elements".equals(field))
+                {
+                    readElements(parser, mapper, elements);
+                }
+                else if ("imports".equals(field))
+                {
+                    imports = mapper.readValue(parser, STRINGS);
+                }
+                else
+                {
+                    parser.skipChildren();
                 }
             }
             return new RustSectionResult(elements, imports, null, null, null);
         }
+        catch (UnknownClassInstanceTypeException e)
+        {
+            // An island whose engine extension is not on this classpath: the Java parser reports that.
+            return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, unsupported(e), null);
+        }
         catch (InvalidTypeIdException e)
         {
             // A type an engine extension defines, such as embedded data, and that extension is not on this classpath.
-            return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, "no protocol extension for type '" + e.getTypeId() + "'", null);
+            return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, unsupported(e), null);
         }
-        catch (JsonProcessingException e)
+        catch (IOException e)
         {
             // The Rust JSON does not deserialize into the engine's protocol classes: a protocol divergence.
-            return internalError("Rust protocol JSON does not match the engine protocol: " + e.getOriginalMessage());
+            return internalError(divergence(e));
         }
     }
 
     /**
-     * The first class instance type in {@code node} that no protocol extension on this classpath maps, if any. Islands
-     * such as {@code #TDS{…}#} belong to engine extensions: the Rust library may parse one this engine can't.
+     * The mapper reading the Rust parser's JSON: with or without the source information the Rust parser always reports.
      */
-    static String absentClassInstanceType(JsonNode node)
+    static ObjectMapper mapper(boolean returnSourceInfo)
     {
-        if ("classInstance".equals(node.path("_type").asText()) && !CLASS_INSTANCE_TYPES.contains(node.path("type").asText()))
+        return returnSourceInfo ? MAPPER : MAPPER_WITHOUT_SOURCE_INFORMATION;
+    }
+
+    /**
+     * The first field of the JSON object {@code parser} reads, which is then on the field's value; null for an empty
+     * object.
+     */
+    static String firstField(JsonParser parser) throws IOException
+    {
+        if (parser.nextToken() != JsonToken.START_OBJECT)
         {
-            return node.path("type").asText();
+            throw new JsonParseException(parser, "the Rust parser's result is not a JSON object");
         }
-        for (JsonNode child : node)
+        return nextField(parser);
+    }
+
+    /**
+     * The next field of the JSON object {@code parser} reads, which is then on the field's value; null at the object's
+     * end.
+     */
+    static String nextField(JsonParser parser) throws IOException
+    {
+        if (parser.nextToken() != JsonToken.FIELD_NAME)
         {
-            String type = absentClassInstanceType(child);
-            if (type != null)
+            return null;
+        }
+        String field = parser.currentName();
+        parser.nextToken();
+        return field;
+    }
+
+    /**
+     * Reads the array of elements {@code parser} is on, each straight into its protocol object.
+     */
+    static void readElements(JsonParser parser, ObjectMapper mapper, List<PackageableElement> elements) throws IOException
+    {
+        while (parser.nextToken() == JsonToken.START_OBJECT)
+        {
+            elements.add(readValue(parser, mapper, PackageableElement.class));
+        }
+    }
+
+    /**
+     * Reads the value {@code parser} is on. The engine's reader fails on a class instance of a type no protocol extension
+     * on this classpath maps with an {@link UnknownClassInstanceTypeException}; Jackson wraps it when the class
+     * instance is within an object, so it is rethrown as it is, however deep it was.
+     */
+    static <T> T readValue(JsonParser parser, ObjectMapper mapper, Class<T> type) throws IOException
+    {
+        try
+        {
+            return mapper.readValue(parser, type);
+        }
+        catch (JsonMappingException e)
+        {
+            if (e.getCause() instanceof UnknownClassInstanceTypeException)
             {
-                return type;
+                throw (UnknownClassInstanceTypeException) e.getCause();
             }
+            throw e;
         }
-        return null;
+    }
+
+    static String unsupported(InvalidTypeIdException e)
+    {
+        return "no protocol extension for type '" + e.getTypeId() + "'";
+    }
+
+    static String unsupported(UnknownClassInstanceTypeException e)
+    {
+        return "no protocol extension for class instance type '" + e.getType() + "'";
+    }
+
+    static String divergence(IOException e)
+    {
+        return "Rust protocol JSON does not match the engine protocol: " + ((e instanceof JsonProcessingException) ? ((JsonProcessingException) e).getOriginalMessage() : e.getMessage());
+    }
+
+    /**
+     * An error the Rust parser reports: {@code {"kind","message","sourceInformation"?}}.
+     */
+    static final class RustError
+    {
+        final String kind;
+        final String message;
+        final SourceInformation sourceInformation;
+
+        private RustError(String kind, String message, SourceInformation sourceInformation)
+        {
+            this.kind = kind;
+            this.message = message;
+            this.sourceInformation = sourceInformation;
+        }
+
+        /**
+         * Reads the error object {@code parser} is on, keeping its position whatever the caller asked for.
+         */
+        static RustError read(JsonParser parser) throws IOException
+        {
+            JsonNode error = MAPPER.readTree(parser);
+            JsonNode si = error.get("sourceInformation");
+            return new RustError(error.path("kind").asText(INTERNAL_ERROR), error.path("message").asText(""), (si == null) ? null : MAPPER.treeToValue(si, SourceInformation.class));
+        }
     }
 
     /**

@@ -182,7 +182,11 @@ forms the JNI layer returns.
 
 The Java class `org.finos.legend.pure.rust.parser.NativeGrammarParser` lives in
 the engine module `legend-engine-language-pure-grammar-rust` (below), in the
-package it had in legend-pure, which the JNI symbols' names follow:
+package it had in legend-pure, which the JNI symbols' names follow. Each
+method returns its JSON as UTF-8 bytes (`byte[]`): one copy into a Java
+array, which Jackson reads as it is, where a Java string would be converted
+twice on its way out of the library (to modified UTF-8, then to Latin-1 or
+UTF-16) and read through a `Reader`.
 
 - `capabilities()` returns `{"sections":[…],"islands":[…]}`.
 - `parseSection(sectionType, code, sourceId, lineOffset, columnOffset)`
@@ -251,6 +255,14 @@ package it had in legend-pure, which the JNI symbols' names follow:
   over is the engine's parser's in every mode, as such a section is: Java
   reads the model's section headers with a text scan, as the engine's lexer
   reads them.
+- The module reads the Rust JSON as a stream, each element straight into its
+  protocol object, with no JSON tree in between. With the bytes, that halves
+  the Java side of a Rust parse: the perf benchmark's `parser` suite measured
+  the EMIT models at 55 then 47 ms, and a 568 KB relational model at 218 then
+  193 ms.
+  The engine's reader fails on a class instance of a type no extension maps
+  with an `UnknownClassInstanceTypeException`, which the module reports as
+  `unsupported` (above).
 - The module reads the Rust JSON, and the Java results it compares with it,
   with the engine's protocol mapper, except that floats are read as exact
   `BigDecimal`s. The engine's own mapper reads a decimal through a double

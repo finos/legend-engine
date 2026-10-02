@@ -7,12 +7,15 @@ JNI bridge for the Rust grammar parser. Builds `liblegend_pure_rust_parser`
 
 ## Native entry points
 
+Each returns JSON as UTF-8 bytes, which Jackson reads as they are: one copy
+into a Java array, where a Java string would be converted twice.
+
 | Java (`static native`) | Returns |
 |---|---|
-| `String capabilities()` | `{"sections":[…],"islands":[…]}` — the grammars linked into this library |
-| `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | `{"elements":[…],"imports":[…]}` (`imports` absent for a grammar without them) or `{"error":{"kind","message","sourceInformation"?}}` |
-| `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | `{"value":…}` (`kind`: `lambda`, `valueSpecification` or `graphFetch`) or the same error JSON |
-| `String parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | `{"elements":[…]}` (a whole model, as `PureGrammarParser.parseModel` parses it: every section's elements, then the section index) or the same error JSON |
+| `byte[] capabilities()` | `{"sections":[…],"islands":[…]}` — the grammars linked into this library |
+| `byte[] parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | `{"elements":[…],"imports":[…]}` (`imports` absent for a grammar without them) or `{"error":{"kind","message","sourceInformation"?}}` |
+| `byte[] parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | `{"value":…}` (`kind`: `lambda`, `valueSpecification` or `graphFetch`) or the same error JSON |
+| `byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | `{"elements":[…]}` (a whole model, as `PureGrammarParser.parseModel` parses it: every section's elements, then the section index) or the same error JSON |
 
 `kind` is `parser` (syntax error), `unsupported` (valid input this build
 cannot convert — fall back to the Java parser) or `internal`. The contract
@@ -20,7 +23,7 @@ itself is `legend_pure_parser_api`; see `docs/engine-integration.md`.
 
 Every failure — argument errors and panics included — comes back as error
 JSON; nothing unwinds across the FFI boundary. `null` is returned only if
-the JVM cannot allocate the result string.
+the JVM cannot allocate the result array.
 
 ## Grammars and aggregators
 

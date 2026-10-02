@@ -16,14 +16,17 @@
 //!
 //! The native half of `org.finos.legend.pure.rust.parser.NativeGrammarParser`
 //! (in the engine module `legend-engine-language-pure-grammar-rust`), whose
-//! static methods return JSON strings produced by `legend_pure_parser_api`:
+//! static methods return JSON produced by `legend_pure_parser_api`, as UTF-8
+//! bytes: one copy into a Java array, which Jackson reads as it is, where a
+//! Java string would be converted twice (to modified UTF-8, then to UTF-16 or
+//! Latin-1) and read through a `Reader`:
 //!
 //! | Java | Rust |
 //! |---|---|
-//! | `String capabilities()` | [`legend_pure_parser_api::capabilities_json`] |
-//! | `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_section_json`] |
-//! | `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_expression_json`] |
-//! | `String parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_model_json`] |
+//! | `byte[] capabilities()` | [`legend_pure_parser_api::capabilities_json`] |
+//! | `byte[] parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_section_json`] |
+//! | `byte[] parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_expression_json`] |
+//! | `byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_model_json`] |
 //!
 //! The surface is generic: adding a grammar never changes it. The grammars
 //! available are whatever crates are linked into the library — here every
@@ -34,7 +37,7 @@
 //!
 //! Every failure is reported inside the returned JSON
 //! (`{"error":{"kind","message",…}}`), panics included: nothing unwinds
-//! across the FFI boundary. The only non-JSON outcome is a `null` string,
+//! across the FFI boundary. The only non-JSON outcome is a `null` array,
 //! when the JVM cannot allocate the result; Java treats it as an internal
 //! error.
 //!
@@ -46,8 +49,8 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use jni::JNIEnv;
-use jni::objects::{JClass, JString};
-use jni::sys::{jint, jstring};
+use jni::objects::{JByteArray, JClass, JString};
+use jni::sys::{jbyteArray, jint};
 use legend_pure_parser_api::{
     ErrorKind, ExpressionKind, ExpressionRequest, ModelRequest, SectionError, SectionRequest,
 };
@@ -93,21 +96,21 @@ pub fn linked_capabilities() -> legend_pure_parser_api::Capabilities {
     legend_pure_parser_api::capabilities()
 }
 
-/// `static native String capabilities()`.
+/// `static native byte[] capabilities()`.
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_capabilities<
     'local,
 >(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
-) -> jstring {
+) -> jbyteArray {
     respond(
         &mut env,
         |_| Ok(legend_pure_parser_api::capabilities_json()),
     )
 }
 
-/// `static native String parseSection(String sectionType, String code,
+/// `static native byte[] parseSection(String sectionType, String code,
 /// String sourceId, int lineOffset, int columnOffset)`.
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseSection<
@@ -120,7 +123,7 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     source_id: JString<'local>,
     line_offset: jint,
     column_offset: jint,
-) -> jstring {
+) -> jbyteArray {
     respond(&mut env, |env| {
         let section_type = java_string(env, &section_type, "sectionType")?;
         let code = java_string(env, &code, "code")?;
@@ -137,7 +140,7 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     })
 }
 
-/// `static native String parseExpression(String kind, String code,
+/// `static native byte[] parseExpression(String kind, String code,
 /// String sourceId, int lineOffset, int columnOffset)`.
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseExpression<
@@ -150,7 +153,7 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     source_id: JString<'local>,
     line_offset: jint,
     column_offset: jint,
-) -> jstring {
+) -> jbyteArray {
     respond(&mut env, |env| {
         let kind_name = java_string(env, &kind, "kind")?;
         let code = java_string(env, &code, "code")?;
@@ -174,7 +177,7 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     })
 }
 
-/// `static native String parseModel(String code, String sourceId,
+/// `static native byte[] parseModel(String code, String sourceId,
 /// int lineOffset, int columnOffset)`.
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseModel<
@@ -186,7 +189,7 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     source_id: JString<'local>,
     line_offset: jint,
     column_offset: jint,
-) -> jstring {
+) -> jbyteArray {
     respond(&mut env, |env| {
         let code = java_string(env, &code, "code")?;
         let source_id = java_string(env, &source_id, "sourceId")?;
@@ -200,11 +203,11 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
 }
 
 /// Runs `compute`, turning an argument error or a panic into the internal
-/// error JSON, and hands the result to Java.
+/// error JSON, and hands the result to Java as UTF-8 bytes.
 fn respond<'local>(
     env: &mut JNIEnv<'local>,
     compute: impl FnOnce(&mut JNIEnv<'local>) -> Result<String, String>,
-) -> jstring {
+) -> jbyteArray {
     let json = match catch_unwind(AssertUnwindSafe(|| compute(env))) {
         Ok(Ok(json)) => json,
         Ok(Err(message)) => internal_error(message),
@@ -213,8 +216,8 @@ fn respond<'local>(
             panic_message(&*panic)
         )),
     };
-    env.new_string(json)
-        .map_or(std::ptr::null_mut(), JString::into_raw)
+    env.byte_array_from_slice(json.as_bytes())
+        .map_or(std::ptr::null_mut(), JByteArray::into_raw)
 }
 
 fn java_string(env: &mut JNIEnv<'_>, value: &JString<'_>, name: &str) -> Result<String, String> {
