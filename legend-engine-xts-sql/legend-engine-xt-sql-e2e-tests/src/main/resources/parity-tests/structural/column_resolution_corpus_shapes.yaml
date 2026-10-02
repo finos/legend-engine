@@ -320,6 +320,13 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  - id: crcs_g1c_win_order_upper_keys_differing_only_by_qualifier
+    sql: "SELECT p.name AS name, d.name AS dept_name, ROW_NUMBER() OVER (ORDER BY UPPER(p.name)) AS rn_person, RANK() OVER (ORDER BY UPPER(d.name)) AS rk_dept FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "two window sort keys whose expressions differ only by table qualifier"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   - id: crcs_g1c_win_order_cast_to_date_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CAST(d.created_at AS DATE), p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CAST(col AS DATE) over a join"
