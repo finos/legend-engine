@@ -49,6 +49,10 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     @Override
     public Boolean isTestableEmpty(PackageableElement element)
     {
+        if (!(element instanceof Function))
+        {
+            return true;
+        }
         Function function = (Function) element;
         return function.tests == null || function.tests.isEmpty();
     }
@@ -56,6 +60,10 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     @Override
     public int getTestCount(PackageableElement element)
     {
+        if (!(element instanceof Function))
+        {
+            return 0;
+        }
         Function function = (Function) element;
         return function.tests == null ? 0 : function.tests.size();
     }
