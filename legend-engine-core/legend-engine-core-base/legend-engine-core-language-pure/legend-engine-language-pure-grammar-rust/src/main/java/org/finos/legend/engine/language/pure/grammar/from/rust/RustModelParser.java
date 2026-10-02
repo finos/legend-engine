@@ -77,6 +77,16 @@ final class RustModelParser implements ModelParser
         {
             return parseWithEngine(model, returnSourceInfo);
         }
+        if (!NativeGrammarParser.isAvailable())
+        {
+            // Without the library, nothing is taken over: fail rather than quietly parse with Java. The shadow
+            // comparison counts the model unavailable.
+            if (mode == RustGrammarMode.ON)
+            {
+                throw new IllegalStateException(RustGrammarMode.PROPERTY + "=on, but the Rust parser is not available: " + NativeGrammarParser.getLoadFailure());
+            }
+            return parseInShadow(model, returnSourceInfo);
+        }
         Matcher notTakenOver = sectionNotTakenOver(code);
         if (notTakenOver != null)
         {
@@ -126,10 +136,6 @@ final class RustModelParser implements ModelParser
 
     private PureModelContextData parseWithRust(RustModel model, boolean returnSourceInfo)
     {
-        if (!NativeGrammarParser.isAvailable())
-        {
-            throw new IllegalStateException(RustGrammarMode.PROPERTY + "=on, but the Rust parser is not available: " + NativeGrammarParser.getLoadFailure());
-        }
         RustModelResult result;
         try
         {

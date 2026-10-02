@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
@@ -176,7 +177,10 @@ public class TestRustSectionTakeover
     public void testCorpusDumpsTakeOverMore()
     {
         System.setProperty(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY, "Service, Diagram");
-        Assert.assertTrue(new RustGrammarParserExtension().getSectionTypes().containsAllArguments("Pure", "Service", "Diagram"));
+        ImmutableList<String> sectionTypes = new RustGrammarParserExtension().getSectionTypes();
+        Assert.assertTrue(sectionTypes.toString(), sectionTypes.containsAllArguments("Service", "Diagram"));
+        // And those the library parses, Pure first, if it loaded.
+        Assert.assertEquals(sectionTypes.toString(), NativeGrammarParser.isAvailable(), sectionTypes.contains("Pure"));
     }
 
     @Test

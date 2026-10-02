@@ -203,8 +203,9 @@ package it had in legend-pure, which the JNI symbols' names follow:
 
 - `RustGrammarParserExtension` takes over the section types the loaded
   library parses, as its `capabilities()` report them (read when the
-  extensions load; without a library, `Pure` alone, so that `on` and
-  `shadow` fail rather than quietly parse with Java), with a
+  extensions load; without a library, none: `on` mode then fails on the
+  first model, and `shadow` counts the comparisons it can't make, rather
+  than quietly parse with Java), with a
   `SectionParserOverride`, engine core's hook for
   replacing a section type's parser, whether the engine's own or another
   extension's (`###Data`, the xts sections). Each `RustSectionParser` keeps

@@ -190,6 +190,22 @@ public class TestRustModelParser
     }
 
     @Test
+    public void testWithoutTheLibraryOnModeFailsAndShadowComparesNothing() throws JsonProcessingException
+    {
+        Assume.assumeFalse("the Rust parser is available", NativeGrammarParser.isAvailable());
+        // Without the library, the extension takes nothing over.
+        Assert.assertTrue(new RustGrammarParserExtension().getSectionTypes().isEmpty());
+        PureGrammarParser parser = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), new RustGrammarParserExtension()));
+        System.setProperty(RustGrammarMode.PROPERTY, "on");
+        IllegalStateException failure = Assert.assertThrows(IllegalStateException.class, () -> parser.parseModel(TestRustSectionTakeover.SUPPORTED));
+        Assert.assertTrue(failure.getMessage(), failure.getMessage().startsWith(RustGrammarMode.PROPERTY + "=on, but the Rust parser is not available"));
+        System.setProperty(RustGrammarMode.PROPERTY, "shadow");
+        long unavailable = RustGrammarParity.modelCounts().get(RustGrammarParity.Outcome.UNAVAILABLE);
+        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(TestRustSectionTakeover.SUPPORTED), () -> parser.parseModel(TestRustSectionTakeover.SUPPORTED));
+        Assert.assertEquals(unavailable + 1, (long) RustGrammarParity.modelCounts().get(RustGrammarParity.Outcome.UNAVAILABLE));
+    }
+
+    @Test
     public void testOffModeParsesWithTheEngineParser() throws JsonProcessingException
     {
         System.setProperty(RustGrammarMode.PROPERTY, "off");

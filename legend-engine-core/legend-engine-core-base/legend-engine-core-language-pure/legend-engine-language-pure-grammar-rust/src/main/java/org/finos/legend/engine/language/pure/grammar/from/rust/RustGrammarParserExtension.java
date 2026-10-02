@@ -51,9 +51,8 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
 
     /**
      * Takes over the section types the Rust library parses, as its capabilities report them, and those
-     * {@value #CORPUS_SECTIONS_PROPERTY} adds. Without the library, {@code Pure}, which every Rust library parses: the
-     * {@code off} mode parses with Java regardless, and {@code on} and {@code shadow} fail on the first section rather
-     * than quietly parse with Java.
+     * {@value #CORPUS_SECTIONS_PROPERTY} adds: without the library, those alone. {@code on} mode then fails on the
+     * first model rather than quietly parse with Java (see {@link RustModelParser}).
      */
     public RustGrammarParserExtension()
     {
@@ -81,10 +80,6 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
             {
                 throw new IllegalStateException("cannot read the Rust parser's capabilities", e);
             }
-        }
-        else
-        {
-            types.add("Pure");
         }
         types.addAll(Arrays.asList(System.getProperty(CORPUS_SECTIONS_PROPERTY, "").split(",")));
         return types.toArray(new String[0]);
