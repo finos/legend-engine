@@ -88,7 +88,7 @@ that the system is not initialised. Start it once and leave it running.
 > **The running process keeps answering** — its classes are already loaded — so nothing
 > appears broken until the next restart, which then fails with `ClassNotFoundException` for
 > generated classes. Same failure as the IntelliJ *Clear output directory on rebuild*
-> gotcha in the root `CLAUDE.md`.
+> gotcha in the [Getting Started Guide](getting-started.md#2-clone-and-initial-build).
 >
 > You cannot avoid it by dropping `clean`: the Pure Maven plugins fail with
 > `The code repository <repo> already exists!` when building over an existing `target/`,
