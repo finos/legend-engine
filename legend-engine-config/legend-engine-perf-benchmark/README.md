@@ -9,6 +9,8 @@ rather than to "the platform". Background, measurements and the hotspots this ha
 | Phase | What it measures |
 |---|---|
 | `parse` | `PureGrammarParser.parseModel` - grammar to `PureModelContextData` |
+| `parseRust` | The same with the Rust grammar parser (`--rust`; see [Rust parser suite](#rust-parser-suite)) |
+| `rustNative` | The Rust parser's native call alone: parse, protocol conversion and JSON, without reading it in Java (`--rust`) |
 | `compile` | `Compiler.compile` - the `PureModel` constructor (multi-pass graph build and validation) |
 | `lambda` | `HelperValueSpecificationBuilder.buildLambda` - building the query lambda |
 | `extensions` | Building the Pure extension list |
@@ -64,7 +66,8 @@ binding over a D-level model).
 
 Other flags: `--dbtype H2|DuckDB|Snowflake` (plan generation works for any dialect without a
 connection), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
-(waits for a profiler to attach before measuring).
+(waits for a profiler to attach before measuring), `--parseonly` (stop after the parse phases),
+`--rust` and `--rustlib <path>` (also parse with the Rust parser, whose native library is at that path).
 
 To run a model that already exists rather than a generated one:
 
@@ -73,6 +76,59 @@ To run a model that already exists rather than a generated one:
 ```
 
 where `files.txt` lists `.pure` files one per line and `query.txt` holds the query body.
+
+## Rust parser suite
+
+`--suite parser` tracks the Rust grammar parser (`legend-engine-language-pure-grammar-rust`) against
+the engine's Java parser. Its workloads only parse. Each is parsed by both parsers (`parse` and
+`parseRust`), and the Rust parser's native call is also timed on its own (`rustNative`). The
+difference between `parseRust` and `rustNative` is what the Java side spends reading the parser's
+JSON into protocol objects.
+
+```bash
+java -Xmx8g -Xss8m -cp "legend-engine-config/legend-engine-perf-benchmark/target/classes:$(cat /tmp/cp.txt)" \
+    org.finos.legend.engine.perf.PipelineBench --suite parser \
+    --rustlib legend-engine-rust/target/release/liblegend_pure_rust_parser.dylib
+```
+
+Build the library first with `cargo build --release -p legend-pure-parser-jni` in `legend-engine-rust`.
+Without it the suite still runs, records why the Rust phases were skipped, and measures Java alone.
+`--rustlib` sets the library's location before anything loads it. Prefer it to
+`-Dlegend.pure.rust.parser.lib`, which would put a local path into the recorded `jvmArgs`.
+
+| Workload | Exercises |
+|---|---|
+| `simple@scale1000/H2`, `simple@scale3000/H2` | One large relational model, where the protocol is many times the size of its grammar |
+| `simple@scale200+relfunc/H2` | Relation function mappings: lambdas in mappings |
+| `join2@scale10+union40/H2`, `graph4@scale30/H2` | Operation mappings, and a graph fetch in the query |
+
+The Rust phases measure the Rust parser or nothing, never Java under its name.
+- **Fallback is off.** The parser normally falls back to Java when it fails; here a failure fails the
+  run.
+- **Uncovered section types are refused.** A model holding a section type the Rust parser does not
+  take over would be parsed by Java even in `on` mode, so such a workload skips its Rust phases and
+  says why (`rustParser` in its result).
+- **Elements are checked.** On each workload's first iteration, both parsers must return the same
+  elements.
+- **The Java parse is unchanged.** `parse` runs without the Rust extension, so it measures what it
+  did before the Rust parser was on this classpath.
+
+Canaries:
+
+| Canary | Guards |
+|---|---|
+| `rustParseVsJava`: `parseRust / parse` on `simple@scale3000` | the Rust parser's cost against the Java parser's (on the larger model: Java's time on the smaller one varies by ~20% between runs) |
+| `rustNativeShare`: `rustNative / parseRust` on `simple@scale3000` | where the Rust parse's time goes: the native call, or reading its JSON in Java |
+| `rustParseVsModelSize`: `parseRust(simple@scale3000) / parseRust(simple@scale1000)` | superlinear terms in the Rust parser and its protocol conversion |
+
+The suite keeps its baseline in `perf-baseline-parser.json`, since a baseline file holds one suite.
+Its defaults are 10 warmup and 20 measured iterations, and absolute deltas under 5 ms are ignored:
+the Java parser takes a few iterations to settle, and the Rust phases run to tens of milliseconds.
+The workloads are generated, so they only change when `ModelGenerator` or `QueryGenerator` do: the
+models of other suites (EMIT's, for one) would grow as features are added and move the numbers with
+them.
+
+The Pipeline Benchmark job in CI has no Rust toolchain, so it does not run this suite yet.
 
 ## Profiling
 

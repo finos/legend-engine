@@ -95,6 +95,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- the Rust grammar parser, measured against the Java one by the parser suite; it needs its
+             native library at run time (the rustlib flag), and the suite skips its phases without it -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar-rust</artifactId>
+        </dependency>
 
         <!-- grammar and store extensions discovered at runtime: dialects, and the external-format
              binding used by the semi-structured workloads -->

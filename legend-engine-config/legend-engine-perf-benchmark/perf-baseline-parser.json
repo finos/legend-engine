@@ -1,0 +1,206 @@
+{
+  "schemaVersion" : 1,
+  "suite" : "parser",
+  "environments" : {
+    "Mac OS X|aarch64|Apple M4 Max|16|8192|17" : {
+      "generatedAt" : "2026-10-02T17:07:25.901270Z",
+      "environment" : {
+        "os" : "Mac OS X",
+        "osVersion" : "26.6.2",
+        "arch" : "aarch64",
+        "cpu" : "Apple M4 Max",
+        "availableProcessors" : 16,
+        "maxHeapMb" : 8192,
+        "javaVersion" : "17.0.19",
+        "javaVendor" : "Eclipse Adoptium",
+        "jvmName" : "OpenJDK 64-Bit Server VM",
+        "jvmArgs" : "[-Xmx8g, -Xss8m]",
+        "engineVersion" : "unknown",
+        "gitCommit" : "ac35e8b7f2e8016ecf71173c358796a4baf3efc0",
+        "ci" : false,
+        "rustParser" : {
+          "available" : true,
+          "library" : "liblegend_pure_rust_parser.dylib"
+        }
+      },
+      "workloads" : [ {
+        "workload" : "simple@scale1000/H2",
+        "config" : {
+          "scale" : 1000,
+          "query" : "simple",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false,
+          "parseOnly" : true,
+          "rust" : true
+        },
+        "iterations" : 20,
+        "warmup" : 10,
+        "rustParser" : "measured",
+        "coldMs" : {
+          "parse" : 506,
+          "parseRust" : 228,
+          "rustNative" : 29
+        },
+        "warmMedianMs" : {
+          "parse" : 91,
+          "parseRust" : 48,
+          "rustNative" : 27
+        },
+        "planJsonChars" : null
+      }, {
+        "workload" : "simple@scale3000/H2",
+        "config" : {
+          "scale" : 3000,
+          "query" : "simple",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false,
+          "parseOnly" : true,
+          "rust" : true
+        },
+        "iterations" : 20,
+        "warmup" : 10,
+        "rustParser" : "measured",
+        "coldMs" : {
+          "parse" : 396,
+          "parseRust" : 156,
+          "rustNative" : 82
+        },
+        "warmMedianMs" : {
+          "parse" : 405,
+          "parseRust" : 152,
+          "rustNative" : 86
+        },
+        "planJsonChars" : null
+      }, {
+        "workload" : "simple@scale200+relfunc/H2",
+        "config" : {
+          "scale" : 200,
+          "query" : "simple",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : true,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false,
+          "parseOnly" : true,
+          "rust" : true
+        },
+        "iterations" : 20,
+        "warmup" : 10,
+        "rustParser" : "measured",
+        "coldMs" : {
+          "parse" : 79,
+          "parseRust" : 20,
+          "rustNative" : 7
+        },
+        "warmMedianMs" : {
+          "parse" : 44,
+          "parseRust" : 12,
+          "rustNative" : 6
+        },
+        "planJsonChars" : null
+      }, {
+        "workload" : "join2@scale10+union40/H2",
+        "config" : {
+          "scale" : 10,
+          "query" : "join2",
+          "dbType" : "H2",
+          "unionSets" : 40,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false,
+          "parseOnly" : true,
+          "rust" : true
+        },
+        "iterations" : 20,
+        "warmup" : 10,
+        "rustParser" : "measured",
+        "coldMs" : {
+          "parse" : 12,
+          "parseRust" : 2,
+          "rustNative" : 0
+        },
+        "warmMedianMs" : {
+          "parse" : 3,
+          "parseRust" : 1,
+          "rustNative" : 0
+        },
+        "planJsonChars" : null
+      }, {
+        "workload" : "graph4@scale30/H2",
+        "config" : {
+          "scale" : 30,
+          "query" : "graph4",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false,
+          "parseOnly" : true,
+          "rust" : true
+        },
+        "iterations" : 20,
+        "warmup" : 10,
+        "rustParser" : "measured",
+        "coldMs" : {
+          "parse" : 6,
+          "parseRust" : 3,
+          "rustNative" : 0
+        },
+        "warmMedianMs" : {
+          "parse" : 3,
+          "parseRust" : 1,
+          "rustNative" : 0
+        },
+        "planJsonChars" : null
+      } ],
+      "canaries" : [ {
+        "name" : "rustParseVsJava",
+        "phase" : "parseRust/parse",
+        "numerator" : "simple@scale3000/H2",
+        "denominator" : "simple@scale3000/H2",
+        "guards" : "the Rust parser's cost against the Java parser's",
+        "value" : 0.38
+      }, {
+        "name" : "rustNativeShare",
+        "phase" : "rustNative/parseRust",
+        "numerator" : "simple@scale3000/H2",
+        "denominator" : "simple@scale3000/H2",
+        "guards" : "the share of the Rust parse spent in the native call rather than reading its JSON in Java",
+        "value" : 0.57
+      }, {
+        "name" : "rustParseVsModelSize",
+        "phase" : "parseRust",
+        "numerator" : "simple@scale3000/H2",
+        "denominator" : "simple@scale1000/H2",
+        "guards" : "superlinear terms in the Rust parser and its protocol conversion",
+        "value" : 3.17
+      } ]
+    }
+  }
+}

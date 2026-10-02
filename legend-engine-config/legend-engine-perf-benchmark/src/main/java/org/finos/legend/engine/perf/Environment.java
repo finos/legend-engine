@@ -18,8 +18,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
 /**
  * Describes the machine and JVM a run was measured on. The fingerprint is what a baseline entry is
@@ -59,6 +61,20 @@ public class Environment
                 + environment.get("availableProcessors") + "|"
                 + environment.get("maxHeapMb") + "|"
                 + majorJavaVersion(String.valueOf(environment.get("javaVersion")));
+    }
+
+    /**
+     * Whether the Rust grammar parser's native library loaded, and from which file (its name only, so
+     * a baseline does not carry a local path). Outside the fingerprint: it says what the parser suite
+     * could measure, not what the machine is.
+     */
+    public static Map<String, Object> rustParser()
+    {
+        Map<String, Object> rust = new LinkedHashMap<>();
+        rust.put("available", NativeGrammarParser.isAvailable());
+        String library = System.getProperty(NativeGrammarParser.LIBRARY_PATH_PROPERTY);
+        rust.put("library", library == null ? NativeGrammarParser.LIBRARY_NAME + " on java.library.path" : String.valueOf(Paths.get(library).getFileName()));
+        return rust;
     }
 
     private static String majorJavaVersion(String version)
