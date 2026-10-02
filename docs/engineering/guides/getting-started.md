@@ -74,10 +74,10 @@ The Pure IDE lets you interactively develop and test Pure code without recompili
 **Program arguments:**
 
 ```text
-server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json
+server legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json
 ```
 
-Access at: <http://127.0.0.1:9200/ide>
+Access at: <http://127.0.0.1:9010/ide> (the port is `server.connector.port` in `ideLightConfig.json`).
 
 **Debugging Pure code:**
 
