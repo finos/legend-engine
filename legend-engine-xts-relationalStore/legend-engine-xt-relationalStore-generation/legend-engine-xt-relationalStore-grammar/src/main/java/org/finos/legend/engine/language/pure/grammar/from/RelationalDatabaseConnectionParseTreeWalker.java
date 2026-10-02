@@ -68,13 +68,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
         connectionValue.queryTimeOutInSeconds = queryTimeOutInSecondsCtx != null ? Integer.parseInt(queryTimeOutInSecondsCtx.INTEGER().getText()) : null;
         // timezone (optional)
         RelationalDatabaseConnectionParserGrammar.DbConnectionTimezoneContext timezoneCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbConnectionTimezone(), "timezone", connectionValue.sourceInformation);
-        if (timezoneCtx != null)
-        {
-            // A time zone is written either as a quoted zone id ('US/Arizona') or as a bare offset from UTC (-0500). The
-            // quotes are grammar syntax and not part of the id, so they have to come off: "'US/Arizona'" names no zone.
-            String tzText = timezoneCtx.TIMEZONE().getText();
-            connectionValue.timeZone = tzText.startsWith("'") ? PureGrammarParserUtility.fromGrammarString(tzText, true) : tzText;
-        }
+        connectionValue.timeZone = timezoneCtx != null ? timezoneCtx.TIMEZONE().getText() : null;
         // quoteIdentifiers (optional)
         RelationalDatabaseConnectionParserGrammar.DbQuoteIdentifiersContext quoteIdentifiersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbQuoteIdentifiers(), "quoteIdentifiers", connectionValue.sourceInformation);
         connectionValue.quoteIdentifiers = quoteIdentifiersContext != null ? Boolean.parseBoolean(quoteIdentifiersContext.BOOLEAN().getText()) : null;

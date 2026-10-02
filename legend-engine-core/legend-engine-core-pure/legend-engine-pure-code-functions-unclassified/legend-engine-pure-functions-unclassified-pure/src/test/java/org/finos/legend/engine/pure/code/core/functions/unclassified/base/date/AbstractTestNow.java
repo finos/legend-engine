@@ -20,7 +20,6 @@ import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -55,7 +54,7 @@ public abstract class AbstractTestNow extends AbstractPureTestWithCoreCompiled
         Assert.assertEquals(3, pureDate.getSubsecond().length());
 
         // Compare with before and after epoch millis
-        long actual = PureDateToJava.start().toInstant(pureDate).toEpochMilli();
+        long actual = pureDate.getCalendar().getTimeInMillis();
         Assert.assertTrue("Expected actual (" + pureDate + ") to be between " + Instant.ofEpochMilli(before) + " and " + Instant.ofEpochMilli(after), (before <= actual) && (actual <= after));
     }
 }
