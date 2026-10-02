@@ -1470,6 +1470,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
+//Only this copy is collapsed - the extend keeps the original, whose lambda resolves 'a.d' through
+//the context, so collapsing the stored parts would make it seek a column called 'a.d'.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::windowKeyColumnName(e:meta::external::query::sql::metamodel::Expression[1]):String[1]
+{
+  extensionColumnName($e->walk([
+    q:QualifiedNameReference[1] | ^QualifiedNameReference(name = ^QualifiedName(parts = $q.name.parts->joinStrings('.')))
+  ])->toOne());
+}
+
 //A plain column reference names a real column and must keep resolving through the context - that is
 //what keeps a key pointing at the right join side, and at a column the projection has renamed.
 //Anything else was materialised by extractWindowExtensionExpressions or groupByExtensions and has to
@@ -1482,15 +1491,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::materialisedWindowKeyName(e:meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[1]):String[1]
+{
+  $e->match([
+    q:QualifiedNameReference[1] | $q->extractNameFromExpression($context),
+    x:meta::external::query::sql::metamodel::Expression[1] | windowKeyColumnName($x)
+  ]);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*], context:SqlTransformContext[1]):SingleColumn[*]
 {
   let functionCall = $s.expression->cast(@FunctionCall);
   let window = $functionCall.window->map(w | getWindow($w, $context.windows));
 
-  //Left unaliased on purpose - see extensionColumnName. A plain column reference is excluded here
-  //because it already names a real column of the relation; everything else is materialised into an
-  //extend, and the key that reads it must spell it the way processExtend wrote it.
-  $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->removeDuplicates()->map(e | ^SingleColumn(expression = $e));
+  //A plain column reference is excluded here because it already names a real column of the relation;
+  //everything else is materialised into an extend named by windowKeyColumnName.
+  $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->removeDuplicates()->map(e | ^SingleColumn(expression = $e, alias = windowKeyColumnName($e)));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindow(window:meta::external::query::sql::metamodel::Window[0..1], windows:NamedWindow[*]):meta::external::query::sql::metamodel::Window[0..1]
@@ -1512,8 +1528,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   unsupported($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
   assertRelation($window.windowFrame->isEmpty() || $context.relation->isTrue(), 'window frame');
 
-  let partitions = $window.partitions->map(partition | materialisedKeyName($partition, $context));
-  let sorts = $window.orderBy->map(si | createSortItemFunctionForColumn($si, materialisedKeyName($si.sortKey, $context), $context));
+  let partitions = $window.partitions->map(partition | materialisedWindowKeyName($partition, $context));
+  let sorts = $window.orderBy->map(si | createSortItemFunctionForColumn($si, materialisedWindowKeyName($si.sortKey, $context), $context));
   let frame = createFrame($window.windowFrame);
 
   let processor = functionProcessor($functionCall.name, $context.functionProcessors);
