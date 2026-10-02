@@ -114,6 +114,7 @@ public class RustSectionParser implements SectionParser
         {
             if (RustGrammarMode.fallback())
             {
+                RustGrammarFallback.exception(describe(code), code.walkerSourceInformation.getSourceId(), e);
                 return this.javaParser.parse(code, elementConsumer, context);
             }
             throw e;
@@ -124,6 +125,7 @@ public class RustSectionParser implements SectionParser
             // that means parsing twice.
             if (RustGrammarMode.fallback())
             {
+                RustGrammarFallback.error(describe(code), code.walkerSourceInformation.getSourceId(), result.errorKind, result.errorMessage, result.errorSourceInformation);
                 return this.javaParser.parse(code, elementConsumer, context);
             }
             String message = RustSectionResult.PARSER_ERROR.equals(result.errorKind) ? result.errorMessage : ("Rust parser " + result.errorKind + " error: " + result.errorMessage);
@@ -146,6 +148,14 @@ public class RustSectionParser implements SectionParser
         section.sourceInformation = code.sourceInformation;
         result.elements.forEach(e -> section.elements.add(e.getPath()));
         return section;
+    }
+
+    /**
+     * The section, as the fallback's log names it.
+     */
+    private static String describe(SectionSourceCode code)
+    {
+        return "section " + code.sectionType;
     }
 
     private Section parseInShadow(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)

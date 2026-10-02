@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -27,14 +31,18 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
- * Whole models with the {@code rust} section parse strategy: in {@code on} mode, the Rust parser parses the whole
- * model, and the engine's parser, which splits it with ANTLR, does when the Rust parser can't; {@code shadow} compares
- * the two; {@code off} parses with the engine's parser.
+ * Whole models: in {@code on} mode, the Rust parser parses the whole model, and the engine's parser, which splits it
+ * with ANTLR, does when the Rust parser can't, or when the model holds a section type not taken over; {@code shadow}
+ * compares the two; {@code off} parses with the engine's parser.
  */
 public class TestRustModelParser
 {
@@ -45,9 +53,9 @@ public class TestRustModelParser
      */
     private static final PureGrammarParser PARTLY_TAKEN_OVER = parserTakingOver("Pure", "Data", "Connection", "Runtime");
 
+    private final ListAppender<ILoggingEvent> fallbackLog = new ListAppender<>();
     private String previousMode;
     private String previousFallback;
-    private String previousStrategy;
 
     private static PureGrammarParser parserTakingOver(String... sectionTypes)
     {
@@ -59,8 +67,8 @@ public class TestRustModelParser
     {
         this.previousMode = System.getProperty(RustGrammarMode.PROPERTY);
         this.previousFallback = System.getProperty(RustGrammarMode.FALLBACK_PROPERTY);
-        this.previousStrategy = System.getProperty(SectionParseStrategy.PROPERTY);
-        System.setProperty(SectionParseStrategy.PROPERTY, "rust");
+        this.fallbackLog.start();
+        fallbackLogger().addAppender(this.fallbackLog);
     }
 
     @After
@@ -68,7 +76,20 @@ public class TestRustModelParser
     {
         restore(RustGrammarMode.PROPERTY, this.previousMode);
         restore(RustGrammarMode.FALLBACK_PROPERTY, this.previousFallback);
-        restore(SectionParseStrategy.PROPERTY, this.previousStrategy);
+        fallbackLogger().detachAppender(this.fallbackLog);
+    }
+
+    private static Logger fallbackLogger()
+    {
+        return (Logger) LoggerFactory.getLogger(RustGrammarFallback.class);
+    }
+
+    /**
+     * The fallback's warnings so far.
+     */
+    private List<String> warnings()
+    {
+        return this.fallbackLog.list.stream().filter(e -> e.getLevel() == Level.WARN).map(ILoggingEvent::getFormattedMessage).collect(Collectors.toList());
     }
 
     private static void restore(String property, String value)
@@ -107,23 +128,42 @@ public class TestRustModelParser
     {
         requireNativeLibrary();
         System.setProperty(RustGrammarMode.PROPERTY, "on");
-        // Grammar only Java reads: a section type, and a connection type.
-        String model = TestRustSectionTakeover.MODEL + TestRustSectionTakeover.JAVA_ONLY_SECTION;
-        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(model), () -> TAKEN_OVER.parseModel(model));
-        // A section type the extension doesn't take over.
-        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(TestRustSectionTakeover.SUPPORTED), () -> PARTLY_TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED));
+        // A connection of a type only Java reads, in a section type taken over.
+        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(TestRustSectionTakeover.MODEL), () -> TAKEN_OVER.parseModel(TestRustSectionTakeover.MODEL));
+        // The model falls back, then its Connection section does.
+        List<String> warnings = warnings();
+        Assert.assertEquals(warnings.toString(), 2, warnings.size());
+        Assert.assertTrue(warnings.get(0), warnings.get(0).startsWith("Rust parser unsupported error, parsing with Java instead: no connection grammar is linked for 'TestJavaOnlyConnection'"));
+        Assert.assertTrue(warnings.get(0), warnings.get(0).contains("[model at "));
+        Assert.assertTrue(warnings.get(1), warnings.get(1).contains("[section Connection at "));
     }
 
     @Test
-    public void testWithoutFallbackRustReportsWhatItDoesNotParse()
+    public void testModelsWithSectionTypesNotTakenOverAreTheEngineParsers() throws JsonProcessingException
+    {
+        requireNativeLibrary();
+        System.setProperty(RustGrammarMode.PROPERTY, "on");
+        // Without the fallback, the Rust parser's attempt would fail: it doesn't make one.
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        String javaOnlySection = TestRustSectionTakeover.SUPPORTED + TestRustSectionTakeover.JAVA_ONLY_SECTION;
+        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(javaOnlySection), () -> TAKEN_OVER.parseModel(javaOnlySection));
+        assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(TestRustSectionTakeover.SUPPORTED), () -> PARTLY_TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED));
+        // Each names the section type, and its header's position in the document.
+        PARTLY_TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED, "model.pure", 3, 5, true);
+        Assert.assertEquals(Arrays.asList(
+                "Rust parser does not take over section type 'TestJavaOnly', parsing the model section by section instead [model at 35:1]",
+                "Rust parser does not take over section type 'Mapping', parsing the model section by section instead [model at 16:1]",
+                "Rust parser does not take over section type 'Mapping', parsing the model section by section instead [model, model.pure at 19:1]"), warnings());
+    }
+
+    @Test
+    public void testWithoutFallbackRustReportsItsErrors()
     {
         requireNativeLibrary();
         System.setProperty(RustGrammarMode.PROPERTY, "on");
         System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
-        EngineException unsupported = Assert.assertThrows(EngineException.class, () -> TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED + TestRustSectionTakeover.JAVA_ONLY_SECTION));
-        Assert.assertEquals("Rust parser unsupported error: no section grammar is linked for '###TestJavaOnly'", unsupported.getMessage());
-        EngineException notTakenOver = Assert.assertThrows(EngineException.class, () -> PARTLY_TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED));
-        Assert.assertEquals("Rust parser unsupported error: the section type 'Mapping' is not taken over", notTakenOver.getMessage());
+        EngineException unsupported = Assert.assertThrows(EngineException.class, () -> TAKEN_OVER.parseModel(TestRustSectionTakeover.MODEL));
+        Assert.assertTrue(unsupported.getMessage(), unsupported.getMessage().startsWith("Rust parser unsupported error: no connection grammar is linked for 'TestJavaOnlyConnection'"));
         // A syntax error is reported where the engine's parser reports it.
         String invalid = "Class a::A\n{\n  name: String[1]\n}\n";
         SourceInformation rust = Assert.assertThrows(EngineException.class, () -> TAKEN_OVER.parseModel(invalid)).getSourceInformation();
@@ -140,7 +180,9 @@ public class TestRustModelParser
         assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(TestRustSectionTakeover.SUPPORTED), () -> TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED));
         // Without source information: compared as called, and with positions.
         TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED, false);
-        TAKEN_OVER.parseModel(TestRustSectionTakeover.MODEL + TestRustSectionTakeover.JAVA_ONLY_SECTION);
+        TAKEN_OVER.parseModel(TestRustSectionTakeover.MODEL);
+        // Not compared: a section type is not taken over.
+        TAKEN_OVER.parseModel(TestRustSectionTakeover.SUPPORTED + TestRustSectionTakeover.JAVA_ONLY_SECTION);
         Map<RustGrammarParity.Outcome, Long> after = RustGrammarParity.modelCounts();
         Assert.assertEquals(before.get(RustGrammarParity.Outcome.MATCH) + 3, (long) after.get(RustGrammarParity.Outcome.MATCH));
         Assert.assertEquals(before.get(RustGrammarParity.Outcome.UNSUPPORTED) + 1, (long) after.get(RustGrammarParity.Outcome.UNSUPPORTED));
@@ -155,6 +197,7 @@ public class TestRustModelParser
         String model = TestRustSectionTakeover.MODEL + TestRustSectionTakeover.JAVA_ONLY_SECTION;
         assertSame(() -> TestRustSectionTakeover.JAVA.parseModel(model), () -> TAKEN_OVER.parseModel(model));
         Assert.assertEquals(before, RustGrammarParity.modelCounts());
+        Assert.assertEquals(Arrays.asList(), warnings());
     }
 
     private static void assertSame(Supplier<PureModelContextData> expected, Supplier<PureModelContextData> actual) throws JsonProcessingException

@@ -98,6 +98,7 @@ final class RustExpressionParser implements ExpressionParser
         {
             if (RustGrammarMode.fallback())
             {
+                RustGrammarFallback.exception(describe(expression), expression.sourceId, e);
                 return java.apply(returnSourceInfo);
             }
             throw e;
@@ -107,12 +108,21 @@ final class RustExpressionParser implements ExpressionParser
             // As for sections: the Java parser decides, even if that means parsing twice.
             if (RustGrammarMode.fallback())
             {
+                RustGrammarFallback.error(describe(expression), expression.sourceId, result.errorKind, result.errorMessage, result.errorSourceInformation);
                 return java.apply(returnSourceInfo);
             }
             String message = RustSectionResult.PARSER_ERROR.equals(result.errorKind) ? result.errorMessage : ("Rust parser " + result.errorKind + " error: " + result.errorMessage);
             throw new EngineException(message, result.errorSourceInformation, EngineErrorType.PARSER);
         }
         return result.value;
+    }
+
+    /**
+     * The expression, as the fallback's log names it.
+     */
+    private static String describe(RustExpression<?> expression)
+    {
+        return expression.kind;
     }
 
     private static <T> T parseInShadow(RustExpression<T> expression, boolean returnSourceInfo, Function<Boolean, T> java)

@@ -65,6 +65,16 @@ public class TestNativeGrammarParser
     }
 
     @Test
+    public void testParseModel()
+    {
+        // A whole model, as PureGrammarParser.parseModel parses it: its sections' elements, then the section index.
+        String json = NativeGrammarParser.parseModel("Class a::A {}\n###Pure\nClass a::B {}\n", "test.pure", 0, 0);
+        Assert.assertTrue(json, json.startsWith("{\"elements\":["));
+        Assert.assertTrue(json, json.contains("\"_type\":\"sectionIndex\""));
+        Assert.assertFalse(json, json.contains("\"error\""));
+    }
+
+    @Test
     public void testParseExpression()
     {
         String json = NativeGrammarParser.parseExpression("lambda", "x|$x + 1", "query", 0, 0);

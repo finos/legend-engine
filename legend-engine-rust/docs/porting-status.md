@@ -19,6 +19,7 @@ over the corpus suites before it is marked done.
 | 5 | `###Connection` and `###Runtime`, one subphase per connection grammar (below) | `dsl-connection`, `dsl-runtime`, `dsl-authentication` and the stores' crates | Done |
 | 6 | `###Service` (below) | `dsl-service` | Done |
 | 7 | The other section types, by volume, one subphase each (below) | a `dsl-*` crate per engine module | Done |
+| 8 | Whole models (`parseModel`): the engine's section split and section index, parsed in Rust in `on` mode, with no ANTLR parsing in Java (below) | `api` (+ engine core hook, grammar-rust) | Done |
 
 ## Step 4: `###Mapping`
 
@@ -322,3 +323,30 @@ with `dsl-function-activator`, their ownership a deployment's; their
 out. The section has imports (not reproduced, as in 7.11: the walker keeps
 them only when the section has a function jar).
 
+
+## Step 8: whole models
+
+`PureGrammarParser.parseModel` parses a whole model: it splits the code into
+sections with its ANTLR `CodeParserGrammar`, then parses each with its
+section type's parser. In `on` mode, the Rust parser parses the whole model
+instead, with no ANTLR parsing in Java; when it can't, the fallback parses it
+the engine's way, whose sections the Rust parser still takes over one by one
+(see `engine-integration.md`, "Engine Java side").
+
+`api::parse_model` splits the code as the engine does, by text alone
+(checked case by case against the engine: a header in a string, indented,
+nameless or followed by code, CRLF, an empty section, offsets), parses each
+section with `parse_section`, and builds the section index, its spans
+measured as the engine measures them. Two `parse_section` gaps this found are
+fixed at the source: code written on a section's header line was positioned
+after a prepended `###Type` (the body is now parsed in its type), and a `###`
+inside a body started another section (it is now a token no grammar reads,
+an error at its first `#`).
+
+Checked over every corpus suite (the 47 of the section dump) in `shadow`
+mode: 4113 models match and 390 match an error; the 6 mismatches (5 models)
+and the 26 unsupported ones hold sections the golden corpus accepts as
+divergences. The golden corpus keeps sections and expressions only: the
+whole-model path's own logic is covered by `crates/api/tests/parse_model.rs`,
+whose expectations are the engine's results, and by the shadow suites
+(`TestRustParityCoreGrammar` compares the models of the core grammar suites).

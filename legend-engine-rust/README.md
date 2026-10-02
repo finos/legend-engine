@@ -18,7 +18,7 @@ prefix, and the crates that belong to legend-pure go back there later (see
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  API: parse_section / capabilities                      │  ← engine contract (JSON)
+│  API: parse_section / parse_model / capabilities        │  ← engine contract (JSON)
 ├────────────────────────────────────────────────────────┤
 │  Grammars: dsl-{data,graph,relational,store,sql,tds}   │  ← plug-ins (parser + protocol halves)
 ├────────────────────────────────────────────────────────┤
@@ -57,7 +57,7 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 | `legend-pure-parser-lexer` | Tokenizer | ast |
 | `legend-pure-parser-parser` | Recursive-descent parser; `SectionParser` / `IslandParser` / `EmbeddedDataParser` plug-in traits | ast, lexer |
 | `legend-pure-parser-protocol` | Protocol v1 model and AST ↔ protocol conversion; `IslandProtocol` / `EmbeddedDataProtocol` / `ElementProtocol` plug-in traits | ast, `serde_json`, `linkme` |
-| `legend-pure-parser-api` | Engine-facing contract: parse one section body (with engine line/column offsets) into protocol elements, or a `parser` / `unsupported` / `internal` error; `capabilities()` | parser, protocol |
+| `legend-pure-parser-api` | Engine-facing contract: parse one section body (with engine line/column offsets) into protocol elements, or a whole model as the engine's `PureGrammarParser.parseModel` parses it (its section split and section index), or a `parser` / `unsupported` / `internal` error; `capabilities()` | parser, protocol |
 | `legend-pure-parser-jni` | JNI bridge: `liblegend_pure_rust_parser` (`cdylib` + `rlib` for aggregators) exporting `NativeGrammarParser.capabilities` / `parseSection` | api, dsl-authentication, dsl-bigquery-function, dsl-connection, dsl-data, dsl-data-space, dsl-dataquality, dsl-deephaven, dsl-diagram, dsl-elasticsearch, dsl-external-format, dsl-function-jar, dsl-generation, dsl-graph, dsl-hosted-service, dsl-mapping, dsl-memsql-function, dsl-mongodb, dsl-persistence, dsl-persistence-cloud, dsl-persistence-relational, dsl-relational, dsl-relational-snowflake, dsl-runtime, dsl-service, dsl-service-store, dsl-snowflake, dsl-store, dsl-sql, dsl-tds, dsl-text, `jni` |
 | `legend-pure-dsl-connection` | The `###Connection` section: connections, each value read by the grammar its type names, the core's model connections built in (parser + protocol) | ast, lexer, parser, protocol |
 | `legend-pure-dsl-data` | The `###Data` section: data elements and their data for other elements (parser + protocol) | ast, lexer, parser, protocol |

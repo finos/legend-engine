@@ -15,11 +15,13 @@ goes back there once its interpreter work restarts.
 ## Engine hook
 
 Engine core (legend-engine branch `rust-parser`,
-`legend-engine-language-pure-grammar`) has two hooks a ServiceLoader
+`legend-engine-language-pure-grammar`) has three hooks a ServiceLoader
 `PureGrammarParserExtension` uses to replace its parsers:
 `SectionParserOverride` replaces a section type's parser, whoever defines the
-type, and `ExpressionParserOverride` replaces the parser of standalone
-expressions. Each override receives the parser it replaces.
+type, `ExpressionParserOverride` replaces the parser of standalone
+expressions, and `ModelParserOverride` replaces the parser of whole models
+(`PureGrammarParser.parseModel`). Each override receives the parser it
+replaces.
 
 The section parser receives `SectionSourceCode`:
 
@@ -40,6 +42,24 @@ The section parser must return the section class Java's parser returns (an
 a `DefaultCodeSection` for one without, such as `###Data`), feed each
 element to the consumer, and signal errors as
 `EngineException(message, SourceInformation, PARSER)`.
+
+**Whole models:** the engine's `parseModel` puts `\n###Pure\n` in front of
+the code and splits it into sections by text alone (`CodeLexerGrammar`): a
+section starts at a line break followed by `###` and a name
+(`[A-Za-z0-9_][A-Za-z0-9_$]*`), wherever that is, inside a string too; any
+other `###` stays in its section's text, where no grammar reads it. Each
+section is then parsed by its type's section parser as above (`lineOffset`
+the header's line, counted with the default header, less two; no column
+offset, so code on a header's line is positioned from the end of the
+header), and the model gets a section index, `__internal__::SectionIndex`:
+each section's type, class, element paths and imports, both listed once,
+and span. The span is the engine walker's over the prefixed code: from the
+line break that starts the header (on the line before the header's, the
+model's column offset applying to line 1 only) to the section's last
+character (the header itself for an empty section), which ends on the line
+it starts on, its end column its start column plus its UTF-16 length. The
+Rust parser reproduces all of it (`api::parse_model`), so a model can be
+parsed with no ANTLR parsing in Java (see "Engine Java side").
 
 **Standalone expressions:** `PureGrammarParser.parseLambda`,
 `parseValueSpecification` and `parseGraphFetch` (Studio's query text goes
@@ -148,8 +168,15 @@ section contract above: `lineOffset` / `columnOffset` are applied in the
 lexer (`tokenize_with_offset`), so AST, error and protocol positions are all
 born in document coordinates; the first error wins; `Unsupported` covers
 unlinked grammars, `native function`, and offsets below `-1`. Positions are
-always emitted. `parse_section_json` / `capabilities_json` are the JSON forms
-the JNI layer returns.
+always emitted. The body is parsed in its section type
+(`parser::parse_section_body`), with no header in front of it; a `###` header
+inside it is a token no grammar reads, an error at its first `#`, as in the
+engine. `parse_model(&ModelRequest)` parses a whole model as described above:
+the engine's split, each section by `parse_section` (the first section's
+error wins; a section type without a linked grammar, or offsets below zero,
+make the model unsupported), then the section index.
+`parse_section_json` / `parse_model_json` / `capabilities_json` are the JSON
+forms the JNI layer returns.
 
 ### Generic JNI surface
 
@@ -168,6 +195,9 @@ package it had in legend-pure, which the JNI symbols' names follow:
   engine's `PureGrammarParser` does, into `{"value":…}` or the same error
   JSON. A lambda's text is a code block: one lambda is the result; other
   statements become the body of a lambda without parameters.
+- `parseModel(code, sourceId, lineOffset, columnOffset)` parses a whole
+  model as the engine's `PureGrammarParser.parseModel` does, into
+  `{"elements":[…]}`, the section index last, or the same error JSON.
 
 ### Engine Java side
 
@@ -196,6 +226,12 @@ package it had in legend-pure, which the JNI symbols' names follow:
   exception. That parses such sections twice. With `false`, the Rust
   parser's error is reported, e.g. "no island grammar is linked for
   '#GQL{…}#'; the linked ones are: …".
+- **Fallback logging.** Every fallback is logged at `WARN`, by one logger,
+  `RustGrammarFallback`: the Rust parser's error (its kind, message and
+  position) or its exception, with what was parsed (the model, a section of
+  some type, or a standalone expression of some kind) and its source id;
+  and a model left to the engine's parser because it holds a section of a
+  type not taken over, with that type and its header's position.
 - A Rust result the engine's classpath can't read is `unsupported`: a class
   instance or embedded data type no protocol extension defines (`#TDS{…}#`
   without xts-tds, `Relational #{…}#` without the relational store). Its
@@ -204,6 +240,16 @@ package it had in legend-pure, which the JNI symbols' names follow:
 - It also takes over standalone expressions with an
   `ExpressionParserOverride`: the same modes, fallback and classification
   apply to `parseLambda`, `parseValueSpecification` and `parseGraphFetch`.
+- And whole models, with a `ModelParserOverride` (`RustModelParser`). In
+  `on` mode, the Rust parser parses the whole model, with no ANTLR parsing in
+  Java; when it fails, the fallback decides, as for sections: the engine's
+  parser (ANTLR splits the model, and each section is taken over as above),
+  or the Rust error. `shadow` compares the whole model, its elements and
+  section index, besides each section; `off` parses with the engine's
+  parser. A model holding a section of a type the extension doesn't take
+  over is the engine's parser's in every mode, as such a section is: Java
+  reads the model's section headers with a text scan, as the engine's lexer
+  reads them.
 - The module reads the Rust JSON, and the Java results it compares with it,
   with the engine's protocol mapper, except that floats are read as exact
   `BigDecimal`s. The engine's own mapper reads a decimal through a double
@@ -254,7 +300,9 @@ mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-p
   (positions on) as a golden corpus (see below); needs no native library.
 - A `[rust-parser parity] {MATCH=…, ERROR_MATCH=…, MISMATCH=…, …}` summary is
   printed when the test JVM exits (it counts the as-called comparison and,
-  for suites that parse without positions, the positions comparison).
+  for suites that parse without positions, the positions comparison); whole
+  models' comparisons are counted apart, in
+  `[rust-parser parity: models] {…}`.
 
 ## Golden corpus (Rust CI)
 

@@ -32,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -193,10 +192,9 @@ public final class RustGrammarParity
     }
 
     /**
-     * Compares a whole model: all its elements, the section index included. A Rust result holding a section of a type
-     * not among {@code sectionTypes}, those taken over, is unsupported, as {@code on} mode treats it.
+     * Compares a whole model: all its elements, the section index included.
      */
-    static void compareModel(RustModel model, boolean returnSourceInfo, Collection<String> sectionTypes, PureModelContextData javaModel, RuntimeException javaError)
+    static void compareModel(RustModel model, boolean returnSourceInfo, PureModelContextData javaModel, RuntimeException javaError)
     {
         if (!NativeGrammarParser.isAvailable())
         {
@@ -204,7 +202,7 @@ public final class RustGrammarParity
             return;
         }
         Input input = Input.of(model);
-        RustModelResult rust = RustModelResult.parse(model, returnSourceInfo, sectionTypes);
+        RustModelResult rust = RustModelResult.parse(model, returnSourceInfo);
         if (rust.isUnsupported())
         {
             unsupported(MODEL_COUNTS, input, returnSourceInfo, rust.errorMessage);

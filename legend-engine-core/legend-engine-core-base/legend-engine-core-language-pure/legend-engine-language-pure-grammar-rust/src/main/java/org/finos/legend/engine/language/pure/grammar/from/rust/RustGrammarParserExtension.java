@@ -34,9 +34,8 @@ import java.util.List;
  * Takes over, with Rust-backed parsers ({@link RustSectionParser}), the section types the Rust library parses, each
  * keeping the Java parser it replaces, whether the engine's own or another extension's, and standalone expressions
  * likewise ({@link RustExpressionParser}), and whole models ({@link RustModelParser}), which the Rust parser parses
- * whole with the {@code rust} section parse strategy. In the default mode ({@code off}) everything parses exactly as
- * without this extension. The section types are fixed when the extension loads; the mode and the strategy are read on
- * every parse (see {@link RustGrammarMode} and {@link SectionParseStrategy}).
+ * whole in {@code on} mode. In the default mode ({@code off}) everything parses exactly as without this extension. The
+ * section types are fixed when the extension loads; the mode is read on every parse (see {@link RustGrammarMode}).
  */
 public class RustGrammarParserExtension implements PureGrammarParserExtension
 {

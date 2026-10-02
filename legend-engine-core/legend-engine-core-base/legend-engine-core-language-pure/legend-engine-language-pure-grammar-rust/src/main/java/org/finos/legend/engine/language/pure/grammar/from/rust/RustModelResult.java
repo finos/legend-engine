@@ -21,12 +21,9 @@ import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -68,10 +65,9 @@ final class RustModelResult
     }
 
     /**
-     * Parses {@code model} with the Rust parser. A result holding a section of a type that is not among
-     * {@code sectionTypes}, those taken over, is unsupported: such a section is parsed as without the Rust parser.
+     * Parses {@code model} with the Rust parser.
      */
-    static RustModelResult parse(RustModel model, boolean returnSourceInfo, Collection<String> sectionTypes)
+    static RustModelResult parse(RustModel model, boolean returnSourceInfo)
     {
         String json;
         try
@@ -80,8 +76,8 @@ final class RustModelResult
         }
         catch (UnsatisfiedLinkError e)
         {
-            // A library older than whole models.
-            return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser library does not parse whole models: " + e.getMessage(), null);
+            // A library older than whole models: every model falls back, as its log says.
+            return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser library does not parse whole models (it predates them; rebuild it): " + e.getMessage(), null);
         }
         if (json == null)
         {
@@ -107,11 +103,6 @@ final class RustModelResult
             {
                 elements.add(mapper.treeToValue(element, PackageableElement.class));
             }
-            String notTakenOver = sectionTypeNotIn(elements, sectionTypes);
-            if (notTakenOver != null)
-            {
-                return error(RustSectionResult.UNSUPPORTED, "the section type '" + notTakenOver + "' is not taken over", null);
-            }
             return new RustModelResult(elements, null, null, null);
         }
         catch (InvalidTypeIdException e)
@@ -122,27 +113,6 @@ final class RustModelResult
         {
             return error(RustSectionResult.INTERNAL_ERROR, "Rust protocol JSON does not match the engine protocol: " + e.getOriginalMessage(), null);
         }
-    }
-
-    /**
-     * The first section type in the section index of {@code elements} that is not among {@code sectionTypes}, if any.
-     */
-    private static String sectionTypeNotIn(List<PackageableElement> elements, Collection<String> sectionTypes)
-    {
-        for (PackageableElement element : elements)
-        {
-            if (element instanceof SectionIndex)
-            {
-                for (Section section : ((SectionIndex) element).sections)
-                {
-                    if (!sectionTypes.contains(section.parserName))
-                    {
-                        return section.parserName;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private static RustModelResult error(String kind, String message, SourceInformation sourceInformation)
