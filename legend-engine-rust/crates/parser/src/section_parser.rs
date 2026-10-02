@@ -43,6 +43,7 @@
 //! because the CLI parallelises file parsing via Rayon.
 
 use std::collections::HashSet;
+use std::sync::OnceLock;
 
 use legend_pure_parser_ast::dsl::DSLElement;
 use linkme::distributed_slice;
@@ -112,7 +113,7 @@ pub trait SectionParser: Send + Sync {
 #[distributed_slice]
 pub static SECTION_PARSERS: [&'static (dyn SectionParser + Send + Sync)] = [..];
 
-/// Discover and validate the [`SECTION_PARSERS`] slice.
+/// The [`SECTION_PARSERS`] slice, validated once per process.
 ///
 /// # Panics
 ///
@@ -120,8 +121,9 @@ pub static SECTION_PARSERS: [&'static (dyn SectionParser + Send + Sync)] = [..];
 /// section header (e.g. `###Mapping`) must dispatch to exactly one
 /// parser; collision is a misconfiguration.
 #[must_use]
-pub fn discovered_section_parsers() -> Vec<&'static (dyn SectionParser + Send + Sync)> {
-    validate_section_parsers(SECTION_PARSERS.iter().copied())
+pub fn discovered_section_parsers() -> &'static [&'static (dyn SectionParser + Send + Sync)] {
+    static DISCOVERED: OnceLock<Vec<&'static (dyn SectionParser + Send + Sync)>> = OnceLock::new();
+    DISCOVERED.get_or_init(|| validate_section_parsers(SECTION_PARSERS.iter().copied()))
 }
 
 /// Strict-validating helper factored out for unit-testing without

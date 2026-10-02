@@ -17,22 +17,24 @@
 
 use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Map, Value, json};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 
 /// An object of the engine's protocol: its type, its fields in order, and
-/// its position when the walker gives it one.
+/// its position when the walker gives it one. It serializes as the engine's
+/// JSON of it: its `_type`, its fields, its `sourceInformation`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Object {
     /// Its `_type`, when it has one.
     pub json_type: Option<&'static str>,
-    /// Its fields, named as in the protocol.
+    /// Its fields, named as in the protocol, each name once.
     pub fields: Vec<(&'static str, Field)>,
     /// Its position, when the walker gives it one.
     pub source_info: Option<SourceInfo>,
 }
 
 /// A field's value.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(untagged)]
 pub enum Field {
     /// A string.
     Text(String),
@@ -59,28 +61,20 @@ impl Object {
         self.fields.push((name, field));
         self
     }
+}
 
-    /// The engine's JSON of the object.
-    #[must_use]
-    pub fn to_json(&self) -> Value {
-        let mut json = Map::new();
+impl Serialize for Object {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(None)?;
         if let Some(json_type) = self.json_type {
-            json.insert("_type".to_string(), json!(json_type));
+            map.serialize_entry("_type", json_type)?;
         }
         for (name, field) in &self.fields {
-            let value = match field {
-                Field::Text(text) => json!(text),
-                Field::Texts(texts) => json!(texts),
-                Field::Object(object) => object.to_json(),
-            };
-            json.insert((*name).to_string(), value);
+            map.serialize_entry(name, field)?;
         }
         if let Some(source_info) = &self.source_info {
-            json.insert(
-                "sourceInformation".to_string(),
-                json!(SourceInformation::from(source_info)),
-            );
+            map.serialize_entry("sourceInformation", &SourceInformation::from(source_info))?;
         }
-        Value::Object(json)
+        map.end()
     }
 }

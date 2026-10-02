@@ -29,6 +29,7 @@
 use legend_pure_parser_ast as ast;
 use legend_pure_parser_ast::source_info::Spanned;
 use legend_pure_parser_ast::type_ref::HasMultiplicity;
+use serde::Serialize;
 
 pub use crate::error::{ConvertError, Result};
 use crate::v1;
@@ -1020,12 +1021,15 @@ fn convert_column(
 ) -> Result<v1::value_spec::ValueSpecification> {
     let mut specs = e.columns.iter().map(col_spec).collect::<Result<Vec<_>>>()?;
     let (type_name, value) = if e.is_array {
-        ("colSpecArray", serde_json::json!({ "colSpecs": specs }))
+        (
+            "colSpecArray",
+            serde_json::to_value(ColSpecArrayJson { col_specs: specs })?,
+        )
     } else {
         let spec = specs.pop().ok_or_else(|| {
             ConvertError::unsupported("a column builder without a column", &e.source_info)
         })?;
-        ("colSpec", spec)
+        ("colSpec", serde_json::to_value(spec)?)
     };
     Ok(v1::value_spec::ValueSpecification::ClassInstance(
         v1::value_spec::ClassInstance {
@@ -1038,41 +1042,40 @@ fn convert_column(
 
 /// The engine's `ColSpec` (`processOneColSpec`): a name, then a type and
 /// multiplicity or one or two lambdas, with stereotypes and tagged values.
-fn col_spec(col: &ast::expression::ColumnSpec) -> Result<serde_json::Value> {
+fn col_spec(col: &ast::expression::ColumnSpec) -> Result<ColSpecJson> {
     use ast::expression::{ColumnTypeSpec, Expression};
 
-    let lambda = |expression: &Expression| -> Result<serde_json::Value> {
+    let lambda = |expression: &Expression| -> Result<v1::value_spec::ValueSpecification> {
         if !matches!(expression, Expression::Lambda(_)) {
             return Err(ConvertError::unsupported(
                 "a column function must be a lambda",
                 expression.source_info(),
             ));
         }
-        Ok(serde_json::to_value(convert_expression_typed(expression)?)?)
+        convert_expression_typed(expression)
     };
-    let mut spec = serde_json::Map::new();
-    spec.insert("name".to_string(), col.name.to_string().into());
+    let mut spec = ColSpecJson {
+        name: col.name.to_string(),
+        generic_type: None,
+        multiplicity: None,
+        function1: None,
+        function2: None,
+        stereotypes: col.stereotypes.iter().map(Into::into).collect(),
+        tagged_values: col.tagged_values.iter().map(Into::into).collect(),
+        source_information: source_information(&col.source_info),
+    };
     match (&col.type_spec, &col.extra_function) {
         (Some(ColumnTypeSpec::Typed(type_ref, multiplicity)), _) => {
             // The engine reads a second function only after a first one.
-            spec.insert(
-                "genericType".to_string(),
-                serde_json::to_value(v1::generic_type::GenericType::from(type_ref))?,
-            );
-            if let Some(m) = multiplicity {
-                spec.insert(
-                    "multiplicity".to_string(),
-                    serde_json::to_value(v1::multiplicity::Multiplicity::from(m))?,
-                );
-            }
+            spec.generic_type = Some(v1::generic_type::GenericType::from(type_ref));
+            spec.multiplicity = multiplicity
+                .as_ref()
+                .map(v1::multiplicity::Multiplicity::from);
         }
         (Some(ColumnTypeSpec::Lambda(function1)), function2) => {
-            spec.insert(
-                "function1".to_string(),
-                lambda(&Expression::Lambda(function1.clone()))?,
-            );
+            spec.function1 = Some(lambda(&Expression::Lambda(function1.clone()))?);
             if let Some(function2) = function2 {
-                spec.insert("function2".to_string(), lambda(function2)?);
+                spec.function2 = Some(lambda(function2)?);
             }
         }
         // The parser keeps a non-lambda after `:` here.
@@ -1084,26 +1087,36 @@ fn col_spec(col: &ast::expression::ColumnSpec) -> Result<serde_json::Value> {
         }
         (None, None) => {}
     }
-    if !col.stereotypes.is_empty() {
-        let stereotypes: Vec<v1::annotation::StereotypePtr> =
-            col.stereotypes.iter().map(Into::into).collect();
-        spec.insert(
-            "stereotypes".to_string(),
-            serde_json::to_value(stereotypes)?,
-        );
-    }
-    if !col.tagged_values.is_empty() {
-        let tagged_values: Vec<v1::annotation::TaggedValue> =
-            col.tagged_values.iter().map(Into::into).collect();
-        spec.insert(
-            "taggedValues".to_string(),
-            serde_json::to_value(tagged_values)?,
-        );
-    }
-    if let Some(si) = source_information(&col.source_info) {
-        spec.insert("sourceInformation".to_string(), serde_json::to_value(si)?);
-    }
-    Ok(serde_json::Value::Object(spec))
+    Ok(spec)
+}
+
+/// The engine's `ColSpec`: a name, then a type and a multiplicity, or one
+/// or two lambdas, with stereotypes and tagged values.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ColSpecJson {
+    name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    generic_type: Option<v1::generic_type::GenericType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    multiplicity: Option<v1::multiplicity::Multiplicity>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    function1: Option<v1::value_spec::ValueSpecification>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    function2: Option<v1::value_spec::ValueSpecification>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    stereotypes: Vec<v1::annotation::StereotypePtr>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    tagged_values: Vec<v1::annotation::TaggedValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source_information: Option<v1::source_info::SourceInformation>,
+}
+
+/// The engine's `ColSpecArray`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ColSpecArrayJson {
+    col_specs: Vec<ColSpecJson>,
 }
 
 /// Converts a `NavigationPath` into a `classInstance("path", ...)`.
@@ -1150,46 +1163,54 @@ fn convert_navigation_path(
         token.start_column + 2 * length + 2,
     );
 
-    let path_steps = nav
+    let path = nav
         .path
         .iter()
         .map(|step| {
-            let parameters = step
-                .parameters
-                .iter()
-                .map(|p| navigation_parameter(p, &shift))
-                .collect::<Result<Vec<_>>>()?;
-            Ok(serde_json::json!({
-                "_type": "propertyPath",
-                "property": step.property.to_string(),
-                "parameters": parameters,
-                "sourceInformation": source_information(&shift(&step.source_info)),
-            }))
+            Ok(PropertyPathJson {
+                property: step.property.to_string(),
+                parameters: step
+                    .parameters
+                    .iter()
+                    .map(|p| navigation_parameter(p, &shift))
+                    .collect::<Result<_>>()?,
+                source_information: source_information(&shift(&step.source_info)),
+            })
         })
-        .collect::<Result<Vec<serde_json::Value>>>()?;
-    let mut value_map = serde_json::Map::new();
-    value_map.insert(
-        "startType".to_string(),
-        serde_json::Value::String(nav.start_type.full_path()),
-    );
-    value_map.insert("path".to_string(), serde_json::Value::Array(path_steps));
-    if let Some(alias) = &nav.name {
-        value_map.insert(
-            "name".to_string(),
-            serde_json::Value::String(alias.to_string()),
-        );
-    }
-    value_map.insert(
-        "sourceInformation".to_string(),
-        serde_json::to_value(source_information(&path_si))?,
-    );
+        .collect::<Result<_>>()?;
+    let value = NavigationPathJson {
+        start_type: nav.start_type.full_path(),
+        path,
+        name: nav.name.as_ref().map(ToString::to_string),
+        source_information: source_information(&path_si),
+    };
     Ok(v1::value_spec::ValueSpecification::ClassInstance(
         v1::value_spec::ClassInstance {
             type_name: "path".to_string(),
-            value: serde_json::Value::Object(value_map),
+            value: serde_json::to_value(value)?,
             source_information: source_information(&path_si),
         },
     ))
+}
+
+/// The engine's `Path`, a navigation path's class instance value.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NavigationPathJson {
+    start_type: String,
+    path: Vec<PropertyPathJson>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+    source_information: Option<v1::source_info::SourceInformation>,
+}
+
+/// The engine's `PropertyPathElement`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "propertyPath", rename_all = "camelCase")]
+struct PropertyPathJson {
+    property: String,
+    parameters: Vec<v1::value_spec::ValueSpecification>,
+    source_information: Option<v1::source_info::SourceInformation>,
 }
 
 /// A navigation path step's parameter (the engine's `NavigationParseTreeWalker`):
@@ -1197,8 +1218,8 @@ fn convert_navigation_path(
 fn navigation_parameter(
     parameter: &ast::expression::Expression,
     shift: &impl Fn(&ast::SourceInfo) -> ast::SourceInfo,
-) -> Result<serde_json::Value> {
-    let value = match parameter {
+) -> Result<v1::value_spec::ValueSpecification> {
+    Ok(match parameter {
         ast::expression::Expression::Collection(collection) => {
             v1::value_spec::ValueSpecification::Collection(v1::value_spec::ProtocolCollection {
                 multiplicity: collection_multiplicity(collection.elements.len()),
@@ -1211,8 +1232,7 @@ fn navigation_parameter(
             })
         }
         scalar => navigation_scalar(scalar, shift)?,
-    };
-    Ok(serde_json::to_value(value)?)
+    })
 }
 
 /// A literal (dates as date-times without their `%`), `%latest`, or an enum
@@ -1288,11 +1308,51 @@ pub fn convert_element(elem: &ast::element::Element) -> Result<v1::element::Pack
             p.source_info(),
         )),
         // Section-grammar elements are converted by their owning crate's
-        // registered `ElementProtocol`.
-        Element::DSLElement(e) => Ok(PackageableElement::Extension(
-            crate::element_protocol::convert_dsl_element(e.as_ref())?,
-        )),
+        // registered `ElementProtocol`, which writes JSON text: read back here,
+        // for this value of the element (`convert_element_json` keeps the text).
+        Element::DSLElement(e) => Ok(PackageableElement::Extension(serde_json::from_str(
+            crate::element_protocol::convert_dsl_element(e.as_ref())?.get(),
+        )?)),
     }
+}
+
+/// An element's protocol JSON, written once as text, and its path as the
+/// engine's `getPath()` makes it, for a model's section index.
+#[derive(Debug)]
+pub struct ElementJson {
+    /// The element's path: its name, behind its package if it has one; a
+    /// function's name includes its signature.
+    pub path: String,
+    /// The element's protocol JSON object.
+    pub json: Box<serde_json::value::RawValue>,
+}
+
+/// [`convert_element`] as JSON text, without building a JSON value first: a
+/// section grammar's element as its converter writes it, a core element
+/// serialized.
+///
+/// # Errors
+///
+/// As for [`convert_element`].
+pub fn convert_element_json(elem: &ast::element::Element) -> Result<ElementJson> {
+    use ast::element::PackageableElement as _;
+
+    if let ast::element::Element::DSLElement(element) = elem {
+        let name = element.name();
+        let path = match element.package() {
+            Some(package) => format!("{package}::{name}"),
+            None => name.to_string(),
+        };
+        return Ok(ElementJson {
+            path,
+            json: crate::element_protocol::convert_dsl_element(element.as_ref())?,
+        });
+    }
+    let protocol = convert_element(elem)?;
+    Ok(ElementJson {
+        path: protocol.path(),
+        json: serde_json::value::to_raw_value(&protocol)?,
+    })
 }
 
 fn convert_class(c: &ast::element::ClassDef) -> Result<v1::element::ProtocolClass> {

@@ -17,7 +17,7 @@
 # `cargo build` / `cargo test` don't get clippy lints emitted as unknown-lints
 # by base rustc.
 # Usage:
-#   cargo lint-lib    — strict lint (library code only, no unwrap/expect)
+#   cargo lint-lib    — strict lint (library code only: no unwrap/expect, no json!)
 #   cargo lint        — standard lint (all targets, general clippy + pedantic)
 #   cargo audit       — full quality check (lint + copyright + build)
 #
@@ -39,11 +39,14 @@
 #                                   parity with sibling impls
 #   implicit_hasher               — rarely a real bug for our HashMaps
 #   trivially_copy_pass_by_ref    — micro-opt; readability wins
+#   disallowed_macros             — `serde_json::json!` (clippy.toml) is
+#                                   denied in library code by `lint-lib`;
+#                                   tests keep it for the JSON they expect
 #
 # Anything else under pedantic stays a warning. Real bugs should fall
 # under `clippy::all` (warn) or the strict `lint-lib` gate (deny).
 [alias]
-lint-lib = "clippy --lib --all -- -D clippy::unwrap_used -D clippy::expect_used"
+lint-lib = "clippy --lib --all -- -D clippy::unwrap_used -D clippy::expect_used -D clippy::disallowed_macros"
 lint     = """clippy --all-targets -- -W clippy::all -W clippy::pedantic \
               -A clippy::doc_markdown \
               -A clippy::cast_possible_truncation \
@@ -57,5 +60,6 @@ lint     = """clippy --all-targets -- -W clippy::all -W clippy::pedantic \
               -A clippy::module_name_repetitions \
               -A clippy::unused_self \
               -A clippy::implicit_hasher \
-              -A clippy::trivially_copy_pass_by_ref"""
+              -A clippy::trivially_copy_pass_by_ref \
+              -A clippy::disallowed_macros"""
 audit    = ["lint-lib", "lint", "test --all"]

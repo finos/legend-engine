@@ -25,7 +25,7 @@ use legend_pure_parser_protocol::element_protocol::{
     ConvertError, ELEMENT_PROTOCOLS, ElementProtocol, Result,
 };
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{Diagram, SECTION_KIND};
 use crate::read::diagram;
@@ -92,7 +92,7 @@ impl ElementProtocol for DiagramProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let diagram = element.as_any().downcast_ref::<Diagram>().ok_or_else(|| {
             ConvertError::plugin(
                 format!(
@@ -102,16 +102,19 @@ impl ElementProtocol for DiagramProtocol {
                 None,
             )
         })?;
-        let mut json = diagram.record.to_json()?;
-        json["package"] = json!(
-            diagram
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(diagram.name.value.as_str());
-        Ok(json)
+        let json = diagram
+            .record
+            .converted()?
+            .with(
+                "package",
+                diagram
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", diagram.name.value.as_str());
+        Ok(to_raw_value(&json)?)
     }
 }
 

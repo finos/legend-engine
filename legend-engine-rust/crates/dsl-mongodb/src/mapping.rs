@@ -40,7 +40,8 @@ use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::words::{eat_command, identifier, qualified_name};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 /// The element type this grammar reads.
@@ -125,7 +126,7 @@ impl MappingElementGrammar for MongoDbMappingGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -137,23 +138,43 @@ impl MappingElementGrammar for MongoDbMappingGrammar {
                 )
             })?;
         let header = &element.header;
-        let mut json = json!({
-            "_type": TYPE_NAME,
-            "class": header.target.path,
-            "root": header.root,
-        });
-        if let Some(id) = &header.id {
-            json["id"] = json!(id.text.as_str());
-        }
-        if let [binding] = body.bindings.as_slice() {
-            json["bindingPath"] = json!(binding);
-        }
-        if let [collection] = body.main_collections.as_slice() {
-            json["mainCollectionName"] = json!(collection.name.as_str());
-            json["storePath"] = json!(collection.store);
-        }
-        Ok((MappingElementKind::Class, json))
+        let main_collection = match body.main_collections.as_slice() {
+            [collection] => Some(collection),
+            _ => None,
+        };
+        let json = ClassMappingJson {
+            class_mapping_type: TYPE_NAME,
+            class: &header.target.path,
+            root: header.root,
+            id: header.id.as_ref().map(|id| id.text.as_str()),
+            binding_path: match body.bindings.as_slice() {
+                [binding] => Some(binding),
+                _ => None,
+            },
+            main_collection_name: main_collection.map(|collection| collection.name.as_str()),
+            store_path: main_collection.map(|collection| collection.store.as_str()),
+        };
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
+}
+
+/// The engine's `RootMongoDBClassMapping`: one binding and one main
+/// collection, when there are.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClassMappingJson<'a> {
+    #[serde(rename = "_type")]
+    class_mapping_type: &'static str,
+    class: &'a str,
+    root: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    binding_path: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    main_collection_name: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    store_path: Option<&'a str>,
 }
 
 /// `[my::Db] name`, then up to `scope` names, each after a `.`.

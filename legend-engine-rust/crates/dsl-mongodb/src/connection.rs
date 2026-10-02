@@ -46,7 +46,8 @@ use legend_pure_parser_parser::{Island, ParserContext, string_value};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 type R<T> = Result<T, ParseError>;
 
@@ -145,22 +146,63 @@ impl ConnectionValueGrammar for MongoDbConnectionGrammar {
                     Some(&value.source_info),
                 )
             })?;
-        let mut json = json!({
-            "_type": TYPE_NAME,
-            "type": "MongoDb",
-            "dataSourceSpecification": {
-                "databaseName": connection.database,
-                "serverURLs": connection.servers.iter().map(|(host, port)| json!({"baseUrl": host, "port": port})).collect::<Vec<_>>(),
+        Ok(serde_json::to_value(MongoDbConnectionJson {
+            connection_type: TYPE_NAME,
+            database_type: "MongoDb",
+            data_source_specification: DataSourceJson {
+                database_name: &connection.database,
+                server_urls: connection
+                    .servers
+                    .iter()
+                    .map(|(host, port)| ServerUrlJson {
+                        base_url: host,
+                        port: *port,
+                    })
+                    .collect(),
             },
-            "authenticationSpecification": connection.authentication.to_json(),
-            "sourceInformation": SourceInformation::from(&value.source_info),
-        });
-        if let Some((path, source_info)) = &connection.store {
-            json["element"] = json!(path);
-            json["elementSourceInformation"] = json!(SourceInformation::from(source_info));
-        }
-        Ok(json)
+            authentication_specification: &connection.authentication,
+            source_information: SourceInformation::from(&value.source_info),
+            element: connection.store.as_ref().map(|(path, _)| path.as_str()),
+            element_source_information: connection
+                .store
+                .as_ref()
+                .map(|(_, source_info)| SourceInformation::from(source_info)),
+        })?)
     }
+}
+
+/// The engine's `MongoDBConnection`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MongoDbConnectionJson<'a> {
+    #[serde(rename = "_type")]
+    connection_type: &'static str,
+    #[serde(rename = "type")]
+    database_type: &'static str,
+    data_source_specification: DataSourceJson<'a>,
+    authentication_specification: &'a Object,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element_source_information: Option<SourceInformation>,
+}
+
+/// The engine's `MongoDatabase` data source specification.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DataSourceJson<'a> {
+    database_name: &'a str,
+    #[serde(rename = "serverURLs")]
+    server_urls: Vec<ServerUrlJson<'a>>,
+}
+
+/// A server's URL.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServerUrlJson<'a> {
+    base_url: &'a str,
+    port: i64,
 }
 
 /// `[ host:port, … ]`, at least one.

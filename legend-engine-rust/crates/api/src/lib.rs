@@ -50,10 +50,13 @@ use legend_pure_parser_parser::island::discovered_island_parsers;
 use legend_pure_parser_parser::section_parser::discovered_section_parsers;
 use legend_pure_parser_protocol::ConvertError;
 use legend_pure_parser_protocol::island_protocol::discovered_island_protocols;
-use legend_pure_parser_protocol::v1::convert::{convert_element, convert_expression_typed};
+use legend_pure_parser_protocol::v1::convert::{
+    ElementJson, convert_element_json, convert_expression_typed,
+};
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
 use serde::Serialize;
+use serde_json::value::RawValue;
 
 /// The section type whose body is the core Pure grammar.
 pub const PURE_SECTION: &str = "Pure";
@@ -164,12 +167,36 @@ impl From<ConvertError> for SectionError {
 
 /// Parses one section body into protocol elements.
 ///
+/// [`parse_section_json`] writes the same elements as JSON text without
+/// building values first; this reads that text back.
+///
 /// # Errors
 ///
 /// The first problem found, as a [`SectionError`]: a syntax error
 /// ([`ErrorKind::Parser`]), input this build cannot convert
 /// ([`ErrorKind::Unsupported`]), or an internal failure.
 pub fn parse_section(request: &SectionRequest<'_>) -> Result<SectionResult, SectionError> {
+    let section = section_json(request)?;
+    Ok(SectionResult {
+        elements: section
+            .elements
+            .iter()
+            .map(|element| value(&element.json))
+            .collect::<Result<_, _>>()?,
+        imports: section.imports,
+    })
+}
+
+/// A section's elements as JSON text, written once, with their paths.
+pub(crate) struct SectionJson {
+    /// The elements, in source order.
+    pub(crate) elements: Vec<ElementJson>,
+    /// As [`SectionResult::imports`].
+    pub(crate) imports: Option<Vec<String>>,
+}
+
+/// [`parse_section`]'s elements as JSON text, written once.
+pub(crate) fn section_json(request: &SectionRequest<'_>) -> Result<SectionJson, SectionError> {
     let offset = source_offset(request.line_offset, request.column_offset)?;
     require_linked(request.section_type)?;
     let has_imports = request.section_type == PURE_SECTION
@@ -196,16 +223,23 @@ pub fn parse_section(request: &SectionRequest<'_>) -> Result<SectionResult, Sect
     for section in &file.sections {
         imports.extend(section.imports.iter().map(|i| i.path.to_string()));
         for element in &section.elements {
-            let protocol = convert_element(element)?;
-            let json = serde_json::to_value(&protocol)
-                .map_err(|e| SectionError::from(ConvertError::from(e)))?;
-            elements.push(json);
+            elements.push(convert_element_json(element)?);
         }
     }
-    Ok(SectionResult {
+    Ok(SectionJson {
         elements,
         imports: has_imports.then_some(imports),
     })
+}
+
+/// JSON text read back as a value, for the functions that return values.
+fn value(json: &RawValue) -> Result<serde_json::Value, SectionError> {
+    serde_json::from_str(json.get()).map_err(|e| SectionError::from(ConvertError::from(e)))
+}
+
+/// `value` written as JSON text.
+fn raw(value: &impl Serialize) -> Result<Box<RawValue>, SectionError> {
+    serde_json::value::to_raw_value(value).map_err(|e| SectionError::from(ConvertError::from(e)))
 }
 
 /// Which standalone expression to parse, as the engine's `PureGrammarParser`
@@ -260,6 +294,11 @@ pub struct ExpressionRequest<'a> {
 pub fn parse_expression(
     request: &ExpressionRequest<'_>,
 ) -> Result<serde_json::Value, SectionError> {
+    value(&expression_json(request)?)
+}
+
+/// [`parse_expression`]'s JSON, written once as text.
+fn expression_json(request: &ExpressionRequest<'_>) -> Result<Box<RawValue>, SectionError> {
     use legend_pure_parser_parser::{parse_code_block, parse_standalone_expression};
 
     let offset = source_offset(request.line_offset, request.column_offset)?;
@@ -277,10 +316,10 @@ pub fn parse_expression(
         ExpressionKind::GraphFetch => {
             let expression = parse_standalone_expression(code, source_id, offset)
                 .map_err(|e| parse_error(&e))?;
-            return graph_fetch_tree(&expression);
+            return raw(&graph_fetch_tree(&expression)?);
         }
     };
-    serde_json::to_value(&value).map_err(|e| SectionError::from(ConvertError::from(e)))
+    raw(&value)
 }
 
 /// The engine's `concreteFunctionDefinition`: a code block that is one
@@ -415,36 +454,71 @@ pub fn capabilities_json() -> String {
 /// `{"error":{"kind","message","sourceInformation"?}}` on failure.
 #[must_use]
 pub fn parse_section_json(request: &SectionRequest<'_>) -> String {
-    match parse_section(request) {
-        Ok(result) => to_json(&result),
+    match section_json(request) {
+        Ok(section) => to_json(&SectionText {
+            elements: section
+                .elements
+                .iter()
+                .map(|element| element.json.as_ref())
+                .collect(),
+            imports: section.imports.as_deref(),
+        }),
         Err(error) => error_json(&error),
     }
+}
+
+/// [`parse_section_json`]'s success shape.
+#[derive(Serialize)]
+struct SectionText<'a> {
+    elements: Vec<&'a RawValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    imports: Option<&'a [String]>,
 }
 
 /// [`parse_model`] as a JSON string: `{"elements":[…]}` on success, the
 /// section index last, the [`parse_section_json`] error shape on failure.
 #[must_use]
 pub fn parse_model_json(request: &ModelRequest<'_>) -> String {
-    match parse_model(request) {
-        Ok(result) => to_json(&result),
+    match model::model_json(request) {
+        Ok(elements) => to_json(&ModelText {
+            elements: elements.iter().map(AsRef::as_ref).collect(),
+        }),
         Err(error) => error_json(&error),
     }
+}
+
+/// [`parse_model_json`]'s success shape.
+#[derive(Serialize)]
+struct ModelText<'a> {
+    elements: Vec<&'a RawValue>,
 }
 
 /// [`parse_expression`] as a JSON string: `{"value":…}` on success, the
 /// [`parse_section_json`] error shape on failure.
 #[must_use]
 pub fn parse_expression_json(request: &ExpressionRequest<'_>) -> String {
-    match parse_expression(request) {
-        Ok(value) => to_json(&serde_json::json!({ "value": value })),
+    match expression_json(request) {
+        Ok(value) => to_json(&ExpressionResult { value: &value }),
         Err(error) => error_json(&error),
     }
+}
+
+/// [`parse_expression_json`]'s success shape, `{"value":…}`.
+#[derive(Serialize)]
+struct ExpressionResult<'a> {
+    value: &'a RawValue,
+}
+
+/// The [`parse_section_json`] error shape, `{"error":…}`.
+#[derive(Serialize)]
+struct ErrorResult<'a> {
+    error: &'a SectionError,
 }
 
 /// Renders `error` in the [`parse_section_json`] error shape.
 #[must_use]
 pub fn error_json(error: &SectionError) -> String {
-    to_json(&serde_json::json!({ "error": error }))
+    to_json(&ErrorResult { error })
 }
 
 fn to_json<T: Serialize>(value: &T) -> String {

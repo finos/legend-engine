@@ -39,7 +39,8 @@ use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
 use crate::grammar::{ElementSpan, MappingElementGrammar, MappingElementKind};
@@ -127,7 +128,7 @@ impl MappingElementGrammar for XStoreGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -146,62 +147,103 @@ impl MappingElementGrammar for XStoreGrammar {
                 let (source, target) = mapping.ids.as_ref().map_or(("", ""), |(source, target)| {
                     (source.text.as_str(), target.text.as_str())
                 });
-                Ok(json!({
-                    "_type": "xStorePropertyMapping",
-                    "property": {
-                        "class": association.path,
-                        "property": mapping.property.path,
-                        "sourceInformation": position(&mapping.property.source_info),
+                Ok(XStorePropertyMappingJson {
+                    property: PropertyPointerJson {
+                        class: &association.path,
+                        property: &mapping.property.path,
+                        source_information: SourceInformation::from(&mapping.property.source_info),
                     },
-                    "source": source,
-                    "target": target,
-                    "crossExpression": serde_json::to_value(ValueSpecification::Lambda(LambdaFunction {
+                    source,
+                    target,
+                    cross_expression: ValueSpecification::Lambda(LambdaFunction {
                         body: vec![convert_expression_typed(&mapping.cross_expression)?],
                         parameters: Vec::new(),
                         source_information: None,
-                    }))?,
-                    "sourceInformation": position(&mapping.source_info),
-                }))
+                    }),
+                    source_information: SourceInformation::from(&mapping.source_info),
+                })
             })
             .collect::<Result<Vec<_>, ConvertError>>()?;
-        Ok((
-            MappingElementKind::Association,
-            association_json(
-                "xStore",
-                element,
-                "propertyMappings",
-                json!(property_mappings),
-            ),
-        ))
+        let mut json = AssociationMappingJson::new("xStore", element);
+        json.property_mappings = Some(property_mappings);
+        Ok((MappingElementKind::Association, to_raw_value(&json)?))
     }
 }
 
-pub(crate) fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+/// The engine's `XStorePropertyMapping`.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "xStorePropertyMapping",
+    rename_all = "camelCase"
+)]
+pub(crate) struct XStorePropertyMappingJson<'a> {
+    property: PropertyPointerJson<'a>,
+    source: &'a str,
+    target: &'a str,
+    cross_expression: ValueSpecification,
+    source_information: SourceInformation,
 }
 
-/// The engine's `AssociationMapping` of type `type_name`: its id, its
-/// association, its stores (none) and its content, `field`.
-pub(crate) fn association_json(
-    type_name: &str,
-    element: &MappingElement,
-    field: &str,
-    content: Value,
-) -> Value {
-    let header = &element.header;
-    let mut json = json!({
-        "_type": type_name,
-        "association": {
-            "type": "ASSOCIATION",
-            "path": header.target.path,
-            "sourceInformation": position(&header.target.source_info),
-        },
-        "stores": [],
-        "sourceInformation": position(&element.source_info),
-    });
-    json[field] = content;
-    if let Some(id) = &header.id {
-        json["id"] = json!(id.text.as_str());
+/// The engine's `PropertyPointer`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PropertyPointerJson<'a> {
+    class: &'a str,
+    property: &'a str,
+    source_information: SourceInformation,
+}
+
+pub(crate) fn position(source_info: &SourceInfo) -> SourceInformation {
+    SourceInformation::from(source_info)
+}
+
+/// The engine's `AssociationMapping`s without stores: its association, its
+/// id, and its content, cross-store property mappings or a model join's
+/// condition.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct AssociationMappingJson<'a> {
+    #[serde(rename = "_type")]
+    mapping_type: &'static str,
+    association: AssociationPointerJson<'a>,
+    stores: [(); 0],
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) property_mappings: Option<Vec<XStorePropertyMappingJson<'a>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) join_condition: Option<ValueSpecification>,
+}
+
+impl<'a> AssociationMappingJson<'a> {
+    /// The association mapping `element`, of type `mapping_type`, without
+    /// content yet.
+    pub(crate) fn new(mapping_type: &'static str, element: &'a MappingElement) -> Self {
+        let header = &element.header;
+        Self {
+            mapping_type,
+            association: AssociationPointerJson {
+                element_type: "ASSOCIATION",
+                path: &header.target.path,
+                source_information: position(&header.target.source_info),
+            },
+            stores: [],
+            source_information: position(&element.source_info),
+            id: header.id.as_ref().map(|id| id.text.as_str()),
+            property_mappings: None,
+            join_condition: None,
+        }
     }
-    json
+}
+
+/// The association's pointer.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AssociationPointerJson<'a> {
+    #[serde(rename = "type")]
+    element_type: &'static str,
+    path: &'a str,
+    source_information: SourceInformation,
 }

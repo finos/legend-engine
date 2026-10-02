@@ -42,7 +42,8 @@ use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
@@ -146,7 +147,7 @@ impl MappingElementGrammar for OperationGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -158,30 +159,57 @@ impl MappingElementGrammar for OperationGrammar {
                 )
             })?;
         let header = &element.header;
-        let mut json = json!({
-            "_type": if body.validation.is_some() { "mergeOperation" } else { "operation" },
-            "class": header.target.path,
-            "root": header.root,
-            "parameters": body.parameters.iter().map(SmolStr::as_str).collect::<Vec<_>>(),
-            "sourceInformation": position(&element.source_info),
-            "classSourceInformation": position(&header.target.source_info),
-        });
-        if let Some((_, operation)) = OPERATIONS.iter().find(|(path, _)| *path == body.function) {
-            json["operation"] = json!(operation);
-        }
-        if let Some(id) = &header.id {
-            json["id"] = json!(id.text.as_str());
-        }
-        if let Some(validation) = &body.validation {
-            json["validationFunction"] =
-                serde_json::to_value(ValueSpecification::Lambda(LambdaFunction {
+        let validation_function = body
+            .validation
+            .as_ref()
+            .map(|validation| {
+                Ok::<_, ConvertError>(ValueSpecification::Lambda(LambdaFunction {
                     body: vec![convert_expression_typed(validation)?],
                     parameters: Vec::new(),
                     source_information: None,
-                }))?;
-        }
-        Ok((MappingElementKind::Class, json))
+                }))
+            })
+            .transpose()?;
+        let json = OperationClassMappingJson {
+            mapping_type: if body.validation.is_some() {
+                "mergeOperation"
+            } else {
+                "operation"
+            },
+            class: &header.target.path,
+            root: header.root,
+            parameters: body.parameters.iter().map(SmolStr::as_str).collect(),
+            source_information: position(&element.source_info),
+            class_source_information: position(&header.target.source_info),
+            operation: OPERATIONS
+                .iter()
+                .find(|(path, _)| *path == body.function)
+                .map(|(_, operation)| *operation),
+            id: header.id.as_ref().map(|id| id.text.as_str()),
+            validation_function,
+        };
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
+}
+
+/// The engine's `OperationSetImplementation` or
+/// `MergeOperationSetImplementation`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OperationClassMappingJson<'a> {
+    #[serde(rename = "_type")]
+    mapping_type: &'static str,
+    class: &'a str,
+    root: bool,
+    parameters: Vec<&'a str>,
+    source_information: SourceInformation,
+    class_source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    operation: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    validation_function: Option<ValueSpecification>,
 }
 
 /// Class mapping ids, unquoted, separated by commas, up to `close`.
@@ -189,6 +217,6 @@ fn ids(ctx: &mut ParserContext<'_>, close: TokenKind) -> Result<Vec<SmolStr>, Pa
     separated(ctx, close, |ctx| Ok(identifier(ctx)?.value))
 }
 
-fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+fn position(source_info: &SourceInfo) -> SourceInformation {
+    SourceInformation::from(source_info)
 }

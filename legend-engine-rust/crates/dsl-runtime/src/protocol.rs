@@ -41,7 +41,9 @@ use legend_pure_parser_protocol::element_protocol::{
 use legend_pure_parser_protocol::v1::element::PackageableElementPointer;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{
     ConnectionStores, ElementPath, EngineRuntime, KIND, PackageableRuntime, RuntimeConnection,
@@ -57,7 +59,7 @@ impl ElementProtocol for RuntimeProtocol {
         KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let runtime = element
             .as_any()
             .downcast_ref::<PackageableRuntime>()
@@ -70,22 +72,31 @@ impl ElementProtocol for RuntimeProtocol {
                     None,
                 )
             })?;
-        let mut value = convert_engine_runtime(&runtime.value)?;
+        let mut runtime_value = EngineRuntimeJson::new(&runtime.value)?;
         if runtime.single_connection {
-            value["_type"] = json!("localEngineRuntime");
+            runtime_value.runtime_type = "localEngineRuntime";
         }
-        Ok(json!({
-            "_type": "runtime",
-            "package": runtime
+        Ok(to_raw_value(&PackageableRuntimeJson {
+            package: runtime
                 .package
                 .as_ref()
                 .map(ToString::to_string)
                 .unwrap_or_default(),
-            "name": runtime.name.value.as_str(),
-            "runtimeValue": value,
-            "sourceInformation": SourceInformation::from(&runtime.source_info),
-        }))
+            name: runtime.name.value.as_str(),
+            runtime_value,
+            source_information: SourceInformation::from(&runtime.source_info),
+        })?)
     }
+}
+
+/// The engine's `PackageableRuntime`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "runtime", rename_all = "camelCase")]
+struct PackageableRuntimeJson<'a> {
+    package: String,
+    name: &'a str,
+    runtime_value: EngineRuntimeJson<'a>,
+    source_information: SourceInformation,
 }
 
 /// The engine's `EngineRuntime`.
@@ -94,73 +105,148 @@ impl ElementProtocol for RuntimeProtocol {
 ///
 /// A runtime's own connection fails to convert.
 pub fn convert_engine_runtime(runtime: &EngineRuntime) -> Result<Value> {
-    Ok(json!({
-        "_type": "engineRuntime",
-        "mappings": runtime
-            .mappings
-            .iter()
-            .map(|mapping| pointer("MAPPING", mapping))
-            .collect::<Vec<_>>(),
-        "connections": runtime
-            .connections
-            .iter()
-            .filter(|store| !store.connections.is_empty())
-            .map(store_connections)
-            .collect::<Result<Vec<_>>>()?,
-        "connectionStores": runtime
-            .connection_stores
-            .iter()
-            .map(connection_stores)
-            .collect::<Vec<_>>(),
-        "sourceInformation": SourceInformation::from(&runtime.source_info),
-    }))
+    Ok(serde_json::to_value(EngineRuntimeJson::new(runtime)?)?)
 }
 
-fn store_connections(store: &StoreConnections) -> Result<Value> {
-    Ok(json!({
-        "store": pointer("STORE", &store.store),
-        "storeConnections": store
+/// The engine's `EngineRuntime`, ready to serialize: [`convert_engine_runtime`]
+/// without building a JSON value first, for a protocol object that holds
+/// one.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EngineRuntimeJson<'a> {
+    #[serde(rename = "_type")]
+    runtime_type: &'static str,
+    mappings: Vec<PackageableElementPointer>,
+    connections: Vec<StoreConnectionsJson<'a>>,
+    connection_stores: Vec<ConnectionStoresJson<'a>>,
+    source_information: SourceInformation,
+}
+
+impl<'a> EngineRuntimeJson<'a> {
+    /// `runtime` as the engine's `EngineRuntime`. A store's connections are
+    /// there only when it has some.
+    ///
+    /// # Errors
+    ///
+    /// A runtime's own connection fails to convert.
+    pub fn new(runtime: &'a EngineRuntime) -> Result<Self> {
+        Ok(Self {
+            runtime_type: "engineRuntime",
+            mappings: runtime
+                .mappings
+                .iter()
+                .map(|mapping| pointer("MAPPING", mapping))
+                .collect(),
+            connections: runtime
+                .connections
+                .iter()
+                .filter(|store| !store.connections.is_empty())
+                .map(store_connections)
+                .collect::<Result<Vec<_>>>()?,
+            connection_stores: runtime
+                .connection_stores
+                .iter()
+                .map(ConnectionStoresJson::from)
+                .collect(),
+            source_information: SourceInformation::from(&runtime.source_info),
+        })
+    }
+}
+
+/// The engine's `StoreConnections`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StoreConnectionsJson<'a> {
+    store: PackageableElementPointer,
+    store_connections: Vec<IdentifiedConnectionJson<'a>>,
+    source_information: SourceInformation,
+}
+
+/// The engine's `IdentifiedConnection`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct IdentifiedConnectionJson<'a> {
+    id: &'a str,
+    connection: ConnectionJson<'a>,
+    source_information: SourceInformation,
+}
+
+/// A connection: a pointer, or one of the runtime's own, its grammar's JSON.
+#[derive(Serialize)]
+#[serde(untagged)]
+enum ConnectionJson<'a> {
+    Pointer(ConnectionPointerJson<'a>),
+    Embedded(Value),
+}
+
+fn store_connections(store: &StoreConnections) -> Result<StoreConnectionsJson<'_>> {
+    Ok(StoreConnectionsJson {
+        store: pointer("STORE", &store.store),
+        store_connections: store
             .connections
             .iter()
             .map(|identified| {
                 let connection = match &identified.connection {
-                    RuntimeConnection::Pointer(path) => connection_pointer(path),
-                    RuntimeConnection::Embedded(value) => convert_connection_value(value)?,
+                    RuntimeConnection::Pointer(path) => {
+                        ConnectionJson::Pointer(ConnectionPointerJson::from(path))
+                    }
+                    RuntimeConnection::Embedded(value) => {
+                        ConnectionJson::Embedded(convert_connection_value(value)?)
+                    }
                 };
-                Ok(json!({
-                    "id": identified.id.as_str(),
-                    "connection": connection,
-                    "sourceInformation": SourceInformation::from(&identified.source_info),
-                }))
+                Ok(IdentifiedConnectionJson {
+                    id: identified.id.as_str(),
+                    connection,
+                    source_information: SourceInformation::from(&identified.source_info),
+                })
             })
             .collect::<Result<Vec<_>>>()?,
-        "sourceInformation": SourceInformation::from(&store.source_info),
-    }))
+        source_information: SourceInformation::from(&store.source_info),
+    })
 }
 
-fn connection_stores(stores: &ConnectionStores) -> Value {
-    json!({
-        "connectionPointer": connection_pointer(&stores.connection),
-        "storePointers": stores
-            .stores
-            .iter()
-            .map(|store| PackageableElementPointer {
-                element_type: store.element_type.as_ref().map(ToString::to_string),
-                path: store.path.clone(),
-                source_information: Some(SourceInformation::from(&store.source_info)),
-            })
-            .collect::<Vec<_>>(),
-        "sourceInformation": SourceInformation::from(&stores.source_info),
-    })
+/// The engine's `ConnectionStores`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ConnectionStoresJson<'a> {
+    connection_pointer: ConnectionPointerJson<'a>,
+    store_pointers: Vec<PackageableElementPointer>,
+    source_information: SourceInformation,
+}
+
+impl<'a> From<&'a ConnectionStores> for ConnectionStoresJson<'a> {
+    fn from(stores: &'a ConnectionStores) -> Self {
+        Self {
+            connection_pointer: ConnectionPointerJson::from(&stores.connection),
+            store_pointers: stores
+                .stores
+                .iter()
+                .map(|store| PackageableElementPointer {
+                    element_type: store.element_type.as_ref().map(ToString::to_string),
+                    path: store.path.clone(),
+                    source_information: Some(SourceInformation::from(&store.source_info)),
+                })
+                .collect(),
+            source_information: SourceInformation::from(&stores.source_info),
+        }
+    }
 }
 
 /// The engine's `ConnectionPointer`, positioned on the path.
-fn connection_pointer(path: &ElementPath) -> Value {
-    json!({
-        "_type": "connectionPointer",
-        "connection": path.path,
-        "sourceInformation": SourceInformation::from(&path.source_info),
-    })
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "connectionPointer", rename_all = "camelCase")]
+struct ConnectionPointerJson<'a> {
+    connection: &'a str,
+    source_information: SourceInformation,
+}
+
+impl<'a> From<&'a ElementPath> for ConnectionPointerJson<'a> {
+    fn from(path: &'a ElementPath) -> Self {
+        Self {
+            connection: &path.path,
+            source_information: SourceInformation::from(&path.source_info),
+        }
+    }
 }
 
 /// A pointer of `element_type`, positioned on the path.

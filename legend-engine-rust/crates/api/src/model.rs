@@ -15,14 +15,19 @@
 //! Whole models, as the engine's `PureGrammarParser.parseModel` parses them:
 //! the code behind the engine's default `###Pure` header, split into
 //! sections the way its `CodeParserGrammar` splits it, each section parsed
-//! by [`parse_section`] with the position context the engine gives its
+//! by [`parse_section`](crate::parse_section) with the position context the engine gives its
 //! section parsers, then the section index.
 
+use std::collections::HashSet;
+use std::hash::Hash;
+
+use legend_pure_parser_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::Value;
+use serde_json::value::RawValue;
 
-use crate::{ErrorKind, SectionError, SectionRequest, parse_section};
+use crate::{ErrorKind, SectionError, SectionRequest, section_json};
 
 /// What the engine puts in front of a model's code: code before any header
 /// is a `###Pure` section.
@@ -57,7 +62,7 @@ pub struct ModelResult {
 /// splits it, by text alone: a section starts at `###Name` written at the
 /// start of a line, wherever that is (inside a string too), and any other
 /// `###` is its section's text. Each section is parsed by
-/// [`parse_section`], with the line offset the engine gives it (the
+/// [`parse_section`](crate::parse_section), with the line offset the engine gives it (the
 /// header's line, counted with the engine's default header in front of
 /// the code, less two) and no column offset: code after a header, on its
 /// line, is positioned from the end of the header. The section index
@@ -67,10 +72,21 @@ pub struct ModelResult {
 ///
 /// # Errors
 ///
-/// The first section's error, in order, as [`parse_section`] reports it: a
+/// The first section's error, in order, as [`parse_section`](crate::parse_section) reports it: a
 /// section type without a linked grammar is [`ErrorKind::Unsupported`].
 /// Offsets below zero are unsupported too.
 pub fn parse_model(request: &ModelRequest<'_>) -> Result<ModelResult, SectionError> {
+    Ok(ModelResult {
+        elements: model_json(request)?
+            .iter()
+            .map(|element| crate::value(element))
+            .collect::<Result<_, _>>()?,
+    })
+}
+
+/// [`parse_model`]'s elements as JSON text, each written once, the section
+/// index last.
+pub(crate) fn model_json(request: &ModelRequest<'_>) -> Result<Vec<Box<RawValue>>, SectionError> {
     if request.line_offset < 0 || request.column_offset < 0 {
         return Err(SectionError::new(
             ErrorKind::Unsupported,
@@ -91,32 +107,60 @@ pub fn parse_model(request: &ModelRequest<'_>) -> Result<ModelResult, SectionErr
             .ok_or_else(|| {
                 SectionError::new(ErrorKind::Unsupported, "the model is too long", None)
             })?;
-        let result = parse_section(&SectionRequest {
+        let result = section_json(&SectionRequest {
             section_type: section.name,
             code: section.content,
             source_id: request.source_id,
             line_offset,
             column_offset: 0,
         })?;
-        let mut index = json!({
-            "_type": if result.imports.is_some() { "importAware" } else { "default" },
-            "parserName": section.name,
-            "elements": distinct(result.elements.iter().map(path)),
-            "sourceInformation": span(&section, request),
+        sections.push(SectionIndexEntryJson {
+            section_type: if result.imports.is_some() {
+                "importAware"
+            } else {
+                "default"
+            },
+            parser_name: section.name,
+            elements: distinct(result.elements.iter().map(|element| element.path.clone())),
+            source_information: span(&section, request),
+            imports: result.imports.map(distinct),
         });
-        if let Some(imports) = result.imports {
-            index["imports"] = Value::Array(distinct(imports.into_iter().map(Value::String)));
-        }
-        sections.push(index);
-        elements.extend(result.elements);
+        elements.extend(result.elements.into_iter().map(|element| element.json));
     }
-    elements.push(json!({
-        "_type": "sectionIndex",
-        "package": "__internal__",
-        "name": "SectionIndex",
-        "sections": sections,
-    }));
-    Ok(ModelResult { elements })
+    let index = SectionIndexJson {
+        package: "__internal__",
+        name: "SectionIndex",
+        sections,
+    };
+    elements.push(
+        serde_json::value::to_raw_value(&index)
+            .map_err(|e| SectionError::from(ConvertError::from(e)))?,
+    );
+    Ok(elements)
+}
+
+/// The engine's `SectionIndex`: each section's type, its elements' paths
+/// and its imports, each once, and its span in the code.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "sectionIndex")]
+struct SectionIndexJson<'a> {
+    package: &'static str,
+    name: &'static str,
+    sections: Vec<SectionIndexEntryJson<'a>>,
+}
+
+/// A section of the index: an `importAware` one, with its imports, or a
+/// `default` one.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SectionIndexEntryJson<'a> {
+    #[serde(rename = "_type")]
+    section_type: &'static str,
+    parser_name: &'a str,
+    elements: Vec<String>,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    imports: Option<Vec<String>>,
 }
 
 /// One section of the code, as the engine's `CodeLexerGrammar` reads it.
@@ -248,31 +292,14 @@ fn span(section: &SectionText<'_>, request: &ModelRequest<'_>) -> SourceInformat
     }
 }
 
-/// An element's path, as the engine's `PackageableElement.getPath()` makes
-/// it: its name, behind its package if it has one.
-fn path(element: &Value) -> Value {
-    let package = element
-        .get("package")
-        .and_then(Value::as_str)
-        .unwrap_or_default();
-    let name = element.get("name").and_then(Value::as_str);
-    match name {
-        Some(name) if package.is_empty() => Value::from(name),
-        None if package.is_empty() => Value::Null,
-        name => Value::from(format!("{package}::{}", name.unwrap_or("null"))),
-    }
-}
-
 /// `values` without repeats, each where it first is (the engine's
 /// `ListIterate.distinct`).
-fn distinct(values: impl IntoIterator<Item = Value>) -> Vec<Value> {
-    let mut kept: Vec<Value> = Vec::new();
-    for value in values {
-        if !kept.contains(&value) {
-            kept.push(value);
-        }
-    }
-    kept
+fn distinct<T: Eq + Hash + Clone>(values: impl IntoIterator<Item = T>) -> Vec<T> {
+    let mut seen = HashSet::new();
+    values
+        .into_iter()
+        .filter(|value| seen.insert(value.clone()))
+        .collect()
 }
 
 #[cfg(test)]

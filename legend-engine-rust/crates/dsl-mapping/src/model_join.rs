@@ -26,11 +26,11 @@ use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
-use serde_json::Value;
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
 use crate::grammar::{ElementSpan, MappingElementGrammar, MappingElementKind};
-use crate::xstore::association_json;
+use crate::xstore::AssociationMappingJson;
 
 /// The element type this grammar reads.
 pub const TYPE_NAME: &str = "ModelJoin";
@@ -92,7 +92,7 @@ impl MappingElementGrammar for ModelJoinGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -103,10 +103,8 @@ impl MappingElementGrammar for ModelJoinGrammar {
                     Some(&element.source_info),
                 )
             })?;
-        let join_condition = serde_json::to_value(convert_expression_typed(&body.join_condition)?)?;
-        Ok((
-            MappingElementKind::Association,
-            association_json("modelJoin", element, "joinCondition", join_condition),
-        ))
+        let mut json = AssociationMappingJson::new("modelJoin", element);
+        json.join_condition = Some(convert_expression_typed(&body.join_condition)?);
+        Ok((MappingElementKind::Association, to_raw_value(&json)?))
     }
 }

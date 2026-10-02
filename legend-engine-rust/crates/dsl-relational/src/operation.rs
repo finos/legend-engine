@@ -511,7 +511,7 @@ fn resolved_table(
     table: Option<Name>,
     column: &Name,
 ) -> TablePtr {
-    table_ptr(database.clone(), schema, table, Some(column)).unwrap_or_else(|error| {
+    table_ptr(database.clone(), schema, table, column).unwrap_or_else(|error| {
         ctx.defer(error);
         TablePtr {
             database,
@@ -529,29 +529,43 @@ pub(crate) fn table_ptr(
     database: Option<String>,
     schema: Option<Name>,
     table: Option<Name>,
-    column: Option<&Name>,
+    column: &Name,
 ) -> Result<TablePtr, ParseError> {
-    let (schema, table) = match (schema, table) {
-        (schema, Some(table)) => (schema, table),
-        (Some(schema), None) => (None, schema),
-        (None, None) => {
-            let column = column.expect("a column or a scope names the table");
-            return Err(ParseError::Unexpected {
-                message: format!("Missing table or alias for column '{}'", column.text),
-                source_info: column.source_info.clone(),
-            });
-        }
-    };
+    match (schema, table) {
+        (schema, Some(table)) => Ok(table_in(database, schema, table)),
+        (Some(schema), None) => Ok(table_in(database, None, schema)),
+        (None, None) => Err(ParseError::Unexpected {
+            message: format!("Missing table or alias for column '{}'", column.text),
+            source_info: column.source_info.clone(),
+        }),
+    }
+}
+
+/// [`table_ptr`] for a scope that names a schema: the table `table` in it,
+/// else the schema's name as a table of `default`.
+pub(crate) fn scoped_table_ptr(
+    database: Option<String>,
+    schema: Name,
+    table: Option<Name>,
+) -> TablePtr {
+    match table {
+        Some(table) => table_in(database, Some(schema), table),
+        None => table_in(database, None, schema),
+    }
+}
+
+/// The table `table`, in `schema` or `default`.
+fn table_in(database: Option<String>, schema: Option<Name>, table: Name) -> TablePtr {
     let source_info = schema.as_ref().map_or_else(
         || table.source_info.clone(),
         |schema| schema.source_info.merge(&table.source_info),
     );
-    Ok(TablePtr {
+    TablePtr {
         database,
         schema: schema.map_or_else(|| SmolStr::new_static("default"), |schema| schema.text),
         table: table.text,
         source_info,
-    })
+    }
 }
 
 fn non_empty(database: Option<String>) -> Option<String> {

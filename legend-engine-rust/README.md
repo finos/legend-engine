@@ -7,7 +7,8 @@ Java/ANTLR parser produces.
 The end goal is to serve as Legend Engine's grammar parser through JNI; see
 [docs/engine-integration.md](docs/engine-integration.md), and
 [docs/porting-status.md](docs/porting-status.md) for the grammars ported so
-far and the order of the rest.
+far and the order of the rest, and [docs/protocol-json.md](docs/protocol-json.md)
+for how converters write protocol JSON.
 
 The workspace moved here from legend-pure on 2026-10-01 (its `rust-parser`
 branch, `legend-pure-rust/` at `172d559fedd`); names keep their legend-pure

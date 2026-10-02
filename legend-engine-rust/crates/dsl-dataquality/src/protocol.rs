@@ -24,7 +24,7 @@ use legend_pure_parser_protocol::element_protocol::{
 use legend_pure_parser_protocol::v1::annotation::TaggedValue;
 use legend_pure_parser_protocol::v1::convert::section_stereotype;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{DataQualityElement, SECTION_KIND};
 
@@ -37,7 +37,7 @@ impl ElementProtocol for DataQualityProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let element = element
             .as_any()
             .downcast_ref::<DataQualityElement>()
@@ -50,32 +50,37 @@ impl ElementProtocol for DataQualityProtocol {
                     None,
                 )
             })?;
-        let mut json = element.record.to_json()?;
-        json["package"] = json!(
-            element
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(element.name.value.as_str());
+        let mut json = element
+            .record
+            .converted()?
+            .with(
+                "package",
+                element
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", element.name.value.as_str());
         if element.kind.annotated() {
-            json["stereotypes"] = serde_json::to_value(
+            json = json.with(
+                "stereotypes",
                 element
                     .stereotypes
                     .iter()
                     .map(section_stereotype)
                     .collect::<Vec<_>>(),
-            )?;
-            json["taggedValues"] = serde_json::to_value(
+            );
+            json = json.with(
+                "taggedValues",
                 element
                     .tagged_values
                     .iter()
                     .map(TaggedValue::from)
                     .collect::<Vec<_>>(),
-            )?;
+            );
         }
-        Ok(json)
+        Ok(to_raw_value(&json)?)
     }
 }
 

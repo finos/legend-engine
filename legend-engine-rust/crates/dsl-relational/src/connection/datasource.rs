@@ -31,7 +31,8 @@ use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::fields::{optional, required};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 use super::specification::{
     BodyUse, Specification, SpecificationBody, SpecificationGrammar, SpecificationKind,
@@ -129,17 +130,11 @@ impl SpecificationGrammar for LocalH2Grammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let local = downcast::<LocalH2>(specification)?;
-        let mut json = json!({
-            "_type": "h2Local",
-            "sourceInformation": SourceInformation::from(&specification.source_info),
-        });
-        if let Some(csv) = &local.test_data_setup_csv {
-            json["testDataSetupCsv"] = json!(csv);
-        }
-        if let Some(sqls) = &local.test_data_setup_sqls {
-            json["testDataSetupSqls"] = json!(sqls);
-        }
-        Ok(json)
+        Ok(serde_json::to_value(LocalH2Json {
+            source_information: SourceInformation::from(&specification.source_info),
+            test_data_setup_csv: local.test_data_setup_csv.as_deref(),
+            test_data_setup_sqls: local.test_data_setup_sqls.as_deref(),
+        })?)
     }
 }
 
@@ -189,13 +184,12 @@ impl SpecificationGrammar for StaticGrammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let fixed = downcast::<Static>(specification)?;
-        Ok(json!({
-            "_type": "static",
-            "host": fixed.host,
-            "port": fixed.port,
-            "databaseName": fixed.database_name,
-            "sourceInformation": SourceInformation::from(&specification.source_info),
-        }))
+        Ok(serde_json::to_value(StaticJson {
+            host: &fixed.host,
+            port: fixed.port,
+            database_name: &fixed.database_name,
+            source_information: SourceInformation::from(&specification.source_info),
+        })?)
     }
 }
 
@@ -245,12 +239,42 @@ impl SpecificationGrammar for EmbeddedH2Grammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let embedded = downcast::<EmbeddedH2>(specification)?;
-        Ok(json!({
-            "_type": "h2Embedded",
-            "databaseName": embedded.database_name,
-            "directory": embedded.directory,
-            "autoServerMode": embedded.auto_server_mode,
-            "sourceInformation": SourceInformation::from(&specification.source_info),
-        }))
+        Ok(serde_json::to_value(EmbeddedH2Json {
+            database_name: &embedded.database_name,
+            directory: &embedded.directory,
+            auto_server_mode: embedded.auto_server_mode,
+            source_information: SourceInformation::from(&specification.source_info),
+        })?)
     }
+}
+
+/// The engine's `LocalH2DatasourceSpecification`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "h2Local", rename_all = "camelCase")]
+struct LocalH2Json<'a> {
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    test_data_setup_csv: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    test_data_setup_sqls: Option<&'a [String]>,
+}
+
+/// The engine's `StaticDatasourceSpecification`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "static", rename_all = "camelCase")]
+struct StaticJson<'a> {
+    host: &'a str,
+    port: i32,
+    database_name: &'a str,
+    source_information: SourceInformation,
+}
+
+/// The engine's `EmbeddedH2DatasourceSpecification`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "h2Embedded", rename_all = "camelCase")]
+struct EmbeddedH2Json<'a> {
+    database_name: &'a str,
+    directory: &'a str,
+    auto_server_mode: bool,
+    source_information: SourceInformation,
 }

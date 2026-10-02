@@ -264,6 +264,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
 ]
 
@@ -346,6 +347,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -374,6 +376,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -498,6 +501,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -553,6 +557,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -612,6 +617,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -637,6 +643,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]
@@ -663,6 +670,7 @@ dependencies = [
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
  "linkme",
+ "serde",
  "serde_json",
  "smol_str",
 ]

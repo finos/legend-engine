@@ -47,7 +47,8 @@ use legend_pure_parser_parser::{Island, ParserContext};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 type R<T> = Result<T, ParseError>;
 
@@ -159,15 +160,37 @@ impl ConnectionValueGrammar for ElasticsearchConnectionGrammar {
                 )
             })?;
         let (store, store_source_info) = &connection.store;
-        Ok(json!({
-            "_type": "elasticsearch7StoreConnection",
-            "element": store,
-            "elementSourceInformation": SourceInformation::from(store_source_info),
-            "sourceSpec": {"url": connection.url},
-            "authSpec": connection.authentication.to_json(),
-            "sourceInformation": SourceInformation::from(&connection.source_info),
-        }))
+        Ok(serde_json::to_value(ElasticsearchConnectionJson {
+            element: store,
+            element_source_information: SourceInformation::from(store_source_info),
+            source_spec: SourceSpecJson {
+                url: &connection.url,
+            },
+            auth_spec: &connection.authentication,
+            source_information: SourceInformation::from(&connection.source_info),
+        })?)
     }
+}
+
+/// The engine's connection JSON.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "elasticsearch7StoreConnection",
+    rename_all = "camelCase"
+)]
+struct ElasticsearchConnectionJson<'a> {
+    element: &'a str,
+    element_source_information: SourceInformation,
+    source_spec: SourceSpecJson<'a>,
+    auth_spec: &'a Object,
+    source_information: SourceInformation,
+}
+
+/// The connection's source specification: its URL.
+#[derive(Serialize)]
+struct SourceSpecJson<'a> {
+    url: &'a str,
 }
 
 /// `# URL { http://… }#`: the URL, trimmed.

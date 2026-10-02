@@ -29,13 +29,17 @@ use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_ast::test_assertion::TestAssertion;
 
 use crate::element_protocol::{ConvertError, Result};
+use crate::v1::annotation;
 use crate::v1::convert::{
     convert_embedded_data, convert_expression_typed, convert_primitive_value,
     convert_relation_element, convert_test_assertion,
 };
+use crate::v1::data::{EmbeddedData, RelationElement as RelationElementJson};
 use crate::v1::source_info::SourceInformation;
+use crate::v1::test_assertion::TestAssertion as TestAssertionJson;
 use crate::v1::value_spec::{LambdaFunction, ValueSpecification};
-use serde_json::{Map, Value as Json, json};
+use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_json::{Number, Value as Json};
 use smol_str::SmolStr;
 
 /// A protocol object: its `_type`, its fields, its position.
@@ -133,71 +137,186 @@ impl Record {
         }
     }
 
-    /// The engine's JSON of the object.
+    /// The object's JSON, what other grammars read in it converted with
+    /// them.
     ///
     /// # Errors
     ///
-    /// A part another grammar read fails to convert.
+    /// What other grammars read in it fails to convert.
     pub fn to_json(&self) -> Result<Json> {
-        let mut map = Map::new();
+        Ok(serde_json::to_value(self.converted()?)?)
+    }
+
+    /// The object, what other grammars read in it converted with them,
+    /// ready to serialize as the engine's protocol object.
+    ///
+    /// # Errors
+    ///
+    /// What other grammars read in it fails to convert.
+    pub fn converted(&self) -> Result<RecordJson<'_>> {
+        let mut json = RecordJson {
+            fields: Vec::with_capacity(self.fields.len() + 2),
+        };
         if let Some(kind) = self.kind {
-            map.insert("_type".to_string(), json!(kind));
+            json = json.with("_type", kind);
         }
         for (name, value) in &self.fields {
-            map.insert((*name).to_string(), value.to_json()?);
+            json = json.with(name, value.converted()?);
         }
         if let Some(source_info) = &self.source_info {
-            map.insert(
-                "sourceInformation".to_string(),
-                json!(SourceInformation::from(source_info)),
-            );
+            json = json.with("sourceInformation", SourceInformation::from(source_info));
         }
-        Ok(Json::Object(map))
+        Ok(json)
+    }
+}
+
+/// A [`Record`] converted: the engine's protocol object, its fields in the
+/// order they were first set, a field set again replaced in place.
+#[derive(Debug)]
+pub struct RecordJson<'a> {
+    fields: Vec<(&'static str, FieldJson<'a>)>,
+}
+
+impl<'a> RecordJson<'a> {
+    /// The object with `name` set to `value`.
+    #[must_use]
+    pub fn with(mut self, name: &'static str, value: impl Into<FieldJson<'a>>) -> Self {
+        let value = value.into();
+        match self.fields.iter_mut().find(|(field, _)| *field == name) {
+            Some((_, field)) => *field = value,
+            None => self.fields.push((name, value)),
+        }
+        self
+    }
+}
+
+impl Serialize for RecordJson<'_> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(self.fields.len()))?;
+        for (name, value) in &self.fields {
+            map.serialize_entry(name, value)?;
+        }
+        map.end()
+    }
+}
+
+/// A [`RecordJson`]'s field: a [`Value`] converted, or a part of the object
+/// its element's converter adds (its package, name and annotations).
+#[derive(Debug, serde::Serialize)]
+#[serde(untagged)]
+pub enum FieldJson<'a> {
+    /// A string.
+    Text(&'a str),
+    /// A string made for the object.
+    OwnedText(String),
+    /// Strings.
+    Texts(&'a [String]),
+    /// A boolean.
+    Bool(bool),
+    /// A number.
+    Integer(i64),
+    /// A number as written (a Java `double`, [`java_double`]).
+    Number(Number),
+    /// An object.
+    Record(RecordJson<'a>),
+    /// Objects.
+    Records(Vec<RecordJson<'a>>),
+    /// A value specification: a primitive value, or a lambda.
+    Specification(ValueSpecification),
+    /// Embedded data.
+    EmbeddedData(EmbeddedData),
+    /// Test assertions.
+    Assertions(Vec<TestAssertionJson>),
+    /// A relation's first table.
+    RelationElement(RelationElementJson),
+    /// A position.
+    SourceInformation(SourceInformation),
+    /// Stereotypes.
+    Stereotypes(Vec<annotation::StereotypePtr>),
+    /// Tagged values.
+    TaggedValues(Vec<annotation::TaggedValue>),
+    /// JSON a plug-in's protocol converted.
+    Json(&'a Json),
+    /// JSON converted for the object: a navigation path's.
+    OwnedJson(Json),
+    /// JSON converted for the object: navigation paths'.
+    OwnedJsons(Vec<Json>),
+}
+
+impl<'a> From<&'a str> for FieldJson<'a> {
+    fn from(text: &'a str) -> Self {
+        Self::Text(text)
+    }
+}
+
+impl From<String> for FieldJson<'_> {
+    fn from(text: String) -> Self {
+        Self::OwnedText(text)
+    }
+}
+
+impl From<SourceInformation> for FieldJson<'_> {
+    fn from(source_information: SourceInformation) -> Self {
+        Self::SourceInformation(source_information)
+    }
+}
+
+impl From<Vec<annotation::StereotypePtr>> for FieldJson<'_> {
+    fn from(stereotypes: Vec<annotation::StereotypePtr>) -> Self {
+        Self::Stereotypes(stereotypes)
+    }
+}
+
+impl From<Vec<annotation::TaggedValue>> for FieldJson<'_> {
+    fn from(tagged_values: Vec<annotation::TaggedValue>) -> Self {
+        Self::TaggedValues(tagged_values)
     }
 }
 
 impl Value {
-    fn to_json(&self) -> Result<Json> {
+    fn converted(&self) -> Result<FieldJson<'_>> {
         Ok(match self {
-            Self::Text(text) => json!(text),
-            Self::Texts(texts) => json!(texts),
-            Self::Bool(value) => json!(value),
-            Self::Integer(value) => json!(value),
-            Self::Double(value) => java_double(*value)?,
-            Self::Record(record) => record.to_json()?,
-            Self::Records(records) => {
-                Json::Array(records.iter().map(Record::to_json).collect::<Result<_>>()?)
+            Self::Text(text) => FieldJson::Text(text),
+            Self::Texts(texts) => FieldJson::Texts(texts),
+            Self::Bool(value) => FieldJson::Bool(*value),
+            Self::Integer(value) => FieldJson::Integer(*value),
+            Self::Double(value) => FieldJson::Number(java_double(*value)?),
+            Self::Record(record) => FieldJson::Record(record.converted()?),
+            Self::Records(records) => FieldJson::Records(
+                records
+                    .iter()
+                    .map(Record::converted)
+                    .collect::<Result<_>>()?,
+            ),
+            Self::Path(path) => FieldJson::OwnedJson(path_json(path)?),
+            Self::Paths(paths) => {
+                FieldJson::OwnedJsons(paths.iter().map(path_json).collect::<Result<_>>()?)
             }
-            Self::Path(path) => path_json(path)?,
-            Self::Paths(paths) => Json::Array(paths.iter().map(path_json).collect::<Result<_>>()?),
-            Self::Primitive(value) => serde_json::to_value(convert_primitive_value(value)?)?,
-            Self::EmbeddedData(data) => serde_json::to_value(convert_embedded_data(data)?)?,
-            Self::Assertions(assertions) => Json::Array(
+            Self::Primitive(value) => FieldJson::Specification(convert_primitive_value(value)?),
+            Self::EmbeddedData(data) => FieldJson::EmbeddedData(convert_embedded_data(data)?),
+            Self::Assertions(assertions) => FieldJson::Assertions(
                 assertions
                     .iter()
-                    .map(|(id, assertion)| {
-                        Ok(serde_json::to_value(convert_test_assertion(
-                            id, assertion,
-                        )?)?)
-                    })
+                    .map(|(id, assertion)| convert_test_assertion(id, assertion))
                     .collect::<Result<_>>()?,
             ),
             Self::Lambda(expression) => {
-                let lambda = match convert_expression_typed(expression)? {
+                FieldJson::Specification(match convert_expression_typed(expression)? {
                     lambda @ ValueSpecification::Lambda(_) => lambda,
                     body => ValueSpecification::Lambda(LambdaFunction {
                         body: vec![body],
                         parameters: Vec::new(),
                         source_information: None,
                     }),
-                };
-                serde_json::to_value(lambda)?
+                })
             }
             Self::RelationElement(element) => {
-                serde_json::to_value(convert_relation_element(element))?
+                FieldJson::RelationElement(convert_relation_element(element))
             }
-            Self::SourceInfo(source_info) => json!(SourceInformation::from(source_info)),
-            Self::Json(json) => json.clone(),
+            Self::SourceInfo(source_info) => {
+                FieldJson::SourceInformation(SourceInformation::from(source_info))
+            }
+            Self::Json(json) => FieldJson::Json(json),
         })
     }
 }
@@ -210,7 +329,7 @@ impl Value {
 /// # Errors
 ///
 /// Not a finite number, which has no JSON form.
-pub fn java_double(value: f64) -> Result<Json> {
+pub fn java_double(value: f64) -> Result<Number> {
     let finite = |value: f64| {
         serde_json::Number::from_f64(value)
             .ok_or_else(|| ConvertError::plugin(format!("{value} has no JSON form"), None))

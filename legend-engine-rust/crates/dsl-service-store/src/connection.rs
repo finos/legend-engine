@@ -39,7 +39,8 @@ use legend_pure_parser_parser::words::{identifier, is_word, qualified_name};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 /// The connection type this grammar reads.
 pub const TYPE_NAME: &str = "ServiceStoreConnection";
@@ -134,17 +135,28 @@ impl ConnectionValueGrammar for ServiceStoreConnectionGrammar {
                     Some(&value.source_info),
                 )
             })?;
-        let mut json = json!({
-            "_type": "serviceStore",
-            "baseUrl": connection.base_url,
-            "sourceInformation": SourceInformation::from(&value.source_info),
-        });
-        if let Some((path, source_info)) = &connection.store {
-            json["element"] = json!(path);
-            json["elementSourceInformation"] = json!(SourceInformation::from(source_info));
-        }
-        Ok(json)
+        Ok(serde_json::to_value(ServiceStoreConnectionJson {
+            base_url: &connection.base_url,
+            source_information: SourceInformation::from(&value.source_info),
+            element: connection.store.as_ref().map(|(path, _)| path.as_str()),
+            element_source_information: connection
+                .store
+                .as_ref()
+                .map(|(_, source_info)| SourceInformation::from(source_info)),
+        })?)
     }
+}
+
+/// The engine's `ServiceStoreConnection`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "serviceStore", rename_all = "camelCase")]
+struct ServiceStoreConnectionJson<'a> {
+    base_url: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element_source_information: Option<SourceInformation>,
 }
 
 #[distributed_slice(CONNECTION_VALUE_GRAMMARS)]

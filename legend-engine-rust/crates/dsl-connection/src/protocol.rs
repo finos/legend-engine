@@ -34,10 +34,11 @@ use legend_pure_parser_protocol::element_protocol::{
 };
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::json;
+use serde::Serialize;
 
 use crate::ast::{ConnectionValue, KIND, PackageableConnection};
 use crate::grammar::connection_value_grammar;
+use serde_json::value::{RawValue, to_raw_value};
 
 /// Protocol converter for connections.
 pub struct ConnectionProtocol;
@@ -48,7 +49,7 @@ impl ElementProtocol for ConnectionProtocol {
         KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<serde_json::Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let connection = element
             .as_any()
             .downcast_ref::<PackageableConnection>()
@@ -61,18 +62,27 @@ impl ElementProtocol for ConnectionProtocol {
                     None,
                 )
             })?;
-        Ok(json!({
-            "_type": "connection",
-            "package": connection
+        Ok(to_raw_value(&PackageableConnectionJson {
+            package: connection
                 .package
                 .as_ref()
                 .map(ToString::to_string)
                 .unwrap_or_default(),
-            "name": connection.name.value.as_str(),
-            "connectionValue": convert_connection_value(&connection.value)?,
-            "sourceInformation": SourceInformation::from(&connection.source_info),
-        }))
+            name: connection.name.value.as_str(),
+            connection_value: convert_connection_value(&connection.value)?,
+            source_information: SourceInformation::from(&connection.source_info),
+        })?)
     }
+}
+
+/// The engine's `PackageableConnection`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "connection", rename_all = "camelCase")]
+struct PackageableConnectionJson<'a> {
+    package: String,
+    name: &'a str,
+    connection_value: serde_json::Value,
+    source_information: SourceInformation,
 }
 
 /// The engine's JSON of a connection value, by the grammar that read it.

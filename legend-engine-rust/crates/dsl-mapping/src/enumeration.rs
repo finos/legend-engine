@@ -44,6 +44,7 @@ use smol_str::SmolStr;
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
 use crate::grammar::{ElementSpan, MappingElementGrammar, MappingElementKind};
 use crate::section::separated;
+use serde_json::value::{RawValue, to_raw_value};
 
 /// The element type this grammar reads.
 pub const TYPE_NAME: &str = "EnumerationMapping";
@@ -119,7 +120,7 @@ impl MappingElementGrammar for EnumerationMappingGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, serde_json::Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -163,7 +164,7 @@ impl MappingElementGrammar for EnumerationMappingGrammar {
                 .collect(),
             source_information: SourceInformation::from(&element.source_info),
         };
-        Ok((MappingElementKind::Enumeration, serde_json::to_value(json)?))
+        Ok((MappingElementKind::Enumeration, to_raw_value(&json)?))
     }
 }
 

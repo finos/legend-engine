@@ -207,6 +207,19 @@ fn the_stores_datasource_specifications_and_authentication_strategies_convert() 
             "sourceInformation": si(6, 3, 6, 87),
         })
     );
+    let embedded = connection(
+        "  type: H2;\n  specification: EmbeddedH2 { name: 'db'; directory: '/tmp/h2'; autoServerMode: true; };\n  auth: DefaultH2;",
+    );
+    assert_eq!(
+        embedded["datasourceSpecification"],
+        json!({
+            "_type": "h2Embedded",
+            "databaseName": "db",
+            "directory": "/tmp/h2",
+            "autoServerMode": true,
+            "sourceInformation": si(5, 3, 5, 88),
+        })
+    );
     // The walker's order, on the field.
     let static_error =
         error("  type: H2;\n  specification: Static { name: 'db'; };\n  auth: DefaultH2;");

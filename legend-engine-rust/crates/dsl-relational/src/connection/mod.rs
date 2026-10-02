@@ -49,7 +49,8 @@ use legend_pure_parser_parser::{ParserContext, string_value};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 use smol_str::SmolStr;
 
 /// Implements [`specification::SpecificationBody`] for a body type.
@@ -86,7 +87,8 @@ pub mod specification;
 mod values;
 
 use specification::{
-    ReadSpecification, Specification, SpecificationKind, local_mode_grammar, parse_specification,
+    LocalSpecification, ReadSpecification, Specification, SpecificationKind, local_mode_grammar,
+    parse_specification,
 };
 use values::{at_field, boolean, field, integer};
 
@@ -169,9 +171,9 @@ pub enum Specifications {
     /// `mode: local;`: its database type's local mode's, their JSON.
     Local {
         /// The datasource specification.
-        datasource: Value,
+        datasource: LocalSpecification,
         /// The authentication strategy.
-        authentication: Value,
+        authentication: LocalSpecification,
     },
 }
 
@@ -452,44 +454,83 @@ fn convert(
             datasource,
             authentication,
         } => (
-            convert_specification(datasource)?,
-            convert_specification(authentication)?,
+            SpecificationJson::Converted(convert_specification(datasource)?),
+            SpecificationJson::Converted(convert_specification(authentication)?),
         ),
         Specifications::Local {
             datasource,
             authentication,
-        } => (datasource.clone(), authentication.clone()),
+        } => (
+            SpecificationJson::Local(datasource),
+            SpecificationJson::Local(authentication),
+        ),
     };
-    let mut json = json!({
-        "_type": TYPE_NAME,
-        "type": connection.database_type.as_str(),
-        "databaseType": connection.database_type.as_str(),
-        "datasourceSpecification": datasource,
-        "authenticationStrategy": authentication,
-        "postProcessors": convert_all(connection.post_processors.as_deref().unwrap_or_default())?,
-        "postProcessorWithParameter": [],
-        "sourceInformation": SourceInformation::from(&value.source_info),
-    });
-    if let Some((path, source_info)) = &connection.store {
-        json["element"] = json!(path);
-        json["elementSourceInformation"] = json!(SourceInformation::from(source_info));
-    }
-    if let Some(timeout) = connection.query_timeout {
-        json["queryTimeOutInSeconds"] = json!(timeout);
-    }
-    if let Some(time_zone) = &connection.time_zone {
-        json["timeZone"] = json!(time_zone);
-    }
-    if let Some(quote) = connection.quote_identifiers {
-        json["quoteIdentifiers"] = json!(quote);
-    }
-    if let Some(configs) = &connection.query_generation_configs {
-        json["queryGenerationConfigs"] = json!(convert_all(configs)?);
-    }
-    if matches!(connection.specifications, Specifications::Local { .. }) {
-        json["localMode"] = json!(true);
-    }
-    Ok(json)
+    let post_processors = convert_all(connection.post_processors.as_deref().unwrap_or_default())?;
+    let query_generation_configs = connection
+        .query_generation_configs
+        .as_deref()
+        .map(convert_all)
+        .transpose()?;
+    Ok(serde_json::to_value(RelationalConnectionJson {
+        connection_type: TYPE_NAME,
+        database_type_name: connection.database_type.as_str(),
+        database_type: connection.database_type.as_str(),
+        datasource_specification: datasource,
+        authentication_strategy: authentication,
+        post_processors,
+        post_processor_with_parameter: [],
+        source_information: SourceInformation::from(&value.source_info),
+        element: connection.store.as_ref().map(|(path, _)| path.as_str()),
+        element_source_information: connection
+            .store
+            .as_ref()
+            .map(|(_, source_info)| SourceInformation::from(source_info)),
+        query_time_out_in_seconds: connection.query_timeout,
+        time_zone: connection.time_zone.as_deref(),
+        quote_identifiers: connection.quote_identifiers,
+        query_generation_configs,
+        local_mode: matches!(connection.specifications, Specifications::Local { .. }),
+    })?)
+}
+
+/// The engine's `RelationalDatabaseConnection`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RelationalConnectionJson<'a> {
+    #[serde(rename = "_type")]
+    connection_type: &'static str,
+    #[serde(rename = "type")]
+    database_type_name: &'a str,
+    database_type: &'a str,
+    datasource_specification: SpecificationJson<'a>,
+    authentication_strategy: SpecificationJson<'a>,
+    post_processors: Vec<Value>,
+    post_processor_with_parameter: [(); 0],
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element_source_information: Option<SourceInformation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    query_time_out_in_seconds: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    time_zone: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    quote_identifiers: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    query_generation_configs: Option<Vec<Value>>,
+    /// Written only for a connection in local mode.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    local_mode: bool,
+}
+
+/// A datasource specification or an authentication strategy: its grammar's
+/// JSON, or a local mode's.
+#[derive(Serialize)]
+#[serde(untagged)]
+enum SpecificationJson<'a> {
+    Converted(Value),
+    Local(&'a LocalSpecification),
 }
 
 /// A specification's JSON, by the grammar that read it.

@@ -77,7 +77,7 @@ rayon = "1"
 serde = { version = "1", features = ["derive"] }
 # `arbitrary_precision`: numbers keep their text (decimals their scale, as the
 # engine's `BigDecimal`) through `serde_json::Value`.
-serde_json = { version = "1", features = ["arbitrary_precision"] }
+serde_json = { version = "1", features = ["arbitrary_precision", "raw_value"] }
 
 # Plugins (island / section parser registration)
 linkme = "0.3"

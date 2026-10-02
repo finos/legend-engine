@@ -52,7 +52,8 @@ use legend_pure_parser_protocol::v1::multiplicity::Multiplicity as ProtocolMulti
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 /// The element type this grammar reads.
@@ -195,7 +196,7 @@ impl MappingElementGrammar for ServiceStoreMappingGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -207,24 +208,29 @@ impl MappingElementGrammar for ServiceStoreMappingGrammar {
                 )
             })?;
         let header = &element.header;
-        let mut json = json!({
-            "_type": "serviceStore",
-            "class": header.target.path,
-            "root": header.root,
-            "localMappingProperties": body.local_properties.iter().map(|property| json!({
-                "name": property.name.as_str(),
-                "type": property.type_text,
-                "multiplicity": ProtocolMultiplicity::from(&property.multiplicity),
-                "sourceInformation": position(&property.source_info),
-            })).collect::<Vec<_>>(),
-            "servicesMapping": body.services.iter().map(service_mapping_json).collect::<Result<Vec<_>, ConvertError>>()?,
-            "sourceInformation": position(&element.source_info),
-            "classSourceInformation": position(&header.target.source_info),
-        });
-        if let Some(id) = &header.id {
-            json["id"] = json!(id.text.as_str());
-        }
-        Ok((MappingElementKind::Class, json))
+        let json = ClassMappingJson {
+            class: &header.target.path,
+            root: header.root,
+            local_mapping_properties: body
+                .local_properties
+                .iter()
+                .map(|property| LocalPropertyJson {
+                    name: property.name.as_str(),
+                    property_type: &property.type_text,
+                    multiplicity: ProtocolMultiplicity::from(&property.multiplicity),
+                    source_information: SourceInformation::from(&property.source_info),
+                })
+                .collect(),
+            services_mapping: body
+                .services
+                .iter()
+                .map(service_mapping_json)
+                .collect::<Result<Vec<_>, ConvertError>>()?,
+            source_information: SourceInformation::from(&element.source_info),
+            class_source_information: SourceInformation::from(&header.target.source_info),
+            id: header.id.as_ref().map(|id| id.text.as_str()),
+        };
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
 }
 
@@ -439,69 +445,154 @@ fn property_parameter(ctx: &mut ParserContext<'_>) -> Result<PropertyParameter, 
 
 // ── The protocol ───────────────────────────────────────────────────────
 
-fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+/// The engine's `RootServiceInstanceSetImplementation`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "serviceStore", rename_all = "camelCase")]
+struct ClassMappingJson<'a> {
+    class: &'a str,
+    root: bool,
+    local_mapping_properties: Vec<LocalPropertyJson<'a>>,
+    services_mapping: Vec<ServiceMappingJson<'a>>,
+    source_information: SourceInformation,
+    class_source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<&'a str>,
+}
+
+/// The engine's `LocalMappingProperty`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalPropertyJson<'a> {
+    name: &'a str,
+    #[serde(rename = "type")]
+    property_type: &'a str,
+    multiplicity: ProtocolMultiplicity,
+    source_information: SourceInformation,
 }
 
 /// An expression as the body of a lambda without parameters, positioned on
 /// `span`.
-fn lambda(expression: &Expression, span: &SourceInfo) -> Result<Value, ConvertError> {
-    Ok(serde_json::to_value(ValueSpecification::Lambda(
-        LambdaFunction {
-            body: vec![convert_expression_typed(expression)?],
-            parameters: Vec::new(),
-            source_information: Some(SourceInformation::from(span)),
-        },
-    ))?)
-}
-
-fn parameter_json(value: &ParameterValue) -> Result<Value, ConvertError> {
-    Ok(json!({
-        "serviceParameter": value.parameter,
-        "transform": lambda(&value.expression, &value.expression_source_info)?,
-        "sourceInformation": position(&value.source_info),
+fn lambda(expression: &Expression, span: &SourceInfo) -> Result<ValueSpecification, ConvertError> {
+    Ok(ValueSpecification::Lambda(LambdaFunction {
+        body: vec![convert_expression_typed(expression)?],
+        parameters: Vec::new(),
+        source_information: Some(SourceInformation::from(span)),
     }))
 }
 
+/// The engine's `ServiceRequestParameterBuildInfo`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ParameterJson<'a> {
+    service_parameter: &'a str,
+    transform: ValueSpecification,
+    source_information: SourceInformation,
+}
+
+fn parameter_json(value: &ParameterValue) -> Result<ParameterJson<'_>, ConvertError> {
+    Ok(ParameterJson {
+        service_parameter: &value.parameter,
+        transform: lambda(&value.expression, &value.expression_source_info)?,
+        source_information: SourceInformation::from(&value.source_info),
+    })
+}
+
 /// The engine's `ServiceMapping`.
-fn service_mapping_json(mapping: &ServiceMapping) -> Result<Value, ConvertError> {
-    let mut json = json!({
-        "service": service_pointer(&mapping.store, &mapping.path),
-        "sourceInformation": position(&mapping.source_info),
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServiceMappingJson<'a> {
+    service: ServicePointerJson<'a>,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    path_offset: Option<PathJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    request_build_info: Option<RequestJson<'a>>,
+}
+
+/// The response's path, the engine's `Path`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PathJson<'a> {
+    start_type: &'static str,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    path: Vec<PropertyPathJson<'a>>,
+}
+
+/// The engine's `PropertyPathElement`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "propertyPath")]
+struct PropertyPathJson<'a> {
+    property: &'a str,
+    parameters: [(); 0],
+}
+
+/// The engine's `ServiceRequestBuildInfo`.
+#[derive(Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct RequestJson<'a> {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source_information: Option<SourceInformation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    request_parameters_build_info: Option<ParametersJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    request_body_build_info: Option<BodyJson>,
+}
+
+/// The engine's `ServiceRequestParametersBuildInfo`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ParametersJson<'a> {
+    parameter_build_info_list: Vec<ParameterJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source_information: Option<SourceInformation>,
+}
+
+/// The engine's `ServiceRequestBodyBuildInfo`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BodyJson {
+    transform: ValueSpecification,
+    source_information: SourceInformation,
+}
+
+fn service_mapping_json(mapping: &ServiceMapping) -> Result<ServiceMappingJson<'_>, ConvertError> {
+    let path_offset = mapping.path_offset.as_ref().map(|properties| PathJson {
+        start_type: PATH_START,
+        path: properties
+            .iter()
+            .map(|property| PropertyPathJson {
+                property: property.as_str(),
+                parameters: [],
+            })
+            .collect(),
     });
-    if let Some(properties) = &mapping.path_offset {
-        let mut path = json!({"startType": PATH_START});
-        if !properties.is_empty() {
-            path["path"] = json!(
-                properties
-                    .iter()
-                    .map(|property| json!({
-                        "_type": "propertyPath",
-                        "property": property.as_str(),
-                        "parameters": [],
-                    }))
-                    .collect::<Vec<_>>()
-            );
-        }
-        json["pathOffset"] = path;
-    }
     let mut request = match &mapping.request {
-        Some(request) => {
-            let mut json = json!({"sourceInformation": position(&request.source_info)});
-            if let Some((parameters, source_info)) = &request.parameters {
-                json["requestParametersBuildInfo"] = json!({
-                    "parameterBuildInfoList": parameters.iter().map(parameter_json).collect::<Result<Vec<_>, ConvertError>>()?,
-                    "sourceInformation": position(source_info),
-                });
-            }
-            if let Some((expression, expression_span, source_info)) = &request.body {
-                json["requestBodyBuildInfo"] = json!({
-                    "transform": lambda(expression, expression_span)?,
-                    "sourceInformation": position(source_info),
-                });
-            }
-            Some(json)
-        }
+        Some(request) => Some(RequestJson {
+            source_information: Some(SourceInformation::from(&request.source_info)),
+            request_parameters_build_info: request
+                .parameters
+                .as_ref()
+                .map(|(parameters, source_info)| {
+                    Ok::<_, ConvertError>(ParametersJson {
+                        parameter_build_info_list: parameters
+                            .iter()
+                            .map(parameter_json)
+                            .collect::<Result<Vec<_>, ConvertError>>()?,
+                        source_information: Some(SourceInformation::from(source_info)),
+                    })
+                })
+                .transpose()?,
+            request_body_build_info: request
+                .body
+                .as_ref()
+                .map(|(expression, expression_span, source_info)| {
+                    Ok::<_, ConvertError>(BodyJson {
+                        transform: lambda(expression, expression_span)?,
+                        source_information: SourceInformation::from(source_info),
+                    })
+                })
+                .transpose()?,
+        }),
         None => None,
     };
     // The old forms: the request's parameters, replacing `~request`'s.
@@ -511,47 +602,77 @@ fn service_mapping_json(mapping: &ServiceMapping) -> Result<Value, ConvertError>
             parameters.push(parameter_json(value)?);
         }
         for property in mapping.property_mappings.iter().flatten() {
-            parameters.push(json!({
-                "serviceParameter": property.parameter,
-                "transform": lambda(&property.expression, &property.source_info)?,
-                "sourceInformation": position(&property.source_info),
-            }));
+            parameters.push(ParameterJson {
+                service_parameter: &property.parameter,
+                transform: lambda(&property.expression, &property.source_info)?,
+                source_information: SourceInformation::from(&property.source_info),
+            });
         }
-        let request = request.get_or_insert_with(|| json!({}));
-        request["requestParametersBuildInfo"] = json!({"parameterBuildInfoList": parameters});
+        request
+            .get_or_insert_with(RequestJson::default)
+            .request_parameters_build_info = Some(ParametersJson {
+            parameter_build_info_list: parameters,
+            source_information: None,
+        });
     }
-    if let Some(request) = request {
-        json["requestBuildInfo"] = request;
-    }
-    Ok(json)
+    Ok(ServiceMappingJson {
+        service: service_pointer(&mapping.store, &mapping.path, &mapping.source_info)?,
+        source_information: SourceInformation::from(&mapping.source_info),
+        path_offset,
+        request_build_info: request,
+    })
 }
 
-/// The engine's `ServicePtr`: the last name of `path`, in its groups.
-fn service_pointer(store: &str, path: &[Name]) -> Value {
-    let (service, groups) = path.split_last().expect("a service path has a service");
-    let mut json = json!({
-        "serviceStore": store,
-        "service": service.value.as_str(),
-        "sourceInformation": position(&service.source_info),
-    });
-    if let Some(parent) = group_pointer(store, groups) {
-        json["parent"] = parent;
-    }
-    json
+/// The engine's `ServicePtr`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServicePointerJson<'a> {
+    service_store: &'a str,
+    service: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    parent: Option<GroupPointerJson<'a>>,
+}
+
+/// The engine's `ServiceGroupPtr`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GroupPointerJson<'a> {
+    service_store: &'a str,
+    service_group: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    parent: Option<Box<GroupPointerJson<'a>>>,
+}
+
+/// The engine's `ServicePtr`: the last name of `path`, in its groups. The
+/// grammar reads at least one name; `span` is the mapping's, for a path
+/// without one.
+fn service_pointer<'a>(
+    store: &'a str,
+    path: &'a [Name],
+    span: &SourceInfo,
+) -> Result<ServicePointerJson<'a>, ConvertError> {
+    let (service, groups) = path
+        .split_last()
+        .ok_or_else(|| ConvertError::plugin("a service mapping without a service", Some(span)))?;
+    Ok(ServicePointerJson {
+        service_store: store,
+        service: service.value.as_str(),
+        source_information: SourceInformation::from(&service.source_info),
+        parent: group_pointer(store, groups),
+    })
 }
 
 /// The engine's `ServiceGroupPtr`, the last of `groups` in the others.
-fn group_pointer(store: &str, groups: &[Name]) -> Option<Value> {
+fn group_pointer<'a>(store: &'a str, groups: &'a [Name]) -> Option<GroupPointerJson<'a>> {
     let (group, parents) = groups.split_last()?;
-    let mut json = json!({
-        "serviceStore": store,
-        "serviceGroup": group.value.as_str(),
-        "sourceInformation": position(&group.source_info),
-    });
-    if let Some(parent) = group_pointer(store, parents) {
-        json["parent"] = parent;
-    }
-    Some(json)
+    Some(GroupPointerJson {
+        service_store: store,
+        service_group: group.value.as_str(),
+        source_information: SourceInformation::from(&group.source_info),
+        parent: group_pointer(store, parents).map(Box::new),
+    })
 }
 
 #[distributed_slice(MAPPING_ELEMENT_GRAMMARS)]

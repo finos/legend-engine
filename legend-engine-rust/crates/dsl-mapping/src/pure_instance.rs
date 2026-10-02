@@ -53,6 +53,7 @@ use serde::Serialize;
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
 use crate::grammar::{ElementSpan, MappingElementGrammar, MappingElementKind};
 use crate::section::{expression_block, separated};
+use serde_json::value::{RawValue, to_raw_value};
 
 /// The element type this grammar reads.
 pub const TYPE_NAME: &str = "Pure";
@@ -152,7 +153,7 @@ impl MappingElementGrammar for PureInstanceGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, serde_json::Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -189,7 +190,7 @@ impl MappingElementGrammar for PureInstanceGrammar {
             source_information: SourceInformation::from(&element.source_info),
             class_source_information: SourceInformation::from(&header.target.source_info),
         };
-        Ok((MappingElementKind::Class, serde_json::to_value(json)?))
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
 }
 
@@ -328,14 +329,12 @@ fn property_mapping(ctx: &mut ParserContext<'_>) -> Result<PurePropertyMapping, 
 
 /// An expression as the walker makes it a lambda: the body of one without
 /// parameters, unpositioned.
-fn lambda(expression: &Expression) -> Result<serde_json::Value, ConvertError> {
-    Ok(serde_json::to_value(ValueSpecification::Lambda(
-        LambdaFunction {
-            body: vec![convert_expression_typed(expression)?],
-            parameters: Vec::new(),
-            source_information: None,
-        },
-    ))?)
+fn lambda(expression: &Expression) -> Result<ValueSpecification, ConvertError> {
+    Ok(ValueSpecification::Lambda(LambdaFunction {
+        body: vec![convert_expression_typed(expression)?],
+        parameters: Vec::new(),
+        source_information: None,
+    }))
 }
 
 fn property_mapping_json(
@@ -386,7 +385,7 @@ struct PureInstanceJson {
     #[serde(skip_serializing_if = "Option::is_none")]
     source_class_source_information: Option<SourceInformation>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    filter: Option<serde_json::Value>,
+    filter: Option<ValueSpecification>,
     property_mappings: Vec<PurePropertyMappingJson>,
     source_information: SourceInformation,
     class_source_information: SourceInformation,
@@ -408,7 +407,7 @@ struct PurePropertyMappingJson {
     local_mapping_property: Option<LocalMappingPropertyJson>,
     #[serde(skip_serializing_if = "Option::is_none")]
     enum_mapping_id: Option<String>,
-    transform: serde_json::Value,
+    transform: ValueSpecification,
     explode_property: bool,
     source_information: SourceInformation,
 }

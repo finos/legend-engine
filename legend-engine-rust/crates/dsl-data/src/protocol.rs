@@ -44,6 +44,7 @@ use linkme::distributed_slice;
 use serde::Serialize;
 
 use crate::ast::{DataElement, DataResolver, KIND};
+use serde_json::value::{RawValue, to_raw_value};
 
 /// Protocol converter for data elements.
 pub struct DataElementProtocol;
@@ -54,7 +55,7 @@ impl ElementProtocol for DataElementProtocol {
         KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<serde_json::Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let element = element
             .as_any()
             .downcast_ref::<DataElement>()
@@ -94,7 +95,7 @@ impl ElementProtocol for DataElementProtocol {
             },
             source_information: SourceInformation::from(&element.source_info),
         };
-        Ok(serde_json::to_value(json)?)
+        Ok(to_raw_value(&json)?)
     }
 }
 

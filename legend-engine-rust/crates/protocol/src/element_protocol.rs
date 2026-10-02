@@ -40,6 +40,7 @@ use std::sync::OnceLock;
 
 use legend_pure_parser_ast::dsl::DSLElement;
 use linkme::distributed_slice;
+use serde_json::value::RawValue;
 
 pub use crate::error::{ConvertError, Result};
 
@@ -48,13 +49,14 @@ pub trait ElementProtocol: Send + Sync {
     /// The [`DSLElement::kind`] this converter handles.
     fn kind(&self) -> &str;
 
-    /// Converts `element` into a protocol JSON object carrying its `_type`.
+    /// Converts `element` into its protocol JSON object, carrying its `_type`,
+    /// written once as text (`docs/protocol-json.md`).
     ///
     /// # Errors
     ///
     /// [`ConvertError::Plugin`] when `element` is not the expected concrete
     /// type, or any nested conversion failure.
-    fn convert(&self, element: &dyn DSLElement) -> Result<serde_json::Value>;
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>>;
 }
 
 /// Distributed slice into which each section grammar crate registers its
@@ -98,7 +100,7 @@ where
 ///
 /// [`ConvertError::Unsupported`] when no linked crate registered a converter
 /// for the element's kind; otherwise the converter's own error.
-pub fn convert_dsl_element(element: &dyn DSLElement) -> Result<serde_json::Value> {
+pub fn convert_dsl_element(element: &dyn DSLElement) -> Result<Box<RawValue>> {
     let kind = element.kind();
     discovered_element_protocols()
         .iter()
@@ -123,8 +125,8 @@ mod tests {
         fn kind(&self) -> &'static str {
             "kind-a"
         }
-        fn convert(&self, _: &dyn DSLElement) -> Result<serde_json::Value> {
-            Ok(serde_json::Value::Null)
+        fn convert(&self, _: &dyn DSLElement) -> Result<Box<RawValue>> {
+            Ok(serde_json::value::to_raw_value(&serde_json::Value::Null)?)
         }
     }
 
@@ -132,8 +134,8 @@ mod tests {
         fn kind(&self) -> &'static str {
             "kind-a"
         }
-        fn convert(&self, _: &dyn DSLElement) -> Result<serde_json::Value> {
-            Ok(serde_json::Value::Null)
+        fn convert(&self, _: &dyn DSLElement) -> Result<Box<RawValue>> {
+            Ok(serde_json::value::to_raw_value(&serde_json::Value::Null)?)
         }
     }
 

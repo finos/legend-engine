@@ -53,6 +53,7 @@ use legend_pure_parser_parser::words::Name;
 use legend_pure_parser_parser::{Block, ParserContext};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use linkme::distributed_slice;
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use serde_json::Value;
 
 use super::authentication::CORE_AUTHENTICATION_STRATEGIES;
@@ -201,10 +202,35 @@ pub trait LocalModeGrammar {
     /// The database type, as the engine's `DatabaseType` names it.
     fn database_type(&self) -> &str;
 
-    /// The datasource specification's and the authentication strategy's
-    /// JSON, for a connection to `store`, if it names one; none where the
-    /// engine fails, outside its parser.
-    fn specifications(&self, store: Option<&str>) -> Option<(Value, Value)>;
+    /// The datasource specification and the authentication strategy, for a
+    /// connection to `store`, if it names one; none where the engine fails,
+    /// outside its parser.
+    fn specifications(
+        &self,
+        store: Option<&str>,
+    ) -> Option<(LocalSpecification, LocalSpecification)>;
+}
+
+/// A local mode's datasource specification or authentication strategy: its
+/// `_type` and its fields, all strings. It serializes as the engine's JSON
+/// of it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalSpecification {
+    /// The `_type`.
+    pub json_type: &'static str,
+    /// The fields, named as in the protocol, each name once.
+    pub fields: Vec<(&'static str, String)>,
+}
+
+impl Serialize for LocalSpecification {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(self.fields.len() + 1))?;
+        map.serialize_entry("_type", self.json_type)?;
+        for (name, value) in &self.fields {
+            map.serialize_entry(name, value)?;
+        }
+        map.end()
+    }
 }
 
 /// The relational store's own specification grammars.

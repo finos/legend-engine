@@ -17,6 +17,7 @@ grammars live") go back there once its interpreter work restarts.
 
 Design and roadmap: [docs/engine-integration.md](docs/engine-integration.md).
 Which grammars are ported, and the order: [docs/porting-status.md](docs/porting-status.md).
+How converters write protocol JSON: [docs/protocol-json.md](docs/protocol-json.md).
 
 ## Crates
 
@@ -26,7 +27,7 @@ Which grammars are ported, and the order: [docs/porting-status.md](docs/porting-
 | `lexer` | Source → tokens |
 | `parser` | Tokens → AST; plug-in traits `SectionParser`, `IslandParser`, `EmbeddedDataParser` |
 | `protocol` | AST → Protocol v1 JSON; plug-in traits `IslandProtocol`, `EmbeddedDataProtocol`, `ElementProtocol` |
-| `api` | Engine contract: `parse_section` (section body + offsets → elements/imports or error), `parse_model` (a whole model, split into sections as the engine's `CodeLexerGrammar` splits it, then its section index: `model.rs`), `capabilities` |
+| `api` | Engine contract: `parse_section` (section body + offsets → elements/imports or error), `parse_model` (a whole model, split into sections as the engine's `CodeLexerGrammar` splits it, then its section index: `model.rs`), `capabilities`; their `*_json` forms, which JNI calls, write each element's JSON once as text, and the value forms read it back |
 | `jni` | `liblegend_pure_rust_parser`: JNI exports for Java `org.finos.legend.pure.rust.parser.NativeGrammarParser` (in the engine module `legend-engine-language-pure-grammar-rust`); the only crate with `unsafe` (`#[unsafe(no_mangle)]`) |
 | `dsl-graph`, `dsl-store`, `dsl-sql`, `dsl-tds` | Island grammars `#{…}#`, `#>{…}#`, `#SQL{…}#` and `#TDS{…}#` (parser + protocol halves only) |
 | `dsl-relational` | The `###Relational` section (databases; a section without imports, read from Pure tokens with the relational lexer's multi-token keywords rebuilt in `tokens.rs`), `Relational #{…}#` test data, the `Relational` mapping elements and legacy test input (`mapping.rs`, registered into `dsl-mapping`'s grammars), and `RelationalDatabaseConnection` (`connection/`, registered into `dsl-connection`'s grammars; its datasource specifications, authentication strategies, post-processors and query generation configs are plug-ins of their own, `connection/specification.rs`, which also reproduces where the engine's walker positions what it parses again in them); and the `###QueryPostProcessor` section's relational mappers (`mapper.rs`) |
@@ -89,6 +90,14 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn -pl legend-engine-core/legend-engi
 - Snapshot tests use `insta`.
 - `ast-derive` derives are hierarchical: use exactly one of `Spanned`,
   `Annotated` or `PackageableElement` per struct.
+- Protocol JSON is built once, from typed `#[derive(Serialize)]` structs:
+  one per engine protocol class, no `serde_json::json!` in library code
+  (`clippy.toml`; `cargo lint-lib` denies it, tests keep it for the JSON they
+  expect), and never a `to_value` of a struct that holds a `Value` (a deep
+  copy, every number parsed again). An element's JSON is written once, as
+  text: `ElementProtocol` and `MappingElementGrammar` return `Box<RawValue>`,
+  which must never pass through a `Value` (`serde_json` parses it back). The
+  pattern, its recipes and its gates: [docs/protocol-json.md](docs/protocol-json.md).
 
 ## Engine contract (what "correct" means here)
 
@@ -133,5 +142,6 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn -pl legend-engine-core/legend-engi
 1. Write failing tests first, derived from the engine's
    `TestDomainGrammarRoundtrip` / `TestDomainGrammarParser`.
 2. `ast` types, then `lexer` tokens if needed, then `parser`, then `protocol`
-   conversion.
+   conversion: typed structs, as [docs/protocol-json.md](docs/protocol-json.md)
+   writes them.
 3. `cargo insta review`.

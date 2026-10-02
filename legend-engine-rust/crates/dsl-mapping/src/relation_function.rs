@@ -54,7 +54,8 @@ use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
@@ -216,7 +217,7 @@ impl MappingElementGrammar for RelationFunctionGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -228,38 +229,35 @@ impl MappingElementGrammar for RelationFunctionGrammar {
                 )
             })?;
         let header = &element.header;
-        let source = header.id.as_ref().map(|id| id.text.to_string());
-        let mut json = json!({
-            "_type": "relation",
-            "class": header.target.path,
-            "root": header.root,
-            "primaryKey": body.primary_key.iter().map(SmolStr::as_str).collect::<Vec<_>>(),
-            "propertyMappings": body
-                .property_mappings
-                .iter()
-                .map(|mapping| property_mapping_json(mapping, Some(&header.target.path), source.as_deref()))
-                .collect::<Result<Vec<_>, ConvertError>>()?,
-            "sourceInformation": position(&element.source_info),
-        });
-        match &body.source {
-            RelationSource::Function(path, source_info) => {
-                json["relationFunction"] = json!({
-                    "type": "FUNCTION",
-                    "path": path,
-                    "sourceInformation": position(source_info),
-                });
-            }
-            RelationSource::Expression(expression, span) => {
-                json["sourceLambda"] = lambda(expression, span)?;
-            }
-        }
-        if let Some(id) = &header.id {
-            json["id"] = json!(id.text.as_str());
-        }
-        if let Some(extends) = &header.extends {
-            json["extendsClassMappingId"] = json!(extends.text.as_str());
-        }
-        Ok((MappingElementKind::Class, json))
+        let source = header.id.as_ref().map(|id| id.text.as_str());
+        let property_mappings = body
+            .property_mappings
+            .iter()
+            .map(|mapping| property_mapping_json(mapping, Some(&header.target.path), source))
+            .collect::<Result<Vec<_>, ConvertError>>()?;
+        let (relation_function, source_lambda) = match &body.source {
+            RelationSource::Function(path, source_info) => (
+                Some(FunctionPointerJson {
+                    element_type: "FUNCTION",
+                    path,
+                    source_information: SourceInformation::from(source_info),
+                }),
+                None,
+            ),
+            RelationSource::Expression(expression, span) => (None, Some(lambda(expression, span)?)),
+        };
+        let json = RelationClassMappingJson {
+            class: &header.target.path,
+            root: header.root,
+            primary_key: body.primary_key.iter().map(SmolStr::as_str).collect(),
+            property_mappings,
+            source_information: SourceInformation::from(&element.source_info),
+            relation_function,
+            source_lambda,
+            id: source,
+            extends_class_mapping_id: header.extends.as_ref().map(|extends| extends.text.as_str()),
+        };
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
 }
 
@@ -458,41 +456,129 @@ fn walker_lambda_span(span: &SourceInfo, body: &SourceInfo) -> SourceInfo {
 
 // ── The protocol ───────────────────────────────────────────────────────
 
-fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+/// The engine's `RelationFunctionClassMapping`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "relation", rename_all = "camelCase")]
+struct RelationClassMappingJson<'a> {
+    class: &'a str,
+    root: bool,
+    primary_key: Vec<&'a str>,
+    property_mappings: Vec<PropertyMappingJson<'a>>,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    relation_function: Option<FunctionPointerJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source_lambda: Option<ValueSpecification>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extends_class_mapping_id: Option<&'a str>,
+}
+
+/// The relation function's pointer.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FunctionPointerJson<'a> {
+    #[serde(rename = "type")]
+    element_type: &'static str,
+    path: &'a str,
+    source_information: SourceInformation,
 }
 
 /// An expression as the walker makes it a lambda: the body of one without
 /// parameters, positioned on the expression.
-fn lambda(expression: &Expression, span: &SourceInfo) -> Result<Value, ConvertError> {
-    Ok(serde_json::to_value(ValueSpecification::Lambda(
-        LambdaFunction {
-            body: vec![convert_expression_typed(expression)?],
-            parameters: Vec::new(),
-            source_information: Some(SourceInformation::from(span)),
-        },
-    ))?)
+fn lambda(expression: &Expression, span: &SourceInfo) -> Result<ValueSpecification, ConvertError> {
+    Ok(ValueSpecification::Lambda(LambdaFunction {
+        body: vec![convert_expression_typed(expression)?],
+        parameters: Vec::new(),
+        source_information: Some(SourceInformation::from(span)),
+    }))
 }
 
-fn property_pointer(property: &QualifiedName, class: Option<&str>) -> Value {
-    let mut json = json!({
-        "property": property.path,
-        "sourceInformation": position(&property.source_info),
-    });
-    if let Some(class) = class {
-        json["class"] = json!(class);
+/// The engine's `PropertyPointer`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PropertyPointerJson<'a> {
+    property: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    class: Option<&'a str>,
+}
+
+fn property_pointer<'a>(
+    property: &'a QualifiedName,
+    class: Option<&'a str>,
+) -> PropertyPointerJson<'a> {
+    PropertyPointerJson {
+        property: &property.path,
+        source_information: SourceInformation::from(&property.source_info),
+        class,
     }
-    json
+}
+
+/// The engine's relation property mappings.
+#[derive(Serialize)]
+#[serde(tag = "_type")]
+enum PropertyMappingJson<'a> {
+    #[serde(rename = "relationFunctionPropertyMapping", rename_all = "camelCase")]
+    Value {
+        property: PropertyPointerJson<'a>,
+        source_information: SourceInformation,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        column: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        value_fn: Option<Box<ValueSpecification>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        local_mapping_property: Option<LocalMappingPropertyJson<'a>>,
+        /// Its position is not written (`@JsonIgnore`).
+        #[serde(skip_serializing_if = "Option::is_none")]
+        binding_transformer: Option<BindingTransformerJson<'a>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        enum_mapping_id: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        source: Option<&'a str>,
+    },
+    /// An embedded mapping, or an inline one: its id, and no property
+    /// mappings.
+    #[serde(
+        rename = "relationFunctionEmbeddedPropertyMapping",
+        rename_all = "camelCase"
+    )]
+    Embedded {
+        property: PropertyPointerJson<'a>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        id: Option<&'a str>,
+        property_mappings: Vec<PropertyMappingJson<'a>>,
+        source_information: SourceInformation,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        source: Option<&'a str>,
+    },
+}
+
+/// The engine's `LocalMappingPropertyInfo`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalMappingPropertyJson<'a> {
+    #[serde(rename = "type")]
+    property_type: &'a str,
+    multiplicity: legend_pure_parser_protocol::v1::multiplicity::Multiplicity,
+    source_information: SourceInformation,
+}
+
+/// The engine's `BindingTransformer`.
+#[derive(Serialize)]
+struct BindingTransformerJson<'a> {
+    binding: &'a str,
 }
 
 /// A property mapping, of the class `class` (none inside an embedded
 /// mapping) and from the class mapping `source`.
-fn property_mapping_json(
-    mapping: &RelationPropertyMapping,
-    class: Option<&str>,
-    source: Option<&str>,
-) -> Result<Value, ConvertError> {
-    let mut json = match mapping {
+fn property_mapping_json<'a>(
+    mapping: &'a RelationPropertyMapping,
+    class: Option<&'a str>,
+    source: Option<&'a str>,
+) -> Result<PropertyMappingJson<'a>, ConvertError> {
+    Ok(match mapping {
         RelationPropertyMapping::Value {
             property,
             local,
@@ -500,61 +586,60 @@ fn property_mapping_json(
             value,
             source_info,
         } => {
-            let mut json = json!({
-                "_type": "relationFunctionPropertyMapping",
-                "property": property_pointer(property, class),
-                "sourceInformation": position(source_info),
-            });
-            match value {
-                RelationValue::Column(column) => json["column"] = json!(column.as_str()),
+            let (column, value_fn) = match value {
+                RelationValue::Column(column) => (Some(column.as_str()), None),
                 RelationValue::Expression(expression, span) => {
-                    json["valueFn"] = lambda(expression, span)?;
+                    (None, Some(Box::new(lambda(expression, span)?)))
                 }
-            }
-            if let Some((type_text, multiplicity)) = local {
-                json["localMappingProperty"] = json!({
-                    "type": type_text,
-                    "multiplicity": legend_pure_parser_protocol::v1::multiplicity::Multiplicity::from(multiplicity),
-                    "sourceInformation": position(&property.source_info),
-                });
-            }
-            match transformer {
-                // Its position is not written (`@JsonIgnore`).
+            };
+            let (binding_transformer, enum_mapping_id) = match transformer {
                 Some(Transformer::Binding(binding)) => {
-                    json["bindingTransformer"] = json!({"binding": binding});
+                    (Some(BindingTransformerJson { binding }), None)
                 }
-                Some(Transformer::Enumeration(id)) => json["enumMappingId"] = json!(id.as_str()),
-                None => {}
+                Some(Transformer::Enumeration(id)) => (None, Some(id.as_str())),
+                None => (None, None),
+            };
+            PropertyMappingJson::Value {
+                property: property_pointer(property, class),
+                source_information: SourceInformation::from(source_info),
+                column,
+                value_fn,
+                local_mapping_property: local.as_ref().map(|(type_text, multiplicity)| {
+                    LocalMappingPropertyJson {
+                        property_type: type_text,
+                        multiplicity: multiplicity.into(),
+                        source_information: SourceInformation::from(&property.source_info),
+                    }
+                }),
+                binding_transformer,
+                enum_mapping_id,
+                source,
             }
-            json
         }
         RelationPropertyMapping::Embedded {
             property,
             property_mappings,
             source_info,
-        } => json!({
-            "_type": "relationFunctionEmbeddedPropertyMapping",
-            "property": property_pointer(property, class),
-            "propertyMappings": property_mappings
+        } => PropertyMappingJson::Embedded {
+            property: property_pointer(property, class),
+            id: None,
+            property_mappings: property_mappings
                 .iter()
                 .map(|mapping| property_mapping_json(mapping, None, None))
                 .collect::<Result<Vec<_>, ConvertError>>()?,
-            "sourceInformation": position(source_info),
-        }),
+            source_information: SourceInformation::from(source_info),
+            source,
+        },
         RelationPropertyMapping::Inline {
             property,
             id,
             source_info,
-        } => json!({
-            "_type": "relationFunctionEmbeddedPropertyMapping",
-            "property": property_pointer(property, class),
-            "id": id.as_str(),
-            "propertyMappings": [],
-            "sourceInformation": position(source_info),
-        }),
-    };
-    if let Some(source) = source {
-        json["source"] = json!(source);
-    }
-    Ok(json)
+        } => PropertyMappingJson::Embedded {
+            property: property_pointer(property, class),
+            id: Some(id.as_str()),
+            property_mappings: Vec::new(),
+            source_information: SourceInformation::from(source_info),
+            source,
+        },
+    })
 }

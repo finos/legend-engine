@@ -48,6 +48,8 @@ use legend_pure_parser_protocol::v1::test_assertion::TestAssertion;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
 use linkme::distributed_slice;
 use serde::Serialize;
+use serde_json::Value;
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{
     IncludeKind, LegacyTest, Mapping, MappingInclude, MappingTest, SECTION_KIND, StoreTestData,
@@ -64,7 +66,7 @@ impl ElementProtocol for MappingProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<serde_json::Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let mapping = element.as_any().downcast_ref::<Mapping>().ok_or_else(|| {
             ConvertError::plugin(
                 format!(
@@ -102,6 +104,21 @@ impl ElementProtocol for MappingProtocol {
                 MappingElementKind::Association => association_mappings.push(json),
             }
         }
+        let tests = mapping
+            .legacy_tests
+            .iter()
+            .map(|test| legacy_test(test, &path))
+            .collect::<Result<_>>()?;
+        let test_suites = mapping
+            .test_suites
+            .as_ref()
+            .map(|suites| {
+                suites
+                    .iter()
+                    .map(|suite| test_suite(suite, &path))
+                    .collect::<Result<_>>()
+            })
+            .transpose()?;
         let json = MappingJson {
             package,
             name,
@@ -109,37 +126,24 @@ impl ElementProtocol for MappingProtocol {
             class_mappings,
             enumeration_mappings,
             association_mappings,
-            tests: mapping
-                .legacy_tests
-                .iter()
-                .map(|test| legacy_test(test, &path))
-                .collect::<Result<_>>()?,
-            test_suites: mapping
-                .test_suites
-                .as_ref()
-                .map(|suites| {
-                    suites
-                        .iter()
-                        .map(|suite| test_suite(suite, &path))
-                        .collect::<Result<_>>()
-                })
-                .transpose()?,
+            tests,
+            test_suites,
             source_information: SourceInformation::from(&mapping.source_info),
         };
-        Ok(serde_json::to_value(json)?)
+        Ok(to_raw_value(&json)?)
     }
 }
 
-/// The engine's `Mapping`.
+/// The engine's `Mapping`. Its elements are their grammars' JSON.
 #[derive(Serialize)]
 #[serde(tag = "_type", rename = "mapping", rename_all = "camelCase")]
 struct MappingJson {
     package: String,
     name: String,
     included_mappings: Vec<IncludeJson>,
-    class_mappings: Vec<serde_json::Value>,
-    enumeration_mappings: Vec<serde_json::Value>,
-    association_mappings: Vec<serde_json::Value>,
+    class_mappings: Vec<Box<RawValue>>,
+    enumeration_mappings: Vec<Box<RawValue>>,
+    association_mappings: Vec<Box<RawValue>>,
     tests: Vec<LegacyTestJson>,
     #[serde(skip_serializing_if = "Option::is_none")]
     test_suites: Option<Vec<TestSuiteJson>>,
@@ -168,13 +172,13 @@ enum IncludeJson {
     },
 }
 
-/// The engine's `MappingTest_Legacy`.
+/// The engine's `MappingTest_Legacy`. Its inputs are their grammars' JSON.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct LegacyTestJson {
     name: String,
-    query: serde_json::Value,
-    input_data: Vec<serde_json::Value>,
+    query: Value,
+    input_data: Vec<Value>,
     assert: ExpectedOutputJson,
     source_information: SourceInformation,
 }
@@ -198,7 +202,7 @@ struct TestSuiteJson {
     id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     doc: Option<String>,
-    func: serde_json::Value,
+    func: Value,
     tests: Vec<MappingTestJson>,
     source_information: SourceInformation,
 }
@@ -254,24 +258,26 @@ fn include(include: &MappingInclude) -> IncludeJson {
 }
 
 fn legacy_test(test: &LegacyTest, mapping_path: &str) -> Result<LegacyTestJson> {
+    let query = lambda(&test.query, mapping_path)?;
+    let input_data = test
+        .inputs
+        .iter()
+        .map(|input| {
+            let type_name = &input.type_name.text;
+            test_input_grammar(type_name)
+                .ok_or_else(|| {
+                    ConvertError::unsupported(
+                        format!("no mapping test input grammar is linked for '{type_name}'"),
+                        &input.source_info,
+                    )
+                })?
+                .convert(input)
+        })
+        .collect::<Result<_>>()?;
     Ok(LegacyTestJson {
         name: test.name.to_string(),
-        query: lambda(&test.query, mapping_path)?,
-        input_data: test
-            .inputs
-            .iter()
-            .map(|input| {
-                let type_name = &input.type_name.text;
-                test_input_grammar(type_name)
-                    .ok_or_else(|| {
-                        ConvertError::unsupported(
-                            format!("no mapping test input grammar is linked for '{type_name}'"),
-                            &input.source_info,
-                        )
-                    })?
-                    .convert(input)
-            })
-            .collect::<Result<_>>()?,
+        query,
+        input_data,
         assert: ExpectedOutputJson {
             expected_output: test.expected_output.clone(),
             source_information: SourceInformation::from(&test.assert_source_info),

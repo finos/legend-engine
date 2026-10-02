@@ -20,7 +20,7 @@ use legend_pure_parser_protocol::element_protocol::{
     ConvertError, ELEMENT_PROTOCOLS, ElementProtocol, Result,
 };
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{PersistenceElement, SECTION_KIND};
 
@@ -33,7 +33,7 @@ impl ElementProtocol for PersistenceProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let element = element
             .as_any()
             .downcast_ref::<PersistenceElement>()
@@ -46,16 +46,19 @@ impl ElementProtocol for PersistenceProtocol {
                     None,
                 )
             })?;
-        let mut json = element.record.to_json()?;
-        json["package"] = json!(
-            element
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(element.name.value.as_str());
-        Ok(json)
+        let json = element
+            .record
+            .converted()?
+            .with(
+                "package",
+                element
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", element.name.value.as_str());
+        Ok(to_raw_value(&json)?)
     }
 }
 

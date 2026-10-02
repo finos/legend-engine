@@ -50,6 +50,7 @@ use crate::operation::OperationGrammar;
 use crate::pure_instance::PureInstanceGrammar;
 use crate::relation_function::RelationFunctionGrammar;
 use crate::xstore::XStoreGrammar;
+use serde_json::value::RawValue;
 
 /// The engine core's mapping element grammars.
 static CORE_MAPPING_ELEMENT_GRAMMARS: [&(dyn MappingElementGrammar + Send + Sync); 7] = [
@@ -111,7 +112,8 @@ pub trait MappingElementGrammar: Send + Sync {
     ) -> Result<Box<dyn MappingElementBody>, ParseError>;
 
     /// Converts an element whose body this grammar read into its protocol
-    /// JSON, and says which of the mapping's lists it goes in.
+    /// JSON, written once as text, and says which of the mapping's lists it
+    /// goes in.
     ///
     /// # Errors
     ///
@@ -119,7 +121,7 @@ pub trait MappingElementGrammar: Send + Sync {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, serde_json::Value), ConvertError>;
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError>;
 }
 
 /// The grammar of one type of legacy test input data, e.g. `Object`.

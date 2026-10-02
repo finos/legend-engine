@@ -33,6 +33,7 @@ use legend_pure_parser_protocol::embedded_data_protocol::{
 };
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
+use serde::Serialize;
 
 use crate::ast::{RelationalData, TYPE_NAME};
 
@@ -57,24 +58,38 @@ impl EmbeddedDataProtocol for RelationalDataProtocol {
                     None,
                 )
             })?;
-        let tables: Vec<serde_json::Value> = data
-            .tables
-            .iter()
-            .map(|table| {
-                serde_json::json!({
-                    "schema": table.schema.as_str(),
-                    "table": table.table.as_str(),
-                    "values": table.values,
-                    "sourceInformation": SourceInformation::from(&table.source_info),
+        Ok(serde_json::to_value(RelationalCsvDataJson {
+            tables: data
+                .tables
+                .iter()
+                .map(|table| RelationalCsvTableJson {
+                    schema: table.schema.as_str(),
+                    table: table.table.as_str(),
+                    values: &table.values,
+                    source_information: SourceInformation::from(&table.source_info),
                 })
-            })
-            .collect();
-        Ok(serde_json::json!({
-            "_type": "relationalCSVData",
-            "tables": tables,
-            "sourceInformation": SourceInformation::from(&data.source_info),
-        }))
+                .collect(),
+            source_information: SourceInformation::from(&data.source_info),
+        })?)
     }
+}
+
+/// The engine's `RelationalCSVData`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "relationalCSVData", rename_all = "camelCase")]
+struct RelationalCsvDataJson<'a> {
+    tables: Vec<RelationalCsvTableJson<'a>>,
+    source_information: SourceInformation,
+}
+
+/// The engine's `RelationalCSVTable`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RelationalCsvTableJson<'a> {
+    schema: &'a str,
+    table: &'a str,
+    values: &'a str,
+    source_information: SourceInformation,
 }
 
 #[distributed_slice(EMBEDDED_DATA_PROTOCOLS)]

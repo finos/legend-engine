@@ -32,8 +32,10 @@
 use legend_pure_parser_ast::island::IslandContent;
 use legend_pure_parser_protocol::IslandProtocol;
 use legend_pure_parser_protocol::island_protocol::{ConvertError, ISLAND_PROTOCOLS, Result};
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{ClassInstance, ValueSpecification};
 use linkme::distributed_slice;
+use serde::Serialize;
 
 use crate::ast::{RelationStoreAccessorRef, TAG};
 
@@ -60,7 +62,7 @@ impl IslandProtocol for RelationStoreAccessorProtocol {
                     None,
                 )
             })?;
-        Ok(convert_relation_store_accessor(accessor))
+        convert_relation_store_accessor(accessor)
     }
 }
 
@@ -78,16 +80,24 @@ pub fn default_island_protocols() -> Vec<Box<dyn IslandProtocol>> {
 
 /// The engine's `RelationStoreAccessor` (`{path, sourceInformation}`),
 /// positioned, like its class instance, on the whole island.
-fn convert_relation_store_accessor(accessor: &RelationStoreAccessorRef) -> ValueSpecification {
-    let position = legend_pure_parser_protocol::v1::source_info::SourceInformation::from(
-        &accessor.source_info,
-    );
-    ValueSpecification::ClassInstance(ClassInstance {
+fn convert_relation_store_accessor(
+    accessor: &RelationStoreAccessorRef,
+) -> Result<ValueSpecification> {
+    let position = SourceInformation::from(&accessor.source_info);
+    Ok(ValueSpecification::ClassInstance(ClassInstance {
         type_name: TAG.to_string(),
-        value: serde_json::json!({
-            "path": accessor.path.iter().map(ToString::to_string).collect::<Vec<_>>(),
-            "sourceInformation": position,
-        }),
+        value: serde_json::to_value(RelationStoreAccessorJson {
+            path: accessor.path.iter().map(ToString::to_string).collect(),
+            source_information: position.clone(),
+        })?,
         source_information: Some(position),
-    })
+    }))
+}
+
+/// The engine's `RelationStoreAccessor` value.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RelationStoreAccessorJson {
+    path: Vec<String>,
+    source_information: SourceInformation,
 }

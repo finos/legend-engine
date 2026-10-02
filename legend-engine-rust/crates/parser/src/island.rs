@@ -47,6 +47,7 @@
 //! [`IslandContent`]: legend_pure_parser_ast::island::IslandContent
 
 use std::collections::HashSet;
+use std::sync::OnceLock;
 
 use legend_pure_parser_ast::island::IslandContent;
 use linkme::distributed_slice;
@@ -139,14 +140,13 @@ pub fn default_island_parsers() -> Vec<Box<dyn IslandParser>> {
 /// static MY_ISLAND: &(dyn IslandParser + Send + Sync) = &MyIslandParser;
 /// ```
 ///
-/// The slice is consumed by [`discovered_island_parsers`] which
-/// returns a `Vec<&'static dyn IslandParser>` ready to thread into
-/// [`crate::parse`]. Discovery validates that no two registered
-/// parsers share a `tag()`.
+/// The slice is consumed by [`discovered_island_parsers`], which
+/// validates once per process that no two registered parsers share a
+/// `tag()`, for [`crate::parse`] to thread into its parser.
 #[distributed_slice]
 pub static ISLAND_PARSERS: [&'static (dyn IslandParser + Send + Sync)] = [..];
 
-/// Discover and validate the [`ISLAND_PARSERS`] slice.
+/// The [`ISLAND_PARSERS`] slice, validated once per process.
 ///
 /// # Panics
 ///
@@ -154,8 +154,9 @@ pub static ISLAND_PARSERS: [&'static (dyn IslandParser + Send + Sync)] = [..];
 /// tag must be globally unique because the main parser dispatches by
 /// tag string match.
 #[must_use]
-pub fn discovered_island_parsers() -> Vec<&'static (dyn IslandParser + Send + Sync)> {
-    validate_island_parsers(ISLAND_PARSERS.iter().copied())
+pub fn discovered_island_parsers() -> &'static [&'static (dyn IslandParser + Send + Sync)] {
+    static DISCOVERED: OnceLock<Vec<&'static (dyn IslandParser + Send + Sync)>> = OnceLock::new();
+    DISCOVERED.get_or_init(|| validate_island_parsers(ISLAND_PARSERS.iter().copied()))
 }
 
 /// Strict-validating helper factored out for unit-testing without

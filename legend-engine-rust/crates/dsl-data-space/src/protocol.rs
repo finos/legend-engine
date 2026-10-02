@@ -23,7 +23,7 @@ use legend_pure_parser_protocol::element_protocol::{
 use legend_pure_parser_protocol::v1::annotation::TaggedValue;
 use legend_pure_parser_protocol::v1::convert::section_stereotype;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{DataSpace, SECTION_KIND};
 
@@ -36,7 +36,7 @@ impl ElementProtocol for DataSpaceProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let data_space = element
             .as_any()
             .downcast_ref::<DataSpace>()
@@ -49,30 +49,35 @@ impl ElementProtocol for DataSpaceProtocol {
                     None,
                 )
             })?;
-        let mut json = data_space.record.to_json()?;
-        json["package"] = json!(
-            data_space
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(data_space.name.value.as_str());
-        json["stereotypes"] = serde_json::to_value(
-            data_space
-                .stereotypes
-                .iter()
-                .map(section_stereotype)
-                .collect::<Vec<_>>(),
-        )?;
-        json["taggedValues"] = serde_json::to_value(
-            data_space
-                .tagged_values
-                .iter()
-                .map(TaggedValue::from)
-                .collect::<Vec<_>>(),
-        )?;
-        Ok(json)
+        let json = data_space
+            .record
+            .converted()?
+            .with(
+                "package",
+                data_space
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", data_space.name.value.as_str())
+            .with(
+                "stereotypes",
+                data_space
+                    .stereotypes
+                    .iter()
+                    .map(section_stereotype)
+                    .collect::<Vec<_>>(),
+            )
+            .with(
+                "taggedValues",
+                data_space
+                    .tagged_values
+                    .iter()
+                    .map(TaggedValue::from)
+                    .collect::<Vec<_>>(),
+            );
+        Ok(to_raw_value(&json)?)
     }
 }
 

@@ -28,7 +28,7 @@ use legend_pure_parser_protocol::element_protocol::{
 };
 use legend_pure_parser_protocol::v1::record::Record;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 use crate::ast::{GenerationElement, GenerationKind};
@@ -168,7 +168,7 @@ impl ElementProtocol for GenerationProtocol {
         self.0.section()
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let element = element
             .as_any()
             .downcast_ref::<GenerationElement>()
@@ -181,16 +181,19 @@ impl ElementProtocol for GenerationProtocol {
                     None,
                 )
             })?;
-        let mut json = element.record.to_json()?;
-        json["package"] = json!(
-            element
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(element.name.value.as_str());
-        Ok(json)
+        let json = element
+            .record
+            .converted()?
+            .with(
+                "package",
+                element
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", element.name.value.as_str());
+        Ok(to_raw_value(&json)?)
     }
 }
 

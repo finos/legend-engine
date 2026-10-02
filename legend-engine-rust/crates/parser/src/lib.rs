@@ -218,12 +218,12 @@ fn parse_text(
         return p.parse_source_file();
     }
     let islands: Vec<Box<dyn IslandParser>> = discovered_islands
-        .into_iter()
-        .map(|p| Box::new(crate::island::StaticIslandParser(p)) as Box<dyn IslandParser>)
+        .iter()
+        .map(|&p| Box::new(crate::island::StaticIslandParser(p)) as Box<dyn IslandParser>)
         .collect();
     let sections: Vec<Box<dyn SectionParser>> = discovered_sections
-        .into_iter()
-        .map(|p| Box::new(crate::section_parser::StaticSectionParser(p)) as Box<dyn SectionParser>)
+        .iter()
+        .map(|&p| Box::new(crate::section_parser::StaticSectionParser(p)) as Box<dyn SectionParser>)
         .collect();
     let mut p = parser::Parser::with_plugins(cursor, islands, sections);
     p.offset = offset;
@@ -278,8 +278,8 @@ fn standalone_parser(
 ) -> Result<parser::Parser, ParseError> {
     let tokens = legend_pure_parser_lexer::tokenize_with_offset(source, source_name, offset)?;
     let islands: Vec<Box<dyn IslandParser>> = crate::island::discovered_island_parsers()
-        .into_iter()
-        .map(|p| Box::new(crate::island::StaticIslandParser(p)) as Box<dyn IslandParser>)
+        .iter()
+        .map(|&p| Box::new(crate::island::StaticIslandParser(p)) as Box<dyn IslandParser>)
         .collect();
     Ok(parser::Parser::with_island_parsers(
         cursor::Cursor::new(tokens),

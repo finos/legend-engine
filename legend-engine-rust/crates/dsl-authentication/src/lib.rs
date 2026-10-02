@@ -26,8 +26,8 @@
 //! ```
 //!
 //! A connection's grammar reads one with
-//! [`grammar::parse_authentication`] and converts it with
-//! [`object::Object::to_json`].
+//! [`grammar::parse_authentication`] and writes the [`object::Object`] it
+//! returns into its JSON: it serializes as the engine's protocol object.
 //!
 //! Crate layout:
 //!

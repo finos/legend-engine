@@ -32,6 +32,7 @@ use legend_pure_parser_protocol::island_protocol::{ConvertError, ISLAND_PROTOCOL
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{ClassInstance, ValueSpecification};
 use linkme::distributed_slice;
+use serde::Serialize;
 
 use crate::ast::{TAG, TdsLiteral};
 
@@ -59,10 +60,19 @@ impl IslandProtocol for TdsIslandProtocol {
         // Positioned, like the engine's, on the whole island.
         Ok(ValueSpecification::ClassInstance(ClassInstance {
             type_name: TAG.to_string(),
-            value: serde_json::json!({ "tdsString": literal.text.as_str() }),
+            value: serde_json::to_value(TdsJson {
+                tds_string: literal.text.as_str(),
+            })?,
             source_information: Some(SourceInformation::from(&literal.source_info)),
         }))
     }
+}
+
+/// The engine's TDS class instance value: the TDS as written.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TdsJson<'a> {
+    tds_string: &'a str,
 }
 
 #[distributed_slice(ISLAND_PROTOCOLS)]

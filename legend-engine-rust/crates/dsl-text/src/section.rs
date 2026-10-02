@@ -33,7 +33,7 @@ use legend_pure_parser_protocol::element_protocol::{
 };
 use legend_pure_parser_protocol::v1::record::Record;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 use crate::{SECTION_KIND, TextElement};
 
@@ -149,7 +149,7 @@ impl ElementProtocol for TextProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let text = element
             .as_any()
             .downcast_ref::<TextElement>()
@@ -162,15 +162,18 @@ impl ElementProtocol for TextProtocol {
                     None,
                 )
             })?;
-        let mut json = text.record.to_json()?;
-        json["package"] = json!(
-            text.package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(text.name.value.as_str());
-        Ok(json)
+        let json = text
+            .record
+            .converted()?
+            .with(
+                "package",
+                text.package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", text.name.value.as_str());
+        Ok(to_raw_value(&json)?)
     }
 }
 

@@ -47,7 +47,7 @@ use legend_pure_parser_protocol::element_protocol::{
 };
 use legend_pure_parser_protocol::v1::record::Record;
 use linkme::distributed_slice;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 type R<T> = std::result::Result<T, ParseError>;
 
@@ -289,7 +289,7 @@ impl ElementProtocol for RelationalMapperProtocol {
         SECTION_KIND
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let mapper = element
             .as_any()
             .downcast_ref::<RelationalMapper>()
@@ -302,16 +302,19 @@ impl ElementProtocol for RelationalMapperProtocol {
                     None,
                 )
             })?;
-        let mut json = mapper.record.to_json()?;
-        json["package"] = json!(
-            mapper
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(mapper.name.value.as_str());
-        Ok(json)
+        let json = mapper
+            .record
+            .converted()?
+            .with(
+                "package",
+                mapper
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", mapper.name.value.as_str());
+        Ok(to_raw_value(&json)?)
     }
 }
 

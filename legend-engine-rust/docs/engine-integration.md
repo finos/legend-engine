@@ -80,7 +80,7 @@ The design mirrors Java's `PureGrammarParserExtension` and ServiceLoader:
 | Engine Java hook | Rust counterpart |
 |---|---|
 | `getExtraSectionParsers` | `parser::SectionParser`. Its `ParserContext` exposes the host parser, so embedded lambdas reuse the Pure expression grammar, and embedded data (`parse_embedded_data`) the data grammars; `protocol::convert_embedded_data` converts that data. |
-| `PureProtocolExtension` element subtypes | `protocol::ElementProtocol` (DSL element → JSON object), carried as the untagged `PackageableElement::Extension(Value)` |
+| `PureProtocolExtension` element subtypes | `protocol::ElementProtocol` (DSL element → its JSON object, written once as text: `Box<RawValue>`). The api's `*_json` functions, which JNI calls, write it as it is; `protocol::convert_element` reads it back into the untagged `PackageableElement::Extension(Value)` for callers that want values |
 | `getExtraEmbeddedPureParsers` (islands) | `parser::IslandParser` + `protocol::IslandProtocol`, keyed by the same tag |
 | `getExtraEmbeddedDataParsers` (test data) | `parser::EmbeddedDataParser` + `protocol::EmbeddedDataProtocol`, keyed by the same data type; the engine core's types (`ExternalFormat`, `ModelStore`, `Reference`, `Relation`) are built in. Like the engine's, a grammar may read a core kind of data, which needs no protocol of its own: the data space's `DataspaceTestData` reads a `Reference` |
 | `getExtraMappingElementParsers` (mapping element bodies) | `dsl-mapping`'s `MappingElementGrammar`, keyed by the element's type (`Pure`, `EnumerationMapping`, …); it converts what it parses too. The engine core's are built in |

@@ -206,12 +206,19 @@ impl ElementProtocol for WidgetProtocol {
     fn kind(&self) -> &'static str {
         "Widget"
     }
-    fn convert(&self, element: &dyn DSLElement) -> Result<serde_json::Value> {
-        Ok(serde_json::json!({
-            "_type": "widget",
-            "name": element.name().to_string(),
-        }))
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<serde_json::value::RawValue>> {
+        Ok(serde_json::value::to_raw_value(&WidgetJson {
+            name: element.name(),
+        })?)
     }
+}
+
+/// The widget's protocol JSON, as plug-ins write theirs: a typed struct,
+/// written once as text (`docs/protocol-json.md`).
+#[derive(serde::Serialize)]
+#[serde(tag = "_type", rename = "widget")]
+struct WidgetJson<'a> {
+    name: &'a str,
 }
 
 #[distributed_slice(ELEMENT_PROTOCOLS)]

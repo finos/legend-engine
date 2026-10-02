@@ -46,9 +46,11 @@ use legend_pure_parser_protocol::embedded_data_protocol::{
     ConvertError, EMBEDDED_DATA_PROTOCOLS, Result as ConvertResult,
 };
 use legend_pure_parser_protocol::v1::convert::convert_embedded_data;
+use legend_pure_parser_protocol::v1::data::EmbeddedData as EmbeddedDataJson;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
-use serde_json::{Map, Value, json};
+use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_json::Value;
 
 /// The embedded data type this grammar reads.
 pub const TYPE_NAME: &str = "ServiceStore";
@@ -494,64 +496,121 @@ impl EmbeddedDataProtocol for ServiceStoreDataProtocol {
                     None,
                 )
             })?;
-        Ok(json!({
-            "_type": "serviceStore",
-            "serviceStubMappings": data.stubs.iter().map(stub_json).collect::<ConvertResult<Vec<_>>>()?,
-            "sourceInformation": position(&data.source_info),
-        }))
+        Ok(serde_json::to_value(ServiceStoreDataJson {
+            service_stub_mappings: data
+                .stubs
+                .iter()
+                .map(stub_json)
+                .collect::<ConvertResult<Vec<_>>>()?,
+            source_information: position(&data.source_info),
+        })?)
     }
 }
 
-fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+/// The engine's `ServiceStoreEmbeddedData`.
+#[derive(serde::Serialize)]
+#[serde(tag = "_type", rename = "serviceStore", rename_all = "camelCase")]
+struct ServiceStoreDataJson<'a> {
+    service_stub_mappings: Vec<ServiceStubMappingJson<'a>>,
+    source_information: SourceInformation,
 }
 
-fn stub_json(stub: &ServiceStub) -> ConvertResult<Value> {
-    let request = &stub.request;
-    let mut request_json = json!({
-        "method": request.method,
-        "sourceInformation": position(&request.source_info),
-    });
-    if let Some(url) = &request.url {
-        request_json["url"] = json!(url);
-    }
-    if let Some(path) = &request.url_path {
-        request_json["urlPath"] = json!(path);
-    }
-    if let Some(parameters) = &request.header_parameters {
-        request_json["headerParams"] = parameters_json(parameters);
-    }
-    if let Some(parameters) = &request.query_parameters {
-        request_json["queryParams"] = parameters_json(parameters);
-    }
-    if let Some(patterns) = &request.body_patterns {
-        request_json["bodyPatterns"] = json!(patterns.iter().map(pattern_json).collect::<Vec<_>>());
-    }
-    Ok(json!({
-        "requestPattern": request_json,
-        "responseDefinition": {
-            "body": convert_embedded_data(&stub.response.body)?,
-            "sourceInformation": position(&stub.response.source_info),
-        },
-        "sourceInformation": position(&stub.source_info),
-    }))
+/// The engine's `ServiceStubMapping`.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServiceStubMappingJson<'a> {
+    request_pattern: RequestPatternJson<'a>,
+    response_definition: ResponseDefinitionJson,
+    source_information: SourceInformation,
 }
 
-fn parameters_json(parameters: &[(String, ContentPattern)]) -> Value {
-    let mut map = Map::new();
-    for (name, pattern) in parameters {
-        map.insert(name.clone(), pattern_json(pattern));
-    }
-    Value::Object(map)
+/// The engine's `RequestPattern`.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RequestPatternJson<'a> {
+    method: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url_path: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    header_params: Option<ParametersJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    query_params: Option<ParametersJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    body_patterns: Option<Vec<ContentPatternJson<'a>>>,
 }
 
-fn pattern_json(pattern: &ContentPattern) -> Value {
-    match pattern {
-        ContentPattern::EqualTo(value) => json!({"_type": "equalTo", "expectedValue": value}),
-        ContentPattern::EqualToJson(value) => {
-            json!({"_type": "equalToJson", "expectedValue": value})
+/// The engine's `ResponseDefinition`.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ResponseDefinitionJson {
+    body: EmbeddedDataJson,
+    source_information: SourceInformation,
+}
+
+/// Parameters, by name (each once): their content patterns.
+struct ParametersJson<'a>(&'a [(String, ContentPattern)]);
+
+impl Serialize for ParametersJson<'_> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(self.0.len()))?;
+        for (name, pattern) in self.0 {
+            map.serialize_entry(name, &ContentPatternJson::from(pattern))?;
+        }
+        map.end()
+    }
+}
+
+/// The engine's `EqualToPattern` and `EqualToJsonPattern`.
+#[derive(serde::Serialize)]
+#[serde(tag = "_type")]
+enum ContentPatternJson<'a> {
+    #[serde(rename = "equalTo", rename_all = "camelCase")]
+    EqualTo { expected_value: &'a str },
+    #[serde(rename = "equalToJson", rename_all = "camelCase")]
+    EqualToJson { expected_value: &'a str },
+}
+
+impl<'a> From<&'a ContentPattern> for ContentPatternJson<'a> {
+    fn from(pattern: &'a ContentPattern) -> Self {
+        match pattern {
+            ContentPattern::EqualTo(value) => Self::EqualTo {
+                expected_value: value,
+            },
+            ContentPattern::EqualToJson(value) => Self::EqualToJson {
+                expected_value: value,
+            },
         }
     }
+}
+
+fn position(source_info: &SourceInfo) -> SourceInformation {
+    SourceInformation::from(source_info)
+}
+
+fn stub_json(stub: &ServiceStub) -> ConvertResult<ServiceStubMappingJson<'_>> {
+    let request = &stub.request;
+    Ok(ServiceStubMappingJson {
+        request_pattern: RequestPatternJson {
+            method: &request.method,
+            source_information: position(&request.source_info),
+            url: request.url.as_deref(),
+            url_path: request.url_path.as_deref(),
+            header_params: request.header_parameters.as_deref().map(ParametersJson),
+            query_params: request.query_parameters.as_deref().map(ParametersJson),
+            body_patterns: request
+                .body_patterns
+                .as_ref()
+                .map(|patterns| patterns.iter().map(ContentPatternJson::from).collect()),
+        },
+        response_definition: ResponseDefinitionJson {
+            body: convert_embedded_data(&stub.response.body)?,
+            source_information: position(&stub.response.source_info),
+        },
+        source_information: position(&stub.source_info),
+    })
 }
 
 #[distributed_slice(EMBEDDED_DATA_PROTOCOLS)]

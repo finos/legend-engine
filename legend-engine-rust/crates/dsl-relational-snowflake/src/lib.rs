@@ -50,11 +50,10 @@ use legend_pure_dsl_relational::connection::field_grammar::{
     Check, Field, FieldGrammar, ValueKind,
 };
 use legend_pure_dsl_relational::connection::specification::{
-    BodyUse, LOCAL_MODE_GRAMMARS, LocalModeGrammar, SPECIFICATION_GRAMMARS, SpecificationGrammar,
-    SpecificationKind,
+    BodyUse, LOCAL_MODE_GRAMMARS, LocalModeGrammar, LocalSpecification, SPECIFICATION_GRAMMARS,
+    SpecificationGrammar, SpecificationKind,
 };
 use linkme::distributed_slice;
-use serde_json::{Value, json};
 
 /// `Snowflake { name: '…'; account: '…'; warehouse: '…'; region: '…'; … }`,
 /// the fields in the order the walker checks them.
@@ -107,26 +106,39 @@ impl LocalModeGrammar for SnowflakeLocalMode {
         "Snowflake"
     }
 
-    fn specifications(&self, store: Option<&str>) -> Option<(Value, Value)> {
+    fn specifications(
+        &self,
+        store: Option<&str>,
+    ) -> Option<(LocalSpecification, LocalSpecification)> {
         // The extension's `normalizeName`.
         let store = store?.replace("::", "-");
         let local = |name: &str| format!("legend-local-snowflake-{name}-{store}");
         Some((
-            json!({
-                "_type": "snowflake",
-                "accountName": local("accountName"),
-                "databaseName": local("databaseName"),
-                "role": local("role"),
-                "warehouseName": local("warehouseName"),
-                "region": local("region"),
-                "cloudType": local("cloudType"),
-            }),
-            json!({
-                "_type": "snowflakePublic",
-                "privateKeyVaultReference": local("privateKeyVaultReference"),
-                "passPhraseVaultReference": local("passphraseVaultReference"),
-                "publicUserName": local("publicuserName"),
-            }),
+            LocalSpecification {
+                json_type: "snowflake",
+                fields: vec![
+                    ("accountName", local("accountName")),
+                    ("databaseName", local("databaseName")),
+                    ("role", local("role")),
+                    ("warehouseName", local("warehouseName")),
+                    ("region", local("region")),
+                    ("cloudType", local("cloudType")),
+                ],
+            },
+            LocalSpecification {
+                json_type: "snowflakePublic",
+                fields: vec![
+                    (
+                        "privateKeyVaultReference",
+                        local("privateKeyVaultReference"),
+                    ),
+                    (
+                        "passPhraseVaultReference",
+                        local("passphraseVaultReference"),
+                    ),
+                    ("publicUserName", local("publicuserName")),
+                ],
+            },
         ))
     }
 }

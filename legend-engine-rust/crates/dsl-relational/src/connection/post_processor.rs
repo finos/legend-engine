@@ -36,7 +36,8 @@ use legend_pure_parser_parser::words::{is_word, qualified_name, unexpected};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::element::PackageableElementPointer;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 use super::specification::{
     BodyUse, Specification, SpecificationBody, SpecificationGrammar, SpecificationKind,
@@ -176,18 +177,9 @@ impl SpecificationGrammar for MapperGrammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let Mappers(mappers) = downcast::<Mappers>(specification)?;
-        Ok(json!({
-            "_type": "mapper",
-            "mappers": mappers.iter().map(|mapper| match mapper {
-                Mapper::Table { from, to, schema_from, schema_to } => json!({
-                    "_type": "table",
-                    "from": from,
-                    "to": to,
-                    "schema": {"_type": "schema", "from": schema_from, "to": schema_to},
-                }),
-                Mapper::Schema { from, to } => json!({"_type": "schema", "from": from, "to": to}),
-            }).collect::<Vec<_>>(),
-        }))
+        Ok(serde_json::to_value(MapperPostProcessorJson {
+            mappers: mappers.iter().map(MapperJson::from).collect(),
+        })?)
     }
 }
 
@@ -266,14 +258,16 @@ impl SpecificationGrammar for RelationalMapperGrammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let RelationalMappers(mappers) = downcast::<RelationalMappers>(specification)?;
-        Ok(json!({
-            "_type": "relationalMapper",
-            "relationalMappers": mappers.iter().map(|(path, source_info)| PackageableElementPointer {
-                element_type: Some("QUERYPOSTPROCESSOR".to_string()),
-                path: path.clone(),
-                source_information: Some(SourceInformation::from(source_info)),
-            }).collect::<Vec<_>>(),
-        }))
+        Ok(serde_json::to_value(RelationalMapperPostProcessorJson {
+            relational_mappers: mappers
+                .iter()
+                .map(|(path, source_info)| PackageableElementPointer {
+                    element_type: Some("QUERYPOSTPROCESSOR".to_string()),
+                    path: path.clone(),
+                    source_information: Some(SourceInformation::from(source_info)),
+                })
+                .collect(),
+        })?)
     }
 }
 
@@ -300,9 +294,76 @@ impl SpecificationGrammar for ExtractSubQueriesAsCtesGrammar {
     }
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
-        Ok(json!({
-            "_type": "ExtractSubQueriesAsCTEsPostProcessor",
-            "sourceInformation": SourceInformation::from(&specification.source_info),
-        }))
+        Ok(serde_json::to_value(ExtractSubQueriesAsCtesJson {
+            source_information: SourceInformation::from(&specification.source_info),
+        })?)
     }
+}
+
+/// The engine's `MapperPostProcessor`, without a position.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "mapper")]
+struct MapperPostProcessorJson<'a> {
+    mappers: Vec<MapperJson<'a>>,
+}
+
+/// The engine's `TableNameMapper` and `SchemaNameMapper`.
+#[derive(Serialize)]
+#[serde(tag = "_type")]
+enum MapperJson<'a> {
+    #[serde(rename = "table")]
+    Table {
+        from: &'a str,
+        to: &'a str,
+        schema: SchemaMapperJson<'a>,
+    },
+    #[serde(rename = "schema")]
+    Schema { from: &'a str, to: &'a str },
+}
+
+/// A table mapper's schema mapper.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "schema")]
+struct SchemaMapperJson<'a> {
+    from: &'a str,
+    to: &'a str,
+}
+
+impl<'a> From<&'a Mapper> for MapperJson<'a> {
+    fn from(mapper: &'a Mapper) -> Self {
+        match mapper {
+            Mapper::Table {
+                from,
+                to,
+                schema_from,
+                schema_to,
+            } => Self::Table {
+                from,
+                to,
+                schema: SchemaMapperJson {
+                    from: schema_from,
+                    to: schema_to,
+                },
+            },
+            Mapper::Schema { from, to } => Self::Schema { from, to },
+        }
+    }
+}
+
+/// The engine's `RelationalMapperPostProcessor`, without a position.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "relationalMapper", rename_all = "camelCase")]
+struct RelationalMapperPostProcessorJson {
+    relational_mappers: Vec<PackageableElementPointer>,
+}
+
+/// The engine's `ExtractSubQueriesAsCTEsPostProcessor`.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "ExtractSubQueriesAsCTEsPostProcessor",
+    rename_all = "camelCase"
+)]
+struct ExtractSubQueriesAsCtesJson {
+    source_information: SourceInformation,
 }

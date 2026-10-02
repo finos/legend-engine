@@ -28,7 +28,8 @@ use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::fields::optional;
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 use super::specification::{
     BodyUse, Specification, SpecificationBody, SpecificationGrammar, SpecificationKind,
@@ -97,11 +98,23 @@ impl SpecificationGrammar for GenerationFeaturesConfigGrammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let config = downcast::<GenerationFeaturesConfig>(specification)?;
-        Ok(json!({
-            "_type": "generationFeaturesConfig",
-            "enabled": config.enabled,
-            "disabled": config.disabled,
-            "sourceInformation": SourceInformation::from(&specification.source_info),
-        }))
+        Ok(serde_json::to_value(GenerationFeaturesConfigJson {
+            enabled: &config.enabled,
+            disabled: &config.disabled,
+            source_information: SourceInformation::from(&specification.source_info),
+        })?)
     }
+}
+
+/// The engine's `GenerationFeaturesConfig`.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "generationFeaturesConfig",
+    rename_all = "camelCase"
+)]
+struct GenerationFeaturesConfigJson<'a> {
+    enabled: &'a [String],
+    disabled: &'a [String],
+    source_information: SourceInformation,
 }

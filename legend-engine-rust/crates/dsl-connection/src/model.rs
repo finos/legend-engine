@@ -38,7 +38,8 @@ use legend_pure_parser_parser::words::{
 use legend_pure_parser_parser::{ParserContext, string_value};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 use crate::ast::{ConnectionValue, ConnectionValueBody};
 use crate::grammar::{ConnectionValueGrammar, ValueSpan};
@@ -169,16 +170,13 @@ impl ConnectionValueGrammar for ModelChainConnectionGrammar {
 
     fn convert(&self, value: &ConnectionValue) -> Result<Value, ConvertError> {
         let chain = body::<ModelChain>(value)?;
-        let mut json = json!({
-            "_type": self.type_name(),
-            "mappings": chain.mappings,
-            "mappingsSourceInformation": SourceInformation::from(&chain.mappings_source_info),
-            "sourceInformation": SourceInformation::from(&value.source_info),
-        });
-        if !value.embedded {
-            json["element"] = json!(MODEL_STORE);
-        }
-        Ok(json)
+        Ok(serde_json::to_value(ModelChainConnectionJson {
+            connection_type: self.type_name(),
+            mappings: &chain.mappings,
+            mappings_source_information: SourceInformation::from(&chain.mappings_source_info),
+            source_information: SourceInformation::from(&value.source_info),
+            element: element(value),
+        })?)
     }
 }
 
@@ -256,17 +254,47 @@ fn convert_class_connection(
     value: &ConnectionValue,
 ) -> Result<Value, ConvertError> {
     let connection = body::<ClassConnection>(value)?;
-    let mut json = json!({
-        "_type": type_name,
-        "class": connection.class,
-        "classSourceInformation": SourceInformation::from(&connection.class_source_info),
-        "url": connection.url,
-        "sourceInformation": SourceInformation::from(&value.source_info),
-    });
-    if !value.embedded {
-        json["element"] = json!(MODEL_STORE);
-    }
-    Ok(json)
+    Ok(serde_json::to_value(ClassConnectionJson {
+        connection_type: type_name,
+        class: &connection.class,
+        class_source_information: SourceInformation::from(&connection.class_source_info),
+        url: &connection.url,
+        source_information: SourceInformation::from(&value.source_info),
+        element: element(value),
+    })?)
+}
+
+/// The engine's `JsonModelConnection` or `XmlModelConnection`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClassConnectionJson<'a> {
+    #[serde(rename = "_type")]
+    connection_type: &'a str,
+    class: &'a str,
+    class_source_information: SourceInformation,
+    url: &'a str,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element: Option<&'static str>,
+}
+
+/// The engine's `ModelChainConnection`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ModelChainConnectionJson<'a> {
+    #[serde(rename = "_type")]
+    connection_type: &'a str,
+    mappings: &'a [String],
+    mappings_source_information: SourceInformation,
+    source_information: SourceInformation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    element: Option<&'static str>,
+}
+
+/// The store a connection outside a runtime connects to: the model store.
+/// A runtime's own connection names none.
+fn element(value: &ConnectionValue) -> Option<&'static str> {
+    (!value.embedded).then_some(MODEL_STORE)
 }
 
 /// The value's body, as the grammar that converts it read it.

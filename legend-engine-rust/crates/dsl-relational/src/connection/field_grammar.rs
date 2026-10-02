@@ -26,7 +26,8 @@ use legend_pure_parser_parser::fields::{optional, required};
 use legend_pure_parser_parser::words::{is_string, is_word_kind, unexpected};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
-use serde_json::{Map, Value, json};
+use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_json::Value;
 
 use super::specification::{
     BodyUse, Specification, SpecificationBody, SpecificationGrammar, SpecificationKind,
@@ -119,7 +120,8 @@ pub enum ValueKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FieldValues(Vec<(&'static str, FieldValue)>);
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(untagged)]
 enum FieldValue {
     Text(String),
     Texts(Vec<String>),
@@ -181,21 +183,31 @@ impl SpecificationGrammar for FieldGrammar {
 
     fn convert(&self, specification: &Specification) -> Result<Value, ConvertError> {
         let FieldValues(fields) = downcast::<FieldValues>(specification)?;
-        let mut json = Map::new();
-        json.insert("_type".to_string(), json!(self.json_type));
-        for (name, value) in fields {
-            let value = match value {
-                FieldValue::Text(value) => json!(value),
-                FieldValue::Texts(values) => json!(values),
-                FieldValue::Boolean(value) => json!(value),
-            };
-            json.insert((*name).to_string(), value);
+        Ok(serde_json::to_value(FieldSpecificationJson {
+            json_type: self.json_type,
+            fields,
+            source_information: SourceInformation::from(&specification.source_info),
+        })?)
+    }
+}
+
+/// A specification this grammar read, as the engine's JSON of it: its
+/// `_type`, its fields (each name once), its `sourceInformation`.
+struct FieldSpecificationJson<'a> {
+    json_type: &'static str,
+    fields: &'a [(&'static str, FieldValue)],
+    source_information: SourceInformation,
+}
+
+impl Serialize for FieldSpecificationJson<'_> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(self.fields.len() + 2))?;
+        map.serialize_entry("_type", self.json_type)?;
+        for (name, value) in self.fields {
+            map.serialize_entry(name, value)?;
         }
-        json.insert(
-            "sourceInformation".to_string(),
-            json!(SourceInformation::from(&specification.source_info)),
-        );
-        Ok(Value::Object(json))
+        map.serialize_entry("sourceInformation", &self.source_information)?;
+        map.end()
     }
 }
 

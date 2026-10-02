@@ -32,10 +32,12 @@ use legend_pure_parser_protocol::IslandProtocol;
 use legend_pure_parser_protocol::island_protocol::{ConvertError, ISLAND_PROTOCOLS, Result};
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
 use legend_pure_parser_protocol::v1::multiplicity::Multiplicity;
+use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{
     CDateTime, ClassInstance, ProtocolCollection, ProtocolEnumValue, ValueSpecification, Variable,
 };
 use linkme::distributed_slice;
+use serde::Serialize;
 
 use crate::ast::{
     GraphFetchParameter, PropertyGraphFetchTree, RootGraphFetchTree, ScalarParameter,
@@ -84,64 +86,102 @@ pub fn default_island_protocols() -> Vec<Box<dyn IslandProtocol>> {
 
 fn convert_root_graph_fetch_tree(tree: &RootGraphFetchTree) -> Result<ValueSpecification> {
     let position = source_information(&tree.class.source_info);
+    let value = RootGraphFetchTreeJson {
+        class: tree.class.to_string(),
+        source_information: position.clone(),
+        sub_trees: tree
+            .sub_trees
+            .iter()
+            .map(convert_property_graph_fetch_tree)
+            .collect::<Result<_>>()?,
+        sub_type_trees: tree
+            .sub_type_trees
+            .iter()
+            .map(convert_sub_type_graph_fetch_tree)
+            .collect::<Result<_>>()?,
+    };
     Ok(ValueSpecification::ClassInstance(ClassInstance {
         type_name: "rootGraphFetchTree".to_string(),
-        value: serde_json::json!({
-            "_type": "rootGraphFetchTree",
-            "class": tree.class.to_string(),
-            "sourceInformation": position,
-            "subTrees": tree
-                .sub_trees
-                .iter()
-                .map(convert_property_graph_fetch_tree)
-                .collect::<Result<Vec<_>>>()?,
-            "subTypeTrees": tree
-                .sub_type_trees
-                .iter()
-                .map(convert_sub_type_graph_fetch_tree)
-                .collect::<Result<Vec<_>>>()?,
-        }),
+        value: serde_json::to_value(value)?,
         source_information: Some(position),
     }))
 }
 
-fn convert_property_graph_fetch_tree(prop: &PropertyGraphFetchTree) -> Result<serde_json::Value> {
+/// The engine's `RootGraphFetchTree`.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "rootGraphFetchTree", rename_all = "camelCase")]
+struct RootGraphFetchTreeJson<'a> {
+    class: String,
+    source_information: SourceInformation,
+    sub_trees: Vec<PropertyGraphFetchTreeJson<'a>>,
+    sub_type_trees: Vec<SubTypeGraphFetchTreeJson<'a>>,
+}
+
+/// The engine's `PropertyGraphFetchTree`.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "propertyGraphFetchTree",
+    rename_all = "camelCase"
+)]
+struct PropertyGraphFetchTreeJson<'a> {
+    property: &'a str,
+    source_information: SourceInformation,
+    parameters: Vec<ValueSpecification>,
+    sub_trees: Vec<PropertyGraphFetchTreeJson<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    alias: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    sub_type: Option<String>,
+}
+
+/// The engine's `SubTypeGraphFetchTree`.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "subTypeGraphFetchTree",
+    rename_all = "camelCase"
+)]
+struct SubTypeGraphFetchTreeJson<'a> {
+    sub_type_class: String,
+    source_information: SourceInformation,
+    sub_trees: Vec<PropertyGraphFetchTreeJson<'a>>,
+}
+
+fn convert_property_graph_fetch_tree(
+    prop: &PropertyGraphFetchTree,
+) -> Result<PropertyGraphFetchTreeJson<'_>> {
     let parameters = prop
         .parameters
         .iter()
         .map(convert_parameter)
         .collect::<Result<Vec<_>>>()?;
-    let mut obj = serde_json::json!({
-        "_type": "propertyGraphFetchTree",
-        "property": prop.property.to_string(),
-        "sourceInformation": source_information(&prop.property_source_info),
-        "parameters": parameters,
-        "subTrees": prop
+    Ok(PropertyGraphFetchTreeJson {
+        property: prop.property.as_str(),
+        source_information: source_information(&prop.property_source_info),
+        parameters,
+        sub_trees: prop
             .sub_trees
             .iter()
             .map(convert_property_graph_fetch_tree)
-            .collect::<Result<Vec<_>>>()?,
-    });
-    if let Some(alias) = &prop.alias {
-        obj["alias"] = serde_json::json!(alias.to_string());
-    }
-    if let Some(sub_type) = &prop.sub_type {
-        obj["subType"] = serde_json::json!(sub_type.to_string());
-    }
-    Ok(obj)
+            .collect::<Result<_>>()?,
+        alias: prop.alias.as_deref(),
+        sub_type: prop.sub_type.as_ref().map(ToString::to_string),
+    })
 }
 
-fn convert_sub_type_graph_fetch_tree(sub: &SubTypeGraphFetchTree) -> Result<serde_json::Value> {
-    Ok(serde_json::json!({
-        "_type": "subTypeGraphFetchTree",
-        "subTypeClass": sub.sub_type_class.to_string(),
-        "sourceInformation": source_information(&sub.sub_type_class.source_info),
-        "subTrees": sub
+fn convert_sub_type_graph_fetch_tree(
+    sub: &SubTypeGraphFetchTree,
+) -> Result<SubTypeGraphFetchTreeJson<'_>> {
+    Ok(SubTypeGraphFetchTreeJson {
+        sub_type_class: sub.sub_type_class.to_string(),
+        source_information: source_information(&sub.sub_type_class.source_info),
+        sub_trees: sub
             .sub_trees
             .iter()
             .map(convert_property_graph_fetch_tree)
-            .collect::<Result<Vec<_>>>()?,
-    }))
+            .collect::<Result<_>>()?,
+    })
 }
 
 /// A collection keeps no position; its values do.
@@ -199,8 +239,6 @@ fn convert_scalar_parameter(scalar: &ScalarParameter) -> Result<ValueSpecificati
     })
 }
 
-fn source_information(
-    si: &legend_pure_parser_ast::source_info::SourceInfo,
-) -> legend_pure_parser_protocol::v1::source_info::SourceInformation {
-    legend_pure_parser_protocol::v1::source_info::SourceInformation::from(si)
+fn source_information(si: &legend_pure_parser_ast::source_info::SourceInfo) -> SourceInformation {
+    SourceInformation::from(si)
 }

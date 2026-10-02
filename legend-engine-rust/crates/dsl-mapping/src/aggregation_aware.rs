@@ -50,7 +50,9 @@ use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
+use serde_json::value::{RawValue, to_raw_value};
 use smol_str::SmolStr;
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
@@ -181,7 +183,7 @@ impl MappingElementGrammar for AggregationAwareGrammar {
     fn convert(
         &self,
         element: &MappingElement,
-    ) -> Result<(MappingElementKind, Value), ConvertError> {
+    ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
         let body = element
             .body
             .as_any()
@@ -198,52 +200,113 @@ impl MappingElementGrammar for AggregationAwareGrammar {
             |id| id.text.to_string(),
         );
         let main = nested_json(element, &body.main, &format!("{id}_Main"))?;
-        let mut json = json!({
-            "_type": "aggregationAware",
-            "class": header.target.path,
-            "id": id,
-            "root": header.root,
-            "aggregateSetImplementations": body
-                .views
-                .iter()
-                .enumerate()
-                .map(|(index, view)| {
-                    Ok(json!({
-                        "index": index,
-                        "aggregateSpecification": specification_json(&view.specification)?,
-                        "setImplementation": nested_json(element, &view.mapping, &format!("{id}_Aggregate_{index}"))?,
-                    }))
+        let aggregate_set_implementations = body
+            .views
+            .iter()
+            .enumerate()
+            .map(|(index, view)| {
+                let aggregate_specification = specification_json(&view.specification)?;
+                let set_implementation =
+                    nested_json(element, &view.mapping, &format!("{id}_Aggregate_{index}"))?;
+                Ok(AggregateSetImplementationJson {
+                    index,
+                    aggregate_specification,
+                    set_implementation,
                 })
-                .collect::<Result<Vec<_>, ConvertError>>()?,
-            "sourceInformation": position(&element.source_info),
-        });
+            })
+            .collect::<Result<Vec<_>, ConvertError>>()?;
         // A model-to-model main mapping's property mappings.
-        if main["_type"] == "pureInstance" {
-            let mappings: Vec<Value> = main["propertyMappings"]
+        let property_mappings = (main["_type"] == "pureInstance").then(|| {
+            main["propertyMappings"]
                 .as_array()
                 .into_iter()
                 .flatten()
-                .map(|mapping| {
-                    let mut json = json!({
-                        "_type": "AggregationAwarePropertyMapping",
-                        "property": mapping["property"],
-                        "source": mapping["source"],
-                        "sourceInformation": mapping["sourceInformation"],
-                    });
-                    if let Some(target) = mapping.get("target") {
-                        json["target"] = target.clone();
-                    }
-                    json
+                .map(|mapping| AggregationAwarePropertyMappingJson {
+                    property: mapping["property"].clone(),
+                    source: mapping["source"].clone(),
+                    source_information: mapping["sourceInformation"].clone(),
+                    target: mapping.get("target").cloned(),
                 })
-                .collect();
-            json["propertyMappings"] = json!(mappings);
-        }
-        json["mainSetImplementation"] = main;
-        if let Some(extends) = &header.extends {
-            json["extendsClassMappingId"] = json!(extends.text.as_str());
-        }
-        Ok((MappingElementKind::Class, json))
+                .collect()
+        });
+        let json = AggregationAwareJson {
+            class: &header.target.path,
+            id,
+            root: header.root,
+            source_information: position(&element.source_info),
+            aggregate_set_implementations,
+            property_mappings,
+            main_set_implementation: main,
+            extends_class_mapping_id: header.extends.as_ref().map(|extends| extends.text.as_str()),
+        };
+        Ok((MappingElementKind::Class, to_raw_value(&json)?))
     }
+}
+
+/// The engine's `AggregationAwareSetImplementation`. Its main and aggregate
+/// mappings are their grammars' JSON, named after it.
+#[derive(Serialize)]
+#[serde(tag = "_type", rename = "aggregationAware", rename_all = "camelCase")]
+struct AggregationAwareJson<'a> {
+    class: &'a str,
+    id: String,
+    root: bool,
+    source_information: SourceInformation,
+    aggregate_set_implementations: Vec<AggregateSetImplementationJson>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    property_mappings: Option<Vec<AggregationAwarePropertyMappingJson>>,
+    main_set_implementation: Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extends_class_mapping_id: Option<&'a str>,
+}
+
+/// The engine's `AggregateSetImplementationContainer`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AggregateSetImplementationJson {
+    index: usize,
+    aggregate_specification: AggregateSpecificationJson,
+    set_implementation: Value,
+}
+
+/// The engine's `AggregationAwarePropertyMapping`: a model-to-model main
+/// mapping's property mapping's pointer, source and target.
+#[derive(Serialize)]
+#[serde(
+    tag = "_type",
+    rename = "AggregationAwarePropertyMapping",
+    rename_all = "camelCase"
+)]
+struct AggregationAwarePropertyMappingJson {
+    property: Value,
+    source: Value,
+    source_information: Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    target: Option<Value>,
+}
+
+/// The engine's `AggregateSpecification`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AggregateSpecificationJson {
+    can_aggregate: bool,
+    group_by_functions: Vec<GroupByFunctionJson>,
+    aggregate_values: Vec<AggregateValueJson>,
+}
+
+/// The engine's `GroupByFunction`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GroupByFunctionJson {
+    group_by_fn: Value,
+}
+
+/// The engine's `AggregateFunction`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AggregateValueJson {
+    map_fn: Value,
+    aggregate_fn: Value,
 }
 
 /// A view as the grammar reads it.
@@ -406,8 +469,8 @@ fn specification(
 
 // ── The protocol ───────────────────────────────────────────────────────
 
-fn position(source_info: &SourceInfo) -> Value {
-    json!(SourceInformation::from(source_info))
+fn position(source_info: &SourceInfo) -> SourceInformation {
+    SourceInformation::from(source_info)
 }
 
 /// A nested mapping's JSON, converted by its type's grammar with the
@@ -428,17 +491,24 @@ fn nested_json(
     })?;
     let mut header = element.header.clone();
     header.target.source_info = nested.class_source_info.clone();
-    let (_, mut json) = grammar.convert(&MappingElement {
+    let (_, json) = grammar.convert(&MappingElement {
         header,
         body: nested.body.clone(),
         source_info: nested.source_info.clone(),
     })?;
-    json["id"] = json!(id);
+    // Read back to be named, and its property mappings read: the walker
+    // edits the nested mapping its grammar built (`docs/protocol-json.md`,
+    // "Opaque JSON").
+    let mut json: Value = serde_json::from_str(json.get())?;
+    json["id"] = Value::from(id);
     Ok(json)
 }
 
-/// The engine's `AggregateSpecification`.
-fn specification_json(specification: &AggregateSpecification) -> Result<Value, ConvertError> {
+/// The engine's `AggregateSpecification`, its lambdas positioned as the
+/// walker positions them.
+fn specification_json(
+    specification: &AggregateSpecification,
+) -> Result<AggregateSpecificationJson, ConvertError> {
     let lambda = |expression: &Expression| -> Result<Value, ConvertError> {
         let mut json = serde_json::to_value(ValueSpecification::Lambda(LambdaFunction {
             body: vec![convert_expression_typed(expression)?],
@@ -448,19 +518,30 @@ fn specification_json(specification: &AggregateSpecification) -> Result<Value, C
         move_lines_up(&mut json, specification.line_shift);
         Ok(json)
     };
-    Ok(json!({
-        "canAggregate": specification.can_aggregate,
-        "groupByFunctions": specification
-            .group_by
-            .iter()
-            .map(|expression| Ok(json!({"groupByFn": lambda(expression)?})))
-            .collect::<Result<Vec<_>, ConvertError>>()?,
-        "aggregateValues": specification
-            .aggregate_values
-            .iter()
-            .map(|(map, aggregate)| Ok(json!({"mapFn": lambda(map)?, "aggregateFn": lambda(aggregate)?})))
-            .collect::<Result<Vec<_>, ConvertError>>()?,
-    }))
+    let group_by_functions = specification
+        .group_by
+        .iter()
+        .map(|expression| {
+            Ok(GroupByFunctionJson {
+                group_by_fn: lambda(expression)?,
+            })
+        })
+        .collect::<Result<Vec<_>, ConvertError>>()?;
+    let aggregate_values = specification
+        .aggregate_values
+        .iter()
+        .map(|(map, aggregate)| {
+            Ok(AggregateValueJson {
+                map_fn: lambda(map)?,
+                aggregate_fn: lambda(aggregate)?,
+            })
+        })
+        .collect::<Result<Vec<_>, ConvertError>>()?;
+    Ok(AggregateSpecificationJson {
+        can_aggregate: specification.can_aggregate,
+        group_by_functions,
+        aggregate_values,
+    })
 }
 
 /// Moves every position in `json` `lines` lines up.
@@ -473,7 +554,7 @@ fn move_lines_up(json: &mut Value, lines: u32) {
             for (key, value) in map.iter_mut() {
                 match (key.as_str(), value.as_u64()) {
                     ("startLine" | "endLine", Some(line)) => {
-                        *value = json!(line.saturating_sub(u64::from(lines)));
+                        *value = Value::from(line.saturating_sub(u64::from(lines)));
                     }
                     _ => move_lines_up(value, lines),
                 }

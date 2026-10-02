@@ -26,7 +26,7 @@ use legend_pure_parser_protocol::element_protocol::{ConvertError, ElementProtoco
 use legend_pure_parser_protocol::v1::annotation::TaggedValue as TaggedValueJson;
 use legend_pure_parser_protocol::v1::convert::section_stereotype;
 use legend_pure_parser_protocol::v1::record::Record;
-use serde_json::{Value, json};
+use serde_json::value::{RawValue, to_raw_value};
 
 /// `'''doc''' Keyword <<s>> {t} my::A { … }`.
 #[derive(Debug, Clone, PartialEq)]
@@ -105,7 +105,7 @@ impl ElementProtocol for ActivatorProtocol {
         self.0
     }
 
-    fn convert(&self, element: &dyn DSLElement) -> Result<Value> {
+    fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
         let element = element
             .as_any()
             .downcast_ref::<ActivatorElement>()
@@ -118,29 +118,34 @@ impl ElementProtocol for ActivatorProtocol {
                     None,
                 )
             })?;
-        let mut json = element.record.to_json()?;
-        json["package"] = json!(
-            element
-                .package
-                .as_ref()
-                .map(ToString::to_string)
-                .unwrap_or_default()
-        );
-        json["name"] = json!(element.name.value.as_str());
-        json["stereotypes"] = serde_json::to_value(
-            element
-                .stereotypes
-                .iter()
-                .map(section_stereotype)
-                .collect::<Vec<_>>(),
-        )?;
-        json["taggedValues"] = serde_json::to_value(
-            element
-                .tagged_values
-                .iter()
-                .map(TaggedValueJson::from)
-                .collect::<Vec<_>>(),
-        )?;
-        Ok(json)
+        let json = element
+            .record
+            .converted()?
+            .with(
+                "package",
+                element
+                    .package
+                    .as_ref()
+                    .map(ToString::to_string)
+                    .unwrap_or_default(),
+            )
+            .with("name", element.name.value.as_str())
+            .with(
+                "stereotypes",
+                element
+                    .stereotypes
+                    .iter()
+                    .map(section_stereotype)
+                    .collect::<Vec<_>>(),
+            )
+            .with(
+                "taggedValues",
+                element
+                    .tagged_values
+                    .iter()
+                    .map(TaggedValueJson::from)
+                    .collect::<Vec<_>>(),
+            );
+        Ok(to_raw_value(&json)?)
     }
 }
