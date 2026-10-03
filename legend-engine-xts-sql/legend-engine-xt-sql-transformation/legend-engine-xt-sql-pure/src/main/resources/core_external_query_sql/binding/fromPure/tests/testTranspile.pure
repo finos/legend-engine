@@ -6734,6 +6734,44 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// Two window keys reading the same column name off opposite join sides: dropping the
+// qualifier labelled both extends identically and the relation was rejected. A CASE key
+// is used rather than coalesce so the lambda can be asserted - see the block comment
+// above. The two extend names in the expectation are the whole point: they carry t1 and
+// t2, and were one name before.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeysDifferingOnlyByQualifier():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "name", ' +
+    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY CASE WHEN "t1"."String" IS NULL THEN 0 ELSE 1 END) AS "rn", ' +
+    'rank() OVER (PARTITION BY "t1"."Integer" ORDER BY CASE WHEN "t2"."String" IS NULL THEN 0 ELSE 1 END) AS "rk" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->extend(~[name : x | $x.String_t1,
+                     'CASE WHEN t1.String IS NULL THEN 0 ELSE 1 END' : x | $x.String_t1->isEmpty()->if(|0, |1),
+                     'CASE WHEN t2.String IS NULL THEN 0 ELSE 1 END' : x | $x.String_t2->isEmpty()->if(|0, |1)])
+          ->extend(~[Integer_t1]->over(~'CASE WHEN t1.String IS NULL THEN 0 ELSE 1 END'->ascending()), ~[rn : {p, w, r | $p->rowNumber($r)}])
+          ->extend(~[Integer_t1]->over(~'CASE WHEN t2.String IS NULL THEN 0 ELSE 1 END'->ascending()), ~[rk : {p, w, r | $p->rank($w, $r)}])
+          ->select(~[name, rn, rk])})
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByMultiColumnMixedNulls():Boolean[1]
 {
   // String NULLS FIRST, Integer DESC NULLS LAST render natively as sort-spec modifiers
