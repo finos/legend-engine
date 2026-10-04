@@ -926,9 +926,12 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
                        | resolveColumnOnCursor($colFuncName, $boundCursor->toOne()),
                        | []);
 
-  let tableAlias = $leftSelect.data.alias;
-  let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
-  let foundAlias = if($foundColumnInSelect->isEmpty(), |findAlias($fe.func.name->toOne(), $operation->cast(@SelectWithCursor).parent.select.columns), |$foundColumnInSelect);
+  let isBoundToCurrentRelation = $boundRoot->isNotEmpty() && $leftRoot->isNotEmpty() && $boundRoot->toOne() == $leftRoot->toOne();
+  let lookupCursor = if($isBoundToCurrentRelation, |$boundCursor->toOne(), |$leftCursor);
+  let lookupParent = if($isBoundToCurrentRelation, |$boundCursor.parent, |$operation.parent);
+  let tableAlias = $lookupCursor.select.data.alias;
+  let foundColumnInSelect = $lookupCursor.select->findColumn($colFuncName);
+  let foundAlias = if($foundColumnInSelect->isEmpty(), |findAlias($fe.func.name->toOne(), $lookupParent.select.columns), |$foundColumnInSelect);
   let foundColumn = if($foundAlias->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundAlias);
   let colAlias = if ($outerColumn->isNotEmpty(),
     |
@@ -940,7 +943,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
           $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias->toOne(), column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias->toOne())]);
         ,
         |
-          $colFuncName->findColumnOnOperationHierarchy($leftCursor)->toOne('Column not found on query or hierarchy: ' + $colFuncName);
+          $colFuncName->findColumnOnOperationHierarchy($lookupCursor)->toOne('Column not found on query or hierarchy: ' + $colFuncName);
       );
   );
 
