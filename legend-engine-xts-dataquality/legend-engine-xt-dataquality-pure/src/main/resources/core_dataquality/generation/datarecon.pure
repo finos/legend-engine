@@ -48,8 +48,18 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
 
   let allParams = $renamedSourceParams->concatenate($renamedTargetParams);
 
-  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
-  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
+  //lets of a multi-statement side are hoisted onto the generated lambda, prefixed per side so the
+  //two sides cannot collide on a shared name
+  let renamedSource = renameLetVariables($reconInput.source, 'source_');
+  let renamedTarget = renameLetVariables($reconInput.target, 'target_');
+
+  //the lets need the parameter rename too, or one reading a parameter would reference a name the
+  //generated lambda no longer declares
+  let hoistedLets = prefixVariables($renamedSource.expressionSequence->evaluateAndDeactivate()->init(), $sourceParams.name, 'source_')
+    ->concatenate(prefixVariables($renamedTarget.expressionSequence->evaluateAndDeactivate()->init(), $targetParams.name, 'target_'));
+
+  let sourceDataset = prefixVariables(prepareDataset($renamedSource, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler), $sourceParams.name, 'source_')->toOne();
+  let targetDataset = prefixVariables(prepareDataset($renamedTarget, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler), $targetParams.name, 'target_')->toOne();
 
   //join by keys
   let withJoin = buildJoinExpression($sourceDataset, $targetDataset, JoinKind.FULL, getJoinColumns($reconInput.keys), $reconInput.sourceHashCol, $reconInput.targetHashCol);
@@ -81,7 +91,7 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
       $withDqCols->meta::external::dataquality::buildOrderedSelectExpression($orderedCols, $projectedRelType);
   );
 
-  lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $withOrderedCols);
+  lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $hoistedLets->concatenate($withOrderedCols));
 }
 
 function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentColNames: String[*], keys: String[*], compareCols: String[*], sourceHashCol: String[1], targetHashCol: String[1], additionalColumnsToPersist: String[*]): String[*]
@@ -109,12 +119,88 @@ function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentCo
   $desired->filter(c | $currentColNames->contains($c));
 }
 
+// Renames variables in one traversal, applying the whole name map at each VariableExpression.
+function meta::external::dataquality::datarecon::renameVariables(vs: ValueSpecification[1], names: Map<String, String>[1]): ValueSpecification[1]
+{
+  $vs->match([
+    v:VariableExpression[1] |
+        let renamed = $names->get($v.name);
+        if ($renamed->isEmpty(), | $v, | ^$v(name = $renamed->toOne()));,
+    s:SimpleFunctionExpression[1] |
+        ^$s(parametersValues = $s.parametersValues->evaluateAndDeactivate()->map(p | $p->renameVariables($names)));,
+    i:InstanceValue[1] |
+        ^$i(values = $i.values->map(x | $x->renameVariablesInValue($names)));,
+    other:ValueSpecification[1] | $other
+  ])
+}
+
+function meta::external::dataquality::datarecon::renameVariablesInValue(a: Any[1], names: Map<String, String>[1]): Any[1]
+{
+  $a->match([
+    l:LambdaFunction<Any>[1] |
+        let shadowed = $l->functionType().parameters->evaluateAndDeactivate().name;
+        let visible = $names->keyValues()->filter(kv | !$shadowed->contains($kv.first));
+        if ($visible->isEmpty(),
+          | $l,
+          | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(e | $e->renameVariables(newMap($visible)))->toOneMany())
+        );,
+    k:meta::pure::metamodel::function::KeyExpression[1] |
+        ^$k(expression = $k.expression->evaluateAndDeactivate()->toOne()->renameVariables($names));,
+    v:ValueSpecification[1] | $v->renameVariables($names),
+    x:Any[1] | $x
+  ])
+}
+
+function meta::external::dataquality::datarecon::prefixVariables(exprs: ValueSpecification[*], names: String[*], prefix: String[1]): ValueSpecification[*]
+{
+  if ($names->isEmpty() || $exprs->isEmpty(),
+    | $exprs,
+    | let map = newMap($names->distinct()->map(n | pair($n, $prefix + $n)));
+      $exprs->map(e | $e->renameVariables($map));
+  )
+}
+
+/*
+  Lifts the let statements out of a query lambda, renaming each bound variable with the given
+  prefix and rewriting every reference to match, so the source and target sides cannot collide on
+  a shared name. The returned lambda has the same expression sequence, renamed; callers take
+  ->init() for the lets and ->last() for the query body.
+*/
+function meta::external::dataquality::datarecon::renameLetVariables(lambda: LambdaFunction<Any>[1], prefix: String[1]): LambdaFunction<Any>[1]
+{
+  let exprs = $lambda.expressionSequence->evaluateAndDeactivate();
+  if ($exprs->size() == 1,
+    | $lambda,
+    | let letNames = $exprs->init()->map(e |
+          assert($e->meta::pure::router::utils::isLetFunction(), | 'Only let statements are supported before the final expression of a query');
+          $e->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->toOne()->cast(@String);
+        );
+      let withRenamedRefs = ^$lambda(expressionSequence = prefixVariables($exprs, $letNames, $prefix)->toOneMany());
+      let renamedExprs = $withRenamedRefs.expressionSequence->evaluateAndDeactivate()->map(e |
+          if ($e->meta::pure::router::utils::isLetFunction(),
+            | let le = $e->cast(@SimpleFunctionExpression);
+              let oldName = $le.parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->toOne()->cast(@String);
+              ^$le(parametersValues = ^InstanceValue(values = $prefix + $oldName, genericType = ^GenericType(rawType=String), multiplicity = PureOne)
+                     ->concatenate($le.parametersValues->evaluateAndDeactivate()->tail()));,
+            | $e
+          ));
+      ^$lambda(expressionSequence = $renamedExprs->toOneMany());
+  );
+}
+
 function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], additionalPersistCols: String[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): ValueSpecification[1]
-{  
+{
   let hasFrom = $dataset->isEndingWithFromFunction();
+  let exprs = $dataset.expressionSequence->evaluateAndDeactivate();
+
+  //strip the trailing from; it is re-attached below, after compileViaGrammar, as runtime is not yet
+  //supported in the compileViaGrammar flow - once fixed we can remove this code.
+  //taking the last expression directly (rather than popTerminalFunctionExpression, whose
+  //expressionSequence->toOne() assumes one expression) keeps this working for multi-statement
+  //queries; their lets are hoisted by the caller and stay in scope via compileViaGrammarWithContext
   let withoutFrom = if ($hasFrom,
-    | $dataset->popTerminalFunctionExpression().expressionSequence->evaluateAndDeactivate()->last()->toOne(), //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
-    | $dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne()
+    | $exprs->last()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->evaluateAndDeactivate(),
+    | $exprs->last()->toOne()
   );
 
   //if lambda returning Tablular Data Set (TDS) then add cast to Relation

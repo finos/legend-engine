@@ -181,6 +181,49 @@ public class TestDataQualityApi
     }
 
     @Test
+    public void testDataQualityRecon_multiExpressionSourceAndTarget()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("|let nameFilter = 'Alice Smith'; demo::Person.all()->filter(x|$x.fullName == $nameFilter)->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);");
+        input.target = lambda("|let nameFilter = 'Bob Johnson'; demo::Person.all()->filter(x|$x.fullName == $nameFilter)->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertNotNull(resultAsString);
+
+        assertTrue("expected Alice from the source side, got " + resultAsString, resultAsString.contains("Alice Smith"));
+        assertTrue("expected Bob from the target side, got " + resultAsString, resultAsString.contains("Bob Johnson"));
+    }
+
+    @Test
+    public void testDataQualityRecon_multiExpressionWithParameterInLet()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("{nameFilter:String[1]|let wanted = $nameFilter; demo::Person.all()->filter(x|$x.fullName == $wanted)->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);}");
+        input.target = lambda("{nameFilter:String[1]|let wanted = $nameFilter; demo::Person.all()->filter(x|$x.fullName == $wanted)->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);}");
+        input.sourceLambdaParameterValues = Collections.singletonList(createParameterValue("nameFilter", new CString("Alice Smith")));
+        input.targetLambdaParameterValues = Collections.singletonList(createParameterValue("nameFilter", new CString("Bob Johnson")));
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertNotNull(resultAsString);
+        assertTrue("expected Alice from the source side, got " + resultAsString, resultAsString.contains("Alice Smith"));
+        assertTrue("expected Bob from the target side, got " + resultAsString, resultAsString.contains("Bob Johnson"));
+    }
+
+    @Test
     public void testDataQualityRecon_withPrefixedLambdaParametersAndTwoTargetParameters()
     {
         DataQualityReconInput input = new DataQualityReconInput();
