@@ -74,6 +74,9 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 # (cargo build --release) and puts it in its jar:
 JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust \
     test -Drevision=rust-parser-SNAPSHOT
+
+# The crates, as crates.io will see them (docs/publishing.md):
+cargo publish --workspace --dry-run --allow-dirty
 ```
 
 ## Code Conventions (enforced by CI)

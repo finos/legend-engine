@@ -19,6 +19,9 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
+# The engine's jar carries this library (legend-engine-language-pure-grammar-rust); it is not a crate to depend on.
+publish = false
 
 [lib]
 # Loaded by org.finos.legend.pure.rust.parser.NativeGrammarParser as
@@ -29,36 +32,36 @@ name = "legend_pure_rust_parser"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-legend-pure-parser-api = { path = "../api" }
+legend-pure-parser-api = { workspace = true }
 # Grammar plug-ins linked into this library (they self-register).
-legend-pure-dsl-authentication = { path = "../dsl-authentication" }
-legend-pure-dsl-bigquery-function = { path = "../dsl-bigquery-function" }
-legend-pure-dsl-connection = { path = "../dsl-connection" }
-legend-pure-dsl-data = { path = "../dsl-data" }
-legend-pure-dsl-data-space = { path = "../dsl-data-space" }
-legend-pure-dsl-dataquality = { path = "../dsl-dataquality" }
-legend-pure-dsl-deephaven = { path = "../dsl-deephaven" }
-legend-pure-dsl-diagram = { path = "../dsl-diagram" }
-legend-pure-dsl-elasticsearch = { path = "../dsl-elasticsearch" }
-legend-pure-dsl-external-format = { path = "../dsl-external-format" }
-legend-pure-dsl-function-jar = { path = "../dsl-function-jar" }
-legend-pure-dsl-generation = { path = "../dsl-generation" }
-legend-pure-dsl-graph = { path = "../dsl-graph" }
-legend-pure-dsl-hosted-service = { path = "../dsl-hosted-service" }
-legend-pure-dsl-mapping = { path = "../dsl-mapping" }
-legend-pure-dsl-memsql-function = { path = "../dsl-memsql-function" }
-legend-pure-dsl-mongodb = { path = "../dsl-mongodb" }
-legend-pure-dsl-persistence = { path = "../dsl-persistence" }
-legend-pure-dsl-persistence-cloud = { path = "../dsl-persistence-cloud" }
-legend-pure-dsl-persistence-relational = { path = "../dsl-persistence-relational" }
-legend-pure-dsl-store = { path = "../dsl-store" }
-legend-pure-dsl-relational = { path = "../dsl-relational" }
-legend-pure-dsl-relational-snowflake = { path = "../dsl-relational-snowflake" }
-legend-pure-dsl-runtime = { path = "../dsl-runtime" }
-legend-pure-dsl-service = { path = "../dsl-service" }
-legend-pure-dsl-service-store = { path = "../dsl-service-store" }
-legend-pure-dsl-snowflake = { path = "../dsl-snowflake" }
-legend-pure-dsl-sql = { path = "../dsl-sql" }
-legend-pure-dsl-tds = { path = "../dsl-tds" }
-legend-pure-dsl-text = { path = "../dsl-text" }
+legend-pure-dsl-authentication = { workspace = true }
+legend-pure-dsl-bigquery-function = { workspace = true }
+legend-pure-dsl-connection = { workspace = true }
+legend-pure-dsl-data = { workspace = true }
+legend-pure-dsl-data-space = { workspace = true }
+legend-pure-dsl-dataquality = { workspace = true }
+legend-pure-dsl-deephaven = { workspace = true }
+legend-pure-dsl-diagram = { workspace = true }
+legend-pure-dsl-elasticsearch = { workspace = true }
+legend-pure-dsl-external-format = { workspace = true }
+legend-pure-dsl-function-jar = { workspace = true }
+legend-pure-dsl-generation = { workspace = true }
+legend-pure-dsl-graph = { workspace = true }
+legend-pure-dsl-hosted-service = { workspace = true }
+legend-pure-dsl-mapping = { workspace = true }
+legend-pure-dsl-memsql-function = { workspace = true }
+legend-pure-dsl-mongodb = { workspace = true }
+legend-pure-dsl-persistence = { workspace = true }
+legend-pure-dsl-persistence-cloud = { workspace = true }
+legend-pure-dsl-persistence-relational = { workspace = true }
+legend-pure-dsl-store = { workspace = true }
+legend-pure-dsl-relational = { workspace = true }
+legend-pure-dsl-relational-snowflake = { workspace = true }
+legend-pure-dsl-runtime = { workspace = true }
+legend-pure-dsl-service = { workspace = true }
+legend-pure-dsl-service-store = { workspace = true }
+legend-pure-dsl-snowflake = { workspace = true }
+legend-pure-dsl-sql = { workspace = true }
+legend-pure-dsl-tds = { workspace = true }
+legend-pure-dsl-text = { workspace = true }
 jni = { workspace = true }

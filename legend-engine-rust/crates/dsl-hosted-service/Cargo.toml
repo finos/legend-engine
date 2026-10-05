@@ -19,15 +19,16 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-legend-pure-dsl-function-activator = { path = "../dsl-function-activator" }
-legend-pure-dsl-runtime = { path = "../dsl-runtime" }
-legend-pure-dsl-service = { path = "../dsl-service" }
-legend-pure-parser-ast = { path = "../ast" }
-legend-pure-parser-lexer = { path = "../lexer" }
-legend-pure-parser-parser = { path = "../parser" }
-legend-pure-parser-protocol = { path = "../protocol" }
+legend-pure-dsl-function-activator = { workspace = true }
+legend-pure-dsl-runtime = { workspace = true }
+legend-pure-dsl-service = { workspace = true }
+legend-pure-parser-ast = { workspace = true }
+legend-pure-parser-lexer = { workspace = true }
+legend-pure-parser-parser = { workspace = true }
+legend-pure-parser-protocol = { workspace = true }
 linkme = { workspace = true }
 
 [dev-dependencies]

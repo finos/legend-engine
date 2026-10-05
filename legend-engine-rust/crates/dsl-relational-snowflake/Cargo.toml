@@ -19,9 +19,10 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-legend-pure-dsl-relational = { path = "../dsl-relational" }
+legend-pure-dsl-relational = { workspace = true }
 linkme = { workspace = true }
 serde_json = { workspace = true }
 

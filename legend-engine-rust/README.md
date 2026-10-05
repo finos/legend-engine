@@ -104,6 +104,9 @@ mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-p
     test -Drevision=rust-parser-SNAPSHOT
 ```
 
+The crates are published to crates.io apart from the engine; see
+[docs/publishing.md](docs/publishing.md).
+
 ## Adding a Grammar Feature
 
 1. Write failing tests first, derived from Legend Engine's grammar tests

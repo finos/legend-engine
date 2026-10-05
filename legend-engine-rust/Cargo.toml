@@ -58,14 +58,55 @@ members = [
 [workspace.package]
 edition = "2024"
 version = "0.1.0"
+# The oldest Rust that builds the workspace with Cargo.lock's dependencies (checked with 1.89.0).
+rust-version = "1.89"
 license = "Apache-2.0"
 repository = "https://github.com/finos/legend-engine"
 
 [workspace.dependencies]
+# The workspace's own crates. A path for building here, the version for crates.io: keep it
+# [workspace.package]'s version (docs/publishing.md).
+legend-pure-dsl-authentication = { path = "crates/dsl-authentication", version = "0.1.0" }
+legend-pure-dsl-bigquery-function = { path = "crates/dsl-bigquery-function", version = "0.1.0" }
+legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0" }
+legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
+legend-pure-dsl-data-space = { path = "crates/dsl-data-space", version = "0.1.0" }
+legend-pure-dsl-dataquality = { path = "crates/dsl-dataquality", version = "0.1.0" }
+legend-pure-dsl-deephaven = { path = "crates/dsl-deephaven", version = "0.1.0" }
+legend-pure-dsl-diagram = { path = "crates/dsl-diagram", version = "0.1.0" }
+legend-pure-dsl-elasticsearch = { path = "crates/dsl-elasticsearch", version = "0.1.0" }
+legend-pure-dsl-external-format = { path = "crates/dsl-external-format", version = "0.1.0" }
+legend-pure-dsl-function-activator = { path = "crates/dsl-function-activator", version = "0.1.0" }
+legend-pure-dsl-function-jar = { path = "crates/dsl-function-jar", version = "0.1.0" }
+legend-pure-dsl-generation = { path = "crates/dsl-generation", version = "0.1.0" }
+legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
+legend-pure-dsl-hosted-service = { path = "crates/dsl-hosted-service", version = "0.1.0" }
+legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
+legend-pure-dsl-memsql-function = { path = "crates/dsl-memsql-function", version = "0.1.0" }
+legend-pure-dsl-mongodb = { path = "crates/dsl-mongodb", version = "0.1.0" }
+legend-pure-dsl-persistence = { path = "crates/dsl-persistence", version = "0.1.0" }
+legend-pure-dsl-persistence-cloud = { path = "crates/dsl-persistence-cloud", version = "0.1.0" }
+legend-pure-dsl-persistence-relational = { path = "crates/dsl-persistence-relational", version = "0.1.0" }
+legend-pure-dsl-relational = { path = "crates/dsl-relational", version = "0.1.0" }
+legend-pure-dsl-relational-snowflake = { path = "crates/dsl-relational-snowflake", version = "0.1.0" }
+legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }
+legend-pure-dsl-service = { path = "crates/dsl-service", version = "0.1.0" }
+legend-pure-dsl-service-store = { path = "crates/dsl-service-store", version = "0.1.0" }
+legend-pure-dsl-snowflake = { path = "crates/dsl-snowflake", version = "0.1.0" }
+legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
+legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }
+legend-pure-dsl-tds = { path = "crates/dsl-tds", version = "0.1.0" }
+legend-pure-dsl-text = { path = "crates/dsl-text", version = "0.1.0" }
+legend-pure-parser-api = { path = "crates/api", version = "0.1.0" }
+legend-pure-parser-ast = { path = "crates/ast", version = "0.1.0" }
+legend-pure-parser-ast-derive = { path = "crates/ast-derive", version = "0.1.0" }
+legend-pure-parser-lexer = { path = "crates/lexer", version = "0.1.0" }
+legend-pure-parser-parser = { path = "crates/parser", version = "0.1.0" }
+legend-pure-parser-protocol = { path = "crates/protocol", version = "0.1.0" }
+
 # Core
 smol_str = "0.3"
 thiserror = "2"
-legend-pure-parser-ast-derive = { path = "crates/ast-derive" }
 
 # Tracing
 tracing = "0.1"

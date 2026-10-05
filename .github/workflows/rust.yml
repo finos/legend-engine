@@ -113,6 +113,11 @@ jobs:
       - name: Check Copyright Headers
         run: ./scripts/check-copyright.sh
 
+      - name: Check the crates package and build for crates.io
+        # The JNI library is built and tested where the engine uses it: in
+        # legend-engine-language-pure-grammar-rust's Maven build (Build CI).
+        run: cargo publish --workspace --locked --dry-run
+
       - name: Check Documentation Accuracy
         # Ensure that running cargo doc produces 0 warnings
         run: cargo doc --workspace --no-deps 2>&1 | grep -c "warning:" | xargs test 0 -eq

@@ -19,9 +19,10 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-legend-pure-parser-ast = { path = "../ast" }
+legend-pure-parser-ast = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 smol_str = { workspace = true, features = ["serde"] }
 thiserror = { workspace = true }

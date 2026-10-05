@@ -19,12 +19,13 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-legend-pure-parser-ast = { path = "../ast" }
-legend-pure-parser-lexer = { path = "../lexer" }
-legend-pure-parser-parser = { path = "../parser" }
-legend-pure-parser-protocol = { path = "../protocol" }
+legend-pure-parser-ast = { workspace = true }
+legend-pure-parser-lexer = { workspace = true }
+legend-pure-parser-parser = { workspace = true }
+legend-pure-parser-protocol = { workspace = true }
 linkme = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
