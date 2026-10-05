@@ -43,6 +43,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
@@ -369,7 +370,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     // Typing an extraction as ARRAY(VARIANT) means a transform whose body extracts an array
     // produces ARRAY(ARRAY(VARIANT)), which ARRAY_FLATTEN refuses. Widening to a plain ARRAY
     // first is what it accepts, and the elements stay VARIANT either way.
-    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(cast(%s as ARRAY))')),  
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(cast(%s as ARRAY))')),
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_cat(%s, %s)')), 
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),

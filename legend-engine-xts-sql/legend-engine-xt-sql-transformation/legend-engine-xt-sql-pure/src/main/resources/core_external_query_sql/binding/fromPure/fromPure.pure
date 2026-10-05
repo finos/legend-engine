@@ -656,8 +656,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processSetOperation', $context.debug);
   let processed = $setOperation->match([
     u:Union[1] | $u->processUnion($context),
-    i:Intersect[1] | unsupported('Intersect'); $context;,
-    e:Except[1] | unsupported('Except'); $context;,
+    i:Intersect[1] | $i->processIntersect($context),
+    e:Except[1] | $e->processExcept($context),
     s:SetOperation[1] | $context
   ]);
 
@@ -670,16 +670,34 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processUnion(union: Union[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processUnion', $context.debug);
+  processSetOperation($union, 'union', {left, right, distinct, relation, context | ^TDSBuilder().union($left, $right, $distinct, $relation, $context)}, $context);
+}
 
-  let left = wrapWithFrom(processRelation($union.left, ^$context(name = $context.name->orElse('union_' + toString($context.id + 1)), root = false, id = $context.id + 1)));
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIntersect(intersect: Intersect[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  debug(|'processIntersect', $context.debug);
+  processSetOperation($intersect, 'intersect', {left, right, distinct, relation, context | ^TDSBuilder().intersect($left, $right, $distinct, $relation, $context)}, $context);
+}
 
-  let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExcept(except: Except[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  debug(|'processExcept', $context.debug);
+  processSetOperation($except, 'except', {left, right, distinct, relation, context | ^TDSBuilder().except($left, $right, $distinct, $relation, $context)}, $context);
+}
 
-  let newExp = ^TDSBuilder().union($left.expression->toOne(), $right.expression->toOne(), $union.distinct, $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)));
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSetOperation(operation: SetOperation[1], name:String[1], builder:LambdaFunction<{ValueSpecification[1], ValueSpecification[1], Boolean[1], Boolean[1], SqlTransformContext[1] -> ValueSpecification[1]}>[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  debug(|'process' + $name, $context.debug);
+
+  let left = wrapWithFrom(processRelation($operation.left, ^$context(name = $context.name->orElse($name + '_' + toString($context.id + 1)), root = false, id = $context.id + 1)));
+
+  let right = wrapWithFrom(processRelation($operation.right, ^$context(name = $context.name->orElse($name + '_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
+
+  let newExp = $builder->eval($left.expression->toOne()->evaluateAndDeactivate(), $right.expression->toOne()->evaluateAndDeactivate(), $operation.distinct, $context.relation, ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)))->evaluateAndDeactivate();
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
-  clone(^$context(name = $context.name->orElse('union_' + $context.id->toString()), expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
+  clone(^$context(name = $context.name->orElse($name + '_' + $context.id->toString()), expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQueryWithScope(queryWithScope: QueryWithScope[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -5903,16 +5921,45 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation: Boolean[1],
     context:SqlTransformContext[1]
   ){
-
     let args = [$left, $right];
 
-    if ($distinct,
-      | if ($relation,
-          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, buildRelationType($context.columns), $args)),
-          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, ^GenericType(rawType = TabularDataSet), ^GenericType(rawType = TabularDataSet), $args))),
-      | if ($relation,
-          | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
+    if ($relation,
+      | if ($distinct,
+          | sfe(union_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
+          | sfe(unionAll_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args)),
+      | if ($distinct,
+          | sfe(union_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args),
           | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args)));
+  }:ValueSpecification[1];
+
+  intersect(
+    left: ValueSpecification[1],
+    right: ValueSpecification[1],
+    distinct: Boolean[1],
+    relation: Boolean[1],
+    context:SqlTransformContext[1]
+  ){
+    assertRelation($relation, 'except');
+
+    if ($distinct,
+        | sfe(intersect_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), [$left, $right]),
+        | sfe(intersectAll_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), [$left, $right]));
+
+  }:ValueSpecification[1];
+
+  except(
+    left: ValueSpecification[1],
+    right: ValueSpecification[1],
+    distinct: Boolean[1],
+    relation: Boolean[1],
+    context:SqlTransformContext[1]
+  ){
+    assertRelation($relation, 'except');
+
+    if ($distinct,
+        | sfe(except_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), [$left, $right]),
+        | sfe(exceptAll_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), [$left, $right]));
+
   }:ValueSpecification[1];
 
   distinct(
@@ -6271,8 +6318,6 @@ aggregation(
 
     sfe(lateral_Relation_1__Function_1__Relation_1_, $type, [$left, iv($lateralLambda)]);
   }:ValueSpecification[1];
-
-
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::potentiallyCombineToLogical(expressions:meta::external::query::sql::metamodel::Expression[*], type:LogicalBinaryType[1]):meta::external::query::sql::metamodel::Expression[1]

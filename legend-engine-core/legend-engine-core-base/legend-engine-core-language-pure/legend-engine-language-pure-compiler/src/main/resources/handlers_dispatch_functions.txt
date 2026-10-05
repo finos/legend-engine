@@ -499,6 +499,8 @@ meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_
+meta::pure::functions::relation::exceptAll_Relation_1__Relation_1__Relation_1_
+meta::pure::functions::relation::except_Relation_1__Relation_1__Relation_1_
 meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_
 meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_
 meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_
@@ -531,6 +533,8 @@ meta::pure::functions::relation::joinStrings_Relation_1__ColSpec_1__String_1__So
 meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__String_1_
 meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__SortInfo_MANY__String_1_
 meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_
+meta::pure::functions::relation::intersectAll_Relation_1__Relation_1__Relation_1_
+meta::pure::functions::relation::intersect_Relation_1__Relation_1__Relation_1_
 meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_
 meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_
 meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_
@@ -577,6 +581,8 @@ meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_
 meta::pure::functions::relation::size_Relation_1__Integer_1_
 meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_
 meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_
+meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_
+meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_
 meta::pure::functions::runtime::currentUserId__String_1_
 meta::pure::functions::string::ascii_String_1__Integer_1_
 meta::pure::functions::string::char_Integer_1__String_1_
@@ -693,6 +699,7 @@ meta::pure::tds::asc_String_1__SortInformation_1_
 meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_
 meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_
 meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_
+meta::pure::tds::union_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_
 meta::pure::tds::desc_String_1__EmptyOrder_1__SortInformation_1_
 meta::pure::tds::desc_String_1__SortInformation_1_
 meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_

@@ -16,6 +16,9 @@
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
   }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] EXCEPT ALL is not supported for Database Type: Snowflake"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
   }, {
@@ -39,6 +42,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_And_Function_1__Boolean_1_",
     "expectedError" : "Unsupported subquery type cannot be evaluated"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT ALL is not supported for Database Type: Snowflake"
   }, {
     "test" : "meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,8\\n   6,1,F,6\\n   2,1,B,2\\n   5,2,E,5\\n   1,2,A,1\\n   7,3,G,7\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,2\\n   6,1,F,2\\n   2,1,B,2\\n   5,2,E,1\\n   1,2,A,1\\n   7,3,G,3\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'"

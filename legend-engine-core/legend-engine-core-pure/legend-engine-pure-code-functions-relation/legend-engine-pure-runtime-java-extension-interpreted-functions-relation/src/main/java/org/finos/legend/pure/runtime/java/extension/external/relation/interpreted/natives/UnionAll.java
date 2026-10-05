@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives;
+
+import org.finos.legend.pure.m4.ModelRepository;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.AbstractSetOperation;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
+
+public class UnionAll extends AbstractSetOperation
+{
+    public UnionAll(FunctionExecutionInterpreted functionExecution, ModelRepository repository)
+    {
+        super(functionExecution, repository, "unionAll");
+    }
+
+    @Override
+    protected TestTDS apply(TestTDS tds1, TestTDS tds2)
+    {
+        return tds1.unionAll(tds2);
+    }
+}

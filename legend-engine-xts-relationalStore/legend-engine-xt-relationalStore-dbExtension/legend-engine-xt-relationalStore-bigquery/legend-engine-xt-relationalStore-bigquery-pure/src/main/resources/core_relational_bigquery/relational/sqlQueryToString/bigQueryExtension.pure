@@ -24,6 +24,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
    ^DbExtension(
       nullOrderingSupport = nullsLowWithClauseSupport(),
+      setOperationSupport = ^SetOperationSupport(union = 'UNION', unionAll = 'UNION ALL', except = 'EXCEPT DISTINCT', intersect = 'INTERSECT DISTINCT'),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,

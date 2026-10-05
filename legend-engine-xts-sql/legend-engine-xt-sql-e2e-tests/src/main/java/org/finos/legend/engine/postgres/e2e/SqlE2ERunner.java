@@ -103,7 +103,7 @@ public final class SqlE2ERunner
             "parity-tests/format_tokens/to_char_tokens.yaml",
             "parity-tests/format_tokens/extract_fields.yaml",
             "parity-tests/structural/joins.yaml",
-            "parity-tests/structural/unions.yaml",
+            "parity-tests/structural/set_operations.yaml",
             "parity-tests/structural/subqueries.yaml",
             "parity-tests/structural/ctes.yaml",
             "parity-tests/structural/order_limit_offset.yaml",

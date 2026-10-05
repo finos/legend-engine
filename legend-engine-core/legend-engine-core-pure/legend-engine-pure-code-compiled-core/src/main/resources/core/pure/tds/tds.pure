@@ -515,6 +515,13 @@ function
    $tds1->concatenate($tds2->toOneMany());
 }
 
+function 
+   {doc.doc = 'Append the rows from the second TDS to the rows in the first TDS removign duplicate rows.  N.B. The column must be the same for the two input TDSs'}
+   meta::pure::tds::union(tds1:TabularDataSet[1], tds2:TabularDataSet[1]):TabularDataSet[1]
+{
+   $tds1->concatenate($tds2)->distinct();
+}
+
 function meta::pure::tds::validatePaths(paths:Path<Nil,Any|*>[*]):Boolean[1]
 {
    let names = $paths->map(p|

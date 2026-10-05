@@ -902,19 +902,43 @@ function meta::relational::functions::pureToSqlQuery::buildUnionJoinName(relatio
                                        c : Column[1]           | $c.name,
                                        n : NamedRelation[1]    | $n.name,
                                        u : Union[1]            | 'union' + $u.setImplementations.id->joinStrings('(',',',')'),
+                                       s : SetOperationQuery[1]     | $s->type().name->toOne()->toLowerFirstCharacter()->toOne() + $s.queries->map(q|$q->buildUnionJoinName())->joinStrings('(',',',')'),
                                        t : TableAliasColumn[1] | $t.alias->buildUnionJoinName() + '.' +  $t.column->buildUnionJoinName(),
                                        l : Literal[1]          | $l.value->toString(),
                                        d : DynaFunction[1]     | $d.name + '(' + $d.parameters->buildUnionJoinName() + ')'])->toOne();
 }
 
-Class meta::relational::metamodel::relation::Union extends Relation
+Class <<typemodifiers.abstract>> meta::relational::metamodel::relation::SetOperationQuery extends Relation
 {
-   currentTreeNodes : RelationalTreeNode[*];
-   setImplementations : SetImplementation[*];
    queries : SelectSQLQuery[*];
 }
 
+// Union keeps carrying the mapping-union state (currentTreeNodes / setImplementations); the other set
+// operations are pure query constructs and deliberately do not extend it, so the mapping-union machinery
+// that casts to @Union is unaffected.
+Class meta::relational::metamodel::relation::Union extends SetOperationQuery
+{
+   currentTreeNodes : RelationalTreeNode[*];
+   setImplementations : SetImplementation[*];
+}
+
 Class meta::relational::metamodel::relation::UnionAll extends Union
+{
+}
+
+Class meta::relational::metamodel::relation::Except extends SetOperationQuery
+{
+}
+
+Class meta::relational::metamodel::relation::ExceptAll extends Except
+{
+}
+
+Class meta::relational::metamodel::relation::Intersect extends SetOperationQuery
+{
+}
+
+Class meta::relational::metamodel::relation::IntersectAll extends Intersect
 {
 }
 

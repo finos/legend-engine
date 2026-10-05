@@ -29,6 +29,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 
    ^DbExtension(
       nullOrderingSupport = nullsLastWithClauseSupport(),
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = true,
       commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::trino::processCommonTableExpressionsForTrino_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},

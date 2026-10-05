@@ -151,6 +151,9 @@
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
   }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] EXCEPT ALL is not supported for Database Type: SqlServer"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
@@ -246,6 +249,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT ALL is not supported for Database Type: SqlServe"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
@@ -684,5 +690,11 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,value,runningTotal\\n   1,10,10\\n   2,20,30\\n   3,30,60\\n   null,40,100\\n#'\nactual:   '#TDS\\n   id,value,runningTotal\\n   1,10,50\\n   2,20,70\\n   3,30,100\\n   null,40,40\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
   } ]
 }
