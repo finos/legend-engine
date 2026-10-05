@@ -2240,6 +2240,62 @@
     {
       "test": "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::except::testExceptPartialRowMatchIsNotAMatch_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::except::testExceptRemovesDuplicates_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::except::testExcept_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::intersect::testIntersectPartialRowMatchIsNotAMatch_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::intersect::testIntersectRemovesDuplicates_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::intersect::testIntersect_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::union::testSimpleUnion_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::union::testSimpleUnion_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::union::testUnionRemovesDuplicates_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::unionAll::testUnionAllKeepsDuplicates_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     }
   ]
 }

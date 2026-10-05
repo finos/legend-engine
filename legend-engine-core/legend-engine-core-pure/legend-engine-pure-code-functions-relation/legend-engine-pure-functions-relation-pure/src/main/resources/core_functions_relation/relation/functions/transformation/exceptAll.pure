@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+'''
+Bag difference of two relations: the rows of `rel1` with the rows of `rel2` subtracted one-for-one.
+
+Both relations must have the same type, which the signature enforces. If a row appears `n` times in
+`rel1` and `m` times in `rel2`, it appears `max(n - m, 0)` times in the result. Row matching is on
+the full tuple. Use `except(Relation<T>[1], Relation<T>[1]):Relation<T>[1]` for set semantics.
+
+The result carries no guaranteed row order, so sort afterwards if the order matters.
+
+**Parameters**
+- `rel1` — the relation to subtract from.
+- `rel2` — the relation whose row occurrences are removed.
+
+**Returns** the rows of `rel1` with matching occurrences from `rel2` cancelled out.
+
+**Examples**
+```pure
+$allOrders->exceptAll($cancelledOrders)
+```
+
+**See also** `except(Relation<T>[1], Relation<T>[1]):Relation<T>[1]`,
+`intersectAll(Relation<T>[1], Relation<T>[1]):Relation<T>[1]`,
+`unionAll(Relation<T>[1], Relation<T>[1]):Relation<T>[1]`
+'''
+native function <<PCT.function>> meta::pure::functions::relation::exceptAll<T>(rel1:Relation<T>[1], rel2:Relation<T>[1]):Relation<T>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  1, a
+                  1, a
+                  2, b
+                  3, c
+                #
+                ->exceptAll
+                (
+                  #TDS
+                    val, str
+                    1, a
+                    3, c
+                    4, d
+                  #);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   2,b\n'+
+                  '#', $res->sort([~val->ascending(), ~str->ascending()])->toString());
+}

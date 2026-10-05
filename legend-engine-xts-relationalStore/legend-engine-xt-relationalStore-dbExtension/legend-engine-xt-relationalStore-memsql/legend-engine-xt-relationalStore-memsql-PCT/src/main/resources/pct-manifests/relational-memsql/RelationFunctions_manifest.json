@@ -1047,5 +1047,23 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::except::testExcept_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] EXCEPT ALL is not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersect_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT ALL is not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
   } ]
 }

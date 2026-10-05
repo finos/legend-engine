@@ -621,5 +621,17 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   val,str\\n   1,a\\n   2,b\\n#'\nactual:   '#TDS\\n   val,str\\n   2,b\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersectPartialRowMatchIsNotAMatch_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT is not supported for Database Type: ClickHouse"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersectRemovesDuplicates_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT is not supported for Database Type: ClickHouse"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersect_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT is not supported for Database Type: ClickHouse"
   } ]
 }

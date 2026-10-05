@@ -127,7 +127,7 @@ function <<access.private>> meta::analytics::store::entitlements::getTables(r:Re
                 s:SelectSQLQuery[1] | if($s.data->isEmpty(), |[], |$s.data->toOne()->getTables())
                                        ->concatenate($s.columns->map(c| $c->getTables()))->concatenate($s.filteringOperation->map(fo | $fo->getTables())),
                 v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->getTables(),
-                u:Union[1] | $u.queries->map(q|$q->getTables()),
+                u:SetOperationQuery[1] | $u.queries->map(q|$q->getTables()),
                 tac:TableAliasColumn[1] | $tac.alias->getTables(),
                 a:Alias[1] | $a.relationalElement->getTables(),
                 t:Table[1] | if($t->isTemporaryTable(), | [], | [$t]),

@@ -26,6 +26,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::createDbExte
      getDynaFunctionToSqlForH2()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       nullOrderingSupport = nullsHighWithClauseSupport(),
       isBooleanLiteralSupported = true,
       aliasLimit = 1000,

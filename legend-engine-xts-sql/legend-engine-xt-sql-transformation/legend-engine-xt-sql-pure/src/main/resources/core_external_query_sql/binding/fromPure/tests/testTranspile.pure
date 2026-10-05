@@ -888,7 +888,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       'DateTime >= \'2023-01-02 00:00:00\' OR ' +
       'DateTime <= CURRENT_TIMESTAMP OR ' +
       'DateTime > \'2023-01-03 00:00:00\' OR ' +
-      'DateTime > date_trunc(\'month\', DateTime) OR ' + 
+      'DateTime > date_trunc(\'month\', DateTime) OR ' +
       'DateTime > cast(\'2026\' || \'/01\' || \'/01\' as date) OR ' + //testing concat of a date string does not get coerced
       '\'2026-01-01\' > DateTime', //testing left stringliteral coersion
 
@@ -2587,7 +2587,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')
-        )->toOne()
+        )
       },
 
       {|
@@ -2596,7 +2596,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->select(~[Integer])
           ->union(FlatInput.all()
           ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
-          ->select(~[Integer]))->toOne()
+          ->select(~[Integer]))
       }
     ]
   )
@@ -2619,7 +2619,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')
-        )->toOne()->sort([asc('Integer')])->slice(2, 2 + 1)
+        )->sort([asc('Integer')])->slice(2, 2 + 1)
       },
 
       {|
@@ -2628,7 +2628,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->select(~[Integer])
           ->union(FlatInput.all()
           ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
-          ->select(~[Integer]))->toOne()->sort([ascending(~Integer)])->slice(2, 2 + 1)
+          ->select(~[Integer]))->sort([ascending(~Integer)])->slice(2, 2 + 1)
       }
     ]
   )
@@ -2649,17 +2649,131 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->project(
                 [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
                 [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        )->toOne()
+        )
       },
 
       {|FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->union(
               FlatInput.all()
-              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn]))->toOne()
+              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn]))
       }
     ]
   )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnionAll():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" UNION ALL SELECT Integer FROM service."/service/service2"',
+
+    [
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict('Integer')
+        ->concatenate(
+          FlatInput.all()
+            ->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
+              [ 'ID', 'Integer', 'String' ])
+            ->restrict('Integer')
+        )
+      },
+
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->unionAll(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))
+      }
+    ]
+  )
+}
+
+//INTERSECT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testIntersect():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" INTERSECT SELECT Integer FROM service."/service/service2"',
+
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->intersect(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testIntersectAll():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" INTERSECT ALL SELECT Integer FROM service."/service/service2"',
+
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->intersectAll(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testIntersectTDSUnsupported():Boolean[1]
+{
+  assertError({|processQuery('SELECT Integer FROM service."/service/service1" INTERSECT SELECT Integer FROM service."/service/service2"', tabularDataSetSources(), false, true)},
+    'Unsupported: except only supported on relation inputs');
+}
+
+//EXCEPT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExcept():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" EXCEPT SELECT Integer FROM service."/service/service2"',
+
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->except(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExceptAll():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" EXCEPT ALL SELECT Integer FROM service."/service/service2"',
+
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->exceptAll(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExceptTDSUnsupported():Boolean[1]
+{
+  assertError({|processQuery('SELECT Integer FROM service."/service/service1" EXCEPT SELECT Integer FROM service."/service/service2"', tabularDataSetSources(), false, true)},
+    'Unsupported: except only supported on relation inputs');
 }
 
 
@@ -2706,7 +2820,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             String : x|'Value'
           ])
           ->select(~[String])
-          ->concatenate(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->unionAll(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
           ->project(~[
               int : x|$x.Integer,
@@ -2745,7 +2859,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
           ->select(~[Integer,String])
-          ->concatenate(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->unionAll(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
           ->select(~[Integer,String]))
           ->project(~[
@@ -2800,7 +2914,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                       {row1, row2|true}
               )
               ->project(~[col:x|1])
-              ->concatenate(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->unionAll(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
                 ->project(~[Boolean:x|$x.booleanIn,Integer:x|$x.integerIn,Float:x|$x.floatIn,Decimal:x|$x.decimalIn,StrictDate:x|$x.strictDateIn,DateTime:x|$x.dateTimeIn,String:x|$x.stringIn])
                 ->project(~[col:x|2]))
                 ->rename(~col, ~col_scope),
@@ -4441,7 +4555,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')
-        )->toOne()
+        )
       }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
 }
 
@@ -4476,7 +4590,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')->from(dummyMapping2, dummyRuntime2())
-        )->toOne()
+        )
       }->meta::pure::router::preeval::preval(sqlExtensions()),
       [serviceToSource(Service1()), serviceToSource(Service2XStore())], true, false, true)
 }
@@ -4591,7 +4705,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [
             'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
           ]
-        )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')))->toOne();
+        )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')));
       }
 
       //TODO issue with getType on enum
@@ -4650,7 +4764,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
             let cte2 = $cte1;
 
-            $cte1->restrict('Integer')->union($cte2->restrict('Integer'))->toOne();
+            $cte1->restrict('Integer')->union($cte2->restrict('Integer'));
       }),
       c({|
             let cte1 = FlatInput.all()->project(
@@ -4659,7 +4773,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
             let cte2 = $cte1;
 
-            $cte1->select(~[Integer])->union($cte2->select(~[Integer]))->toOne();
+            $cte1->select(~[Integer])->union($cte2->select(~[Integer]));
       })
     ]
   )
