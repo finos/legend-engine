@@ -42,7 +42,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          components: clippy, rustfmt
+          components: clippy, rustfmt, llvm-tools
 
       - name: Install lld (faster linker)
         run: sudo apt-get update && sudo apt-get install -y lld
@@ -67,7 +67,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.4
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - name: Enable sccache as RUSTC_WRAPPER
         # Caches rustc output across CI runs (keyed on input content), so
