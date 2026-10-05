@@ -1178,3 +1178,10 @@ tests:
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  - id: crcs_g9_chained_lateral_unnest_both_default_to_value
+    sql: "SELECT p.name AS name, b.value AS word FROM persons p, LATERAL UNNEST(STRING_TO_ARRAY(p.name, ',')) AS a(value), LATERAL UNNEST(STRING_TO_ARRAY(p.name, ',')) AS b(value) WHERE p.id = 1"
+    feature: "two chained LATERAL UNNESTs that both default to a column named VALUE"
+    category: "column_resolution_corpus"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
