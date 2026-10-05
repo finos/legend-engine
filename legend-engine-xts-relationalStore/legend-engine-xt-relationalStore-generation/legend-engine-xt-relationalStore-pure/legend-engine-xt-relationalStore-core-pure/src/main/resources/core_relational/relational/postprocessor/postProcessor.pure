@@ -254,6 +254,15 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                                                                 let transformedIndex = transform($s.index, $f, $transformedOperand.second);
                                                                 pair(^$s(operand = $transformedOperand.first, index = $transformedIndex.first), $transformedIndex.second);,
 
+                      ac:AggregateFunctionCall[1] | let transformedFunc = $ac.func->transform($f, $transformed);
+                                                    let transformedSortBy = $ac.sortBy->fold({s, agg |
+                                                        let sortTransform = $s.sortByElement->transform($f, $agg.second);
+                                                        pair(list($agg.first.values->add(^$s(sortByElement=$sortTransform.first))), $sortTransform.second);
+                                                    }, pair(^List<SortByInfo>(), $transformedFunc.second));
+                                                    let transformedFilter = $ac.filter->map(fi | $fi->transform($f, $transformedSortBy.second));
+                                                    pair(^$ac(func=$transformedFunc.first, sortBy=$transformedSortBy.first.values, filter=$transformedFilter.first),
+                                                         if($transformedFilter->isEmpty(), | $transformedSortBy.second, | $transformedFilter.second->toOne()));,
+
                       rel:RelationalOperationElement[1] | pair($rel, $transformed)
                     ]);
          pair($toReturn.first, $toReturn.second->put($r, $toReturn.first));
@@ -324,6 +333,10 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
 
                       d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->transformNonCached($f))),
 
+                      ac:AggregateFunctionCall[1] | ^$ac(func=$ac.func->transformNonCached($f),
+                                                     sortBy=$ac.sortBy->map(s|^$s(sortByElement=$s.sortByElement->transformNonCached($f))),
+                                                     filter=$ac.filter->map(fi|$fi->transformNonCached($f))),
+
                       j:JoinStrings[1] |
                         ^$j(
                            strings = $j.strings->map(s|$s->transformNonCached($f)),
@@ -380,6 +393,9 @@ function meta::relational::postProcessor::fixTables(relationalOperationElement:R
                     ll : LiteralList[1] | $ll,
                     s: SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), property = $s.property->fixTables($oldToNewPairs), index = $s.index->map(i | $i->fixTables($oldToNewPairs))),
                     s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), index = $s.index->fixTables($oldToNewPairs)),
+                    ac : AggregateFunctionCall[1] | ^$ac(func=$ac.func->fixTables($oldToNewPairs),
+                                                         sortBy=$ac.sortBy->map(s | ^$s(sortByElement=$s.sortByElement->fixTables($oldToNewPairs))),
+                                                         filter=$ac.filter->map(fi | $fi->fixTables($oldToNewPairs))),
                     rel: RelationalOperationElement[1] | $rel
                   ]);
 }

@@ -4847,6 +4847,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     planSql('WITH RECURSIVE t AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT "Integer" + 1 FROM t WHERE "Integer" < 5), s AS (SELECT "Integer" FROM t WHERE "Integer" > 2) SELECT "Integer" FROM s', $sources, $extensions));
 }
 
+// IN subquery sits under AggregateFunctionCall.filter, which postprocess must also traverse.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPostProcessorRenamesTableInFilteredAggregateInSubquery():Boolean[1]
+{
+  assertEquals(
+    'select "root".string as "String", sum("root".integer) filter (where "root".integer in (select "flat_1".integer as "Integer" from RENAMED_flat as "flat_1" where "flat_1".integer is not null)) as "total" from RENAMED_flat as "root" group by "String"',
+    planSql('SELECT "String", SUM("Integer") FILTER (WHERE "Integer" IN (SELECT "Integer" FROM service."/service/service2")) AS "total" FROM service."/service/service1" GROUP BY "String"', tableRenamingSources(), meta::relational::extension::relationalExtensions()));
+}
+
 //plans a statement the way the HTTP/parity path does and returns its single relational node's SQL.
 //The cast fails if the plan split, which is the regression being guarded.
 function meta::external::query::sql::transformation::queryToPure::tests::planSql(sql:String[1], sources:meta::external::query::sql::transformation::queryToPure::SQLSource[*], extensions:meta::pure::extension::Extension[*]):String[1]
@@ -4861,6 +4869,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::planSql
   $plan.rootExecutionNode
     ->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes
     ->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery->toOne();
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::tableRenamingSources():SQLSource[*]
+{
+  let connectionStore = dummyConnection();
+  let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::RelationalDatabaseConnection);
+  let renameTables = {query:meta::relational::metamodel::relation::SelectSQLQuery[1] |
+                        $query->meta::relational::postProcessor::postprocess({rel |
+                          $rel->match([
+                            t:meta::relational::metamodel::relation::Table[1] | ^$t(name = 'RENAMED_' + $t.name),
+                            o:meta::relational::metamodel::RelationalOperationElement[1] | $o
+                          ])})};
+  let runtime = ^meta::core::runtime::EngineRuntime(mappings = dummyMapping, connectionStores = ^$connectionStore(connection = ^$connection(sqlQueryPostProcessors = $renameTables)));
+  relationSources()->map(s | ^$s(runtime = $runtime));
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQueryFromScopingNoMappingRuntime():Boolean[1]
