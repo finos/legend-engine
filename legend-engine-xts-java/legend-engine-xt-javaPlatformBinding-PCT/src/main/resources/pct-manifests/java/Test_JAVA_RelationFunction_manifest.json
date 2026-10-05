@@ -2286,16 +2286,28 @@
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     },
     {
+      "test": "meta::pure::functions::relation::tests::unionAll::testUnionAllOfDistinctRelation_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedLimitedRelations_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedRelations_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
       "test": "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAllShared_Function_1__Boolean_1_",
-      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
       "test": "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
-      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::unionAll::testUnionAllKeepsDuplicates_Function_1__Boolean_1_",
-      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+      "test": "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     }
   ]
 }
