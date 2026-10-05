@@ -49,13 +49,13 @@ public class Test_Relational_H2_PCT
                 () ->
                 {
                     TestSuite suite = new TestSuite(Test_Relational_H2_PCT.class.getName());
-//                    suite.addTest(namedPCTSurveyorSuite(EssentialFunctions.class.getSimpleName(), EssentialFunctions.REPORT_SCOPE, EssentialFunctions.MANIFEST_PATH));
-//                    suite.addTest(namedPCTSurveyorSuite(GrammarFunctions.class.getSimpleName(), GrammarFunctions.REPORT_SCOPE, GrammarFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(EssentialFunctions.class.getSimpleName(), EssentialFunctions.REPORT_SCOPE, EssentialFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(GrammarFunctions.class.getSimpleName(), GrammarFunctions.REPORT_SCOPE, GrammarFunctions.MANIFEST_PATH));
                     suite.addTest(namedPCTSurveyorSuite(RelationFunctions.class.getSimpleName(), RelationFunctions.REPORT_SCOPE, RelationFunctions.MANIFEST_PATH));
-//                    suite.addTest(namedPCTSurveyorSuite(ScenarioQuantFunctions.class.getSimpleName(), ScenarioQuantFunctions.REPORT_SCOPE, ScenarioQuantFunctions.MANIFEST_PATH));
-//                    suite.addTest(namedPCTSurveyorSuite(StandardFunctions.class.getSimpleName(), StandardFunctions.REPORT_SCOPE, StandardFunctions.MANIFEST_PATH));
-//                    suite.addTest(namedPCTSurveyorSuite(UnclassifiedFunctions.class.getSimpleName(), UnclassifiedFunctions.REPORT_SCOPE, UnclassifiedFunctions.MANIFEST_PATH));
-//                    suite.addTest(namedPCTSurveyorSuite(VariantFunctions.class.getSimpleName(), VariantFunctions.REPORT_SCOPE, VariantFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(ScenarioQuantFunctions.class.getSimpleName(), ScenarioQuantFunctions.REPORT_SCOPE, ScenarioQuantFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(StandardFunctions.class.getSimpleName(), StandardFunctions.REPORT_SCOPE, StandardFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(UnclassifiedFunctions.class.getSimpleName(), UnclassifiedFunctions.REPORT_SCOPE, UnclassifiedFunctions.MANIFEST_PATH));
+                    suite.addTest(namedPCTSurveyorSuite(VariantFunctions.class.getSimpleName(), VariantFunctions.REPORT_SCOPE, VariantFunctions.MANIFEST_PATH));
                     return suite;
                 },
                 () -> false,
