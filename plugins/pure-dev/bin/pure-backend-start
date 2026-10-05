@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-backend-start - start (or confirm) the standalone legend-engine backend: H2 + a local test
+# metadata server + the full engine Server (org.finos.legend.engine.ide.EngineServerForTest), all on
+# FIXED ports, so a Pure LSP bridge started with -Dlegend.test.* properties routes execute()/go()
+# through real plan-generation + execution on this server (the compiled code path) instead of the
+# interpreted engine.
+#
+# This script ONLY brings up the backend - it does NOT start the Pure LSP itself. See
+# pure-lsp-launch-engine (which calls this automatically by default, unless passed --no-backend) or
+# pure-lsp-server's --jvm-arg passthrough.
+#
+# Usage:
+#   pure-backend-start [--port N] [--h2-port N] [--force-classpath]
+#
+# Defaults: --port 9095 (EngineServerForTest's fixed port), --h2-port 9092.
+#
+# Exit codes:
+#   0 = backend confirmed up (already running, or started and reached READY) - prints one JSON line
+#   1 = launcher module didn't compile, or its runtime classpath is missing/empty
+#   3 = launched but never reached READY within the timeout (~2 minutes) - see the log file
+set -euo pipefail
+
+PORT=9095
+H2_PORT=9092
+FORCE_CLASSPATH=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port) PORT="$2"; shift 2 ;;
+    --h2-port) H2_PORT="$2"; shift 2 ;;
+    --force-classpath) FORCE_CLASSPATH=1; shift ;;
+    *) echo "ERROR: unknown argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+log() { echo "[pure-backend-start] $*" >&2; }
+
+# The probe runs in a subshell, so fd 3 opens and closes inside it; the caller's fds are never
+# touched. This used to append `&& { exec 3>&- 3<&- 2>/dev/null; return 0; }` - but an `exec` with
+# only redirections and no command applies them PERMANENTLY to the current shell, so that
+# 2>/dev/null routed this script's entire stderr to /dev/null from the first successful probe on.
+# Every log() below it disappeared, including the "backend already up" notice on the happy path.
+port_listening() {
+  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
+}
+
+if port_listening "$PORT"; then
+  log "backend already up on 127.0.0.1:$PORT - not relaunching (it's a full engine JVM)"
+  echo "{\"port\": $PORT, \"h2Port\": $H2_PORT, \"state\": \"already-running\"}"
+  exit 0
+fi
+
+LEGEND_ENGINE_ROOT="${LEGEND_ENGINE_ROOT:-$HOME/projects/finos-legend-engine}"
+MODULE="legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server"
+CP_CACHE="/tmp/engine-server-cp.txt"
+
+log "compiling launcher module (usually a no-op - the class is normally already built)"
+if ! (cd "$LEGEND_ENGINE_ROOT" && mvn compile -o -q -pl "$MODULE"); then
+  log "ERROR: compile failed - see above. Retry without -o if offline deps are stale/missing."
+  exit 1
+fi
+
+if [[ -n "$FORCE_CLASSPATH" || ! -s "$CP_CACHE" ]]; then
+  log "generating runtime classpath -> $CP_CACHE"
+  (cd "$LEGEND_ENGINE_ROOT" && mvn dependency:build-classpath -o -q -pl "$MODULE" \
+    -Dmdep.outputFile="$CP_CACHE" -Dmdep.includeScope=test)
+fi
+if [[ ! -s "$CP_CACHE" ]]; then
+  log "ERROR: classpath file missing/empty: $CP_CACHE"
+  exit 1
+fi
+
+LOG_FILE="/tmp/engine-server.log"
+CP="$LEGEND_ENGINE_ROOT/$MODULE/target/classes:$(cat "$CP_CACHE")"
+
+# Linux caps any single execve() argv element at MAX_ARG_STRLEN (32 pages, ~131072 bytes),
+# independent of the much larger total ARG_MAX. The engine classpath (900+ jars) crossed that
+# ceiling as one "-cp <classpath>" argument, so the launch died with "Argument list too long"
+# while the whole command was nowhere near ARG_MAX. A java @argfile keeps only the short "@path"
+# token in argv - the same escape hatch bridge.py's _classpath_argv uses for the LSP daemon.
+CP_ARGFILE="/tmp/engine-server-cp-${PORT}.argfile"
+printf -- '-cp\n%s\n' "$CP" > "$CP_ARGFILE"
+
+log "launching EngineServerForTest (port $PORT, H2 $H2_PORT) -> $LOG_FILE"
+setsid nohup java "@$CP_ARGFILE" \
+  -Dengine.test.server.port="$PORT" -Dlegend.test.h2.port="$H2_PORT" \
+  org.finos.legend.engine.ide.EngineServerForTest \
+  > "$LOG_FILE" 2>&1 < /dev/null &
+disown
+
+for _ in $(seq 1 60); do
+  grep -q "\[engine-server-for-test\] READY" "$LOG_FILE" 2>/dev/null && break
+  sleep 2
+done
+
+if ! grep -q "\[engine-server-for-test\] READY" "$LOG_FILE" 2>/dev/null; then
+  log "ERROR: never reached READY within timeout - see $LOG_FILE"
+  tail -20 "$LOG_FILE" >&2
+  exit 3
+fi
+
+log "READY - relevant log lines:"
+grep -E "engine-server-for-test|Start the Pure LSP with" "$LOG_FILE" | tail -3 >&2
+echo "{\"port\": $PORT, \"h2Port\": $H2_PORT, \"state\": \"ready\"}"

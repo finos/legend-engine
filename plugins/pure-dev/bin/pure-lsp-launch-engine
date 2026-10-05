@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-launch-engine - launch the Pure LSP bridge scoped to legend-engine (plus legend-pure
+# below it), with defaults baked in.
+#
+# A thin wrapper over `pure-lsp-launch legend-engine`; see that script for the full flow, flags and
+# exit codes, and config/projects.json's legend-engine "launch" block for the port defaults
+# (8991/9100 - 9100 being this shop's standing LegendLspServer convention, shared with
+# pure-lsp-connect/pure-lsp-restart, so a daemon launched here is the one those reconnect to).
+#
+# Usage:
+#   pure-lsp-launch-engine [--port N] [--socket-port N] [--java PATH]
+#                          [--backend-server-host HOST] [--backend-server-port N] [--no-backend]
+#                          [extra args passed through to pure-lsp-server, e.g. --jvm-arg=-D...]
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")" && pwd)"
+exec "$DIR/pure-lsp-launch" legend-engine "$@"

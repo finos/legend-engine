@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Plugin PostToolUse hook launcher. Resolves the bundled pure-lsp-sync-hook and execs it, passing the
+# tool-call payload through on stdin. Resolution order:
+#   1. pure-lsp-sync-hook on PATH (after pure-dev-preflight symlinks it)
+#   2. the plugin bin dir recorded by preflight (~/.config/pure-dev/bin-dir)
+#   3. this launcher's sibling ../bin (works in-place from the plugin, no preflight)
+# The sync hook itself is a silent no-op when the LSP daemon isn't up, so this never blocks tool calls.
+set -euo pipefail
+
+if command -v pure-lsp-sync-hook >/dev/null 2>&1; then
+  exec pure-lsp-sync-hook "$@"
+fi
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/pure-dev"
+if [[ -r "$CONFIG_DIR/bin-dir" ]]; then
+  BIN_DIR="$(cat "$CONFIG_DIR/bin-dir")"
+  if [[ -x "$BIN_DIR/pure-lsp-sync-hook" ]]; then
+    exec "$BIN_DIR/pure-lsp-sync-hook" "$@"
+  fi
+fi
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "$HERE/../bin/pure-lsp-sync-hook" ]]; then
+  exec "$HERE/../bin/pure-lsp-sync-hook" "$@"
+fi
+
+# Could not resolve the hook - do nothing (never fail a tool call).
+exit 0

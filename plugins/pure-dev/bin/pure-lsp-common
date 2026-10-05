@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Shared helpers for the pure-lsp bash CLIs. Source this; do not execute it.
+#
+#   . "$BIN_DIR/pure-lsp-common"
+#
+# Provides: port_listening, find_bridge_pid, bridge_http_port, resolve_lsp_server_jar
+
+# shellcheck shell=bash
+# shellcheck disable=SC2034
+# ^ resolve_lsp_server_jar's SERVER_JAR, SERVER_JAR_SOURCE, DEPENDENCY_CLASSPATH_FILE and
+#   PREFER_SERVER_PURE_JARS globals look unused from this file alone - they're read by the
+#   callers that source this library (pure-lsp-connect, pure-lsp-launch-engine).
+
+# Test TCP reachability without depending on ss's text format across environments.
+# Usage: port_listening <port> [host]
+#
+# The probe runs in a subshell, so fd 3 is opened and closed entirely within it and the caller's
+# fds are never touched. Earlier copies of this helper followed a successful probe with
+# `exec 3>&- 3<&- 2>/dev/null` to "clean up" - but `exec` with only redirections and no command
+# applies them PERMANENTLY to the current shell, so that `2>/dev/null` silently redirected the
+# whole script's stderr to /dev/null from the first successful probe onwards. Every subsequent
+# error, warning and log() line vanished (e.g. pure-backend-start's "backend already up" notice).
+# There is nothing to clean up here; don't reintroduce it.
+port_listening() {
+  local port="$1" host="${2:-127.0.0.1}"
+  (exec 3<>"/dev/tcp/$host/$port") 2>/dev/null
+}
+
+# find_bridge_pid <socket-port> - pid of the python bridge attached to that socket port, or 1.
+#
+# `pgrep -f` matches against EVERY process's full command line, including the shell that invoked
+# it and this script's own argv - so a bare `pgrep -f "server_cli.*socket-port $N"` can and does
+# match a shell whose command line merely contains that text (observed matching the invoking
+# shell). That is harmless for a read-only check and actively dangerous for pure-lsp-restart,
+# which takes `head -1` of the result and SIGKILLs it. So every candidate is confirmed against
+# /proc: it must be a python process actually running `-m pure_lsp_bridge.server_cli` with the
+# requested --socket-port. Anything else is skipped.
+find_bridge_pid() {
+  local socket_port="$1" pid cmd exe
+  for pid in $(pgrep -f 'pure_lsp_bridge\.server_cli' 2>/dev/null); do
+    [[ "$pid" == "$$" || "$pid" == "${PPID:-}" ]] && continue
+    exe="$(readlink -f "/proc/$pid/exe" 2>/dev/null)" || continue
+    [[ "$exe" == *python* ]] || continue
+    cmd="$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)" || continue
+    [[ "$cmd" == *"-m pure_lsp_bridge.server_cli"* ]] || continue
+    [[ "$cmd" == *"--socket-port $socket_port"* ]] || continue
+    printf '%s' "$pid"
+    return 0
+  done
+  return 1
+}
+
+# bridge_http_port <pid> - the --port that bridge was launched with.
+# Falls back to the CLI default when --port was not spelled out in argv, which is the only way
+# it can be absent (server_cli defaults to 8991).
+bridge_http_port() {
+  local pid="$1" port
+  port="$(tr '\0' '\n' < "/proc/$pid/cmdline" 2>/dev/null | grep -A1 -x -- '--port' | tail -1 || true)"
+  if [[ -z "$port" || ! "$port" =~ ^[0-9]+$ ]]; then
+    printf '8991'
+    return 1  # signals "defaulted", callers may want to say so
+  fi
+  printf '%s' "$port"
+}
+
+# resolve_lsp_server_jar <classpath-file> <bin-dir>
+#
+# Resolves the legend-pure-lsp-server jar (and, if needed, a donor dependency classpath) for a
+# pure-lsp-server launch. Precedence:
+#   1. $LEGEND_PURE_LSP_SERVER_JAR, if set - provisioning automation can download a pinned jar to a
+#      fixed path and export this, skipping classpath-based resolution entirely. Fails fast if the
+#      file doesn't exist (not a silent fallback to the resolved jar), so a broken pin is visible
+#      immediately.
+#   2. Extract legend-pure-lsp-server-*.jar directly from <classpath-file> - true for legend-engine,
+#      whose anchor module transitively depends on legend-engine's
+#      pure-ide-light-http-server, which pulls legend-pure-lsp-server (and LSP4J) along with it.
+#   3. If <classpath-file> doesn't carry it (true for a project added via PURE_DEV_EXTRA_PROJECTS_JSON
+#      with no pure-ide-light module of its own, and reachable via
+#      pure-lsp-connect's generic --project), borrow it from legend-engine's classpath instead, and
+#      set DEPENDENCY_CLASSPATH_FILE + PREFER_SERVER_PURE_JARS=1 so resolve_server_classpath
+#      reconciles a possibly different pinned legend-pure version by ARTIFACT name instead of exact
+#      filename - see resolve_server_classpath's docstring in classpath.py.
+#
+# Sets (globals, for the caller to read afterward):
+#   SERVER_JAR                 resolved jar path
+#   SERVER_JAR_SOURCE           "env" | "classpath" | "borrowed" - for callers to log clearly
+#   DEPENDENCY_CLASSPATH_FILE  empty unless a donor was needed
+#   PREFER_SERVER_PURE_JARS    0/1
+# Returns non-zero (with an error already printed to stderr) if no server jar could be resolved.
+resolve_lsp_server_jar() {
+  local classpath_file="$1" bin_dir="$2"
+  DEPENDENCY_CLASSPATH_FILE=""
+  PREFER_SERVER_PURE_JARS=0
+
+  if [[ -n "${LEGEND_PURE_LSP_SERVER_JAR:-}" ]]; then
+    SERVER_JAR="$LEGEND_PURE_LSP_SERVER_JAR"
+    SERVER_JAR_SOURCE="env"
+    if [[ ! -f "$SERVER_JAR" ]]; then
+      echo "ERROR: \$LEGEND_PURE_LSP_SERVER_JAR is set but does not exist: $SERVER_JAR" >&2
+      return 1
+    fi
+    return 0
+  fi
+
+  SERVER_JAR="$(tr ':' '\n' < "$classpath_file" \
+    | grep -E '/legend-pure-lsp-server-[^/]*\.jar$' \
+    | grep -Ev -- '-sources\.jar$|-javadoc\.jar$|-shaded\.jar$' | sort -V | tail -1 || true)"
+  SERVER_JAR_SOURCE="classpath"
+
+  if [[ -z "$SERVER_JAR" ]]; then
+    DEPENDENCY_CLASSPATH_FILE="$("$bin_dir/pure-lsp-classpath" legend-engine)"
+    SERVER_JAR="$(tr ':' '\n' < "$DEPENDENCY_CLASSPATH_FILE" \
+      | grep -E '/legend-pure-lsp-server-[^/]*\.jar$' \
+      | grep -Ev -- '-sources\.jar$|-javadoc\.jar$|-shaded\.jar$' | sort -V | tail -1 || true)"
+    SERVER_JAR_SOURCE="borrowed"
+    PREFER_SERVER_PURE_JARS=1
+    if [[ -z "$SERVER_JAR" ]]; then
+      echo "ERROR: no legend-pure-lsp-server-*.jar in this project's classpath or legend-engine's." >&2
+      echo "       Build the chain so it's installed to .m2 - see the pure-chain-update skill." >&2
+      return 1
+    fi
+  fi
+  return 0
+}
