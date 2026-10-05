@@ -22,9 +22,9 @@ import org.junit.Test;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Smoke test of the JNI contract: the Java declarations bind to the native library's symbols and the JSON comes
- * back. Skipped when the native library is not available, unless {@code -Dlegend.pure.rust.parser.required=true}
- * (set in CI), which turns a missing library into a failure.
+ * The JNI contract: the library this module's build puts in the jar loads, the Java declarations bind to its symbols
+ * and the JSON comes back. The build sets {@code -Dlegend.pure.rust.parser.required=true}, so a library that doesn't
+ * load fails these tests; run without it (an IDE without the library), they are skipped.
  */
 public class TestNativeGrammarParser
 {
@@ -40,6 +40,14 @@ public class TestNativeGrammarParser
         {
             Assume.assumeTrue(message, NativeGrammarParser.isAvailable());
         }
+    }
+
+    @Test
+    public void testTheLibraryLoadsFromTheJar()
+    {
+        Assume.assumeTrue("the library's path is overridden", System.getProperty(NativeGrammarParser.LIBRARY_PATH_PROPERTY) == null);
+        Assert.assertNotNull("no library is built for this platform", NativeGrammarParser.bundledLibrary());
+        Assert.assertEquals(NativeGrammarParser.bundledLibrary(), NativeGrammarParser.getLoadedFrom());
     }
 
     @Test

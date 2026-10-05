@@ -68,5 +68,9 @@ cargo build -p legend-pure-parser-jni             # target/debug/liblegend_pure_
 cargo build -p legend-pure-parser-jni --release
 ```
 
-Java loads it with `-Dlegend.pure.rust.parser.lib=<absolute path>` or from
-`java.library.path` (`System.loadLibrary("legend_pure_rust_parser")`).
+The engine's `legend-engine-language-pure-grammar-rust` build runs the release
+build and puts the library in its jar, under `META-INF/native/<platform>/`, where
+`NativeGrammarParser` loads it from (through a temporary copy).
+`-Dlegend.pure.rust.parser.lib=<absolute path>` loads another instead, and
+`java.library.path` (`System.loadLibrary("legend_pure_rust_parser")`) is the last
+resort. This crate is not published to crates.io: the jar is how it ships.

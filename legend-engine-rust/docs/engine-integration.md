@@ -155,6 +155,16 @@ legend-pure takes its own back:
 
 - The `jni` crate's `cdylib`, `liblegend_pure_rust_parser`, links every
   grammar crate of the workspace; the engine loads it.
+- The engine module `legend-engine-language-pure-grammar-rust` ships it: its
+  Maven build runs `cargo build --release --locked -p legend-pure-parser-jni`
+  and puts the library in the module's jar, under
+  `META-INF/native/<platform>/` (`linux-x86_64`, `osx-aarch64`, …).
+  `NativeGrammarParser` loads it from there, through a temporary copy, unless
+  `-Dlegend.pure.rust.parser.lib` names another; `java.library.path` comes
+  last. The build needs `cargo` on the `PATH`, unless `-P skip-rust`: the
+  jar then has no library, and the engine parses with its Java parsers
+  (`on` mode refuses to parse without it). A jar carries the library of the
+  platform it was built on: Linux x86_64 for Build CI and releases.
 - The crate is also an `rlib` holding the generic `Java_*` exports, so an
   **aggregator `cdylib`** can link `jni` with another grammar set: how
   legend-pure's grammars and the engine's come together again once they live
@@ -301,19 +311,18 @@ responsible for each result.
 ## Parity harness (legend-engine)
 
 Module `legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust`
-(branch `rust-parser` of legend-engine), part of the default build: without
-the native library, its tests that need it are skipped. It holds the binding
-(`NativeGrammarParser`, with its smoke test, `TestNativeGrammarParser`),
+(branch `rust-parser` of legend-engine), part of the default build, which
+makes the native library and puts it in the module's jar; its tests require
+it. It holds the binding (`NativeGrammarParser`, with its contract test,
+`TestNativeGrammarParser`, which also checks the library loads from the jar),
 `RustGrammarParserExtension` / `RustSectionParser` (the modes above) and
 `TestRustParityCoreGrammar`, which runs the core grammar module's own 22
 parser/roundtrip suites in `shadow` mode:
 
 ```bash
 # from the legend-engine checkout's root (JDK 17; a per-branch revision)
-(cd legend-engine-rust && cargo build -p legend-pure-parser-jni)
 mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust \
     test -Drevision=rust-parser-SNAPSHOT \
-    -Dlegend.pure.rust.parser.lib=$PWD/legend-engine-rust/target/debug/liblegend_pure_rust_parser.dylib \
     -Dlegend.grammar.rust.reportDir=/tmp/parity
 ```
 
@@ -400,7 +409,7 @@ section types to record. The first
 command runs the core grammar suites and packages the Rust grammar module;
 the others run other modules' own tests with that module, which holds the
 binding, added to their classpath. The same technique runs the parity harness over
-any module's tests, in `shadow` mode with `-Dlegend.pure.rust.parser.lib`.
+any module's tests, in `shadow` mode: the module's jar carries the library.
 
 ```bash
 C=$PWD/legend-engine-rust/tests/engine-corpus/sections

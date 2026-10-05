@@ -14,13 +14,21 @@
 
 package org.finos.legend.pure.rust.parser;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 /**
  * Java binding for the Rust Legend grammar parser.
  *
- * <p>The native library {@code legend_pure_rust_parser} is built from {@code legend-engine-rust/crates/jni}. It is
- * loaded from the absolute path in the {@value #LIBRARY_PATH_PROPERTY} system property when set, otherwise from
- * {@code java.library.path}. Loading never throws: check {@link #isAvailable()} before calling the native
- * methods.</p>
+ * <p>The native library {@code legend_pure_rust_parser} is built from {@code legend-engine-rust/crates/jni} by this
+ * module's build, which puts it in the jar as {@link #bundledLibrary()}. It is loaded from the absolute path in the
+ * {@value #LIBRARY_PATH_PROPERTY} system property when set, otherwise from the jar (copied to a temporary file first),
+ * otherwise from {@code java.library.path}. Loading never throws: check {@link #isAvailable()} before calling the
+ * native methods.</p>
  *
  * <p>The methods return JSON as UTF-8 bytes: one copy into a Java array, which Jackson reads as it is, where a Java
  * string would be converted twice on its way out of the library. The surface is generic: which grammars are available
@@ -38,7 +46,30 @@ public final class NativeGrammarParser
      */
     public static final String LIBRARY_NAME = "legend_pure_rust_parser";
 
-    private static final String LOAD_FAILURE = load();
+    /**
+     * The jar directory holding the library, one directory per platform ({@code linux-x86_64}, {@code osx-aarch64},
+     * ...).
+     */
+    public static final String BUNDLED_LIBRARY_DIRECTORY = "META-INF/native/";
+
+    private static final String LOADED_FROM;
+    private static final String LOAD_FAILURE;
+
+    static
+    {
+        String loadedFrom = null;
+        String failure = null;
+        try
+        {
+            loadedFrom = load();
+        }
+        catch (UnsatisfiedLinkError | SecurityException | IOException e)
+        {
+            failure = (e.getMessage() == null) ? e.getClass().getName() : e.getMessage();
+        }
+        LOADED_FROM = loadedFrom;
+        LOAD_FAILURE = failure;
+    }
 
     private NativeGrammarParser()
     {
@@ -62,6 +93,42 @@ public final class NativeGrammarParser
     public static String getLoadFailure()
     {
         return LOAD_FAILURE;
+    }
+
+    /**
+     * Where the native library loaded from: the {@value #LIBRARY_PATH_PROPERTY} path, the jar resource
+     * {@link #bundledLibrary()}, or {@code java.library.path}.
+     *
+     * @return that, or null when it did not load
+     */
+    public static String getLoadedFrom()
+    {
+        return LOADED_FROM;
+    }
+
+    /**
+     * The jar resource holding the library for this platform, such as
+     * {@code META-INF/native/linux-x86_64/liblegend_pure_rust_parser.so}.
+     *
+     * @return the resource name, or null on an operating system or architecture the library is not built for
+     */
+    public static String bundledLibrary()
+    {
+        String platform = platform(System.getProperty("os.name", ""), System.getProperty("os.arch", ""));
+        return (platform == null) ? null : BUNDLED_LIBRARY_DIRECTORY + platform + "/" + System.mapLibraryName(LIBRARY_NAME);
+    }
+
+    /**
+     * The platform directory for a JVM's {@code os.name} and {@code os.arch}, as this module's build names it.
+     *
+     * @return {@code linux}, {@code osx} or {@code windows}, a dash, and {@code x86_64} or {@code aarch64}; null for
+     *     anything else
+     */
+    static String platform(String osName, String osArch)
+    {
+        String os = osName.startsWith("Linux") ? "linux" : osName.startsWith("Mac") ? "osx" : osName.startsWith("Windows") ? "windows" : null;
+        String arch = ("amd64".equals(osArch) || "x86_64".equals(osArch)) ? "x86_64" : ("aarch64".equals(osArch) || "arm64".equals(osArch)) ? "aarch64" : null;
+        return (os == null || arch == null) ? null : os + "-" + arch;
     }
 
     /**
@@ -117,24 +184,52 @@ public final class NativeGrammarParser
      */
     public static native byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset);
 
-    private static String load()
+    /**
+     * Loads the library and says where from.
+     */
+    private static String load() throws IOException
     {
         String path = System.getProperty(LIBRARY_PATH_PROPERTY);
+        if (path != null && !path.isEmpty())
+        {
+            System.load(path);
+            return path;
+        }
+        String bundled = bundledLibrary();
+        URL resource = (bundled == null) ? null : NativeGrammarParser.class.getResource("/" + bundled);
+        if (resource != null)
+        {
+            System.load(copyToTemporaryFile(resource, bundled).toString());
+            return bundled;
+        }
         try
         {
-            if (path == null || path.isEmpty())
-            {
-                System.loadLibrary(LIBRARY_NAME);
-            }
-            else
-            {
-                System.load(path);
-            }
-            return null;
+            System.loadLibrary(LIBRARY_NAME);
+            return "java.library.path";
         }
-        catch (UnsatisfiedLinkError | SecurityException e)
+        catch (UnsatisfiedLinkError e)
         {
-            return (e.getMessage() == null) ? e.getClass().getName() : e.getMessage();
+            String notBundled = (bundled == null)
+                    ? "no native library is built for " + System.getProperty("os.name") + " " + System.getProperty("os.arch")
+                    : "the jar has no " + bundled;
+            UnsatisfiedLinkError error = new UnsatisfiedLinkError(notBundled + ", and " + e.getMessage());
+            error.initCause(e);
+            throw error;
         }
+    }
+
+    /**
+     * A copy of the jar's library on disk, where {@link System#load(String)} can read it, deleted when the JVM exits.
+     */
+    private static Path copyToTemporaryFile(URL resource, String name) throws IOException
+    {
+        String fileName = name.substring(name.lastIndexOf('/') + 1);
+        Path file = Files.createTempFile(LIBRARY_NAME + "-", fileName.substring(fileName.lastIndexOf('.')));
+        file.toFile().deleteOnExit();
+        try (InputStream library = resource.openStream())
+        {
+            Files.copy(library, file, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return file;
     }
 }

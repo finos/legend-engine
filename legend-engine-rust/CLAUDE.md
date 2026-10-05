@@ -70,11 +70,10 @@ cargo doc --workspace --no-deps        # must produce 0 warnings (CI gate)
 cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under-lines 80   # CI gate (80; target 85)
 
 # JNI contract and the engine's parity suites (from the engine checkout's root, JDK 17;
-# docs/engine-integration.md, "Parity harness"):
-(cd legend-engine-rust && cargo build -p legend-pure-parser-jni)
+# docs/engine-integration.md, "Parity harness"). The module's build makes the library
+# (cargo build --release) and puts it in its jar:
 JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust \
-    test -Drevision=rust-parser-SNAPSHOT \
-    -Dlegend.pure.rust.parser.lib=$PWD/legend-engine-rust/target/debug/liblegend_pure_rust_parser.dylib
+    test -Drevision=rust-parser-SNAPSHOT
 ```
 
 ## Code Conventions (enforced by CI)

@@ -67,7 +67,8 @@ binding over a D-level model).
 Other flags: `--dbtype H2|DuckDB|Snowflake` (plan generation works for any dialect without a
 connection), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
 (waits for a profiler to attach before measuring), `--parseonly` (stop after the parse phases),
-`--rust` and `--rustlib <path>` (also parse with the Rust parser, whose native library is at that path).
+`--rust` (also parse with the Rust parser) and `--rustlib <path>` (its native library is at that path,
+not the one in the grammar-rust jar).
 
 To run a model that already exists rather than a generated one:
 
@@ -87,14 +88,14 @@ JSON into protocol objects.
 
 ```bash
 java -Xmx8g -Xss8m -cp "legend-engine-config/legend-engine-perf-benchmark/target/classes:$(cat /tmp/cp.txt)" \
-    org.finos.legend.engine.perf.PipelineBench --suite parser \
-    --rustlib legend-engine-rust/target/release/liblegend_pure_rust_parser.dylib
+    org.finos.legend.engine.perf.PipelineBench --suite parser
 ```
 
-Build the library first with `cargo build --release -p legend-pure-parser-jni` in `legend-engine-rust`.
-Without it the suite still runs, records why the Rust phases were skipped, and measures Java alone.
-`--rustlib` sets the library's location before anything loads it. Prefer it to
-`-Dlegend.pure.rust.parser.lib`, which would put a local path into the recorded `jvmArgs`.
+The library comes from the grammar-rust jar on the classpath, built for the platform the jar was built on.
+Without one for this platform the suite still runs, records why the Rust phases were skipped, and measures
+Java alone. `--rustlib <path>` loads another library (one built elsewhere, or an older one to compare): it
+sets the location before anything loads it. Prefer it to `-Dlegend.pure.rust.parser.lib`, which would put a
+local path into the recorded `jvmArgs`.
 
 | Workload | Exercises |
 |---|---|

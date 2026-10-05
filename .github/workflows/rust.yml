@@ -18,12 +18,10 @@ on:
   push:
     paths:
       - 'legend-engine-rust/**'
-      - 'legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust/src/*/java/org/finos/legend/pure/rust/parser/**'
       - '.github/workflows/rust.yml'
   pull_request:
     paths:
       - 'legend-engine-rust/**'
-      - 'legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust/src/*/java/org/finos/legend/pure/rust/parser/**'
       - '.github/workflows/rust.yml'
 
 jobs:
@@ -114,31 +112,6 @@ jobs:
 
       - name: Check Copyright Headers
         run: ./scripts/check-copyright.sh
-
-      - name: Build the JNI library
-        run: cargo build -p legend-pure-parser-jni
-
-      - name: Set up JDK
-        uses: actions/setup-java@v5
-        with:
-          java-version: 17
-          distribution: 'zulu'
-
-      - name: JNI contract smoke test (Java class <-> native symbols)
-        # The binding and its test compiled on their own, with JUnit: the
-        # grammar module's other classes need most of the engine built.
-        working-directory: legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust
-        run: |
-          curl -sSfLo /tmp/junit.jar https://repo1.maven.org/maven2/junit/junit/4.13.1/junit-4.13.1.jar
-          curl -sSfLo /tmp/hamcrest.jar https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
-          CP=/tmp/junit.jar:/tmp/hamcrest.jar
-          javac -d /tmp/jni-smoke -cp $CP \
-            src/main/java/org/finos/legend/pure/rust/parser/NativeGrammarParser.java \
-            src/test/java/org/finos/legend/pure/rust/parser/TestNativeGrammarParser.java
-          java -cp /tmp/jni-smoke:$CP \
-            -Dlegend.pure.rust.parser.lib=${{ github.workspace }}/legend-engine-rust/target/debug/liblegend_pure_rust_parser.so \
-            -Dlegend.pure.rust.parser.required=true \
-            org.junit.runner.JUnitCore org.finos.legend.pure.rust.parser.TestNativeGrammarParser
 
       - name: Check Documentation Accuracy
         # Ensure that running cargo doc produces 0 warnings

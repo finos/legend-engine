@@ -98,11 +98,10 @@ module
 with the extension that hands the engine's sections to the library:
 
 ```bash
-cargo build -p legend-pure-parser-jni
-# from the repository root, with JDK 17:
+# from the repository root, with JDK 17: the module's build makes the library with
+# cargo and puts it in its jar
 mvn -pl legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust \
-    test -Drevision=rust-parser-SNAPSHOT \
-    -Dlegend.pure.rust.parser.lib=$PWD/legend-engine-rust/target/debug/liblegend_pure_rust_parser.dylib
+    test -Drevision=rust-parser-SNAPSHOT
 ```
 
 ## Adding a Grammar Feature
