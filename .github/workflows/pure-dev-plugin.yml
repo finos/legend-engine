@@ -57,7 +57,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: shellcheck plugins/pure-dev/bin/*
+      - run: |
+          scripts=$(grep -lE '^#!.*(bash|/sh)' plugins/pure-dev/bin/* || true)
+          shellcheck $scripts
 
   test:
     name: Pure dev-loop bridge tests
