@@ -55,6 +55,13 @@ public class DataQualityRelationValidationTestableRunnerExtension implements Tes
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        DataqualityRelationValidation validation = (DataqualityRelationValidation) element;
+        return validation.testSuites == null ? 0 : validation.testSuites.size();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_external_dataquality_DataQualityRelationValidation)

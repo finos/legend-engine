@@ -59,6 +59,13 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        Persistence persistence = (Persistence) element;
+        return persistence.tests == null ? 0 : persistence.tests.size();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_pure_persistence_metamodel_Persistence)

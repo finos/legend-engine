@@ -14,25 +14,24 @@
 
 package org.finos.legend.engine.testable.api.model;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestableElementCoverageResult
 {
-    public List<TestableElementInfo> services;
-    public List<TestableElementInfo> mappings;
-    public CoverageSummary serviceCoverage;
-    public CoverageSummary mappingCoverage;
+    public Map<String, List<TestableElementInfo>> elementsByType;
+    public Map<String, CoverageSummary> coverageByType;
 
     public TestableElementCoverageResult()
     {
     }
 
-    public TestableElementCoverageResult(List<TestableElementInfo> services, List<TestableElementInfo> mappings)
+    public TestableElementCoverageResult(Map<String, List<TestableElementInfo>> elementsByType)
     {
-        this.services = services;
-        this.mappings = mappings;
-        this.serviceCoverage = computeSummary(services);
-        this.mappingCoverage = computeSummary(mappings);
+        this.elementsByType = elementsByType;
+        this.coverageByType = new LinkedHashMap<>();
+        elementsByType.forEach((type, elements) -> this.coverageByType.put(type, computeSummary(elements)));
     }
 
     private static CoverageSummary computeSummary(List<TestableElementInfo> elements)
