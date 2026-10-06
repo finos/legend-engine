@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -428,6 +429,32 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
         Assert.assertEquals(expectedResWithMultipleValues, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithMultipleValues)));
+    }
+
+    @Test
+    public void testInExecutionWithOneManyCollectionAboveThreshold() throws JsonProcessingException
+    {
+        // H2 test connections use a threshold of 50 (see getCollectionThresholdLimitForDatabaseType's isTestRun
+        // branch); a [1..*] runtime parameter above that size must still spill correctly to a temp table.
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {names:String[1..*] | test::Person.all()\n" +
+                "                        ->filter(p:test::Person[1] | $p.fullName->in($names))\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+
+        MutableList<String> names = Lists.mutable.with("P1", "P5");
+        for (int i = 0; i < 55; i++)
+        {
+            names.add("NoMatch" + i);
+        }
+        Map<String, ?> params = Maps.mutable.with("names", names);
+
+        String expected = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in (select \\\"temptableforin_names_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \\\"temptableforin_names_0\\\")\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P5\"]}]}}";
+        Assert.assertEquals(expected, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, params)));
     }
 
     @Test

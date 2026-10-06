@@ -86,7 +86,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
 
       let transformRequiringConditionNode =  {r: RelationalOperationElement[1], uniqueId: Integer[1] |
                                                    $r->match([
-                                                      d  : DynaFunction[1] | if($d.name == 'in' && $d.parameters->at(1)->instanceOf(LiteralList) && ($d.parameters->at(1)->cast(@LiteralList).values->filter(l | $l.value->instanceOf(VarPlaceHolder)).value->cast(@VarPlaceHolder)->exists(v | $v.multiplicity->isNotEmpty() && $v.multiplicity == ZeroMany)),
+                                                      d  : DynaFunction[1] | if($d.name == 'in' && $d.parameters->at(1)->instanceOf(LiteralList) && ($d.parameters->at(1)->cast(@LiteralList).values->filter(l | $l.value->instanceOf(VarPlaceHolder)).value->cast(@VarPlaceHolder)->exists(v | $v->isCollectionPlaceHolder())),
                                                                                 |let uniqueSuffix = if($d.parameters->at(1)->cast(@LiteralList).values.value->forAll(x | $x->instanceOf(VarPlaceHolder)), |$d.parameters->at(1)->buildUniqueName(false, $extensions), |$uniqueId->toString());
                                                                                  ^$d(parameters = [$d.parameters->at(0), ^VarPlaceHolder(name = prefixForWrapperAllocationNodeName() + $uniqueSuffix, type = String)]);,
                                                                                 |$d);,
