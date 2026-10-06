@@ -27,14 +27,57 @@ def test_resolve_root_prefers_root_env(monkeypatch, tmp_path):
 
 def test_resolve_root_falls_back_to_home_relative_root(monkeypatch):
     monkeypatch.delenv("SOME_ROOT", raising=False)
-    layer = {"root": "projects/finos-legend-pure", "rootEnv": "SOME_ROOT"}
-    expected = os.path.join(os.path.expanduser("~"), "projects/finos-legend-pure")
+    layer = {"root": "projects/some-checkout", "rootEnv": "SOME_ROOT"}
+    expected = os.path.join(os.path.expanduser("~"), "projects/some-checkout")
     assert projects.resolve_root(layer) == expected
 
 
 def test_resolve_root_absolute_root_is_used_as_is():
     layer = {"root": "/abs/path/to/repo"}
     assert projects.resolve_root(layer) == "/abs/path/to/repo"
+
+
+def test_resolve_root_uses_checkout_enclosing_cwd(monkeypatch, tmp_path):
+    (tmp_path / "mod" / "sub").mkdir(parents=True)
+    monkeypatch.delenv("PD_TEST_ROOT", raising=False)
+    monkeypatch.chdir(tmp_path / "mod" / "sub")
+    layer = {"root": "projects/elsewhere", "rootEnv": "PD_TEST_ROOT", "module": "mod"}
+    assert projects.resolve_root(layer) == str(tmp_path)
+
+
+def test_resolve_root_env_beats_enclosing_checkout(monkeypatch, tmp_path):
+    (tmp_path / "mod").mkdir()
+    other = tmp_path / "other"
+    other.mkdir()
+    monkeypatch.setenv("PD_TEST_ROOT", str(other))
+    monkeypatch.chdir(tmp_path)
+    layer = {"root": "projects/elsewhere", "rootEnv": "PD_TEST_ROOT", "module": "mod"}
+    assert projects.resolve_root(layer) == str(other)
+
+
+def test_resolve_root_picks_first_existing_candidate(monkeypatch, tmp_path):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PD_TEST_ROOT", raising=False)
+    (tmp_path / "projects" / "second").mkdir(parents=True)
+    layer = {"root": ["projects/first", "projects/second"], "rootEnv": "PD_TEST_ROOT"}
+    assert projects.resolve_root(layer) == str(tmp_path / "projects" / "second")
+
+
+def test_resolve_root_with_no_existing_candidate_returns_first(monkeypatch, tmp_path):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PD_TEST_ROOT", raising=False)
+    layer = {"root": ["projects/first", "projects/second"], "rootEnv": "PD_TEST_ROOT"}
+    assert projects.resolve_root(layer) == str(tmp_path / "projects" / "first")
+
+
+def test_resolve_root_enclosing_checkout_uses_marker_over_module(monkeypatch, tmp_path):
+    (tmp_path / "marker-dir").mkdir()
+    monkeypatch.delenv("PD_TEST_ROOT", raising=False)
+    monkeypatch.chdir(tmp_path)
+    layer = {"root": "projects/elsewhere", "rootEnv": "PD_TEST_ROOT", "marker": "marker-dir", "module": None}
+    assert projects.resolve_root(layer) == str(tmp_path)
 
 
 def test_resolve_root_ignores_unset_root_env(monkeypatch):

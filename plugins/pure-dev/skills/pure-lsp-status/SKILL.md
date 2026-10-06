@@ -40,7 +40,7 @@ trying to interpret a connection error as a Pure-side problem.
   "transport": "socket",
   "requestPoolSize": 12,
   "executionConcurrency": 6,
-  "repoRoots": ["/home/developer/projects/finos-legend-pure", "/home/developer/projects/finos-legend-engine"],
+  "repoRoots": ["/home/developer/projects/legend-pure", "/home/developer/projects/legend-engine"],
   "jvmArgs": ["-Dlegend.test.server.host=127.0.0.1", "-Dlegend.test.server.port=9095"],
   "recentErrors": [],
   "lockContended": false,

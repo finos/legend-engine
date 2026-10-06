@@ -45,7 +45,7 @@ is trivial to back out with `git reset --soft HEAD~1`:
 git -C <path> add -A && git -C <path> commit -m "WIP: temp commit before chain sync"
 ```
 
-**Resolve the default branch; do not assume `master`.** finos-legend-pure and finos-legend-engine
+**Resolve the default branch; do not assume `master`.** legend-pure and legend-engine
 use `finos-master`, while `origin` *also* carries an unrelated stale `master` — rebasing onto the
 wrong one is silently destructive:
 

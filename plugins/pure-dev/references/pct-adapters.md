@@ -2,7 +2,7 @@
 
 `--pct-adapter` (on `pure-lsp-execute`/`pure-lsp-execute-parallel`) accepts the adapter's bare Pure
 path (below), its simple name, or its display name (e.g. `'DuckDB'`) — resolution tries all of
-those server-side (`LegendPureSession#resolvePctAdapter` in `finos-legend-pure`). This requires a
+those server-side (`LegendPureSession#resolvePctAdapter` in your legend-pure checkout). This requires a
 `legend-pure-lsp-server` built from a commit including the fix that made the single-function
 `execute` path share that resolver with the `--package`/`--source` path (2026-09-22) — on an older
 build, single-function `execute --pct-adapter` only accepts the exact mangled id

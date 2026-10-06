@@ -30,6 +30,9 @@
 # real mode of the script (not a one-off testing hack) - use it to sanity-check before touching a
 # shared daemon.
 #
+# After the bridge is ready, each --repo-root's welcome.pure is checked into the new session, as
+# pure-lsp-launch does on a cold start.
+#
 # Exit codes:
 #   0 = restarted and the bridge reports state "ready" within the timeout (or, under --dry-run, a
 #       valid restart plan was found and printed - nothing was actually touched)
@@ -231,6 +234,16 @@ STATUS_RC=$?
 set -e
 
 if [[ "$STATUS_RC" -eq 0 ]]; then
+  for i in "${!BRIDGE_ARGV[@]}"; do
+    [[ "${BRIDGE_ARGV[$i]}" == "--repo-root" ]] || continue
+    WELCOME_FILE="${BRIDGE_ARGV[$((i + 1))]}/welcome.pure"
+    [[ -f "$WELCOME_FILE" ]] || continue
+    if "$BIN_DIR/pure-lsp" --port "$BRIDGE_HTTP_PORT" check "$WELCOME_FILE" >/dev/null 2>&1; then
+      log "welcome.pure compiled - ready for go(): $WELCOME_FILE"
+    else
+      log "WARNING: welcome.pure failed to compile - check it manually before go(): $WELCOME_FILE"
+    fi
+  done
   python3 -c "
 import json
 s = json.loads('''$STATUS_JSON''')

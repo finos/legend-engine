@@ -1,9 +1,10 @@
 {
-  "_comment": "Pure-bearing projects and their dependency DAG. 'dependsOn' lists the projects a project depends on (transitively resolved). Working in a project: source-root the project (and optionally any project it depends on that you also want editable); the classpath comes from the highest-in-dependency-order project you are NOT source-rooting that has a classpath module. 'root' is relative to $HOME unless absolute; 'rootEnv' overrides it. 'module' is the Maven module whose runtime classpath == that project's full Pure classpath (its pure-ide-light); null means no single ide module - reuse a dependency's classpath and source-root this project. 'launch' holds pure-lsp-launch's per-project defaults: bridgePort/socketPort (distinct per project so sessions can run side by side) and sqlE2eCorpus, a repo-relative resource root passed as -Dsql.e2e.corpus.dir so corpus YAML edits are live without a rebuild. A project with no 'launch' block falls back to 8991/9100 and no corpus wiring. Additional projects can be layered on top of this file via PURE_DEV_EXTRA_PROJECTS_JSON (see src/pure_lsp_bridge/projects.py) without editing it.",
+  "_comment": "Pure-bearing projects and their dependency DAG. 'dependsOn' lists the projects a project depends on (transitively resolved). Working in a project: source-root the project (and optionally any project it depends on that you also want editable); the classpath comes from the highest-in-dependency-order project you are NOT source-rooting that has a classpath module. 'root' is a path, or a list of candidate paths of which the first existing one wins, relative to $HOME unless absolute; 'rootEnv' overrides it, and so does the checkout enclosing the current directory (found via 'marker', else 'module'). 'module' is the Maven module whose runtime classpath == that project's full Pure classpath (its pure-ide-light); null means no single ide module - reuse a dependency's classpath and source-root this project. 'launch' holds pure-lsp-launch's per-project defaults: bridgePort/socketPort (distinct per project so sessions can run side by side) and sqlE2eCorpus, a repo-relative resource root passed as -Dsql.e2e.corpus.dir so corpus YAML edits are live without a rebuild. A project with no 'launch' block falls back to 8991/9100 and no corpus wiring. Additional projects can be layered on top of this file via PURE_DEV_EXTRA_PROJECTS_JSON (see src/pure_lsp_bridge/projects.py) without editing it.",
   "projects": [
     {
       "name": "legend-pure",
-      "root": "projects/finos-legend-pure",
+      "root": ["projects/finos-legend-pure", "projects/legend-pure"],
+      "marker": "legend-pure-lsp",
       "rootEnv": "LEGEND_PURE_ROOT",
       "dependsOn": [],
       "module": null,
@@ -11,7 +12,7 @@
     },
     {
       "name": "legend-engine",
-      "root": "projects/finos-legend-engine",
+      "root": ["projects/finos-legend-engine", "projects/legend-engine"],
       "rootEnv": "LEGEND_ENGINE_ROOT",
       "dependsOn": ["legend-pure"],
       "module": "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server",

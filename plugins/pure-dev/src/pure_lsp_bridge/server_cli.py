@@ -36,7 +36,7 @@ needs, from legend-engine's classpath instead):
         --dependency-classpath-file "$(pure-lsp-classpath legend-engine)" \\
         --prefer-server-pure-jars
 
-Example (finos-legend-pure only, no Maven classpath at all - --dependency-classpath-file also
+Example (legend-pure only, no Maven classpath at all - --dependency-classpath-file also
 accepts a plain directory of jars, e.g. the server module's own target/dependency, for this
 classpath-less case):
     pure-lsp-server \\

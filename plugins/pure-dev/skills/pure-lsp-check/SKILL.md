@@ -1,6 +1,6 @@
 ---
 name: pure-lsp-check
-description: "Compiles/checks a single .pure file against the already-running Legend Pure LSP bridge and reports diagnostics (errors/warnings) in under a second, as a fast alternative to a full `mvn test`/`mvn compile` cycle while iterating on Pure source in finos-legend-pure. Use whenever the user is editing .pure files and wants to know if they compile, asks 'does this Pure file compile', 'check this .pure file', 'validate this Pure code', or wants fast type/syntax feedback without running the full Maven build."
+description: "Compiles/checks a single .pure file against the already-running Legend Pure LSP bridge and reports diagnostics (errors/warnings) in under a second, as a fast alternative to a full `mvn test`/`mvn compile` cycle while iterating on Pure source in legend-pure. Use whenever the user is editing .pure files and wants to know if they compile, asks 'does this Pure file compile', 'check this .pure file', 'validate this Pure code', or wants fast type/syntax feedback without running the full Maven build."
 ---
 
 # Compile-check a .pure file via the LSP bridge

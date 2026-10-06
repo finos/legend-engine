@@ -77,15 +77,39 @@ def load_layers():
     return layers
 
 
+def _enclosing_checkout(layer):
+    marker = layer.get("marker") or layer.get("module")
+    if not marker:
+        return None
+    path = os.getcwd()
+    while True:
+        if os.path.isdir(os.path.join(path, marker)):
+            return path
+        parent = os.path.dirname(path)
+        if parent == path:
+            return None
+        path = parent
+
+
+def _home_candidates(layer):
+    roots = layer.get("root", "")
+    if isinstance(roots, str):
+        roots = [roots]
+    return [r if os.path.isabs(r) else os.path.join(os.path.expanduser("~"), r) for r in roots]
+
+
 def resolve_root(layer):
-    """Absolute checkout path for a layer: $<rootEnv> if set, else $HOME/<root>."""
+    """Absolute checkout path for a layer: $<rootEnv> if set, else the checkout enclosing the
+    current directory, else the first existing entry of 'root' (a path or a list of candidate
+    paths, relative to $HOME unless absolute), else the first entry."""
     env = layer.get("rootEnv")
     if env and os.environ.get(env):
         return os.path.abspath(os.environ[env])
-    root = layer.get("root", "")
-    if os.path.isabs(root):
-        return root
-    return os.path.join(os.path.expanduser("~"), root)
+    enclosing = _enclosing_checkout(layer)
+    if enclosing:
+        return enclosing
+    candidates = _home_candidates(layer) or [""]
+    return next((c for c in candidates if os.path.isdir(c)), candidates[0])
 
 
 def find_layer(layers, name):

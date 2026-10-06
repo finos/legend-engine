@@ -63,7 +63,10 @@ if port_listening "$PORT"; then
   exit 0
 fi
 
-LEGEND_ENGINE_ROOT="${LEGEND_ENGINE_ROOT:-$HOME/projects/finos-legend-engine}"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+IFS=$'\t' read -r _ LEGEND_ENGINE_ROOT _ \
+  < <(PYTHONPATH="$DIR/src" python3 -m pure_lsp_bridge.project_cli launch-config legend-engine) || true
+: "${LEGEND_ENGINE_ROOT:?could not resolve the legend-engine checkout - set LEGEND_ENGINE_ROOT}"
 MODULE="legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server"
 CP_CACHE="/tmp/engine-server-cp.txt"
 

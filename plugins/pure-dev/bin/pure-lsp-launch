@@ -27,12 +27,21 @@
 # Usage:
 #   pure-lsp-launch <project> [--port N] [--socket-port N] [--java PATH]
 #                             [--backend-server-host HOST] [--backend-server-port N] [--no-backend]
+#                             [--source LAYER ...] [--full-source]
 #                             [extra args passed through to pure-lsp-server, e.g. --jvm-arg=-D...]
 #
 # 'project' is a layer in config/projects.json (or one added via PURE_DEV_EXTRA_PROJECTS_JSON). Port
 # defaults come from that project's "launch" block (legend-engine 8991/9100); a project with no
 # launch block falls back to 8991/9100, so pass --port/--socket-port to run it alongside
 # legend-engine. pure-lsp-launch-engine is a thin wrapper over this.
+#
+# Source-rooting default: ONLY the target project is source-rooted (--repo-root) - every layer
+# below it (e.g. legend-pure under legend-engine) is consumed from its classpath jar instead, so
+# editing/launching legend-engine alone needs no legend-pure checkout and no $LEGEND_PURE_ROOT. Use
+# --source LAYER (repeatable) to also source-root specific lower layers you want to edit live (e.g.
+# --source legend-pure to edit platform .pure alongside legend-engine), or --full-source to restore
+# the old behavior of source-rooting the full transitive dependency chain. Only layers actually
+# being source-rooted need their checkout env var ($LEGEND_PURE_ROOT etc.) set.
 #
 # Defaults: --java "java" (plain JDK 11 java on PATH). The daemon runs a JVM against a precomputed
 # classpath - it never invokes a project's own Maven build/enforcer, so a project pinned to a newer
@@ -81,6 +90,8 @@ JAVA_BIN="java"
 BACKEND_HOST=""
 BACKEND_PORT=""
 NO_BACKEND=""
+SOURCE_LAYERS=()
+FULL_SOURCE=""
 EXTRA_ARGS=()
 
 # A flag that takes a value must actually have one: under `set -u` a bare trailing `--port` would
@@ -98,11 +109,16 @@ while [[ $# -gt 0 ]]; do
     --backend-server-host) need_value "$1" "${2:-}"; BACKEND_HOST="$2"; shift 2 ;;
     --backend-server-port) need_value "$1" "${2:-}"; BACKEND_PORT="$2"; shift 2 ;;
     --no-backend) NO_BACKEND=1; shift ;;
+    --source) need_value "$1" "${2:-}"; SOURCE_LAYERS+=("$2"); shift 2 ;;
+    --full-source) FULL_SOURCE=1; shift ;;
     *) EXTRA_ARGS+=("$1"); shift ;;
   esac
 done
 
-: "${LEGEND_PURE_ROOT:?LEGEND_PURE_ROOT must be set to your finos-legend-pure checkout}"
+if [[ -n "$FULL_SOURCE" && ${#SOURCE_LAYERS[@]} -gt 0 ]]; then
+  fail "ERROR: --full-source and --source are mutually exclusive"
+  exit 1
+fi
 
 # One registry read for every per-project default, so checkout paths and ports are not restated
 # here on top of config/projects.json.
@@ -133,7 +149,20 @@ if port_listening "$PORT"; then
   exit 0
 fi
 
-REPO_ROOTS_STR="$("$BIN_DIR/pure-lsp-roots" "$PROJECT")"
+# Default: source-root ONLY the target project. --full-source restores the old full-chain
+# behavior; --source LAYER (repeatable) adds back specific lower layers (e.g. legend-pure) without
+# going all the way to --full-source. pure-lsp-roots always force-includes the target itself.
+ROOTS_ARGS=("$PROJECT")
+if [[ -n "$FULL_SOURCE" ]]; then
+  : # no --source flag -> pure-lsp-roots defaults to the full transitive chain
+elif [[ ${#SOURCE_LAYERS[@]} -gt 0 ]]; then
+  for layer in "${SOURCE_LAYERS[@]}"; do
+    ROOTS_ARGS+=(--source "$layer")
+  done
+else
+  ROOTS_ARGS+=(--source "$PROJECT")
+fi
+REPO_ROOTS_STR="$("$BIN_DIR/pure-lsp-roots" "${ROOTS_ARGS[@]}")"
 read -r -a REPO_ROOT_ARGS <<< "$REPO_ROOTS_STR"
 if [[ ${#REPO_ROOT_ARGS[@]} -eq 0 ]]; then
   fail "ERROR: pure-lsp-roots $PROJECT resolved no repo-roots - is the checkout present?"

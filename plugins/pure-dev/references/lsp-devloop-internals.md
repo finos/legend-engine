@@ -1,11 +1,11 @@
 # Pure LSP dev-loop: internals
 
 How the fast Pure dev loop works under the hood — the reference behind the pure-dev skills. The loop
-has two moving parts alongside your `finos-legend-pure` / `finos-legend-engine` checkouts:
+has two moving parts alongside your `legend-pure` / `legend-engine` checkouts:
 
 - **The bridge** (this plugin's Python: `bin/pure-lsp*`, `src/pure_lsp_bridge/`) — a warm HTTP
   front end.
-- **The LSP server JVM** (`legend-pure-lsp/legend-pure-lsp-server` in `finos-legend-pure`) — the
+- **The LSP server JVM** (`legend-pure-lsp/legend-pure-lsp-server` in `legend-pure`) — the
   Pure runtime the bridge drives.
 
 Skills: `pure-lsp-connect` / `pure-lsp-status` / `pure-lsp-check` / `pure-lsp-go` /

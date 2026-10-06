@@ -1,6 +1,6 @@
 ---
 name: pure-lsp-launch-engine
-description: "Launches the Pure LSP bridge scoped to legend-engine (plus legend-pure below it) with defaults baked in - the go-to entrypoint for 'just start the LSP for legend-engine'. Brings the backend engine Server up by default so execute()/go() use real plan-generation; --no-backend opts out. Use when the user wants to start/launch/boot the Pure LSP for legend-engine with nothing unusual - unlike pure-lsp-connect, which attaches to a daemon that is already running."
+description: "Launches the Pure LSP bridge scoped to legend-engine with defaults baked in - the go-to entrypoint for 'just start the LSP for legend-engine'. Brings the backend engine Server up by default so execute()/go() use real plan-generation; --no-backend opts out. Use when the user wants to start/launch/boot the Pure LSP for legend-engine with nothing unusual - unlike pure-lsp-connect, which attaches to a daemon that is already running."
 ---
 
 # Launch the Pure LSP for legend-engine (defaults baked in)
@@ -15,13 +15,16 @@ project registry doesn't describe, build the `pure-lsp-server` command by hand p
 ```bash
 pure-lsp-launch-engine [--port N] [--socket-port N] [--java PATH]
                        [--backend-server-host HOST] [--backend-server-port N] [--no-backend]
+                       [--source legend-pure] [--full-source]
                        [extra args passed through to pure-lsp-server, e.g. --jvm-arg=-D...]
 ```
 
 Defaults: `--port 8991`, `--socket-port 9100` (this shop's standing convention for `LegendLspServer`,
 shared with `pure-lsp-connect`/`pure-lsp-restart`'s default), `--java` = plain `java` on `PATH` (JDK 11).
-Repo-roots/classpath resolve via `pure-lsp-roots legend-engine` / `pure-lsp-classpath legend-engine`
-(the full chain: legend-pure + legend-engine — edit anywhere in either).
+`$LEGEND_ENGINE_ROOT` defaults to the checkout containing the current directory.
+Only legend-engine is source-rooted; legend-pure comes from the classpath jar and needs no checkout
+or `$LEGEND_PURE_ROOT`. Add `--source legend-pure` to edit platform `.pure` live too (needs
+`$LEGEND_PURE_ROOT`), or `--full-source` for the whole chain.
 
 **Backend is on by default.** If nothing's listening on 127.0.0.1:9095 the script runs
 `pure-backend-start` itself and wires the resulting `-Dlegend.test.server.*` jvm-args in, so
