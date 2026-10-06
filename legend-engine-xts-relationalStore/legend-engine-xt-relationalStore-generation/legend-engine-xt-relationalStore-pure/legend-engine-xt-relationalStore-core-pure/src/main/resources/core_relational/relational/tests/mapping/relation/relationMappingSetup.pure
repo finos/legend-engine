@@ -43,7 +43,7 @@ Database meta::relational::tests::mapping::relation::testDB
   )
 
   // Source for RFPM-lift variant tests. PAYLOAD holds JSON-encoded data that
-  // the lift router extracts via $src.PAYLOAD->get(...) chains.
+  // the lift router extracts via $row.PAYLOAD->get(...) chains.
   Table personPayloadTable
   (
     ID INTEGER PRIMARY KEY,
@@ -449,7 +449,7 @@ Mapping meta::relational::tests::mapping::relation::SimpleMapping
 )
 
 // Same shape as SimpleMapping, but every property mapping is written in
-// the explicit `$src.<col>` form rather than the bare-column sugar.
+// the explicit `$row.<col>` form rather than the bare-column sugar.
 // Exercises the lambda-body code path for the trivial single-column case
 // and asserts equivalence with the bare form.
 Mapping meta::relational::tests::mapping::relation::ExplicitSrcMapping
@@ -457,16 +457,16 @@ Mapping meta::relational::tests::mapping::relation::ExplicitSrcMapping
   *Person[person]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
-    firstName: $src.'FIRST NAME',
-    age: $src.AGE,
-    +firmId: Integer[1]: $src.FIRMID
+    firstName: $row.'FIRST NAME',
+    age: $row.AGE,
+    +firmId: Integer[1]: $row.FIRMID
   }
 
   *Firm[firm]: Relation
   {
     ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
-    legalName: $src.legalName,
-    +id: Integer[1]: $src.ID
+    legalName: $row.legalName,
+    +id: Integer[1]: $row.ID
   }
 
   Person_Firm: XStore
@@ -482,9 +482,9 @@ Mapping meta::relational::tests::mapping::relation::ExpressionMapping
   *Person[person]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
-    firstName: $src.'FIRST NAME',
-    age: $src.AGE + 5,
-    +firmId: Integer[1]: $src.FIRMID
+    firstName: $row.'FIRST NAME',
+    age: $row.AGE + 5,
+    +firmId: Integer[1]: $row.FIRMID
   }
 )
 
@@ -508,7 +508,7 @@ Mapping meta::relational::tests::mapping::relation::LiftedConcatMapping
   *PersonLiftedConcat[personLiftedConcat]: Relation
   {
     ~src meta::relational::tests::mapping::relation::personFunctionTyped()
-    greeting: 'Hello ' + $src.'FIRST NAME'
+    greeting: 'Hello ' + $row.'FIRST NAME'
   }
 )
 

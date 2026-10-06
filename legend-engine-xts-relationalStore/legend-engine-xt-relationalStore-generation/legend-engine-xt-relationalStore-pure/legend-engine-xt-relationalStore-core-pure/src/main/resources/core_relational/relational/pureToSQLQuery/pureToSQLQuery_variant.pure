@@ -119,7 +119,7 @@ function meta::relational::functions::pureToSqlQuery::isAutomapWithVariantInput(
 // RelationFunctionPropertyMapping lift router (processRelationFunctionPropertyMapping)
 // to decide whether to wrap the synthesised property mapping as semi-structured.
 // Walks the head spine first via isVariantInputWithInstanceValue (covers most cases:
-// `$src.payload->...`, `arr->filter(...)`, `arr->size()`, etc.), then recurses into
+// `$row.payload->...`, `arr->filter(...)`, `arr->size()`, etc.), then recurses into
 // all parametersValues and routed-value-spec wrappers for completeness (covers
 // non-head-spine variants e.g. `if($cond, $variantA, $variantB)`).
 function meta::relational::functions::pureToSqlQuery::expressionTouchesVariant(v:ValueSpecification[1], state:State[1]):Boolean[1]

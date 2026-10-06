@@ -83,22 +83,22 @@ Mapping meta::relational::tests::mapping::union::relation::advanced::mapping::un
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet2WithFirmIdFunc():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      lastName: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    *Firm[firm] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::firmFunc():Relation<Any>[1]
-      legalName: $src.name->toOne(),
-      +id: Integer[1]: $src.ID
+      legalName: $row.name->toOne(),
+      +id: Integer[1]: $row.ID
    }
 
    Employment: ModelJoin
@@ -120,21 +120,21 @@ Mapping meta::relational::tests::mapping::union::relation::advanced::mapping::un
    Person[rfAggSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet1AggregatedByFirmFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    Person[rfAggSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet2AggregatedByFirmFunc():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      lastName: $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    *Firm[firm] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::firmFunc():Relation<Any>[1]
-      legalName: $src.name->toOne(),
+      legalName: $row.name->toOne(),
       +id: Integer[1]: ID
    }
 
@@ -154,23 +154,23 @@ Mapping meta::relational::tests::mapping::union::relation::advanced::mapping::un
    Person[rfMmAggSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet1AggregatedByFirmMinMaxFunc():Relation<Any>[1]
-      firstName: $src.firstName_s1->toOne(),
-      lastName:  $src.lastName_s1->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      firstName: $row.firstName_s1->toOne(),
+      lastName:  $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    Person[rfMmAggSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet2AggregatedByFirmMinMaxFunc():Relation<Any>[1]
-      firstName: $src.firstName_s2->toOne(),
-      lastName:  $src.lastName_s2->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      firstName: $row.firstName_s2->toOne(),
+      lastName:  $row.lastName_s2->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    *Firm[firm] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::firmFunc():Relation<Any>[1]
-      legalName: $src.name->toOne(),
+      legalName: $row.name->toOne(),
       +id: Integer[1]: ID
    }
 
