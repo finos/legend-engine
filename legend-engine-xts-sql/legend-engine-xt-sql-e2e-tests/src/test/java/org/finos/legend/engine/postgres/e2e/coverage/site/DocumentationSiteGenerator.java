@@ -392,7 +392,22 @@ public class DocumentationSiteGenerator
         appendPathDetail(body, "TDS", tds);
         appendPathDetail(body, "Relation", rel);
 
-        writePage(outputDir + "/test/" + tc.id + ".html", pageShell(tc.id, body.toString(), 2));
+        writePage(outputDir + "/test/" + testFileName(tc.id) + ".html", pageShell(tc.id, body.toString(), 2));
+    }
+
+    /**
+     * Maps a test id to the base name of its detail page (without extension), stripping characters
+     * that artifact upload rejects (e.g. {@code "}) and disambiguating ids that differ only by case
+     * (e.g. {@code Day} vs {@code day}) so the pages never collide on a case-insensitive filesystem.
+     */
+    private static String testFileName(String id)
+    {
+        String sanitized = id.replaceAll("[^A-Za-z0-9_-]", "_");
+        if (sanitized.equals(sanitized.toLowerCase()) && sanitized.equals(id))
+        {
+            return id;
+        }
+        return sanitized.toLowerCase() + "__" + Integer.toHexString(id.hashCode() & 0x7fffffff);
     }
 
     private String statusRow(String path, TestIndex.TestPathInfo info, String expected)
@@ -687,7 +702,7 @@ public class DocumentationSiteGenerator
         }
         if (entries.size() == 1)
         {
-            return "test/" + entries.get(0).testId + ".html";
+            return "test/" + testFileName(entries.get(0).testId) + ".html";
         }
         try
         {
@@ -710,7 +725,7 @@ public class DocumentationSiteGenerator
         {
             StatusGlyph.Glyph tdsGlyph = StatusGlyph.forStatus(e.tdsState);
             StatusGlyph.Glyph relGlyph = StatusGlyph.forStatus(e.relState);
-            body.append("<tr><td><a href=\"../").append(e.testId).append(".html\">").append(Html.escape(e.testId)).append("</a></td>")
+            body.append("<tr><td><a href=\"../").append(testFileName(e.testId)).append(".html\">").append(Html.escape(e.testId)).append("</a></td>")
                     .append("<td class=\"").append(tdsGlyph.cssClass).append("\">").append(tdsGlyph.symbol).append(" ")
                     .append(e.tdsState == null ? "UNTESTED" : e.tdsState).append("</td>")
                     .append("<td class=\"").append(relGlyph.cssClass).append("\">").append(relGlyph.symbol).append(" ")
