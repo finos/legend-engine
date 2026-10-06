@@ -2797,9 +2797,15 @@ function meta::external::language::java::factory::newDependency(name:String[1], 
 
 function meta::external::language::java::factory::addProjectIfMissing(state:CodeDependencyResolutionState[1], name:String[1], projectSupplier:Function<{->Project[1]}>[1]):CodeDependencyResolutionState[1]
 {
+   // INSTRUMENTATION (GENV5): a "miss" means this dependency's Java is generated now; a "hit" means it was
+   // already generated within THIS resolution state and is reused. Because resolveProjects (no-state form)
+   // starts a FRESH state each call, the same dependency generated across many calls shows up as many
+   // misses - that repeated work is the redundancy we want to quantify. Enable with -Dlegend.pure.console.enabled=true.
    if($state.projectsByDependency->keys()->contains($name),
-      | $state,
-      | $state->addDependencyProject($name, $projectSupplier->eval())
+      | let _hit = println('[GENV5][dep-hit] ' + $name);
+        $state;,
+      | let _miss = println('[GENV5][dep-miss] ' + $name);
+        $state->addDependencyProject($name, $projectSupplier->eval());
    );
 }
 
@@ -2810,12 +2816,20 @@ function meta::external::language::java::factory::addDependencyProject(state:Cod
 
 function meta::external::language::java::factory::resolveProjects(dependencies:CodeDependency[*]):CodeDependencyResolutionState[1]
 {
+   // INSTRUMENTATION (GENV5): each call starts a FRESH resolution state - so dependency generations are
+   // NOT shared with any other call. Counting these vs distinct dep names reveals cross-call redundancy.
+   let _log = println('[GENV5][resolveProjects-fresh] deps=' + $dependencies->size()->toString());
    $dependencies->resolveProjects(^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
 }
 
 function meta::external::language::java::factory::resolveProjects(dependencies:CodeDependency[*], state:CodeDependencyResolutionState[1]):CodeDependencyResolutionState[1]
 {
-   $dependencies->fold({d, s| $d.stateUpdater->eval($s)}, $state);
+   // INSTRUMENTATION (GENV5): log every dependency NAME resolved. Total occurrences vs distinct names =
+   // the redundancy factor for dependency-resolution work (each fresh resolveProjects re-does it).
+   $dependencies->fold({d, s|
+      let _log = println('[GENV5][dep-resolve] ' + $d.name);
+      $d.stateUpdater->eval($s);
+   }, $state);
 }
 
 function meta::external::language::java::factory::addDependencyVisitedFunction(state:CodeDependencyResolutionState[1], visitedFunction:String[1]):CodeDependencyResolutionState[1]
@@ -3566,7 +3580,7 @@ function <<access.private>> meta::external::language::java::factory::project::me
               let fields = $existing.fields->concatenate($newlyDefinedFields);
               
               let newlyDefinedMethods = $class.methods->filter({newMethod|
-                  let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
+                  let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters->size() == $newMethod.parameters->size() && $m.parameters.type == $newMethod.parameters.type});
                   assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
                                                                                                                                                       c:Code[1] | println($c->codeToString()),
                                                                                                                                                       x:Code[0] | println($existingMethod.body->toOne())
