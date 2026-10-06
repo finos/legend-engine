@@ -1,0 +1,136 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::listRetyping::Item
+{
+  id: String[1];
+}
+
+Class demo::m2m::listRetyping::Part
+{
+  amount: Float[1];
+}
+
+Class demo::m2m::listRetyping::Crate extends demo::m2m::listRetyping::Item
+{
+  weight: Float[1];
+}
+
+Class demo::m2m::listRetyping::Box extends demo::m2m::listRetyping::Item
+{
+  parts: demo::m2m::listRetyping::Part[*];
+}
+
+Class demo::m2m::listRetyping::Bundle extends demo::m2m::listRetyping::Item
+{
+  firstCrate: demo::m2m::listRetyping::Crate[1];
+  secondCrate: demo::m2m::listRetyping::Crate[1];
+}
+
+Class demo::m2m::listRetyping::Pallet
+{
+  parts: demo::m2m::listRetyping::Part[*];
+}
+
+Class demo::m2m::listRetyping::Shipment
+{
+  items: demo::m2m::listRetyping::Item[*];
+  bundle: demo::m2m::listRetyping::Item[1];
+  pallet: demo::m2m::listRetyping::Pallet[1];
+}
+
+Class demo::m2m::listRetyping::Label
+{
+  itemId: String[1];
+  amount: Float[1];
+}
+
+Class demo::m2m::listRetyping::Manifest
+{
+  matchArmLabels: demo::m2m::listRetyping::Label[*];
+  bundleCrates: demo::m2m::listRetyping::Item[*];
+  scalarWidenedLabels: demo::m2m::listRetyping::Label[*];
+}
+
+function demo::m2m::listRetyping::toLabels(it: demo::m2m::listRetyping::Item[1]): demo::m2m::listRetyping::Label[*]
+{
+  $it->match([
+    cr: demo::m2m::listRetyping::Crate[1]| ^demo::m2m::listRetyping::Label(itemId = $cr.id, amount = $cr.weight),
+    bx: demo::m2m::listRetyping::Box[1]  | $bx.parts->map(p | ^demo::m2m::listRetyping::Label(itemId = $bx.id, amount = $p.amount))
+  ]);
+}
+
+function demo::m2m::listRetyping::expandBundle(it: demo::m2m::listRetyping::Item[1]): demo::m2m::listRetyping::Item[*]
+{
+  let bundle = $it->cast(@demo::m2m::listRetyping::Bundle);
+  let crates = [$bundle.firstCrate, $bundle.secondCrate];
+  $crates;
+}
+
+function demo::m2m::listRetyping::firstHeavyLabel(p: demo::m2m::listRetyping::Pallet[1]): demo::m2m::listRetyping::Label[*]
+{
+  $p.parts->filter(part | $part.amount > 0)->map(part | ^demo::m2m::listRetyping::Label(amount = $part.amount))->first();
+}
+
+###Mapping
+Mapping demo::m2m::listRetyping::Transform
+(
+  *demo::m2m::listRetyping::Manifest: Pure
+  {
+    ~src demo::m2m::listRetyping::Shipment
+    matchArmLabels: $src.items->map(it | $it->demo::m2m::listRetyping::toLabels()),
+    bundleCrates: $src.bundle->demo::m2m::listRetyping::expandBundle(),
+    scalarWidenedLabels: $src.pallet->demo::m2m::listRetyping::firstHeavyLabel()
+  }
+
+  testSuites:
+  [
+    retypingSuite:
+    {
+      function: |demo::m2m::listRetyping::Manifest.all()->graphFetch(#{demo::m2m::listRetyping::Manifest{matchArmLabels{itemId, amount}, bundleCrates{id}, scalarWidenedLabels{amount}}}#)->serialize(#{demo::m2m::listRetyping::Manifest{matchArmLabels{itemId, amount}, bundleCrates{id}, scalarWidenedLabels{amount}}}#);
+      tests:
+      [
+        constructedAndSubtypeListsRetype:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::listRetyping::Shipment:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"items":[{"@type":"Crate","id":"CRATE1","weight":100.0},{"@type":"Box","id":"BOX1","parts":[{"amount":1.5},{"amount":2.5}]}],"bundle":{"@type":"Bundle","id":"BND1","firstCrate":{"id":"C1","weight":1.0},"secondCrate":{"id":"C2","weight":2.0}},"pallet":{"parts":[{"amount":-1.0},{"amount":2.5},{"amount":3.5}]}}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"matchArmLabels":[{"itemId":"CRATE1","amount":100.0},{"itemId":"BOX1","amount":1.5},{"itemId":"BOX1","amount":2.5}],"bundleCrates":[{"id":"C1"},{"id":"C2"}],"scalarWidenedLabels":[{"amount":2.5}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
