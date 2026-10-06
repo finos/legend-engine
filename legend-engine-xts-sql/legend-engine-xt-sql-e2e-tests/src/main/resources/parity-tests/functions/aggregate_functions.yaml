@@ -7,11 +7,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: array_agg__anyarray__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT ARRAY_AGG(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
     function: array_agg
     signature: "array_agg(anyarray) → anyarray"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: array_agg__anynonarray__from_table
     sql: "SELECT ARRAY_AGG(name ORDER BY name) AS result FROM persons WHERE name IS NOT NULL"
@@ -77,11 +77,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: bit_and__bit__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT BIT_AND(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
     function: bit_and
     signature: "bit_and(bit) → bit"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: bit_and__int__from_table
     sql: "SELECT BIT_AND(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -105,11 +105,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: bit_or__bit__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT BIT_OR(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
     function: bit_or
     signature: "bit_or(bit) → bit"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: bit_or__int__from_table
     sql: "SELECT BIT_OR(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -133,11 +133,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: bit_xor__bit__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT BIT_XOR(int_val::bit(32)) AS result FROM numbers WHERE int_val IS NOT NULL"
     function: bit_xor
     signature: "bit_xor(bit) → bit"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: bit_xor__int__from_table
     sql: "SELECT BIT_XOR(int_val) AS result FROM numbers WHERE int_val IS NOT NULL"
@@ -217,18 +217,18 @@ tests:
     expected_rel_status: ERROR
 
   - id: cume_dist__variadicORDERBYvariadic__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT CUME_DIST(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
     function: cume_dist
     signature: 'cume_dist(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: dense_rank__variadicORDERBYvariadic__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT DENSE_RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
     function: dense_rank
     signature: 'dense_rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: every__bool__from_table
     sql: "SELECT EVERY(active) AS result FROM persons WHERE active IS NOT NULL"
@@ -322,18 +322,18 @@ tests:
     expected_rel_status: ERROR
 
   - id: max__anyarray__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
     function: max
     signature: "max(anyarray) → anyarray"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
 
   - id: max__anyenum__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(name::mood) AS result FROM persons WHERE name IS NOT NULL"
     function: max
     signature: "max(anyenum) → anyenum"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__big__from_table
     sql: "SELECT MAX(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -343,11 +343,11 @@ tests:
     expected_rel_status: PASS
 
   - id: max__char__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(name::char(10)) AS result FROM persons WHERE name IS NOT NULL"
     function: max
     signature: "max(character) → character"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: max__date__from_table
     sql: "SELECT MAX(d) AS result FROM dates WHERE d IS NOT NULL"
@@ -364,11 +364,11 @@ tests:
     expected_rel_status: PASS
 
   - id: max__inet__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(name::inet) AS result FROM persons WHERE name IS NOT NULL"
     function: max
     signature: "max(inet) → inet"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__int__from_table
     sql: "SELECT MAX(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -385,11 +385,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: max__money__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
     function: max
     signature: "max(money) → money"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__num__from_table
     sql: "SELECT MAX(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -399,18 +399,18 @@ tests:
     expected_rel_status: PASS
 
   - id: max__oid__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(id::oid) AS result FROM persons WHERE id IS NOT NULL"
     function: max
     signature: "max(oid) → oid"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: max__pg_lsn__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(name::pg_lsn) AS result FROM persons WHERE name IS NOT NULL"
     function: max
     signature: "max(pg_lsn) → pg_lsn"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__real__from_table
     sql: "SELECT MAX(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -434,25 +434,25 @@ tests:
     expected_rel_status: PASS
 
   - id: max__tid__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(name::tid) AS result FROM persons WHERE name IS NOT NULL"
     function: max
     signature: "max(tid) → tid"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__timetz__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(ts::timetz) AS result FROM dates WHERE ts IS NOT NULL"
     function: max
     signature: "max(time with time zone) → time with time zone"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: max__time__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(ts::time) AS result FROM dates WHERE ts IS NOT NULL"
     function: max
     signature: "max(time without time zone) → time without time zone"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: max__tstz__from_table
     sql: "SELECT MAX(tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL"
@@ -469,25 +469,25 @@ tests:
     expected_rel_status: PASS
 
   - id: max__xid8__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MAX(id::xid8) AS result FROM persons WHERE id IS NOT NULL"
     function: max
     signature: "max(xid8) → xid8"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__anyarray__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(ARRAY[id]) AS result FROM persons WHERE id IS NOT NULL"
     function: min
     signature: "min(anyarray) → anyarray"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
 
   - id: min__anyenum__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(name::mood) AS result FROM persons WHERE name IS NOT NULL"
     function: min
     signature: "min(anyenum) → anyenum"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__big__from_table
     sql: "SELECT MIN(big_val) AS result FROM numbers WHERE big_val IS NOT NULL"
@@ -497,11 +497,11 @@ tests:
     expected_rel_status: PASS
 
   - id: min__char__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(name::char(10)) AS result FROM persons WHERE name IS NOT NULL"
     function: min
     signature: "min(character) → character"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: min__date__from_table
     sql: "SELECT MIN(d) AS result FROM dates WHERE d IS NOT NULL"
@@ -518,11 +518,11 @@ tests:
     expected_rel_status: PASS
 
   - id: min__inet__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(name::inet) AS result FROM persons WHERE name IS NOT NULL"
     function: min
     signature: "min(inet) → inet"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__int__from_table
     sql: "SELECT MIN(age) AS result FROM persons WHERE age IS NOT NULL"
@@ -539,11 +539,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: min__money__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
     function: min
     signature: "min(money) → money"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__num__from_table
     sql: "SELECT MIN(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -553,18 +553,18 @@ tests:
     expected_rel_status: PASS
 
   - id: min__oid__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(id::oid) AS result FROM persons WHERE id IS NOT NULL"
     function: min
     signature: "min(oid) → oid"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: min__pg_lsn__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(name::pg_lsn) AS result FROM persons WHERE name IS NOT NULL"
     function: min
     signature: "min(pg_lsn) → pg_lsn"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__real__from_table
     sql: "SELECT MIN(float_val::real) AS result FROM numbers WHERE float_val IS NOT NULL"
@@ -588,25 +588,25 @@ tests:
     expected_rel_status: PASS
 
   - id: min__tid__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(name::tid) AS result FROM persons WHERE name IS NOT NULL"
     function: min
     signature: "min(tid) → tid"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__timetz__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(ts::timetz) AS result FROM dates WHERE ts IS NOT NULL"
     function: min
     signature: "min(time with time zone) → time with time zone"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: min__time__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(ts::time) AS result FROM dates WHERE ts IS NOT NULL"
     function: min
     signature: "min(time without time zone) → time without time zone"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: min__tstz__from_table
     sql: "SELECT MIN(tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL"
@@ -623,11 +623,11 @@ tests:
     expected_rel_status: PASS
 
   - id: min__xid8__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT MIN(id::xid8) AS result FROM persons WHERE id IS NOT NULL"
     function: min
     signature: "min(xid8) → xid8"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: mode__ORDERBYanyelement__from_table
     sql: "SELECT MODE() WITHIN GROUP (ORDER BY dept_id) AS result FROM persons WHERE dept_id IS NOT NULL"
@@ -637,88 +637,88 @@ tests:
     expected_rel_status: ERROR
 
   - id: percent_rank__variadicORDERBYvariadic__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENT_RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
     function: percent_rank
     signature: 'percent_rank(VARIADIC "any" ORDER BY VARIADIC "any") → double precision'
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: percentile_cont__dpORDERBYdp__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
     function: percentile_cont
     signature: "percentile_cont(double precision ORDER BY double precision) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
   - id: percentile_cont__dpORDERBYintv__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
     function: percentile_cont
     signature: "percentile_cont(double precision ORDER BY interval) → interval"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: percentile_cont__dp[]ORDERBYdp__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_CONT(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
     function: percentile_cont
     signature: "percentile_cont(double precision[] ORDER BY double precision) → double precision[]"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: percentile_cont__dp[]ORDERBYintv__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_CONT(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY INTERVAL '1 day' * id) AS result FROM numbers WHERE id <= 5"
     function: percentile_cont
     signature: "percentile_cont(double precision[] ORDER BY interval) → interval[]"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: percentile_disc__dpORDERBYanyelement__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
     function: percentile_disc
     signature: "percentile_disc(double precision ORDER BY anyelement) → anyelement"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
   - id: percentile_disc__dp[]ORDERBYanyelement__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT PERCENTILE_DISC(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY salary) AS result FROM persons WHERE salary IS NOT NULL"
     function: percentile_disc
     signature: "percentile_disc(double precision[] ORDER BY anyelement) → anyarray"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: range_agg__anymultirange__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT RANGE_AGG(int4multirange(int4range(id, id + 10))) AS result FROM persons WHERE id IS NOT NULL"
     function: range_agg
     signature: "range_agg(anymultirange) → anymultirange"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: range_agg__anyrange__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT RANGE_AGG(int4range(id, id + 10)) AS result FROM persons WHERE id IS NOT NULL"
     function: range_agg
     signature: "range_agg(anyrange) → anymultirange"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: range_intersect_agg__anymultirange__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT RANGE_INTERSECT_AGG(int4multirange(int4range(id, id + 10))) AS result FROM persons WHERE id IS NOT NULL"
     function: range_intersect_agg
     signature: "range_intersect_agg(anymultirange) → anymultirange"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: range_intersect_agg__anyrange__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT RANGE_INTERSECT_AGG(int4range(id, id + 10)) AS result FROM persons WHERE id IS NOT NULL"
     function: range_intersect_agg
     signature: "range_intersect_agg(anyrange) → anyrange"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: rank__variadicORDERBYvariadic__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT RANK(30) WITHIN GROUP (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL"
     function: rank
     signature: 'rank(VARIADIC "any" ORDER BY VARIADIC "any") → bigint'
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: regr_avgx__dp_dp__from_table
     sql: "SELECT REGR_AVGX(salary, age) AS result FROM persons WHERE salary IS NOT NULL AND age IS NOT NULL"
@@ -910,11 +910,11 @@ tests:
     expected_rel_status: PASS
 
   - id: string_agg__bytea_bytea__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT STRING_AGG(name::bytea, ','::bytea) AS result FROM persons WHERE name IS NOT NULL"
     function: string_agg
     signature: "string_agg(bytea, bytea) → bytea"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: string_agg__txt_txt__from_table
     sql: "SELECT STRING_AGG(name, ', ' ORDER BY name) AS result FROM persons WHERE name IS NOT NULL"
@@ -1001,11 +1001,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: sum__money__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT SUM(salary::money) AS result FROM persons WHERE salary IS NOT NULL"
     function: sum
     signature: "sum(money) → money"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: sum__num__from_table
     sql: "SELECT SUM(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
@@ -1155,11 +1155,11 @@ tests:
     expected_rel_status: PASS
 
   - id: xmlagg__xml__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT XMLAGG(name::xml) AS result FROM persons WHERE name IS NOT NULL"
     function: xmlagg
     signature: "xmlagg(xml) → xml"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   # === Auto-generated tests for previously UNTESTED signatures ===
   - id: array_agg_anyarray_cov

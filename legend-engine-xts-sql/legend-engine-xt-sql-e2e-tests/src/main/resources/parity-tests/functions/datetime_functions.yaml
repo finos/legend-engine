@@ -28,11 +28,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: age__xid__unsupported_type
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT AGE('100'::xid) AS result FROM persons WHERE id = 1"
     function: age
     signature: "age(xid) → integer"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: clock_timestamp__basic
     sql: "SELECT CASE WHEN CLOCK_TIMESTAMP() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -280,11 +280,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: to_timestamp__txt_txt__no_generator
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT TO_TIMESTAMP('2024-01-15', 'YYYY-MM-DD') AS result FROM persons WHERE id = 1"
     function: to_timestamp
     signature: "to_timestamp(text, text) → timestamp with time zone"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: transaction_timestamp__basic
     sql: "SELECT CASE WHEN TRANSACTION_TIMESTAMP() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"

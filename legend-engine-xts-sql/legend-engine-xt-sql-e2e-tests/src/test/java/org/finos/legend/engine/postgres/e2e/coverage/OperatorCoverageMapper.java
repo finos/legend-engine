@@ -74,7 +74,7 @@ public class OperatorCoverageMapper
             {
                 return "FAIL";
             }
-            return "ERROR";
+            return "UNSUPPORTED";
         }
 
         public String relStatus()
@@ -100,7 +100,7 @@ public class OperatorCoverageMapper
             {
                 return "FAIL";
             }
-            return "ERROR";
+            return "UNSUPPORTED";
         }
     }
 

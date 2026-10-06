@@ -673,18 +673,18 @@ tests:
   expected_rel_status: ERROR
 
 - id: trunc__macaddr__unsupported_type
-  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  sql: SELECT TRUNC('08:00:2b:01:02:03'::macaddr) AS result FROM persons WHERE id = 1
   function: trunc
   signature: trunc(macaddr) → macaddr
-  expected_tds_status: PASS
-  expected_rel_status: PASS
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
 
 - id: trunc__macaddr8__unsupported_type
-  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  sql: SELECT TRUNC('08:00:2b:01:02:03:04:05'::macaddr8) AS result FROM persons WHERE id = 1
   function: trunc
   signature: trunc(macaddr8) → macaddr8
-  expected_tds_status: PASS
-  expected_rel_status: PASS
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
 
 - id: trunc__num__from_table
   sql: SELECT TRUNC(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
@@ -701,11 +701,11 @@ tests:
   expected_rel_status: ERROR
 
 - id: width_bucket__anycompatible_anycompatiblearray__unsupported_type
-  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  sql: SELECT WIDTH_BUCKET(5, ARRAY[1, 3, 5, 7, 9]) AS result FROM persons WHERE id = 1
   function: width_bucket
   signature: width_bucket(anycompatible, anycompatiblearray) → integer
-  expected_tds_status: PASS
-  expected_rel_status: PASS
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
 
 - id: width_bucket__dp_dp_dp_int__from_table
   sql: SELECT WIDTH_BUCKET(float_val, -10.0, 10.0, 5) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1

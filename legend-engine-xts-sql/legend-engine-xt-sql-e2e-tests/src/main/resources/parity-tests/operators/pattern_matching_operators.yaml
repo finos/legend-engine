@@ -5,11 +5,11 @@ tests:
 # =============================================================================
 
 - id: like__bytea_bytea__unsupported_type
-  sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+  sql: "SELECT (E'\\\\xDEADBEEF'::bytea LIKE E'\\\\xDEAD%'::bytea) AS result FROM persons WHERE id = 1"
   operator: "LIKE"
   signature: "like(bytea, bytea) → boolean"
-  expected_tds_status: PASS
-  expected_rel_status: PASS
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 - id: like__name_txt__from_table
   sql: "SELECT name LIKE '%li%' AS result FROM persons ORDER BY 1"

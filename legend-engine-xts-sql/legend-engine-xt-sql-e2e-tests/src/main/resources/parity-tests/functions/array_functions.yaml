@@ -136,18 +136,18 @@ tests:
     expected_rel_status: ERROR
 
   - id: unnest__anymultirange__unsupported_type
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT UNNEST(int4multirange(int4range(1,5))) AS result FROM persons WHERE id = 1"
     function: unnest
     signature: "unnest(anymultirange) → SETOF anyrange"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: unnest__tsvectortsvector_OUTlexemetxt_OUTpositionssmall[]_OUTweightstxt[]__unsupported_type
-    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    sql: "SELECT UNNEST(to_tsvector('english', 'the quick brown fox')) AS result FROM persons WHERE id = 1"
     function: unnest
     signature: "unnest(tsvector tsvector, OUT lexeme text, OUT positions smallint[], OUT weights text[]) → SETOF record"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   # === Auto-generated tests for previously UNTESTED signatures ===
   - id: array_sample_anyarray_integer_cov
