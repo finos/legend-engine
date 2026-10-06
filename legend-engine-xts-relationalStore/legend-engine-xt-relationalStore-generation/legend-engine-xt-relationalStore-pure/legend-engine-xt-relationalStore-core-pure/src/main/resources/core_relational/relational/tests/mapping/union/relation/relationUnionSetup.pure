@@ -129,13 +129,13 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1Func():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne()
+      lastName: $row.lastName_s1->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2Func():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne()
+      lastName: $row.lastName_s2->toOne()
    }
 )
 
@@ -149,7 +149,7 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfRelat
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1Func():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne()
+      lastName: $row.lastName_s1->toOne()
    }
 
    Person[relSet2] : Relational
@@ -173,8 +173,8 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfRelat
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne(),
-      +firmId: Integer[1]: $src.FirmID->toOne()
+      lastName: $row.lastName_s1->toOne(),
+      +firmId: Integer[1]: $row.FirmID->toOne()
    }
 
    Person[relSet2] : Relational
@@ -215,13 +215,13 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1FirmXOnlyFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne()
+      lastName: $row.lastName_s1->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2Func():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne()
+      lastName: $row.lastName_s2->toOne()
    }
 )
 
@@ -255,15 +255,15 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1WithConstantFirstNameFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne(),
-      firstName: $src.firstName->toOne()
+      lastName: $row.lastName_s1->toOne(),
+      firstName: $row.firstName->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2WithConstantFirstNameFunc():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne(),
-      firstName: $src.firstName->toOne()
+      lastName: $row.lastName_s2->toOne(),
+      firstName: $row.firstName->toOne()
    }
 )
 
@@ -277,20 +277,20 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1WithEmbeddedFirmFunc():Relation<Any>[1]
-      lastName: $src.lastName_s1->toOne(),
+      lastName: $row.lastName_s1->toOne(),
       firm
       (
-         legalName: $src.firmName->toOne()
+         legalName: $row.firmName->toOne()
       )
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2WithEmbeddedFirmFunc():Relation<Any>[1]
-      lastName: $src.lastName_s2->toOne(),
+      lastName: $row.lastName_s2->toOne(),
       firm
       (
-         legalName: $src.firmName->toOne()
+         legalName: $row.firmName->toOne()
       )
    }
 )
@@ -307,15 +307,15 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1FirstAndLastFunc():Relation<Any>[1]
-      firstName: $src.firstName_s1->toOne(),
-      lastName: $src.lastName_s1->toOne()
+      firstName: $row.firstName_s1->toOne(),
+      lastName: $row.lastName_s1->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2FirstAndLastFunc():Relation<Any>[1]
-      firstName: $src.firstName_s2->toOne(),
-      lastName: $src.lastName_s2->toOne()
+      firstName: $row.firstName_s2->toOne(),
+      lastName: $row.lastName_s2->toOne()
    }
 )
 
@@ -335,14 +335,14 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Address[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::addressSet1WithTypeFunc():Relation<Any>[1]
-      name: $src.name->toOne(),
-      type: EnumerationMapping GeographicEntityType: $src.city_REGION->toOne()
+      name: $row.name->toOne(),
+      type: EnumerationMapping GeographicEntityType: $row.city_REGION->toOne()
    }
 
    Address[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::addressSet2WithTypeFunc():Relation<Any>[1]
-      name: $src.name->toOne(),
-      type: EnumerationMapping GeographicEntityType: $src.city_REGION->toOne()
+      name: $row.name->toOne(),
+      type: EnumerationMapping GeographicEntityType: $row.city_REGION->toOne()
    }
 )

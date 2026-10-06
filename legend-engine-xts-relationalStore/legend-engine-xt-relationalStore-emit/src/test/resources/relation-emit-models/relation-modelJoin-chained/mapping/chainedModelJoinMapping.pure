@@ -60,7 +60,7 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
-    active: $src.ACTIVE == 1,
+    active: $row.ACTIVE == 1,
     hireDate: HIRE_DATE,
     salary: SALARY,
     +departmentId: Integer[0..1]: DEPARTMENT_ID

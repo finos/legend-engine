@@ -906,11 +906,11 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 // These exercise the general-case lambda walker (now `evaluateRfpmRhs` →
 // `transformRelationFunctionPropertyMappingToRelational` in pureToSQLQuery.pure)
 // that replaced the original bare-column-only placeholder helper. Bare-column
-// property mappings lower (in legend-pure) to `{src | $src.<col>}`, and richer
-// expressions like `$src.A + 5` flow through the same walker via the DynaFunction leg.
+// property mappings lower (in legend-pure) to `{row | $row.<col>}`, and richer
+// expressions like `$row.A + 5` flow through the same walker via the DynaFunction leg.
 
 // Same query / fixture as testSimpleMappingQuery but driven by ExplicitSrcMapping
-// where every property is written in `$src.<col>` form. Asserts the explicit
+// where every property is written in `$row.<col>` form. Asserts the explicit
 // lambda form produces results identical to the bare-column sugar.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingQuery():Boolean[1]
 {
@@ -933,7 +933,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 }
 
 // XStore association still resolves when both source and target class mappings
-// use `$src.COL` form on every property mapping (PK and FK lookups).
+// use `$row.COL` form on every property mapping (PK and FK lookups).
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingWithAssociation():Boolean[1]
 {
   let result = execute(
@@ -955,7 +955,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 }
 
 // Arithmetic expression on the RHS of a property mapping. `age` is mapped to
-// `$src.AGE + 5`, so projected ages should be the underlying column values
+// `$row.AGE + 5`, so projected ages should be the underlying column values
 // shifted by +5. This exercises the DynaFunction leg of the lambda walker
 // (`plus`) over a TableAliasColumn + Literal.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionMappingArithmetic():Boolean[1]
