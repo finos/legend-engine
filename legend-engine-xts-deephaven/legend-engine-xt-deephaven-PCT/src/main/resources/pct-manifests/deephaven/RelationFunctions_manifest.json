@@ -1614,5 +1614,56 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  } ]
+  }, {
+    "test" : "meta::pure::functions::relation::tests::except::testExceptPartialRowMatchIsNotAMatch_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::except_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::except::testExceptRemovesDuplicates_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::except_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::except::testExcept_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::exceptAll_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersectPartialRowMatchIsNotAMatch_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::intersect_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersectRemovesDuplicates_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::intersect_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersect_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::intersectAll_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::union::testUnionRemovesDuplicates_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfDistinctRelation_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::distinct_Relation_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedLimitedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAllShared_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
+  }]
 }

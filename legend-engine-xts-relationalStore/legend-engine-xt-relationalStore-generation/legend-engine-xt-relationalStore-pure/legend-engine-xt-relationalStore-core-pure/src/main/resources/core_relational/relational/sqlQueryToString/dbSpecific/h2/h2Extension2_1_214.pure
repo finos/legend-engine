@@ -25,6 +25,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       aliasLimit = 256,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},

@@ -1,23 +1,20 @@
 {
-  "services": [
-    {
-      "path": "meta::pure::myServiceSingle",
-      "type": "Service",
-      "hasTestSuites": false,
-      "hasLegacyTests": true,
-      "testSuiteCount": 0
-    }
-  ],
-  "mappings": [],
-  "serviceCoverage": {
-    "totalElements": 1,
-    "elementsWithTests": 1,
-    "coveragePercentage": 1.0
+  "elementsByType": {
+    "Service": [
+      {
+        "path": "meta::pure::myServiceSingle",
+        "type": "Service",
+        "hasTestSuites": false,
+        "hasLegacyTests": true,
+        "testSuiteCount": 0
+      }
+    ]
   },
-  "mappingCoverage": {
-    "totalElements": 0,
-    "elementsWithTests": 0,
-    "coveragePercentage": 0.0
+  "coverageByType": {
+    "Service": {
+      "totalElements": 1,
+      "elementsWithTests": 1,
+      "coveragePercentage": 1.0
+    }
   }
 }
-

@@ -120,10 +120,10 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    );
 
    let executeProject = newProject()->addClasses($executeClass);
+   // [B] node classes keep their deps attached; the root resolves the union once.
    let allProjects    = $executeProject
       ->concatenate($dataClassesProject)
       ->concatenate($storeReaderProject)
-      ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
       ->toOneMany();
 
    $allProjects->mergeProjects()->generatedCode($executeClass);

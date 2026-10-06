@@ -46,5 +46,15 @@ public interface TestableRunnerExtension extends LegendExtension
         return false;
     }
 
+    default int getTestCount(PackageableElement element)
+    {
+        return 0;
+    }
+
+    default boolean hasLegacyTests(PackageableElement element)
+    {
+        return false;
+    }
+
     TestRunner getTestRunner(Testable testable);
 }

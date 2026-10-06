@@ -37,6 +37,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 
    ^DbExtension(
       nullOrderingSupport = nativeOnlySupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       // T-SQL has no boolean values in select lists; project predicates via the case-when wrap (as Oracle does)
       isBooleanLiteralSupported = false,
       commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::sqlServer::processCommonTableExpressionsForSqlServer_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
