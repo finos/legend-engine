@@ -571,7 +571,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false, captureConditionalTerminals=true), $prevRes->last()->getVisitedFunctions());
+              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false, captureConditionalTerminals=true, resolveConstructedInstances=true), $prevRes->last()->getVisitedFunctions());
                                                      $prevRes->concatenate($result);
                                       },
                                       [^ScanPropertiesState(current = emptyPath(), result = [], visitedFunctions = $visitedFunctions)]
