@@ -832,6 +832,7 @@ infrastructure rather than the feature under test:
 | `grammar:derived-property` | Derived (computed) property |
 | `grammar:enumeration` | Enumeration type definition |
 | `grammar:function` | Standalone Pure function |
+| `grammar:match-expression` | `match([...])` dispatching on subtype |
 | `grammar:measure` | Measure / unit definition |
 | `grammar:nested-association` | Multi-level association traversal |
 | `grammar:profile` | Profile / stereotype / tag definition |
@@ -845,8 +846,10 @@ infrastructure rather than the feature under test:
 | `mapping:cross-store` | Cross-store mapping (M2M ↔ relational) |
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
 | `mapping:m2m-chained-relational` | M2M mapping whose `~src` class is itself mapped to a relational store, chained through a `ModelChainConnection` |
+| `mapping:m2m-covariant-list-return` | M2M transform helper function whose returned list is statically a strict subtype of the function's declared return list |
 | `mapping:m2m-derived-source-property` | Derived property on M2M source class |
 | `mapping:m2m-local-property` | Local property in M2M mapping |
+| `mapping:m2m-scalar-to-list-widening` | M2M transform helper function declared to return a list whose body ends in a to-one or zero-to-one expression |
 | `mapping:m2m-target-instantiation` | Target class constructed with the `new` operator (`^Target(...)`) inside an M2M transform |
 | `mapping:m2m-transform` | Model-to-model transform expression |
 | `mapping:mapping` | Generic mapping (legacy tag) |

@@ -2154,6 +2154,21 @@ function meta::external::language::java::factory::j_emptyList(listType:meta::ext
    );
 }
 
+// Retypes unconditionally, unlike j_listOf/j_cast's equality-gated casts, which can skip
+// retyping a list whose elements are a constructed _Impl rather than the declared class.
+function meta::external::language::java::factory::j_retypeListElements(of: Code[1], listType:meta::external::language::java::metamodel::Type[1]):Code[1]
+{
+   let targetElementType = $listType->elementType();
+   let stream            = $of->j_streamOf();
+   if($targetElementType->instanceOf(meta::external::language::java::metamodel::Class),
+      | $stream->j_invoke('map',
+                           j_methodReference(j_field($targetElementType->cast(@meta::external::language::java::metamodel::Class), 'class', javaClassType($targetElementType->cast(@meta::external::language::java::metamodel::Class))), 'cast', javaFunctionType($stream.type->elementTypeOfJavaStream(), $targetElementType)),
+                           javaStream($targetElementType))
+        ->js_resolve($listType),
+      | $stream->j_cast(javaStream($targetElementType))->js_resolve($listType)
+   );
+}
+
 function meta::external::language::java::factory::j_listOf(of: Code[1], listType:meta::external::language::java::metamodel::Type[1]):Code[1]
 {
    if($of.type == $listType,
@@ -2167,9 +2182,11 @@ function meta::external::language::java::factory::j_listOf(of: Code[1], listType
       |
    if($of.type->isJavaPrimitive(),
       | javaCollections()->j_invoke($listType->elementType(), 'singletonList', $of, $listType),
+      // Cast directly rather than via j_cast, whose equality check can skip casting a
+      // constructed _Impl value whose .type already claims to be the declared element.
       | javaOptional()
-           ->j_invoke('ofNullable', $of->j_cast($listType->elementType()), javaOptional($of.type))
-           ->j_invoke('map', javaCollections()->j_methodReference('singletonList', javaFunctionType($of.type, $listType)), $listType)
+           ->j_invoke('ofNullable', ^meta::external::language::java::metamodel::Cast(expression=$of, type=$listType->elementType()), javaOptional($listType->elementType()))
+           ->j_invoke('map', javaCollections()->j_methodReference('singletonList', javaFunctionType($listType->elementType(), $listType)), $listType)
            ->j_invoke('orElseGet', javaCollections()->j_methodReference('emptyList', javaFunctionType([], $listType)), $listType)
            ->j_cast($listType)
    ))));

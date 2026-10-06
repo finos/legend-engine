@@ -186,3 +186,93 @@ meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiation
 
   assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"child":{"j": 1}}}'->parseJSON(), $result->toOne()->parseJSON()));
 }
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Example to test that a function declared to return many values can return a single instance created with the new operator'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiationReturnedAsToMany() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::ManySource\n'+
+    '{\n'+
+    '  i: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::ManyTarget\n'+
+    '{\n'+
+    '  children: test::model::ManyChild[*];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::ManyChild\n'+
+    '{\n'+
+    '  j: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::instantiateChildren(i: Integer[1]): test::model::ManyChild[*]\n'+
+    '{\n'+
+    '  ^test::model::ManyChild(j=$i);' +
+    '}\n'+
+    '\n'+
+    'function test::query::getMany(): String[1]\n'+
+    '{\n'+
+    '  test::model::ManyTarget.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::ManyTarget {\n'+
+    '        children {\n'+
+    '          j\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::ManyTarget {\n'+
+    '        children {\n'+
+    '          j\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MManyMap, test::runtime::manyRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MManyMap\n'+
+    '(\n'+
+    '  *test::model::ManyTarget: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::ManySource\n'+
+    '    children: test::model::instantiateChildren($src.i)\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::manyConnection\n'+
+    '{\n'+
+    '  class: test::model::ManySource;\n'+
+    '  url: \'data:application/json,{"i":1}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::manyRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MManyMap\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::manyConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getMany__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"children":[{"j": 1}]}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
