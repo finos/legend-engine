@@ -937,7 +937,6 @@ so live in the `mapping:` domain alongside their relational counterparts:
 |---|---|
 | `execution:bigquery-function` | BigQuery function activator |
 | `execution:binding` | External format binding |
-| `execution:connection-time-zone` | Time zone named on a relational connection, settling the zone a TIMESTAMP column's wall clock is read out of, and the zone a date-time in a query is written into before it meets one |
 | `execution:data-element` | Data element definition |
 | `execution:external-format` | External format specification |
 | `execution:external-format-binding` | External format binding |

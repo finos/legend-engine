@@ -14,8 +14,7 @@ description: |
   changes the answer, and each parameterized service has a second test whose
   value moves it. The bitemporal data splits the two dimensions at different
   moments, so swapping the dates or dropping either one reads another grade.
-  The connection names no time zone; relational-service-dates-time-zone asks
-  the same questions of the same rows through one that does.
+  The connection names no time zone.
 
 modelSources:
   model:
