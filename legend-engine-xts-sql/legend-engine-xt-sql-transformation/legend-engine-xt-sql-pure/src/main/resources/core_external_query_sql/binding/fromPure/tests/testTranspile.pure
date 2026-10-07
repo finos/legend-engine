@@ -5339,6 +5339,31 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// Both unnests default to "value". Without the rename this fails to compile with
+// "relation contains duplicates" before the query is ever resolved.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralTableFunctionsBothDefaultToSameColumnName():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean", b."value" AS v2 FROM service."/service/service1" table1, ' +
+    'LATERAL unnest(string_to_array(table1."String", \',\')) AS a(value), ' +
+    'LATERAL unnest(string_to_array(table1."String", \',\')) AS b(value)',
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              $r.String->split(',')->meta::pure::functions::relation::variant::flatten(~value)
+          )
+          ->lateral(r |
+              $r.String->split(',')->meta::pure::functions::relation::variant::flatten(~value)->rename(~value, ~value_b)
+          )
+          ->select(~[Boolean, value_b])
+          ->rename(~value_b, ~v2)
+      })
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExistsCorrelated():Boolean[1]
 {
   test(

@@ -1178,3 +1178,23 @@ tests:
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  - id: crcs_g9_chained_lateral_unnest_both_default_to_value
+    sql: "SELECT p.name AS name, b.value AS word FROM persons p, LATERAL UNNEST(STRING_TO_ARRAY(p.name, ',')) AS a(value), LATERAL UNNEST(STRING_TO_ARRAY(p.name, ',')) AS b(value) WHERE p.id = 1"
+    feature: "two chained LATERAL UNNESTs that both default to a column named VALUE"
+    category: "column_resolution_corpus"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+    #relation error: cannot cast type text[] to jsonb. Because unnest gets converted into flatten() which takes in json.
+
+  - id: crcs_g9_chained_lateral_subquery_both_default_to_value
+    sql: "SELECT p.name AS name, b.value AS v2 FROM persons p, LATERAL (SELECT MAX(salary) AS value FROM persons) AS a, LATERAL (SELECT MIN(salary) AS value FROM persons) AS b WHERE p.id = 1"
+    feature: "two chained non-correlated LATERAL subqueries that both default to a column named VALUE"
+    category: "column_resolution_corpus"
+    # The positive counterpart to the UNNEST case: both laterals output "value", so without the
+    # collision rename this fails to compile with "duplicates: [value]". Because these laterals use
+    # neither UNNEST (no text[]->jsonb flatten) nor an outer correlation, the Relation path executes
+    # end-to-end and matches Postgres - a PASS.
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
