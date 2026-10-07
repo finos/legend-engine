@@ -63,7 +63,7 @@ import static org.junit.Assert.fail;
  *       that the produced M3 graph has the expected shape — these new tests fill that gap by
  *       asserting on {@code _relationFunction}, {@code _valueFn}, {@code _localMappingProperty}
  *   <li><b>The two new source forms</b> — {@code ~src <inline-expr>} (class-mapping source) and
- *       {@code propName: $src.<col>} (property RHS expression form)</li>
+ *       {@code propName: $row.<col>} (property RHS expression form)</li>
  * </ul>
  */
 public class TestRelationFunctionMappingCompilation extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -394,7 +394,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     }
 
     // ==================================================================
-    // §5 — Property RHS expression form ($src.<col>).
+    // §5 — Property RHS expression form ($row.<col>).
     // ==================================================================
 
     @Test
@@ -408,13 +408,33 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
                 "    firstName: FIRSTNAME,\n" +
-                "    +concatenated: String[1]: $src.FIRSTNAME + ' ' + $src.FIRSTNAME\n" +
+                "    +concatenated: String[1]: $row.FIRSTNAME + ' ' + $row.FIRSTNAME\n" +
                 "  }\n" +
                 ")\n");
 
         RelationFunctionInstanceSetImplementation relSet = onlyRelSet(pureModel, "my::testMapping");
         RelationFunctionPropertyMapping concat = pmAt(relSet, 1);
         assertEquals("String", bodyTypeName(concat));
+    }
+
+    @Test
+    public void testRelationMappingRejectsLegacySrcRowAccess()
+    {
+        // no `$src.<col>` syntax for relation mappings — mirrors legend-pure's
+        // TestRelationMapping#testRelationMappingRejectsLegacySrcRowAccess. Authored sources
+        // must migrate to `$row.<col>`. Engine's ValueSpecificationBuilder reports an unresolved
+        // variable differently from legend-pure's M3 compiler, hence the different message text.
+        compileErrorContains(STANDARD_FIXTURE +
+                        "###Mapping\n" +
+                        "Mapping my::testMapping\n" +
+                        "(\n" +
+                        "  *my::Person[person]: Relation\n" +
+                        "  {\n" +
+                        "    ~func my::personFunction():Relation<Any>[1]\n" +
+                        "    firstName: $src.FIRSTNAME\n" +
+                        "  }\n" +
+                        ")\n",
+                "Can't find variable class for variable 'src' in the graph");
     }
 
     // ==================================================================
@@ -485,7 +505,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     public void testRelationMappingInlineSrcWithEmbeddedSubMapping()
     {
         // Embedded mapping under ~src parent: the parent's relationFunction must be propagated
-        // to the embedded set so $src.<col> resolves against the same row type.
+        // to the embedded set so $row.<col> resolves against the same row type.
         PureModel pureModel = compileOk(STANDARD_FIXTURE +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -496,7 +516,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "    firstName: FIRSTNAME,\n" +
                 "    address\n" +
                 "    (\n" +
-                "      city: $src.CITY\n" +
+                "      city: $row.CITY\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");
@@ -520,7 +540,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
                 "    firstName: FIRSTNAME,\n" +
-                "    +ageBucket: String[1]: if($src.AGE > 65, |'senior', |'other')\n" +
+                "    +ageBucket: String[1]: if($row.AGE > 65, |'senior', |'other')\n" +
                 "  }\n" +
                 ")\n");
 
@@ -532,7 +552,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     @Test
     public void testRelationMappingWithEnumerationTransformerOverExpression()
     {
-        // Enumeration transformer combined with explicit `$src.<col>` expression RHS.
+        // Enumeration transformer combined with explicit `$row.<col>` expression RHS.
         PureModel pureModel = compileOk(CLASSES_SOURCE + ENUM_FIXTURE_SOURCE +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -545,8 +565,8 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  *my::PersonWithGender[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personWithGenderFunction():Relation<Any>[1]\n" +
-                "    firstName: $src.FIRSTNAME,\n" +
-                "    gender: EnumerationMapping GenderMapping: $src.GENDER\n" +
+                "    firstName: $row.FIRSTNAME,\n" +
+                "    gender: EnumerationMapping GenderMapping: $row.GENDER\n" +
                 "  }\n" +
                 ")\n");
 
@@ -568,7 +588,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "    firstName: FIRSTNAME,\n" +
                 "    address\n" +
                 "    (\n" +
-                "      city: $src.CITY\n" +
+                "      city: $row.CITY\n" +
                 "    )\n" +
                 "  }\n" +
                 ")\n");
@@ -611,7 +631,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personFunctionQuoted():Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]\n" +
-                "    firstName: $src.'FIRST NAME'\n" +
+                "    firstName: $row.'FIRST NAME'\n" +
                 "  }\n" +
                 ")\n");
 
@@ -630,7 +650,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personFunctionQuoted():Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]\n" +
-                "    +greeted: String[1]: 'Hi ' + $src.'FIRST NAME'\n" +
+                "    +greeted: String[1]: 'Hi ' + $row.'FIRST NAME'\n" +
                 "  }\n" +
                 ")\n");
 
@@ -659,7 +679,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personFunctionQuoted():Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]\n" +
-                "    firstName: $src.'FIRST NAME'\n" +
+                "    firstName: $row.'FIRST NAME'\n" +
                 "  }\n" +
                 ")\n");
 
@@ -684,7 +704,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::Firm[firm]: Relation\n" +
                         "  {\n" +
                         "    ~func my::firmFunction():Relation<Any>[1]\n" +
-                        "    legalName: $src.LEGALNAME->split(',')\n" +
+                        "    legalName: $row.LEGALNAME->split(',')\n" +
                         "  }\n" +
                         ")\n",
                 "Multiplicity Error: The property 'legalName' has a multiplicity range of [1] when the given expression has a multiplicity range of [*]");
@@ -811,7 +831,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::FirmWithAliases[firm]: Relation\n" +
                         "  {\n" +
                         "    ~func my::firmFunction():Relation<Any>[1]\n" +
-                        "    aliases: $src.LEGALNAME->split(',')\n" +
+                        "    aliases: $row.LEGALNAME->split(',')\n" +
                         "  }\n" +
                         ")\n",
                 "Multiplicity Error: The property 'aliases' has a multiplicity range of [1..*] when the given expression has a multiplicity range of [*]");
@@ -828,7 +848,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "  *my::Firm[firm]: Relation\n" +
                 "  {\n" +
                 "    ~func my::firmFunction():Relation<Any>[1]\n" +
-                "    clientNames: $src.LEGALNAME->split(',')\n" +
+                "    clientNames: $row.LEGALNAME->split(',')\n" +
                 "  }\n" +
                 ")\n");
     }
@@ -904,7 +924,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     @Test
     public void testRelationMappingRejectsZeroToOneExpressionForToOnePropertyWithExpressionRhs()
     {
-        // Same multiplicity rejection but expressed through `$src.<col>->toOneMany()->first()`.
+        // Same multiplicity rejection but expressed through `$row.<col>->toOneMany()->first()`.
         // Demonstrates the check operates on the lambda's result, not on the column type alone.
         compileErrorContains(STANDARD_FIXTURE +
                         "###Mapping\n" +
@@ -913,7 +933,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::Firm[firm]: Relation\n" +
                         "  {\n" +
                         "    ~func my::firmFunction():Relation<Any>[1]\n" +
-                        "    legalName: $src.LEGALNAME->toOneMany()->first()\n" +
+                        "    legalName: $row.LEGALNAME->toOneMany()->first()\n" +
                         "  }\n" +
                         ")\n",
                 "Multiplicity Error: The property 'legalName' has a multiplicity range of [1] when the given expression has a multiplicity range of [0..1]");
@@ -974,7 +994,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     @Test
     public void testRelationMappingExpressionRhsTypeError()
     {
-        // age: Integer ← $src.FIRSTNAME : String
+        // age: Integer ← $row.FIRSTNAME : String
         compileErrorContains(STANDARD_FIXTURE +
                         "###Mapping\n" +
                         "Mapping my::testMapping\n" +
@@ -982,7 +1002,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::Person[person]: Relation\n" +
                         "  {\n" +
                         "    ~func my::personFunction():Relation<Any>[1]\n" +
-                        "    age: $src.FIRSTNAME\n" +
+                        "    age: $row.FIRSTNAME\n" +
                         "  }\n" +
                         ")\n",
                 "Mismatching property and relation expression types. Property 'age' is of type 'Integer', but the expression mapped to it is of type 'String'.");
@@ -991,7 +1011,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     @Test
     public void testRelationMappingExpressionRhsMissingColumn()
     {
-        // $src.MISSING — error must mention the column name.
+        // $row.MISSING — error must mention the column name.
         compileErrorContains(STANDARD_FIXTURE +
                         "###Mapping\n" +
                         "Mapping my::testMapping\n" +
@@ -999,7 +1019,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::Person[person]: Relation\n" +
                         "  {\n" +
                         "    ~func my::personFunction():Relation<Any>[1]\n" +
-                        "    firstName: $src.MISSING\n" +
+                        "    firstName: $row.MISSING\n" +
                         "  }\n" +
                         ")\n",
                 "MISSING");
@@ -1008,7 +1028,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     @Test
     public void testRelationMappingExpressionRhsMultiplicityViolation()
     {
-        // `$src.X->toOneMany()` yields String[1..*], which is incompatible with a [1] property.
+        // `$row.X->toOneMany()` yields String[1..*], which is incompatible with a [1] property.
         compileErrorContains(STANDARD_FIXTURE +
                         "###Mapping\n" +
                         "Mapping my::testMapping\n" +
@@ -1016,7 +1036,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                         "  *my::Person[person]: Relation\n" +
                         "  {\n" +
                         "    ~func my::personFunction():Relation<Any>[1]\n" +
-                        "    firstName: $src.FIRSTNAME->toOneMany()\n" +
+                        "    firstName: $row.FIRSTNAME->toOneMany()\n" +
                         "  }\n" +
                         ")\n",
                 "Multiplicity");

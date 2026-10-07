@@ -507,7 +507,7 @@ Mapping meta::relational::tests::mapping::modelJoin::simple::RelationalSimpleEqu
 // Nullable-column → [0..1]-property mapping under strict multiplicity check.
 // SALARY is the lone nullable column on personTable; PersonWithOptionalSalary.salary
 // is Float[0..1]. The bare-column `salary: SALARY` lowers (in legend-pure) to
-// `{src | $src.SALARY}` which preserves the [0..1] inferred multiplicity end to end.
+// `{row | $row.SALARY}` which preserves the [0..1] inferred multiplicity end to end.
 // Uses personTableWithSalary() so existing tests' personTable() projections are
 // unchanged.
 // =========================================================================

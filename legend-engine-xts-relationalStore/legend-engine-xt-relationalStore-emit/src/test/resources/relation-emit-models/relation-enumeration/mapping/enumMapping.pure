@@ -33,10 +33,10 @@ Mapping demo::relation::mapping::EmployeeEnumerationMapping
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
-    active: $src.ACTIVE == 1,
+    active: $row.ACTIVE == 1,
     hireDate: HIRE_DATE,
     salary: SALARY,
-    activeStatus: EnumerationMapping ActiveStatusMapping: $src.ACTIVE_STATUS->toOne()
+    activeStatus: EnumerationMapping ActiveStatusMapping: $row.ACTIVE_STATUS->toOne()
   }
 
   demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping

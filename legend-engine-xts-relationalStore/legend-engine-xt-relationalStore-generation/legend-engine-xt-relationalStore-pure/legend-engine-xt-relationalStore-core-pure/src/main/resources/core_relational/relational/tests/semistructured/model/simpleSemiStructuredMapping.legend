@@ -101,12 +101,12 @@ Mapping simple::mapping::H2Mapping
 
 Mapping simple::relationFunctionMapping::H2Mapping
 (
-  *simple::model::Person: Relation 
+  *simple::model::Person: Relation
   {
     ~func simple::personFunction():Relation<Any>[1]
-    firstName: $src.FIRSTNAME->toOne(),
-    lastName: $src.LASTNAME->toOne(),
-    firm: Binding simple::store::FirmBinding : $src.FIRM_DETAILS->toOne()
+    firstName: $row.FIRSTNAME->toOne(),
+    lastName: $row.LASTNAME->toOne(),
+    firm: Binding simple::store::FirmBinding : $row.FIRM_DETAILS->toOne()
   }
 )
 
