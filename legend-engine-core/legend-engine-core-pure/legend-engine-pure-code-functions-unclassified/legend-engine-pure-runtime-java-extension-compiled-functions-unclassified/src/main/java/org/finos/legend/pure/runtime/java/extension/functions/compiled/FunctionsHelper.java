@@ -63,6 +63,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.WeekFields;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -137,10 +138,10 @@ public class FunctionsHelper
         {
             throw new PureExecutionException(sourceInformation, "Cannot get week of year for " + date, Stacks.mutable.empty());
         }
-        // ISO 8601 numbering: a week starts on Monday, and week 1 is the one holding the year's first
-        // Thursday. Fixed rather than read from the JVM locale, so a query answers the same wherever
-        // it runs, and answers what the relational stores do when it is pushed down to them.
-        return PureDateToJava.start().toLocalDate(date).get(WeekFields.ISO.weekOfWeekBasedYear());
+        // Weeks are numbered as the JVM's default format locale numbers them, which is what
+        // Calendar.WEEK_OF_YEAR answered: the locale says which day a week starts on, and how many
+        // days of the year the first week must hold.
+        return PureDateToJava.start().toLocalDate(date).get(WeekFields.of(Locale.getDefault(Locale.Category.FORMAT)).weekOfWeekBasedYear());
     }
 
     public static long dayOfYear(PureDate date, SourceInformation sourceInformation)
