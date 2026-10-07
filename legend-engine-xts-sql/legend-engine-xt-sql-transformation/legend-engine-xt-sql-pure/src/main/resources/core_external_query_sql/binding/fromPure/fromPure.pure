@@ -2126,7 +2126,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     j:JoinCriteria[0..1] | $rightContext
   ]);
 
-  let right = wrapWithFrom($rightFiltered);
+  // A lateral's own column (e.g. UNNEST's default "VALUE") only needs renaming when it collides
+  // with a column already in scope on the left - e.g. two UNNESTs in one FROM clause that both
+  // default to "VALUE". Non-colliding columns keep the bare name this already renders today.
+  let collidingNames = $rightFiltered.aliases.actual()->filter(n | $left.aliases.actual()->contains($n));
+  let rightDeduped = if ($collidingNames->isEmpty(),
+    | $rightFiltered,
+    | processDuplicateRenames($collidingNames, $unwrapped->relationName()->orElse($lateralContext.id->toString()), $rightFiltered));
+  let right = wrapWithFrom($rightDeduped);
 
   // 5. Build lateral lambda: r -> rightExpression
   let lambdaType = ^FunctionType(
