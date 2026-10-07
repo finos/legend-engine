@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.dependencies.domain.date;
 
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormatPattern;
+import org.finos.legend.pure.m4.tools.time.TimeZoneResolution;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -36,9 +37,11 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * so it is parsed as it stands and means exactly what it means to Pure.
  *
  * <p>Two things are not carried over, because what this platform did with them was wrong rather than merely
- * different. A time zone is read as Pure reads one: only at the start of the string, never silently replaced
- * by GMT when its name is not recognized, and written by {@code z} as the string names it. And a two digit
- * year is written as Pure writes it, without a sign.
+ * different. A time zone is read as Pure reads one, only at the start of the string, and written by {@code z}
+ * as the string names it. And a two digit year is written as Pure writes it, without a sign. For now the
+ * zone's name is still resolved as this platform resolved it, through
+ * {@link java.util.TimeZone#getTimeZone(String)}, which reads a name it does not recognize as GMT. That is
+ * wrong too, and is kept only for the transition to Pure's strict resolution.
  *
  * <p>Parsing a string costs more than rendering a date with it, and a serializer renders every date in a result
  * with the same string, so patterns are kept in a small table keyed by their string. A collision overwrites
@@ -73,7 +76,7 @@ final class LegacyDateFormat
         }
 
         String rewritten = rewrite(formatString);
-        DateFormatPattern pattern = DateFormatPattern.parse((rewritten == null) ? formatString : rewritten);
+        DateFormatPattern pattern = DateFormatPattern.parse((rewritten == null) ? formatString : rewritten, TimeZoneResolution.LEGACY);
         CACHE.set(slot, new CachedPattern(formatString, pattern));
         return pattern;
     }
