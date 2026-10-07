@@ -9325,7 +9325,7 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
           let hasEnumVarAndEnumProp = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.currentPropertyMapping->toOne()->map(e| let pm = $e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping;
                                                                                                                                             $pm->isNotEmpty() &&
                                                                                                                                             assert($pm->cast(@RelationalPropertyMapping)->forAll(x | $x.transformer->isNotEmpty() && $x.transformer->toOne()->instanceOf(EnumerationMapping)), | 'Missing an EnumerationMapping for the enum property \'' + $pm->cast(@RelationalPropertyMapping).property.name->at(0) + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.') &&
-                                                                                                                                            assert($pm->cast(@RelationalPropertyMapping)->map(x | $x.transformer->toOne()->cast(@EnumerationMapping<Any>))->removeDuplicatesBy(x | $x->fetchEnumFullPath())->size() == 1, | 'Found multiple enumeration mappings for the enum property \'' + $pm->cast(@RelationalPropertyMapping).property.name->at(0));)->toOne();
+                                                                                                                                            assert($pm->cast(@RelationalPropertyMapping)->map(x | $x.transformer->toOne()->cast(@EnumerationMapping<Any>))->removeDuplicatesBy(x | $x->enumMappingContentKey())->size() == 1, | 'Found multiple enumeration mappings for the enum property \'' + $pm->cast(@RelationalPropertyMapping).property.name->at(0));)->toOne();
           let hasEnumVarAndEnumVal = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.processedParam->toOne()->hasEnumValue();
           if($hasEnumVarAndEnumProp,
               |
@@ -9367,9 +9367,20 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnum
                                    rfpm:RelationFunctionPropertyMapping[1] | $rfpm->cast(@RelationFunctionPropertyMapping).transformer,
                                    p:PropertyMapping[1] | []
                                  ]))
-                               }, [])->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->fetchEnumFullPath());
+                               }, [])->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->enumMappingContentKey());
    assert($enumTransformers->size() <= 1, | 'Found multiple enumeration mappings for projected TDS enum column.');
    if($enumTransformers->isEmpty(), | [], | $enumTransformers->toOne());
+}
+
+// Dedup key for an EnumerationMapping based on its content (enum value -> source values), not its name,
+// so a union's differently-named-but-identical mappings collapse to one instead of tripping the "multiple" assert.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::enumMappingContentKey(enumMapping: EnumerationMapping<Any>[1]): String[1]
+{
+   $enumMapping.enumeration->toOne()->elementToPath() + '::' +
+   $enumMapping.enumValueMappings
+      ->map(evm | $evm.enum.name->toOne() + '=' + $evm.sourceValues->map(v | $v->toString())->sort()->makeString(','))
+      ->sort()
+      ->makeString(';');
 }
 
 function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapper : Literal[1],
