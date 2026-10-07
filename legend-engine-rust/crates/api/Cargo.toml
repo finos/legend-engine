@@ -25,6 +25,7 @@ rust-version.workspace = true
 legend-pure-parser-ast = { workspace = true }
 legend-pure-parser-parser = { workspace = true }
 legend-pure-parser-protocol = { workspace = true }
+memchr = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

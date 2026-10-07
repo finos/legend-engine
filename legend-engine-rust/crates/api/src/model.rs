@@ -187,49 +187,92 @@ struct Token<'a> {
 /// The sections of `text`, which starts with the default header: a header
 /// is a line break, `###` and a name (the lexer's `ValidString`); every
 /// other character, one token each, is its section's content.
+///
+/// Only line breaks can start a header, so the text is read from one line
+/// break to the next (`memchr`); lines are counted at each, and code points
+/// only for the two positions each section needs: its header's column and
+/// its last character's.
 fn split(text: &str) -> Vec<SectionText<'_>> {
     let mut sections = Vec::new();
     let mut current: Option<(Token<'_>, usize)> = None;
-    let mut last = None;
-    let (mut line, mut column) = (1_u32, 0_u32);
-    let mut at = 0;
-    while let Some(c) = text[at..].chars().next() {
-        if let Some(length) = (c == '\n').then(|| header_length(&text[at..])).flatten() {
+    // The line being read, from 1; where it starts, and where the line
+    // before it does.
+    let mut lines = Lines {
+        line: 1,
+        start: 0,
+        previous_start: 0,
+    };
+    for at in memchr::memchr_iter(b'\n', text.as_bytes()) {
+        if let Some(length) = header_length(&text[at..]) {
             if let Some((header, start)) = current.take() {
-                sections.push(section(text, header, start, at, last.take()));
+                sections.push(section(
+                    text,
+                    header,
+                    start,
+                    at,
+                    lines.last(text, start, at),
+                ));
             }
             current = Some((
                 Token {
                     text: &text[at..at + length],
-                    line,
-                    column,
+                    line: lines.line,
+                    column: columns(&text[lines.start..at]),
                 },
                 at + length,
             ));
-            last = None;
-            // The header is a line break, then ASCII characters.
-            line += 1;
-            column = u32::try_from(length - 1).unwrap_or(u32::MAX);
-            at += length;
-            continue;
         }
-        last = Some(Token {
-            text: &text[at..at + c.len_utf8()],
-            line,
-            column,
-        });
-        if c == '\n' {
-            line += 1;
-            column = 0;
-        } else {
-            column += 1;
-        }
-        at += c.len_utf8();
+        lines = Lines {
+            line: lines.line + 1,
+            start: at + 1,
+            previous_start: lines.start,
+        };
     }
     if let Some((header, start)) = current {
-        sections.push(section(text, header, start, text.len(), last));
+        sections.push(section(
+            text,
+            header,
+            start,
+            text.len(),
+            lines.last(text, start, text.len()),
+        ));
     }
     sections
+}
+
+/// Where `split` is: the line it reads and where that line and the one
+/// before it start.
+#[derive(Clone, Copy)]
+struct Lines {
+    line: u32,
+    start: usize,
+    previous_start: usize,
+}
+
+impl Lines {
+    /// The last character of `text[start..end]`, as a token, if there is one;
+    /// `end` is on the line being read.
+    fn last(self, text: &str, start: usize, end: usize) -> Option<Token<'_>> {
+        let (offset, c) = text[start..end].char_indices().next_back()?;
+        let at = start + offset;
+        // A line break ends the line before the one being read; any other
+        // character is on it.
+        let (line, line_start) = if c == '\n' {
+            (self.line - 1, self.previous_start)
+        } else {
+            (self.line, self.start)
+        };
+        Some(Token {
+            text: &text[at..at + c.len_utf8()],
+            line,
+            column: columns(&text[line_start..at]),
+        })
+    }
+}
+
+/// The column after `line`, the start of a line: its code points.
+fn columns(line: &str) -> u32 {
+    u32::try_from(line.chars().count()).unwrap_or(u32::MAX)
 }
 
 fn section<'a>(
@@ -323,6 +366,110 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    /// The split as it was, one character at a time: what `split` must
+    /// still find.
+    fn split_by_character(text: &str) -> Vec<SectionText<'_>> {
+        let mut sections = Vec::new();
+        let mut current: Option<(Token<'_>, usize)> = None;
+        let mut last = None;
+        let (mut line, mut column) = (1_u32, 0_u32);
+        let mut at = 0;
+        while let Some(c) = text[at..].chars().next() {
+            if let Some(length) = (c == '\n').then(|| header_length(&text[at..])).flatten() {
+                if let Some((header, start)) = current.take() {
+                    sections.push(section(text, header, start, at, last.take()));
+                }
+                current = Some((
+                    Token {
+                        text: &text[at..at + length],
+                        line,
+                        column,
+                    },
+                    at + length,
+                ));
+                last = None;
+                line += 1;
+                column = u32::try_from(length - 1).unwrap_or(u32::MAX);
+                at += length;
+                continue;
+            }
+            last = Some(Token {
+                text: &text[at..at + c.len_utf8()],
+                line,
+                column,
+            });
+            if c == '\n' {
+                line += 1;
+                column = 0;
+            } else {
+                column += 1;
+            }
+            at += c.len_utf8();
+        }
+        if let Some((header, start)) = current {
+            sections.push(section(text, header, start, text.len(), last));
+        }
+        sections
+    }
+
+    /// Everything a section holds, for comparing two splits.
+    fn described(sections: &[SectionText<'_>]) -> Vec<String> {
+        let token = |t: &Token<'_>| format!("{:?}@{}:{}", t.text, t.line, t.column);
+        sections
+            .iter()
+            .map(|s| {
+                format!(
+                    "{} {} {:?} {:?}",
+                    s.name,
+                    token(&s.header),
+                    s.content,
+                    s.last.as_ref().map(token)
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn split_finds_what_reading_each_character_does() {
+        let mut texts: Vec<String> = [
+            "",
+            "\n",
+            "a",
+            "Class a::A{}\n###Mapping\nMapping a::M()\n",
+            "###Mapping",
+            "\n###Pure\n###Mapping\n###Pure",
+            "x\n\n###Mapping\n\n",
+            "é\n###Mapping é\u{1F600}x\n###Pure\u{1F600}",
+            "a\r\n###Mapping\r\nb\r\n",
+            "a\n  ###Mapping\n",
+            "a\n###\nb",
+            "a\n###$x\n###Pure$x Class\n###1abc\n###Mappingé\n",
+            "\u{1F600}\u{1F600}\n\u{1F600}###Pure\n###Pure\u{1F600}\n\u{1F600}",
+        ]
+        .iter()
+        .map(|code| format!("{DEFAULT_SECTION_BEGIN}{code}"))
+        .collect();
+        // Every section of the engine corpus, as a model's code.
+        let corpus = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/engine-corpus/sections");
+        if let Ok(entries) = std::fs::read_dir(&corpus) {
+            for entry in entries.flatten() {
+                if entry.path().extension().is_some_and(|e| e == "pure") {
+                    let code = std::fs::read_to_string(entry.path()).expect("readable");
+                    texts.push(format!("{DEFAULT_SECTION_BEGIN}{code}"));
+                }
+            }
+        }
+        assert!(texts.len() > 1000, "the engine corpus is missing");
+        for text in &texts {
+            assert_eq!(
+                described(&split(text)),
+                described(&split_by_character(text)),
+                "{text:?}"
+            );
+        }
     }
 
     #[test]

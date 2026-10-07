@@ -60,20 +60,55 @@ pub struct SourceInformation {
 /// `sourceId:line:column-line:column` across lines.
 impl fmt::Display for SourceInformation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.start_line == self.end_line {
-            write!(
-                f,
-                "{}:{}:{}-{}",
-                self.source_id, self.start_line, self.start_column, self.end_column
-            )
+        self.with_text(|text| f.write_str(text.map_err(|_| fmt::Error)?))
+    }
+}
+
+/// Four numbers of at most ten digits each, and their four separators.
+const NUMBERS: usize = 44;
+
+/// The compact form fits on the stack with a source id of up to `STACK - NUMBERS` bytes.
+const STACK: usize = 256;
+
+impl SourceInformation {
+    /// Hands `use_text` the compact form, written with `itoa` into a buffer on the stack (on the heap for a very long
+    /// source id). Positions are among the protocol JSON's most frequent values: written through `core::fmt`, each
+    /// fragment escaped on its own, they cost more than the rest of their serialization.
+    fn with_text<R>(&self, use_text: impl FnOnce(Result<&str, std::str::Utf8Error>) -> R) -> R {
+        let length = self.source_id.len() + NUMBERS;
+        if length <= STACK {
+            let mut stack = [0_u8; STACK];
+            let written = self.write_text(&mut stack);
+            use_text(std::str::from_utf8(&stack[..written]))
         } else {
-            write!(
-                f,
-                "{}:{}:{}-{}:{}",
-                self.source_id, self.start_line, self.start_column, self.end_line, self.end_column
-            )
+            let mut heap = vec![0_u8; length];
+            let written = self.write_text(&mut heap);
+            use_text(std::str::from_utf8(&heap[..written]))
         }
     }
+
+    /// Writes the compact form into `out`, which has room for the source id and [`NUMBERS`] bytes; returns its length.
+    fn write_text(&self, out: &mut [u8]) -> usize {
+        let mut digits = itoa::Buffer::new();
+        let mut at = put(out, 0, self.source_id.as_bytes());
+        at = put(out, at, b":");
+        at = put(out, at, digits.format(self.start_line).as_bytes());
+        at = put(out, at, b":");
+        at = put(out, at, digits.format(self.start_column).as_bytes());
+        at = put(out, at, b"-");
+        if self.start_line != self.end_line {
+            at = put(out, at, digits.format(self.end_line).as_bytes());
+            at = put(out, at, b":");
+        }
+        put(out, at, digits.format(self.end_column).as_bytes())
+    }
+}
+
+/// Copies `bytes` into `out` at `at`; returns where they end.
+fn put(out: &mut [u8], at: usize, bytes: &[u8]) -> usize {
+    let end = at + bytes.len();
+    out[at..end].copy_from_slice(bytes);
+    end
 }
 
 /// A string that is not a source information's compact form.
@@ -150,7 +185,7 @@ fn take(text: &mut &str, separator: char) -> bool {
 
 impl Serialize for SourceInformation {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.collect_str(self)
+        self.with_text(|text| serializer.serialize_str(text.map_err(serde::ser::Error::custom)?))
     }
 }
 

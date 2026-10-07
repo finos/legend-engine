@@ -115,6 +115,8 @@ tracing = "0.1"
 rayon = "1"
 
 # Serialization (protocol + island protocol modules)
+itoa = "1"
+memchr = "2"
 serde = { version = "1", features = ["derive"] }
 # `arbitrary_precision`: numbers keep their text (decimals their scale, as the
 # engine's `BigDecimal`) through `serde_json::Value`.

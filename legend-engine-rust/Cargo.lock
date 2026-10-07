@@ -724,6 +724,7 @@ dependencies = [
  "legend-pure-parser-ast",
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
+ "memchr",
  "serde",
  "serde_json",
 ]
@@ -815,6 +816,7 @@ name = "legend-pure-parser-protocol"
 version = "0.1.0"
 dependencies = [
  "insta",
+ "itoa",
  "legend-pure-parser-ast",
  "legend-pure-parser-lexer",
  "legend-pure-parser-parser",
