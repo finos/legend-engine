@@ -325,19 +325,28 @@ jobs:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
-      - name: Stage SQL Parity Report
+      - name: Stage SQL Documentation
         if: ${{ matrix.name == 'sql' }}
         shell: bash
         run: |
-          mkdir -p ${GITHUB_WORKSPACE}/sql-parity
-          cp -v legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests/target/*.html ${GITHUB_WORKSPACE}/sql-parity/
+          SQL_TARGET=legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests/target
+          mkdir -p ${GITHUB_WORKSPACE}/sql-docs
+          # Flat parity reports (function-coverage, structural-parity, failure-details, summary, ...)
+          cp -v $SQL_TARGET/*.html ${GITHUB_WORKSPACE}/sql-docs/
+          cp -v $SQL_TARGET/*.md ${GITHUB_WORKSPACE}/sql-docs/ 2>/dev/null || true
+          cp -v $SQL_TARGET/parity-report.json ${GITHUB_WORKSPACE}/sql-docs/ 2>/dev/null || true
+          # Unified static parity site (index.html, functions/, operators/, structural/, test/, assets/)
+          if [ -d "$SQL_TARGET/site" ]; then
+            mkdir -p ${GITHUB_WORKSPACE}/sql-docs/site
+            cp -rv $SQL_TARGET/site/. ${GITHUB_WORKSPACE}/sql-docs/site/
+          fi
 
       - name: Upload SQL Parity Report
         if: ${{ matrix.name == 'sql' }}
         uses: actions/upload-artifact@v7
         with:
-          name: sql-parity-report
-          path: ${{ github.workspace }}/sql-parity/*.html
+          name: sql-docs-report
+          path: ${{ github.workspace }}/sql-docs/
 
   benchmark:
     name: Pipeline Benchmark
@@ -526,8 +535,8 @@ jobs:
       - name: Download SQL Parity Report
         uses: actions/download-artifact@v8
         with:
-          name: sql-parity-report
-          path: sql-parity
+          name: sql-docs-report
+          path: sql-docs
 
       - name: Checkout Legend Docs
         uses: actions/checkout@v6
@@ -544,9 +553,9 @@ jobs:
         run: |
           mkdir -p legend-docs/website/static/pct/
           cp -rvT pct/. legend-docs/website/static/pct/
-          mkdir -p legend-docs/website/static/sql-parity/
-          cp -rvT sql-parity/. legend-docs/website/static/sql-parity/
-          cat > legend-docs/website/static/sql-parity/git-info.json <<EOF
+          mkdir -p legend-docs/website/static/sql-docs/
+          cp -rvT sql-docs/. legend-docs/website/static/sql-docs/
+          cat > legend-docs/website/static/sql-docs/git-info.json <<EOF
           {
             "git.commit.id": "${{ github.sha }}",
             "git.build.time": "$(date -u +%Y-%m-%dT%H:%M:%S%z)"

@@ -1,11 +1,11 @@
 tests:
 
   - id: array_to_string__anyarray_txt__no_generator
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT ARRAY_TO_STRING(ARRAY['a', 'b', 'c'], ',') AS result FROM persons WHERE id = 1
     function: array_to_string
     signature: array_to_string(anyarray, text) → text
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: array_to_string__anyarray_txt_txt__from_table
     sql: SELECT ARRAY_TO_STRING(ARRAY[val, nullable_val], ', ') AS result FROM strings ORDER BY 1
@@ -22,18 +22,18 @@ tests:
     expected_rel_status: PASS
 
   - id: bit_length__bit__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT BIT_LENGTH(B'1010') AS result FROM persons WHERE id = 1
     function: bit_length
     signature: bit_length(bit) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: bit_length__bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT BIT_LENGTH(E'\\xDEADBEEF'::bytea) AS result FROM persons WHERE id = 1
     function: bit_length
     signature: bit_length(bytea) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: bit_length__txt__from_table
     sql: SELECT BIT_LENGTH(val) AS result FROM strings ORDER BY 1
@@ -43,11 +43,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: btrim__bytea_bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT BTRIM(E'\\x00DEADBEEF00'::bytea, E'\\x00'::bytea) AS result FROM persons WHERE id = 1
     function: btrim
     signature: btrim(bytea, bytea) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: btrim__txt__from_table
     sql: SELECT BTRIM(val) AS result FROM strings ORDER BY 1
@@ -64,11 +64,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: char_length__char__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT CHAR_LENGTH('hello'::character(10)) AS result FROM persons WHERE id = 1
     function: char_length
     signature: char_length(character) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: char_length__txt__from_table
     sql: SELECT CHAR_LENGTH(val) AS result FROM strings ORDER BY 1
@@ -78,11 +78,11 @@ tests:
     expected_rel_status: PASS
 
   - id: character_length__char__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT CHARACTER_LENGTH('hello'::character(10)) AS result FROM persons WHERE id = 1
     function: character_length
     signature: character_length(character) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: character_length__txt__from_table
     sql: SELECT CHARACTER_LENGTH(val) AS result FROM strings ORDER BY 1
@@ -162,18 +162,18 @@ tests:
     expected_rel_status: FAIL
 
   - id: decode__txt_txt__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT DECODE('deadbeef', 'hex') AS result FROM persons WHERE id = 1
     function: decode
     signature: decode(text, text) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: encode__bytea_txt__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT ENCODE(E'\\xDEADBEEF'::bytea, 'hex') AS result FROM persons WHERE id = 1
     function: encode
     signature: encode(bytea, text) → text
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: format__txt__from_table
     sql: SELECT FORMAT('Hello World') AS result FROM strings WHERE id = 1
@@ -218,46 +218,46 @@ tests:
     expected_rel_status: PASS
 
   - id: length__bit__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH(B'1010') AS result FROM persons WHERE id = 1
     function: length
     signature: length(bit) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: length__bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH(E'\\xDEADBEEF'::bytea) AS result FROM persons WHERE id = 1
     function: length
     signature: length(bytea) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: length__bytea_name__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH(E'\\xDEADBEEF'::bytea, 'UTF8') AS result FROM persons WHERE id = 1
     function: length
     signature: length(bytea, name) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   - id: length__char__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH('hello'::character(10)) AS result FROM persons WHERE id = 1
     function: length
     signature: length(character) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: length__lseg__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH('[(0,0),(3,4)]'::lseg) AS result FROM persons WHERE id = 1
     function: length
     signature: length(lseg) → double precision
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: length__path__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH('((0,0),(1,1),(2,0))'::path) AS result FROM persons WHERE id = 1
     function: length
     signature: length(path) → double precision
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: length__txt__from_table
     sql: SELECT LENGTH(val) AS result FROM strings ORDER BY 1
@@ -274,25 +274,25 @@ tests:
     expected_rel_status: PASS
 
   - id: length__tsvector__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LENGTH(to_tsvector('english', 'the quick brown fox')) AS result FROM persons WHERE id = 1
     function: length
     signature: length(tsvector) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: lower__anymultirange__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LOWER(int4multirange(int4range(1,5))) AS result FROM persons WHERE id = 1
     function: lower
     signature: lower(anymultirange) → anyelement
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: lower__anyrange__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LOWER(int4range(1,5)) AS result FROM persons WHERE id = 1
     function: lower
     signature: lower(anyrange) → anyelement
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: lower__txt__from_table
     sql: SELECT LOWER(val) AS result FROM strings ORDER BY 1
@@ -323,11 +323,11 @@ tests:
     expected_rel_status: PASS
 
   - id: ltrim__bytea_bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT LTRIM(E'\\x00DEADBEEF00'::bytea, E'\\x00'::bytea) AS result FROM persons WHERE id = 1
     function: ltrim
     signature: ltrim(bytea, bytea) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: ltrim__txt__from_table
     sql: SELECT LTRIM(val) AS result FROM strings ORDER BY 1
@@ -344,11 +344,11 @@ tests:
     expected_rel_status: PASS
 
   - id: md5__bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT MD5(E'\\xDEADBEEF'::bytea) AS result FROM persons WHERE id = 1
     function: md5
     signature: md5(bytea) → text
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: md5__txt__from_table
     sql: SELECT MD5(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
@@ -365,25 +365,25 @@ tests:
     expected_rel_status: ERROR
 
   - id: octet_length__bit__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OCTET_LENGTH(B'1010') AS result FROM persons WHERE id = 1
     function: octet_length
     signature: octet_length(bit) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: octet_length__bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OCTET_LENGTH(E'\\xDEADBEEF'::bytea) AS result FROM persons WHERE id = 1
     function: octet_length
     signature: octet_length(bytea) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: octet_length__char__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OCTET_LENGTH('hello'::character(10)) AS result FROM persons WHERE id = 1
     function: octet_length
     signature: octet_length(character) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: octet_length__txt__from_table
     sql: SELECT OCTET_LENGTH(val) AS result FROM strings ORDER BY 1
@@ -393,32 +393,32 @@ tests:
     expected_rel_status: ERROR
 
   - id: overlay__bit_bit_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OVERLAY(B'1010101010' PLACING B'1111' FROM 3) AS result FROM persons WHERE id = 1
     function: overlay
     signature: overlay(bit, bit, integer) → bit
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: overlay__bit_bit_int_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OVERLAY(B'1010101010' PLACING B'1111' FROM 3 FOR 2) AS result FROM persons WHERE id = 1
     function: overlay
     signature: overlay(bit, bit, integer, integer) → bit
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: overlay__bytea_bytea_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OVERLAY(E'\\xDEADBEEF'::bytea PLACING E'\\xFF'::bytea FROM 2) AS result FROM persons WHERE id = 1
     function: overlay
     signature: overlay(bytea, bytea, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: overlay__bytea_bytea_int_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT OVERLAY(E'\\xDEADBEEF'::bytea PLACING E'\\xFF'::bytea FROM 2 FOR 1) AS result FROM persons WHERE id = 1
     function: overlay
     signature: overlay(bytea, bytea, integer, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: overlay__txt_txt_int__special_syntax
     sql: SELECT OVERLAY(val PLACING 'XX' FROM 1) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
@@ -442,18 +442,18 @@ tests:
     expected_rel_status: ERROR
 
   - id: position__bit_bit__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT POSITION(B'11' IN B'1011') AS result FROM persons WHERE id = 1
     function: position
     signature: position(bit, bit) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: position__bytea_bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT POSITION(E'\\xAD'::bytea IN E'\\xDEADBEEF'::bytea) AS result FROM persons WHERE id = 1
     function: position
     signature: position(bytea, bytea) → integer
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: position__txt_txt__from_table
     sql: SELECT POSITION('lo' IN val) AS result FROM strings ORDER BY 1
@@ -470,11 +470,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: quote_literal__anyelement__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT QUOTE_LITERAL(age) AS result FROM persons WHERE id = 1
     function: quote_literal
     signature: quote_literal(anyelement) → text
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: quote_literal__txt__from_table
     sql: SELECT QUOTE_LITERAL(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
@@ -484,11 +484,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: quote_nullable__anyelement__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT QUOTE_NULLABLE(age) AS result FROM persons WHERE id = 1
     function: quote_nullable
     signature: quote_nullable(anyelement) → text
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: quote_nullable__txt__from_table
     sql: SELECT QUOTE_NULLABLE(nullable_val) AS result FROM strings ORDER BY 1
@@ -832,11 +832,11 @@ tests:
     expected_rel_status: PASS
 
   - id: rtrim__bytea_bytea__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT RTRIM(E'\\x00DEADBEEF00'::bytea, E'\\x00'::bytea) AS result FROM persons WHERE id = 1
     function: rtrim
     signature: rtrim(bytea, bytea) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: rtrim__txt__from_table
     sql: SELECT RTRIM(val) AS result FROM strings ORDER BY 1
@@ -888,18 +888,18 @@ tests:
     expected_rel_status: PASS
 
   - id: substr__bytea_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTR(E'\\xDEADBEEF'::bytea, 2) AS result FROM persons WHERE id = 1
     function: substr
     signature: substr(bytea, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substr__bytea_int_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTR(E'\\xDEADBEEF'::bytea, 2, 2) AS result FROM persons WHERE id = 1
     function: substr
     signature: substr(bytea, integer, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substr__txt_int__from_table
     sql: SELECT SUBSTR(val, 2) AS result FROM strings ORDER BY 1
@@ -916,32 +916,32 @@ tests:
     expected_rel_status: PASS
 
   - id: substring__bit_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTRING(B'1010101010', 3) AS result FROM persons WHERE id = 1
     function: substring
     signature: substring(bit, integer) → bit
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substring__bit_int_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTRING(B'1010101010', 3, 2) AS result FROM persons WHERE id = 1
     function: substring
     signature: substring(bit, integer, integer) → bit
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substring__bytea_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTRING(E'\\xDEADBEEF'::bytea, 2) AS result FROM persons WHERE id = 1
     function: substring
     signature: substring(bytea, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substring__bytea_int_int__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT SUBSTRING(E'\\xDEADBEEF'::bytea, 2, 2) AS result FROM persons WHERE id = 1
     function: substring
     signature: substring(bytea, integer, integer) → bytea
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: substring__txt_int__from_table
     sql: SELECT SUBSTRING(val, 2) AS result FROM strings ORDER BY 1
@@ -1014,18 +1014,18 @@ tests:
     expected_rel_status: ERROR
 
   - id: upper__anymultirange__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT UPPER(int4multirange(int4range(1,5))) AS result FROM persons WHERE id = 1
     function: upper
     signature: upper(anymultirange) → anyelement
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: upper__anyrange__unsupported_type
-    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    sql: SELECT UPPER(int4range(1,5)) AS result FROM persons WHERE id = 1
     function: upper
     signature: upper(anyrange) → anyelement
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: upper__txt__from_table
     sql: SELECT UPPER(val) AS result FROM strings ORDER BY 1

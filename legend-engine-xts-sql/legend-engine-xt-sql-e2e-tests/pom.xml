@@ -102,7 +102,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/sql-parity</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/sql-docs</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}</directory>
@@ -117,6 +117,25 @@
                                         <include>summary.html</include>
                                         <include>parity-report.json</include>
                                     </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- Copy the generated static parity site (index.html, functions/*.html,
+                         operators/*.html, structural/*.html, test/*.html, and assets/app.css +
+                         assets/app.js) into the JAR as a directory tree, since ParitySiteGenerator
+                         produces many files rather than a fixed flat list. -->
+                    <execution>
+                        <id>copy-site</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/sql-docs/site</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/site</directory>
                                 </resource>
                             </resources>
                         </configuration>

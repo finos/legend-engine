@@ -35,6 +35,7 @@ import org.finos.legend.engine.postgres.e2e.coverage.OperatorCoverageMapper;
 import org.finos.legend.engine.postgres.e2e.coverage.OperatorCoverageReport;
 import org.finos.legend.engine.postgres.e2e.coverage.StructuralParityReport;
 import org.finos.legend.engine.postgres.e2e.coverage.SummaryReport;
+import org.finos.legend.engine.postgres.e2e.coverage.site.DocumentationSiteGenerator;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
@@ -810,10 +811,61 @@ public class TestPostgresParity
 
             // Generate HTML versions of the markdown reports
             new HtmlReportGenerator().generateAll("target");
+
+            // Unified static parity site (docs/parity-site-plan.md). Best-effort: a failure
+            // here must not fail the whole test run, since the site is a convenience view
+            // over data already captured by the reports above.
+            try
+            {
+                new DocumentationSiteGenerator().generate(
+                        functionCatalog,
+                        operatorCatalog,
+                        allTestCases,
+                        new File("target/parity-report.json"),
+                        report.getResults(),
+                        legendRevision(),
+                        "target/site");
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Failed to generate parity site", e);
+            }
         }
         catch (Exception e)
         {
             LOGGER.error("Failed to generate coverage reports", e);
         }
+    }
+
+    /**
+     * Resolves the Legend revision label for the site header: the Maven CI-friendly
+     * {@code revision} property when running under Maven, falling back to the short git
+     * SHA (plan &sect;11 decision 2).
+     */
+    private static String legendRevision()
+    {
+        String mavenRevision = System.getProperty("revision");
+        if (mavenRevision != null && !mavenRevision.isEmpty())
+        {
+            return mavenRevision;
+        }
+        try
+        {
+            Process p = new ProcessBuilder("git", "rev-parse", "--short", "HEAD").start();
+            try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())))
+            {
+                String sha = r.readLine();
+                p.waitFor();
+                if (sha != null && !sha.isEmpty())
+                {
+                    return sha.trim();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.debug("Could not resolve git revision", e);
+        }
+        return "unknown";
     }
 }

@@ -27,6 +27,7 @@ public final class DocLinks
     public static final String PG_DOCS_VERSION = OperatorCatalogExtractor.PG_DOCS_VERSION;
 
     private static final Map<String, String> SLUGS = new HashMap<>();
+    private static final Map<String, String> FILE_SLUGS = new HashMap<>();
 
     static
     {
@@ -60,6 +61,73 @@ public final class DocLinks
         SLUGS.put(OperatorCatalogExtractor.CAT_NETWORK, "functions-net");
         SLUGS.put(OperatorCatalogExtractor.CAT_GEOMETRIC, "functions-geometry");
         SLUGS.put(OperatorCatalogExtractor.CAT_FTS, "textsearch");
+
+        // Structural/composition categories (StructuralParityReport category keys, from the
+        // `category:` field in parity-tests/structural, /window_frames and /compositions). These
+        // are SQL language constructs rather than catalog functions, so they map to the PG docs
+        // chapter that defines each construct instead of a functions-* reference page.
+        SLUGS.put("joins", "queries-table-expressions");
+        SLUGS.put("lateral_joins", "queries-table-expressions");
+        SLUGS.put("where_predicates", "queries-table-expressions");
+        SLUGS.put("group_by", "queries-table-expressions");
+        SLUGS.put("grouping_sets", "queries-table-expressions");
+        SLUGS.put("having", "queries-table-expressions");
+        SLUGS.put("aliases", "queries-table-expressions");
+        SLUGS.put("column_resolution", "queries-table-expressions");
+        SLUGS.put("column_resolution_corpus", "queries-table-expressions");
+        SLUGS.put("tablesample", "queries-table-expressions");
+        SLUGS.put("values_clause", "queries-values");
+        SLUGS.put("distinct", "queries-select-lists");
+        SLUGS.put("select_star", "queries-select-lists");
+        SLUGS.put("order_limit_offset", "queries-limit");
+        SLUGS.put("fetch_with_ties", "sql-select");
+        SLUGS.put("set_operations", "queries-union");
+        SLUGS.put("ctes", "queries-with");
+        SLUGS.put("recursive_ctes", "queries-with");
+        SLUGS.put("subqueries", "functions-subquery");
+        SLUGS.put("case_expressions", "functions-conditional");
+        SLUGS.put("boolean_logic", "functions-logical");
+        SLUGS.put("null_semantics", "functions-comparison");
+        SLUGS.put("type_casting", "sql-expressions");
+        SLUGS.put("filter_clause", "sql-expressions");
+        SLUGS.put("window_frames", "sql-expressions");
+        SLUGS.put("window_partitioning", "sql-expressions");
+        SLUGS.put("within_group", "functions-aggregate");
+        SLUGS.put("json_operators", "functions-json");
+        SLUGS.put("interval_arithmetic", "functions-datetime");
+        SLUGS.put("multiple_schemas", "ddl-schemas");
+        SLUGS.put("compositions", "queries");
+
+        // Short page-tree slugs for the parity site (plan §3) ? deliberately distinct from
+        // the PG docs URL slugs above, e.g. "functions-string" (docs) vs "string" (our file).
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_MATH, "math");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_STRING, "string");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_BINARY, "binary");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_PATTERN, "pattern-matching");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_FORMAT, "formatting");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_DATETIME, "datetime");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_CONDITIONAL, "conditional");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_JSON, "json");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_ARRAY, "array");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_AGGREGATE, "aggregate");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_WINDOW, "window");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_NETWORK, "network");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_SYSTEM, "system");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_SEQUENCE, "sequence");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_SET_RETURNING, "set-returning");
+        FILE_SLUGS.put(FunctionCatalogExtractor.CAT_CRYPTOGRAPHIC, "cryptographic");
+
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_LOGICAL, "logical");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_COMPARISON, "comparison");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_MATH, "math");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_STRING, "string");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_BITSTRING, "bitstring");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_ARRAY, "array");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_RANGE, "range");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_JSON, "json");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_NETWORK, "network");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_GEOMETRIC, "geometric");
+        FILE_SLUGS.put(OperatorCatalogExtractor.CAT_FTS, "fts");
     }
 
     private DocLinks()
@@ -88,6 +156,26 @@ public final class DocLinks
     {
         String url = urlFor(category);
         return url == null ? category : "[" + category + "](" + url + ")";
+    }
+
+    /**
+     * Returns a filesystem/URL-safe slug for the given category heading, suitable as an
+     * HTML page basename. Uses the site's short page-tree name when known (plan &sect;3,
+     * e.g. "String Functions and Operators (9.4)" -&gt; "string"); otherwise derives one
+     * from the heading text (e.g. "Other Functions" -&gt; "other").
+     */
+    public static String slugFor(String category)
+    {
+        String slug = FILE_SLUGS.get(category);
+        if (slug != null)
+        {
+            return slug;
+        }
+        String base = category.replaceAll("\\s*\\([^)]*\\)\\s*$", "");
+        base = base.replaceAll("(?i)^(Functions and Operators|Operators|Functions)$", "$1");
+        return base.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-+|-+$)", "");
     }
 }
 
