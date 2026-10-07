@@ -1,0 +1,76 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Pure Dev Plugin CI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'plugins/pure-dev/**'
+      - '.claude-plugin/**'
+      - 'marketplace-schema.json'
+      - 'plugin-schema.json'
+      - '.github/workflows/pure-dev-plugin.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'plugins/pure-dev/**'
+      - '.claude-plugin/**'
+      - 'marketplace-schema.json'
+      - 'plugin-schema.json'
+      - '.github/workflows/pure-dev-plugin.yml'
+
+concurrency:
+  group: ${{ github.ref == 'refs/heads/master' && format('pure-dev-ci-default-branch-{0}', github.sha) || format('pure-dev-ci-pr-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  validate-manifests:
+    name: Validate plugin/marketplace manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install check-jsonschema
+      - run: check-jsonschema --schemafile marketplace-schema.json .claude-plugin/marketplace.json
+      - run: check-jsonschema --schemafile plugin-schema.json plugins/pure-dev/.claude-plugin/plugin.json
+      - run: python3 .claude-plugin/check-manifests.py
+
+  shellcheck:
+    name: Shellcheck the pure-dev CLIs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          scripts=$(grep -lE '^#!.*(bash|/sh)' plugins/pure-dev/bin/* || true)
+          shellcheck $scripts
+
+  test:
+    name: Pure dev-loop bridge tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - uses: astral-sh/setup-uv@v3
+      - working-directory: plugins/pure-dev
+        run: uv sync --group test
+      - working-directory: plugins/pure-dev
+        run: uv run pytest --cov=pure_lsp_bridge --cov-report=term

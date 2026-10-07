@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""PostToolUse hook: keep the running Pure LSP session's overlay in sync with .pure files the
+agent edits/creates/deletes on disk, mirroring the file-change events a real IDE would send.
+
+Reads the PostToolUse JSON payload on stdin. For each affected .pure file:
+  - created/modified (Write/Edit/MultiEdit, or a bash content-write) -> POST /check  (didChange)
+  - deleted            (bash `rm ... file.pure`)                     -> POST /delete  (unload)
+
+Design constraints (per the dev-loop requirements):
+  * The LSP being up is OPTIONAL. If the bridge is not reachable, do nothing and exit 0.
+  * Never block or annoy: always exit 0, emit nothing on success, and swallow all errors. A hook
+    that fails must never interfere with the agent's real work.
+  * Best-effort and fast: a short connect timeout, and we skip entirely if the bridge is down.
+
+Port discovery: $PURE_LSP_PORT, else a live bridge found via its sidecar, else 8991 - see
+pure_lsp_bridge.discovery. This used to be a hardcoded 8992, which no launcher ever binds
+(pure-lsp-launch-engine uses 8991), so the hook silently no-opped
+against every real session - and since a silent no-op is exactly its designed behaviour when
+the bridge is down, there was no way to notice. Host is always 127.0.0.1 (the bridge only ever
+binds loopback).
+"""
+import json
+import os
+import re
+import sys
+import urllib.request
+
+# This script is invoked directly (and via a ~/.local/bin symlink), not imported as part of the
+# package, so put the bundled src/ on the path to share the one port-resolution implementation
+# rather than re-hardcoding a literal here. realpath, not abspath: the symlink must resolve to
+# the real plugin checkout. Any failure falls back to the same default discovery would pick.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "src"))
+try:
+    from pure_lsp_bridge.discovery import resolve_port
+except Exception:  # pragma: no cover - defensive; a hook must never fail to load
+    def resolve_port():
+        try:
+            return int(os.environ.get("PURE_LSP_PORT") or 8991)
+        except ValueError:
+            return 8991
+
+HOST = "127.0.0.1"
+# Short timeouts: this runs on every tool call, so it must be cheap. If the bridge is slow/down we
+# bail rather than delay the agent.
+HEALTH_TIMEOUT = 1.5
+OP_TIMEOUT = 20.0
+
+
+def _post(base, path, obj, timeout):
+    req = urllib.request.Request(
+        base + path,
+        data=json.dumps(obj).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read().decode("utf-8")
+
+
+READY_STATES = ("ready", "degraded")
+
+
+def _bridge_ready(base):
+    """True only if the bridge is up AND its Pure runtime is in a usable state (ready/degraded).
+
+    We deliberately check /status state, not /health 'alive': during the ~3-min engine-scale boot the
+    java process is alive but the runtime is 'initializing', and pushing a file to a not-ready runtime
+    blocks until it becomes ready - which would add multi-second latency to an agent tool call. Any
+    failure, an unreachable bridge, or a non-ready state -> False (the LSP is optional; do nothing).
+    """
+    try:
+        req = urllib.request.Request(base + "/status", method="GET")
+        with urllib.request.urlopen(req, timeout=HEALTH_TIMEOUT) as r:
+            state = json.loads(r.read().decode("utf-8")).get("state")
+            return state in READY_STATES
+    except Exception:
+        return False
+
+
+def _file_uri(path):
+    return "file://" + path
+
+
+def _sync_modified(base, path):
+    # Push current on-disk content as a didChange/didOpen so the session matches disk.
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception:
+        return
+    try:
+        _post(base, "/check", {"uri": _file_uri(path), "content": content}, OP_TIMEOUT)
+    except Exception:
+        pass
+
+
+def _sync_deleted(base, path):
+    try:
+        _post(base, "/delete", {"uri": _file_uri(path)}, OP_TIMEOUT)
+    except Exception:
+        pass
+
+
+def _paths_from_tool(tool_name, tool_input):
+    """Returns (modified_paths, deleted_paths) of absolute .pure paths implied by this tool call."""
+    modified = []
+    deleted = []
+
+    if tool_name in ("Write", "Edit", "MultiEdit"):
+        # All three carry a single absolute file_path (MultiEdit applies several edits to one file).
+        p = tool_input.get("file_path")
+        if p and p.endswith(".pure"):
+            # A Write/Edit that removed the file is unusual; treat existence as the signal.
+            if os.path.exists(p):
+                modified.append(p)
+            else:
+                deleted.append(p)
+
+    elif tool_name == "Bash":
+        cmd = tool_input.get("command", "") or ""
+        # Examine each shell segment independently. The previous version asked one global
+        # question - `if "rm " not in cmd` - before looking for writes at all, so a compound
+        # command like `rm a.pure && echo x > b.pure` took the delete path for the whole thing
+        # and silently dropped b.pure, leaving the session stale on a file that had just changed.
+        for segment in re.split(r"&&|\|\||[;&|\n]", cmd):
+            is_rm = re.search(r"\brm\b", segment) is not None
+            for tok in re.findall(r"[^\s'\"]+\.pure", segment):
+                tok = tok.strip("'\"")
+                if not os.path.isabs(tok):
+                    continue
+                if os.path.exists(tok):
+                    # Still on disk: a write target, or an rm that missed / hit a copy. Resync
+                    # either way. (Also why a `--rm` flag elsewhere in the command is harmless.)
+                    if tok not in modified:
+                        modified.append(tok)
+                elif is_rm and tok not in deleted:
+                    deleted.append(tok)
+
+    return modified, deleted
+
+
+def main():
+    try:
+        payload = json.load(sys.stdin)
+    except Exception:
+        return 0
+
+    tool_name = payload.get("tool_name")
+    tool_input = payload.get("tool_input") or {}
+    if tool_name not in ("Write", "Edit", "MultiEdit", "Bash"):
+        return 0
+
+    modified, deleted = _paths_from_tool(tool_name, tool_input)
+    if not modified and not deleted:
+        return 0
+
+    base = "http://%s:%d" % (HOST, resolve_port())
+
+    # The LSP is optional: only touch it if it's up AND its runtime is ready (not mid-boot/recovery).
+    if not _bridge_ready(base):
+        return 0
+
+    for p in dict.fromkeys(deleted):
+        _sync_deleted(base, p)
+    for p in dict.fromkeys(modified):
+        _sync_modified(base, p)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception:
+        # Absolutely never let a hook failure surface.
+        sys.exit(0)

@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-restart - restart a Legend Pure LSP daemon (the java LegendPureLspServer process) and
+# its bridge (the python pure_lsp_bridge.server_cli process fronting it) after the runtime has
+# gone `recovering`/`failed`. A bad request can knock the runtime into `recovering`, and that
+# recovery can silently fail (status keeps saying "recovering" while the runtime is actually dead,
+# or flips to "failed"), so waiting it out is not an option - see pure-lsp-status. The fix is to
+# kill the daemon and relaunch the bridge with its exact original argv; this script automates that
+# mechanically. It does not decide WHETHER to restart - the caller reads `pure-lsp status` first.
+#
+# Usage:
+#   pure-lsp-restart [--socket-port N] [--dry-run]
+#
+# Defaults: --socket-port 9100 (matches pure-lsp-connect's standing convention for LegendLspServer).
+#
+# --dry-run runs the full discovery (bridge pid + captured argv, daemon pid) and prints exactly
+# what WOULD be killed/relaunched, without executing any kill or relaunch. This is a permanent,
+# real mode of the script (not a one-off testing hack) - use it to sanity-check before touching a
+# shared daemon.
+#
+# After the bridge is ready, each --repo-root's welcome.pure is checked into the new session, as
+# pure-lsp-launch does on a cold start.
+#
+# Exit codes:
+#   0 = restarted and the bridge reports state "ready" within the timeout (or, under --dry-run, a
+#       valid restart plan was found and printed - nothing was actually touched)
+#   2 = nothing found on --socket-port: no bridge process and no java daemon listening - nothing to
+#       restart (it may already be fully dead; use pure-lsp-connect/pure-lsp-launch-* to boot fresh)
+#   3 = a bridge process was found, but the java daemon pid listening on --socket-port could not be
+#       determined (ss/proc fallback both failed) - aborts without killing/relaunching anything
+#   4 = a java daemon is listening but no bridge process (with a capturable argv) is attached to it
+#       - there is no known invocation to relaunch with; use pure-lsp-connect instead
+#   5 = the daemon/bridge were killed and the bridge relaunched, but it did not reach "ready" within
+#       the poll timeout (see stderr and the bridge log for diagnostics)
+#
+# On success (real run or --dry-run), prints a single JSON summary line to stdout, e.g.:
+#   {"bridgeHttpPort": 8991, "socketPort": 9100, "state": "ready", "repositoryCount": 143, "symbolCount": 40756}
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+BIN_DIR="$DIR/bin"
+
+SOCKET_PORT=9100
+DRY_RUN=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --socket-port) SOCKET_PORT="$2"; shift 2 ;;
+    --dry-run) DRY_RUN=1; shift ;;
+    *) echo "ERROR: unknown argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+log() { echo "[pure-lsp-restart] $*" >&2; }
+
+# shellcheck source=SCRIPTDIR/pure-lsp-common
+. "$BIN_DIR/pure-lsp-common"
+
+# --- Step 1: find the bridge process attached to this socket port, capture its argv verbatim ---
+# find_bridge_pid confirms every candidate against /proc rather than trusting `pgrep -f` alone.
+# That matters most HERE: pgrep -f also matches shells whose command line contains the search
+# text, and this script SIGKILLs whatever it picks. See pure-lsp-common.
+BRIDGE_PID="$(find_bridge_pid "$SOCKET_PORT" || true)"
+
+declare -a BRIDGE_ARGV=()
+BRIDGE_HTTP_PORT=""
+BRIDGE_HTTP_PORT_DEFAULTED=""
+if [[ -n "$BRIDGE_PID" ]]; then
+  if [[ ! -e "/proc/$BRIDGE_PID/cmdline" ]]; then
+    log "bridge pid $BRIDGE_PID vanished before its argv could be captured - treating as not found"
+    BRIDGE_PID=""
+  else
+    # Read the NUL-delimited argv directly from the /proc file (not via "$(...)"): bash command
+    # substitution silently drops NUL bytes, which would collapse a multi-argument cmdline into a
+    # single unsplittable blob and make the later relaunch invoke a bare "nohup" with no command.
+    while IFS= read -r -d '' a; do BRIDGE_ARGV+=("$a"); done < "/proc/$BRIDGE_PID/cmdline" 2>/dev/null || true
+    if [[ "${#BRIDGE_ARGV[@]}" -eq 0 ]]; then
+      log "bridge pid $BRIDGE_PID vanished mid-capture (empty argv) - treating as not found"
+      BRIDGE_PID=""
+    else
+      # bridge_http_port returns non-zero (and 8991) when --port wasn't spelled out in argv,
+      # which only happens when the bridge was launched with server_cli's own default.
+      if BRIDGE_HTTP_PORT="$(bridge_http_port "$BRIDGE_PID")"; then
+        :
+      else
+        BRIDGE_HTTP_PORT_DEFAULTED=1
+      fi
+    fi
+  fi
+fi
+
+# --- Step 2: find the java daemon pid actually listening on --socket-port ---
+find_daemon_pid_via_ss() {
+  local port="$1" line pid
+  line="$(ss -ltnp 2>/dev/null | awk -v p=":${port}" '$4 ~ p"$"')"
+  [[ -n "$line" ]] || return 1
+  pid="$(grep -oP 'pid=\K[0-9]+' <<< "$line" | head -1)"
+  [[ -n "$pid" ]] || return 1
+  echo "$pid"
+}
+
+find_daemon_pid_via_proc() {
+  # Fallback for when `ss -p` isn't permitted/available: resolve the listening socket's inode from
+  # /proc/net/tcp[6] - a loopback java daemon can show up in either table (an IPv4-mapped IPv6
+  # listener like [::ffff:127.0.0.1]:PORT lands in tcp6, not tcp) - then find which pid holds an fd
+  # open on that inode.
+  local port="$1" hex_port inode pid_dir fd_link
+  hex_port="$(printf '%04X' "$port")"
+  inode="$(awk -v hp=":${hex_port}" '$2 ~ hp"$" && $4=="0A" {print $10; exit}' \
+           /proc/net/tcp /proc/net/tcp6 2>/dev/null)"
+  [[ -n "$inode" ]] || return 1
+  for pid_dir in /proc/[0-9]*; do
+    for fd_link in "$pid_dir"/fd/*; do
+      [[ -e "$fd_link" ]] || continue
+      if [[ "$(readlink "$fd_link" 2>/dev/null)" == "socket:[$inode]" ]]; then
+        basename "$pid_dir"
+        return 0
+      fi
+    done
+  done
+  return 1
+}
+
+DAEMON_PID="$(find_daemon_pid_via_ss "$SOCKET_PORT" || true)"
+if [[ -z "$DAEMON_PID" ]]; then
+  DAEMON_PID="$(find_daemon_pid_via_proc "$SOCKET_PORT" || true)"
+fi
+
+# --- Decide whether there's a valid restart plan ---
+if [[ -z "$BRIDGE_PID" && -z "$DAEMON_PID" ]]; then
+  log "nothing found on socket port $SOCKET_PORT - no bridge process, no java daemon listening."
+  log "nothing to restart; use pure-lsp-connect or pure-lsp-launch-engine to boot fresh."
+  exit 2
+fi
+
+if [[ -n "$BRIDGE_PID" && -z "$DAEMON_PID" ]]; then
+  log "found bridge pid $BRIDGE_PID (http port $BRIDGE_HTTP_PORT) but could not determine the java" \
+      "daemon pid listening on socket port $SOCKET_PORT (both ss and the /proc/net/tcp[6] fallback" \
+      "failed). Refusing to guess which java process to kill."
+  exit 3
+fi
+
+if [[ -z "$BRIDGE_PID" && -n "$DAEMON_PID" ]]; then
+  log "java daemon pid $DAEMON_PID is listening on socket port $SOCKET_PORT but no bridge process" \
+      "is attached to it, so there is no captured argv to relaunch with."
+  log "use pure-lsp-connect (or pure-lsp-launch-engine) to attach/launch a bridge instead."
+  exit 4
+fi
+
+log "bridge pid:  $BRIDGE_PID  (http port $BRIDGE_HTTP_PORT${BRIDGE_HTTP_PORT_DEFAULTED:+, defaulted - not explicit in argv})"
+log "daemon pid:  $DAEMON_PID  (java, socket port $SOCKET_PORT)"
+log "captured argv: ${BRIDGE_ARGV[*]}"
+
+if [[ -n "$DRY_RUN" ]]; then
+  log "--dry-run: would kill daemon pid $DAEMON_PID, then bridge pid $BRIDGE_PID, then relaunch the" \
+      "bridge with the argv above, then poll http port $BRIDGE_HTTP_PORT for state ready/failed."
+  python3 - "$SOCKET_PORT" "$BRIDGE_PID" "$BRIDGE_HTTP_PORT" "$DAEMON_PID" "${BRIDGE_ARGV[@]}" <<'PYEOF'
+import json, sys
+socket_port, bridge_pid, bridge_http_port, daemon_pid, *argv = sys.argv[1:]
+print(json.dumps({
+    "dryRun": True,
+    "socketPort": int(socket_port),
+    "bridgeHttpPort": int(bridge_http_port),
+    "bridgePid": int(bridge_pid),
+    "daemonPid": int(daemon_pid),
+    "wouldKill": [int(daemon_pid), int(bridge_pid)],
+    "relaunchArgv": argv,
+}))
+PYEOF
+  exit 0
+fi
+
+# --- Step 3: kill the daemon, then the (now-stale) bridge ---
+kill_pid_with_grace() {
+  local pid="$1" label="$2" grace_tenths=30  # 3s
+  if ! kill -0 "$pid" 2>/dev/null; then
+    log "$label pid $pid already gone"
+    return 0
+  fi
+  log "killing $label pid $pid (SIGTERM)"
+  kill "$pid" 2>/dev/null || true
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null && (( waited < grace_tenths )); do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    log "$label pid $pid still alive after grace period - SIGKILL"
+    kill -9 "$pid" 2>/dev/null || true
+  fi
+}
+
+kill_pid_with_grace "$DAEMON_PID" "java daemon"
+kill_pid_with_grace "$BRIDGE_PID" "bridge"
+
+# --- Step 4: relaunch the bridge with its captured argv ---
+LOG_FILE="/tmp/pure-lsp-bridge-${SOCKET_PORT}.log"
+log "relaunching bridge -> $LOG_FILE"
+# PYTHONPATH is exported explicitly because it is environment, not argv - /proc/<pid>/cmdline only
+# captures argv, so replaying the exact captured command line still needs this to resolve the
+# pure_lsp_bridge package, same as the pure-lsp-server shim does for a fresh launch.
+PYTHONPATH="$DIR/src" setsid nohup "${BRIDGE_ARGV[@]}" > "$LOG_FILE" 2>&1 < /dev/null &
+disown
+
+# --- Step 5: poll until ready/failed or timeout ---
+log "waiting for the bridge to bind http port $BRIDGE_HTTP_PORT..."
+PORT_UP=""
+for _ in $(seq 1 300); do  # 30s at 0.1s intervals
+  if port_listening "$BRIDGE_HTTP_PORT"; then PORT_UP=1; break; fi
+  sleep 0.1
+done
+if [[ -z "$PORT_UP" ]]; then
+  log "bridge never bound http port $BRIDGE_HTTP_PORT within 30s - see $LOG_FILE"
+  exit 5
+fi
+
+# A restart kills the actual daemon JVM, not just the bridge, so this is a genuine cold engine-scale
+# boot (~3-4 minutes per pure-lsp-status), not a quick reconnect - the wait budget reflects that.
+log "polling pure-lsp --port $BRIDGE_HTTP_PORT status --wait 300 (engine-scale cold boot: ~3-4 min)..."
+set +e
+STATUS_JSON="$("$BIN_DIR/pure-lsp" --port "$BRIDGE_HTTP_PORT" status --wait 300)"
+STATUS_RC=$?
+set -e
+
+if [[ "$STATUS_RC" -eq 0 ]]; then
+  for i in "${!BRIDGE_ARGV[@]}"; do
+    [[ "${BRIDGE_ARGV[$i]}" == "--repo-root" ]] || continue
+    WELCOME_FILE="${BRIDGE_ARGV[$((i + 1))]}/welcome.pure"
+    [[ -f "$WELCOME_FILE" ]] || continue
+    if "$BIN_DIR/pure-lsp" --port "$BRIDGE_HTTP_PORT" check "$WELCOME_FILE" >/dev/null 2>&1; then
+      log "welcome.pure compiled - ready for go(): $WELCOME_FILE"
+    else
+      log "WARNING: welcome.pure failed to compile - check it manually before go(): $WELCOME_FILE"
+    fi
+  done
+  python3 -c "
+import json
+s = json.loads('''$STATUS_JSON''')
+print(json.dumps({
+    'bridgeHttpPort': $BRIDGE_HTTP_PORT,
+    'socketPort': $SOCKET_PORT,
+    'state': s.get('state'),
+    'repositoryCount': s.get('repositoryCount'),
+    'symbolCount': s.get('symbolCount'),
+}))
+"
+  exit 0
+fi
+
+log "bridge did not reach ready state after restart - see $LOG_FILE. Raw status:"
+echo "$STATUS_JSON" >&2
+exit 5

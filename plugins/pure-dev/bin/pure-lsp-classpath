@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-classpath - compute + cache the engine-scale Pure classpath for a target project.
+#
+#   pure-lsp-classpath [project]            # print cache path, computing if missing/stale
+#   pure-lsp-classpath [project] --force    # force recompute
+#   pure-lsp-classpath [project] --path     # print cache path only (never compute)
+#   pure-lsp-classpath [project] --module M # override the Maven module to build from
+#   pure-lsp-classpath --list               # list known projects
+#
+# 'project' is one of the layers in config/projects.json (legend-pure, legend-engine, or a project
+# added via PURE_DEV_EXTRA_PROJECTS_JSON). Defaults to $PURE_DEV_PROJECT or the project inferred
+# from the current dir.
+# The classpath is that of the highest dependency layer not being source-rooted, so it works for any
+# pure-bearing repo, respecting the layering. Cache is per-project under ~/.cache/pure-dev/.
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+export PYTHONPATH="$DIR/src"
+if [[ "${1:-}" == "--list" ]]; then
+  exec python3 -m pure_lsp_bridge.project_cli list
+fi
+exec python3 -m pure_lsp_bridge.project_cli classpath "$@"

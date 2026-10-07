@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-connect - attach the pure-lsp HTTP bridge to an LSP daemon that is ALREADY running
+# (e.g. launched from IntelliJ via LegendLspServer, or a socket-mode daemon left over from a prior
+# session). NEVER spawns a new daemon JVM - if nothing is listening on the target socket port, this
+# script stops and reports that, rather than falling back to a fresh boot (use pure-lsp-launch-engine,
+# or `pure-lsp-launch <project>`, for that).
+#
+# Usage:
+#   pure-lsp-connect [--socket-port N] [--project NAME] [--bridge-port N] [--java PATH]
+#
+# Defaults: --socket-port 9100 (this shop's standing convention for LegendLspServer, configured via
+# legendLspServerConfig.json's "port" field), --bridge-port auto-picked (first free starting at 8991),
+# --project unset (pure-lsp-roots/pure-lsp-classpath then infer from $PURE_DEV_PROJECT or cwd).
+#
+# Exit codes:
+#   0 = connected and verified ready (existing bridge reused, or a new one launched and reconnected)
+#   2 = nothing listening on --socket-port - tell the user to start the daemon (or use pure-lsp-launch-*)
+#   3 = a bridge is up but didn't reach a healthy/ready state (see stderr for the diagnostic)
+#   4 = safety abort: a launch attempt looked like it was about to spawn a SECOND daemon instead of
+#       reconnecting to the existing one - refuses to proceed rather than risk a duplicate JVM
+#
+# On success, prints a single JSON summary line to stdout:
+#   {"bridgeHttpPort": N, "socketPort": N, "state": "ready", "repositoryCount": N, "symbolCount": N}
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+BIN_DIR="$DIR/bin"
+
+SOCKET_PORT=9100
+PROJECT=""
+BRIDGE_PORT=""
+JAVA_BIN="java"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --socket-port) SOCKET_PORT="$2"; shift 2 ;;
+    --project) PROJECT="$2"; shift 2 ;;
+    --bridge-port) BRIDGE_PORT="$2"; shift 2 ;;
+    --java) JAVA_BIN="$2"; shift 2 ;;
+    *) echo "ERROR: unknown argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+log() { echo "[pure-lsp-connect] $*" >&2; }
+
+# shellcheck source=SCRIPTDIR/pure-lsp-common
+. "$BIN_DIR/pure-lsp-common"
+
+pick_free_port() {
+  local p="$1"
+  while port_listening "$p"; do p=$((p + 1)); done
+  echo "$p"
+}
+
+# --- Step 1/2: a daemon must already be listening on the target socket port ---
+if ! port_listening "$SOCKET_PORT"; then
+  log "nothing listening on 127.0.0.1:$SOCKET_PORT - not starting a daemon (that is pure-lsp-launch's job)."
+  log "start it (e.g. IntelliJ's \"Legend LSP Server\" run config) and retry, or pass --socket-port."
+  exit 2
+fi
+
+# --- Step 3: is a bridge already attached to this socket port? ---
+# find_bridge_pid confirms each pgrep candidate against /proc (real python process actually
+# running -m pure_lsp_bridge.server_cli with this --socket-port), because pgrep -f also matches
+# the invoking shell's own command line. See pure-lsp-common.
+BRIDGE_PID="$(find_bridge_pid "$SOCKET_PORT" || true)"
+
+report_ready() {
+  local http_port="$1"
+  local status_json
+  status_json="$("$BIN_DIR/pure-lsp" --port "$http_port" status)"
+  python3 -c "
+import json, sys
+s = json.loads('''$status_json''')
+print(json.dumps({
+    'bridgeHttpPort': $http_port,
+    'socketPort': $SOCKET_PORT,
+    'state': s.get('state'),
+    'repositoryCount': s.get('repositoryCount'),
+    'symbolCount': s.get('symbolCount'),
+}))
+"
+}
+
+relaunch_bridge_with_argv() {
+  # Relaunches using the OLD_ARGV array the caller must have already populated (see below) by
+  # reading /proc/<pid>/cmdline directly into an array via input redirection. Do NOT round-trip
+  # it through $(...)/command substitution first - bash silently drops embedded NUL bytes there,
+  # collapsing the whole NUL-delimited cmdline into one unsplittable blob (verified empirically:
+  # "command substitution: ignored null byte in input", then a NUL-delimited re-split of that
+  # already-flattened string finds zero separators, so argv ends up as a single garbled element
+  # and `"${argv[@]}"` runs a bogus command instead of relaunching the bridge).
+  #
+  # The captured argv is the bridge's post-exec form (`python3 -m pure_lsp_bridge.server_cli ...`),
+  # not the `pure-lsp-server` shim that originally set PYTHONPATH before exec'ing into it - exec
+  # replaces the process image but keeps argv as whatever the new program was invoked with, so that
+  # env var isn't in /proc/<pid>/cmdline. Re-export it here or the relaunched python module import
+  # fails.
+  local log_file="/tmp/pure-lsp-bridge-${SOCKET_PORT}.log"
+  PYTHONPATH="$DIR/src" setsid nohup "${OLD_ARGV[@]}" > "$log_file" 2>&1 < /dev/null &
+  disown
+  echo "$log_file"
+}
+
+if [[ -n "$BRIDGE_PID" ]]; then
+  # bridge_http_port falls back to 8991 (server_cli's own default) when --port wasn't spelled out
+  # in argv; without that this was an empty string and every later `pure-lsp --port ""` failed.
+  HTTP_PORT="$(bridge_http_port "$BRIDGE_PID")" || log "note: --port not in argv; assuming the CLI default $HTTP_PORT"
+  log "found existing bridge (pid $BRIDGE_PID) on http port $HTTP_PORT for socket $SOCKET_PORT"
+
+  if "$BIN_DIR/pure-lsp" --port "$HTTP_PORT" health >/dev/null 2>&1 \
+     && "$BIN_DIR/pure-lsp" --port "$HTTP_PORT" status >/dev/null 2>&1; then
+    report_ready "$HTTP_PORT"
+    exit 0
+  fi
+
+  log "health/status failed on an already-attached bridge - fetching the real error body"
+  RAW_ERROR="$(python3 -c "
+import urllib.request
+try:
+    print(urllib.request.urlopen('http://127.0.0.1:$HTTP_PORT/status', timeout=10).read().decode())
+except urllib.error.HTTPError as e:
+    print(e.read().decode())
+except Exception as e:
+    print(str(e))
+")"
+  log "raw error: $RAW_ERROR"
+
+  if echo "$RAW_ERROR" | grep -qi "broken pipe"; then
+    log "broken pipe - the bridge's socket to the daemon died (often a debugger paused the daemon" \
+        "JVM at a breakpoint long enough to time out). Killing only the bridge (never the daemon) and" \
+        "relaunching with its exact prior command line."
+    OLD_ARGV=()
+    while IFS= read -r -d '' a; do OLD_ARGV+=("$a"); done < "/proc/$BRIDGE_PID/cmdline"
+    kill "$BRIDGE_PID" 2>/dev/null || true
+    sleep 0.3
+    LOG_FILE="$(relaunch_bridge_with_argv)"
+    for _ in $(seq 1 100); do
+      if "$BIN_DIR/pure-lsp" --port "$HTTP_PORT" status >/dev/null 2>&1; then
+        report_ready "$HTTP_PORT"
+        exit 0
+      fi
+      sleep 0.1
+    done
+    log "bridge did not come back healthy after relaunch - see $LOG_FILE"
+    exit 3
+  fi
+
+  log "unrecognized failure mode - not guessing further; see raw error above."
+  exit 3
+fi
+
+# --- No bridge attached: launch one, reconnecting to the daemon already confirmed listening ---
+log "no bridge attached to socket $SOCKET_PORT yet - resolving repo-roots/classpath to launch one"
+
+ROOTS_ARGS_STR="$("$BIN_DIR/pure-lsp-roots" ${PROJECT:+"$PROJECT"})"
+read -r -a ROOTS_ARGS <<< "$ROOTS_ARGS_STR"
+CLASSPATH_FILE="$("$BIN_DIR/pure-lsp-classpath" ${PROJECT:+"$PROJECT"})"
+
+# --project is generic - could be a project whose own classpath doesn't carry
+# legend-pure-lsp-server, unlike legend-engine. resolve_lsp_server_jar
+# borrows it from legend-engine's classpath in that case and sets PREFER_SERVER_PURE_JARS so a
+# differently-pinned legend-pure version doesn't crash the daemon at startup.
+resolve_lsp_server_jar "$CLASSPATH_FILE" "$BIN_DIR" || exit 3
+
+if [[ -z "$BRIDGE_PORT" ]]; then
+  BRIDGE_PORT="$(pick_free_port 8991)"
+fi
+
+PURE_LSP_SERVER_ARGS=(--server-jar "$SERVER_JAR" --classpath-file "$CLASSPATH_FILE")
+if [[ -n "$DEPENDENCY_CLASSPATH_FILE" ]]; then
+  PURE_LSP_SERVER_ARGS+=(--dependency-classpath-file "$DEPENDENCY_CLASSPATH_FILE")
+fi
+if [[ "$PREFER_SERVER_PURE_JARS" == "1" ]]; then
+  PURE_LSP_SERVER_ARGS+=(--prefer-server-pure-jars)
+fi
+
+LOG_FILE="/tmp/pure-lsp-bridge-${SOCKET_PORT}.log"
+log "repo roots:     ${ROOTS_ARGS[*]}"
+log "classpath:      $CLASSPATH_FILE"
+log "server jar:     $SERVER_JAR ($SERVER_JAR_SOURCE)"
+if [[ -n "$DEPENDENCY_CLASSPATH_FILE" ]]; then
+  log "dependency cp:  $DEPENDENCY_CLASSPATH_FILE (borrowed from legend-engine)"
+fi
+log "bridge port:    $BRIDGE_PORT  (socket $SOCKET_PORT)"
+log "log file:       $LOG_FILE"
+
+setsid nohup "$BIN_DIR/pure-lsp-server" \
+  "${ROOTS_ARGS[@]}" \
+  "${PURE_LSP_SERVER_ARGS[@]}" \
+  --java "$JAVA_BIN" \
+  --port "$BRIDGE_PORT" --socket-port "$SOCKET_PORT" \
+  > "$LOG_FILE" 2>&1 < /dev/null &
+disown
+
+# Safety check: this call MUST reconnect (daemon was already confirmed listening above). If the log
+# doesn't show a reconnect, something is wrong (e.g. socket-port mismatch) - abort rather than risk a
+# second multi-GB daemon coming up.
+RECONNECTED=""
+for _ in $(seq 1 50); do
+  if grep -q "connected to EXISTING LSP daemon" "$LOG_FILE" 2>/dev/null; then
+    RECONNECTED=1
+    break
+  fi
+  if grep -qiE "spawning|starting new" "$LOG_FILE" 2>/dev/null; then
+    break
+  fi
+  sleep 0.1
+done
+
+if [[ -z "$RECONNECTED" ]]; then
+  log "ERROR: launch did not show a reconnect to the existing daemon - aborting rather than risking a" \
+      "second daemon. Log:"
+  cat "$LOG_FILE" >&2
+  # This used to match on "socket-port <N>.*port <M>", but the bridge is launched as
+  # `--port <M> --socket-port <N>` - the reverse order - so the pattern never matched and the
+  # errant bridge was left running despite the message below claiming otherwise. Reuse the same
+  # /proc-verified lookup as everywhere else instead of a hand-rolled argv-order-sensitive regex.
+  BAD_PID="$(find_bridge_pid "$SOCKET_PORT" || true)"
+  if [[ -n "$BAD_PID" ]]; then
+    log "killing the errant bridge (pid $BAD_PID); the daemon on $SOCKET_PORT is left untouched"
+    kill "$BAD_PID" 2>/dev/null || true
+  else
+    log "no errant bridge process found to clean up"
+  fi
+  exit 4
+fi
+
+for _ in $(seq 1 100); do
+  if grep -q '"state": "ready"' "$LOG_FILE" 2>/dev/null; then
+    report_ready "$BRIDGE_PORT"
+    exit 0
+  fi
+  if grep -q '"state": "failed"' "$LOG_FILE" 2>/dev/null; then
+    log "runtime reported failed state:"
+    cat "$LOG_FILE" >&2
+    exit 3
+  fi
+  sleep 0.1
+done
+
+log "timed out waiting for ready state - see $LOG_FILE"
+exit 3

@@ -32,6 +32,14 @@ If you're making changes to the `Pure` codebase, it's highly recommended that yo
 - To start the server, please use the `Main` class `org.finos.legend.engine.ide.PureIDELight` with the parameters: `server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`.
 - You can now access the IDE at http://127.0.0.1:9200/ide in a web browser.
 
+### AI coding agent dev loop
+
+This repo also ships a Claude Code plugin (`plugins/pure-dev/`, registered via the
+`.claude-plugin/marketplace.json` at the repo root) that gives Claude Code a fast, LSP-backed
+edit-test loop on `.pure` code instead of a full Maven rebuild. Install it once per machine with
+`bash .claude-plugin/install-pure-dev`, then restart the agent — see `CLAUDE.md` for the skills it
+adds and when to reach for them.
+
 #### Debugging Pure Code
 
 ![Debugging](docs/debug.gif)

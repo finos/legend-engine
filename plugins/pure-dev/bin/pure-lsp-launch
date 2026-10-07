@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-launch - launch the Pure LSP bridge scoped to a project from config/projects.json
+# (standalone, no Claude Code needed).
+#
+# Resolves repo-roots/classpath via `pure-lsp-roots <project>` / `pure-lsp-classpath <project>`,
+# finds the server jar within that classpath (see resolve_lsp_server_jar in pure-lsp-common),
+# launches the bridge detached (setsid+nohup+disown - a plain background job can still get reaped
+# when the launching shell's process group is torn down), waits for it to report ready, then
+# creates the project's own welcome.pure (a minimal go() wrapper) if one doesn't exist and the
+# checkout .gitignores it, then pushes+compiles it into the session overlay via `pure-lsp check`
+# (NOT `go` - warmed and go()-ready, but never executed) before returning control to the caller
+# with the bridge left running in the background.
+#
+# Usage:
+#   pure-lsp-launch <project> [--port N] [--socket-port N] [--java PATH]
+#                             [--backend-server-host HOST] [--backend-server-port N] [--no-backend]
+#                             [--source LAYER ...] [--full-source]
+#                             [extra args passed through to pure-lsp-server, e.g. --jvm-arg=-D...]
+#
+# 'project' is a layer in config/projects.json (or one added via PURE_DEV_EXTRA_PROJECTS_JSON). Port
+# defaults come from that project's "launch" block (legend-engine 8991/9100); a project with no
+# launch block falls back to 8991/9100, so pass --port/--socket-port to run it alongside
+# legend-engine. pure-lsp-launch-engine is a thin wrapper over this.
+#
+# Source-rooting default: ONLY the target project is source-rooted (--repo-root) - every layer
+# below it (e.g. legend-pure under legend-engine) is consumed from its classpath jar instead, so
+# editing/launching legend-engine alone needs no legend-pure checkout and no $LEGEND_PURE_ROOT. Use
+# --source LAYER (repeatable) to also source-root specific lower layers you want to edit live (e.g.
+# --source legend-pure to edit platform .pure alongside legend-engine), or --full-source to restore
+# the old behavior of source-rooting the full transitive dependency chain. Only layers actually
+# being source-rooted need their checkout env var ($LEGEND_PURE_ROOT etc.) set.
+#
+# Defaults: --java "java" (plain JDK 11 java on PATH). The daemon runs a JVM against a precomputed
+# classpath - it never invokes a project's own Maven build/enforcer, so a project pinned to a newer
+# JDK for its BUILD does not need that JDK to RUN this daemon; override with --java if a project's
+# classpath needs a different runtime JVM than plain "java" on PATH.
+#
+# The backend engine Server is brought up BY DEFAULT (via pure-backend-start, started automatically
+# if nothing's listening on the backend port yet) and wired in via the -Dlegend.test.server.*
+# jvm-args, so execute()/go() route through real plan-generation + execution instead of the
+# interpreted engine. Pass --no-backend to launch interpreted-only. --backend-server-host/
+# --backend-server-port override the target (default 127.0.0.1:9095, EngineServerForTest's fixed
+# port); auto-start only happens for a 127.0.0.1/localhost host, since a remote host's backend
+# can't be started from here.
+#
+# Whenever the backend is wired in, ExecPlan/PlanLocal/FullInteractiveExec also default to true
+# (same "3 trues" legendLspServerConfig.json sets for the engine-side config-driven launcher of
+# this same daemon) - plan-gen runs locally against the live graph, not the backend's own jars, so
+# a Pure-only edit is reflected immediately. Override any of them with your own trailing
+# --jvm-arg=-Dpure.options.X=...; it lands after these defaults in the java command line and wins.
+#
+# Exit codes:
+#   0 = ready and warmed, or a bridge was already listening on the port (nothing launched)
+#   1 = bad arguments, unknown project, or no server jar could be resolved
+#   3 = the bridge never reached ready (or reported failed) within the timeout
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+BIN_DIR="$DIR/bin"
+
+# shellcheck source=SCRIPTDIR/pure-lsp-common
+. "$BIN_DIR/pure-lsp-common"   # port_listening <port> [host]
+
+if [[ $# -eq 0 || "${1:-}" == -* ]]; then
+  echo "ERROR: a project name is required, e.g. pure-lsp-launch legend-engine" >&2
+  echo "       known projects: pure-lsp-roots --list" >&2
+  exit 1
+fi
+PROJECT="$1"; shift
+
+LABEL="pure-lsp-launch:$PROJECT"
+log() { echo "[$LABEL] $*"; }
+fail() { echo "[$LABEL] $*" >&2; }
+
+PORT=""
+SOCKET_PORT=""
+JAVA_BIN="java"
+BACKEND_HOST=""
+BACKEND_PORT=""
+NO_BACKEND=""
+SOURCE_LAYERS=()
+FULL_SOURCE=""
+EXTRA_ARGS=()
+
+# A flag that takes a value must actually have one: under `set -u` a bare trailing `--port` would
+# otherwise abort on an unbound "$2" with no indication of which flag was at fault. Called as a
+# statement, never in a command substitution - `exit` inside `$(...)` only leaves the subshell.
+need_value() {
+  [[ -n "${2:-}" ]] || { fail "ERROR: $1 requires a value"; exit 1; }
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port) need_value "$1" "${2:-}"; PORT="$2"; shift 2 ;;
+    --socket-port) need_value "$1" "${2:-}"; SOCKET_PORT="$2"; shift 2 ;;
+    --java) need_value "$1" "${2:-}"; JAVA_BIN="$2"; shift 2 ;;
+    --backend-server-host) need_value "$1" "${2:-}"; BACKEND_HOST="$2"; shift 2 ;;
+    --backend-server-port) need_value "$1" "${2:-}"; BACKEND_PORT="$2"; shift 2 ;;
+    --no-backend) NO_BACKEND=1; shift ;;
+    --source) need_value "$1" "${2:-}"; SOURCE_LAYERS+=("$2"); shift 2 ;;
+    --full-source) FULL_SOURCE=1; shift ;;
+    *) EXTRA_ARGS+=("$1"); shift ;;
+  esac
+done
+
+if [[ -n "$FULL_SOURCE" && ${#SOURCE_LAYERS[@]} -gt 0 ]]; then
+  fail "ERROR: --full-source and --source are mutually exclusive"
+  exit 1
+fi
+
+# One registry read for every per-project default, so checkout paths and ports are not restated
+# here on top of config/projects.json.
+# `|| true` so an unknown project surfaces as the message below rather than as errexit killing the
+# script on read's EOF return, with project_cli's own diagnostic already on stderr.
+IFS=$'\t' read -r LAUNCH_PROJECT PROJECT_ROOT CFG_PORT CFG_SOCKET_PORT WELCOME_FILE SQL_E2E_CORPUS \
+  < <(PYTHONPATH="$DIR/src" python3 -m pure_lsp_bridge.project_cli launch-config "$PROJECT") || true
+if [[ -z "${PROJECT_ROOT:-}" ]]; then
+  fail "ERROR: could not resolve launch config for project '$PROJECT' (see pure-lsp-roots --list)"
+  exit 1
+fi
+PROJECT="$LAUNCH_PROJECT"
+PORT="${PORT:-$CFG_PORT}"
+SOCKET_PORT="${SOCKET_PORT:-$CFG_SOCKET_PORT}"
+
+# Refuse to launch onto an occupied bridge port. The bridge binds its HTTP port BEFORE doing
+# anything else, so a second launch here dies instantly with "Address already in use" - but this
+# script would then poll `pure-lsp status` on that same port, get the EXISTING bridge's "ready",
+# and report a successful launch while the configuration just asked for (repo-roots, backend
+# wiring) was silently discarded. Check first instead.
+if port_listening "$PORT"; then
+  fail "a bridge is ALREADY listening on 127.0.0.1:$PORT - not launching a second one."
+  fail "Its current configuration:"
+  "$BIN_DIR/pure-lsp" --port "$PORT" health >&2 2>/dev/null || true
+  fail "If that is the session you want, just use it (pure-lsp --port $PORT status)."
+  fail "To run a second, independent one: --port <free> --socket-port <free>."
+  fail "To rebuild this one: pure-lsp-restart --socket-port $SOCKET_PORT."
+  exit 0
+fi
+
+# Default: source-root ONLY the target project. --full-source restores the old full-chain
+# behavior; --source LAYER (repeatable) adds back specific lower layers (e.g. legend-pure) without
+# going all the way to --full-source. pure-lsp-roots always force-includes the target itself.
+ROOTS_ARGS=("$PROJECT")
+if [[ -n "$FULL_SOURCE" ]]; then
+  : # no --source flag -> pure-lsp-roots defaults to the full transitive chain
+elif [[ ${#SOURCE_LAYERS[@]} -gt 0 ]]; then
+  for layer in "${SOURCE_LAYERS[@]}"; do
+    ROOTS_ARGS+=(--source "$layer")
+  done
+else
+  ROOTS_ARGS+=(--source "$PROJECT")
+fi
+REPO_ROOTS_STR="$("$BIN_DIR/pure-lsp-roots" "${ROOTS_ARGS[@]}")"
+read -r -a REPO_ROOT_ARGS <<< "$REPO_ROOTS_STR"
+if [[ ${#REPO_ROOT_ARGS[@]} -eq 0 ]]; then
+  fail "ERROR: pure-lsp-roots $PROJECT resolved no repo-roots - is the checkout present?"
+  exit 1
+fi
+CLASSPATH_FILE="$("$BIN_DIR/pure-lsp-classpath" "$PROJECT")"
+
+resolve_lsp_server_jar "$CLASSPATH_FILE" "$BIN_DIR" || exit 1
+
+JVM_ARGS=()
+if [[ -z "$NO_BACKEND" ]]; then
+  BACKEND_HOST="${BACKEND_HOST:-127.0.0.1}"
+  BACKEND_PORT="${BACKEND_PORT:-9095}"
+  if [[ "$BACKEND_HOST" == "127.0.0.1" || "$BACKEND_HOST" == "localhost" ]] \
+     && ! port_listening "$BACKEND_PORT" "$BACKEND_HOST"; then
+    log "backend not up on $BACKEND_HOST:$BACKEND_PORT - starting it via pure-backend-start"
+    "$BIN_DIR/pure-backend-start" --port "$BACKEND_PORT"
+  fi
+  JVM_ARGS+=(
+    "--jvm-arg=-Dlegend.test.server.host=$BACKEND_HOST"
+    "--jvm-arg=-Dlegend.test.server.port=$BACKEND_PORT"
+    "--jvm-arg=-Dlegend.test.clientVersion=vX_X_X"
+    "--jvm-arg=-Dlegend.test.serverVersion=v1"
+    "--jvm-arg=-Dlegend.test.serializationKind=json"
+    "--jvm-arg=-Dlegend.test.h2.port=9092"
+  )
+  # Same "3 trues" legendLspServerConfig.json bakes in for the engine-side LegendLspServer
+  # launcher (a config-driven entry point for this exact same daemon): plan-gen runs locally
+  # against the live graph instead of the backend's own jars, so a Pure-only edit needs no jar
+  # rebuild to be reflected in execute()/go() - and FullInteractiveExec inlines the live graph
+  # rather than the metadata-server's SEMI_INTERACTIVE pointer model, which wouldn't see
+  # uncommitted edits at all. Meaningless without a backend (ExecPlan is only reached when one is
+  # configured), so scoped to this branch, not the --no-backend path. A later
+  # --jvm-arg=-Dpure.options.X=... in "$@" still wins - EXTRA_ARGS is appended after JVM_ARGS
+  # below, and java takes the last -D for a repeated key.
+  JVM_ARGS+=(
+    "--jvm-arg=-Dpure.options.ExecPlan=true"
+    "--jvm-arg=-Dpure.options.PlanLocal=true"
+    "--jvm-arg=-Dpure.options.FullInteractiveExec=true"
+  )
+fi
+
+# Without this the SQL e2e corpus is read from the built jar, so a YAML edit is invisible to a
+# running daemon and the old SQL keeps executing - silently.
+if [[ -n "${SQL_E2E_CORPUS:-}" && -d "$SQL_E2E_CORPUS/parity-tests" ]]; then
+  JVM_ARGS+=("--jvm-arg=-Dsql.e2e.corpus.dir=$SQL_E2E_CORPUS")
+fi
+
+# Two DISTINCT files, one writer each. These used to be the same path: server_cli defaults its
+# --stderr-log (the daemon JVM's log) to /tmp/pure_lsp_server_<port>.log, and the shell redirect
+# below pointed there too. The daemon JVM outlives the bridge, so it keeps an open fd on that file
+# - and a `>` redirect from any later launch truncated it underneath the running daemon.
+LOG_FILE="/tmp/pure_lsp_bridge_${PORT}.log"
+JVM_LOG_FILE="/tmp/pure_lsp_server_${PORT}.log"
+
+PURE_LSP_SERVER_ARGS=(--server-jar "$SERVER_JAR" --classpath-file "$CLASSPATH_FILE")
+if [[ -n "$DEPENDENCY_CLASSPATH_FILE" ]]; then
+  PURE_LSP_SERVER_ARGS+=(--dependency-classpath-file "$DEPENDENCY_CLASSPATH_FILE")
+fi
+if [[ "$PREFER_SERVER_PURE_JARS" == "1" ]]; then
+  PURE_LSP_SERVER_ARGS+=(--prefer-server-pure-jars)
+fi
+
+log "project:         $PROJECT ($PROJECT_ROOT)"
+log "repo roots:      ${REPO_ROOT_ARGS[*]}"
+log "classpath:       $CLASSPATH_FILE"
+log "server jar:      $SERVER_JAR ($SERVER_JAR_SOURCE)"
+if [[ -n "$DEPENDENCY_CLASSPATH_FILE" ]]; then
+  log "dependency cp:   $DEPENDENCY_CLASSPATH_FILE (borrowed from legend-engine)"
+fi
+log "port:            $PORT"
+log "socket port:     $SOCKET_PORT"
+log "java:            $JAVA_BIN"
+log "jvm args:        ${JVM_ARGS[*]:-(none)}"
+log "bridge log:      $LOG_FILE"
+log "daemon log:      $JVM_LOG_FILE"
+
+setsid nohup "$BIN_DIR/pure-lsp-server" \
+  "${REPO_ROOT_ARGS[@]}" \
+  "${PURE_LSP_SERVER_ARGS[@]}" \
+  --host 127.0.0.1 \
+  --port "$PORT" \
+  --socket-port "$SOCKET_PORT" \
+  --java "$JAVA_BIN" \
+  --stderr-log "$JVM_LOG_FILE" \
+  "${JVM_ARGS[@]}" \
+  "${EXTRA_ARGS[@]}" \
+  > "$LOG_FILE" 2>&1 < /dev/null &
+disown
+
+log "waiting for bridge to become ready (this can take several minutes at engine-scale)..."
+READY="" FAILED="" STATUS_JSON=""
+for _ in $(seq 1 300); do
+  STATUS_JSON="$("$BIN_DIR/pure-lsp" --port "$PORT" status 2>/dev/null || true)"
+  if echo "$STATUS_JSON" | grep -q '"state": *"ready"'; then READY=1; break; fi
+  if echo "$STATUS_JSON" | grep -q '"state": *"failed"'; then FAILED=1; break; fi
+  sleep 2
+done
+
+if [[ -n "$FAILED" ]]; then
+  fail "ERROR: LSP runtime reported failed state - see $LOG_FILE and $JVM_LOG_FILE"
+  echo "$STATUS_JSON" >&2
+  exit 3
+fi
+if [[ -z "$READY" ]]; then
+  fail "ERROR: bridge did not reach ready within timeout - see $LOG_FILE and $JVM_LOG_FILE"
+  exit 3
+fi
+
+# Only auto-create when it's safe: a project whose checkout .gitignores welcome.pure (or isn't a
+# git repo at all) can't have this show up as an untracked file a later `git add -A` sweeps in.
+# legend-engine ignores it; legend-pure currently doesn't.
+if [[ -n "${WELCOME_FILE:-}" && ! -f "$WELCOME_FILE" ]]; then
+  if git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1 \
+     && ! git -C "$PROJECT_ROOT" check-ignore -q "$WELCOME_FILE" 2>/dev/null; then
+    log "NOTE: no welcome.pure at $WELCOME_FILE, and $PROJECT_ROOT does not .gitignore it - not"
+    log "      auto-creating one (it would show up as an untracked file). Add welcome.pure to"
+    log "      $PROJECT_ROOT/.gitignore, or create it yourself, to get go() warm-up here."
+  else
+    log "no welcome.pure found - creating a minimal one: $WELCOME_FILE"
+    cat > "$WELCOME_FILE" <<'PURE'
+function go():Any[*]
+{
+  print('go() ready - edit welcome.pure and re-run to try something', 1);
+}
+PURE
+  fi
+fi
+
+if [[ -f "${WELCOME_FILE:-}" ]]; then
+  log "warming welcome.pure into the overlay: $WELCOME_FILE"
+  if "$BIN_DIR/pure-lsp" --port "$PORT" check "$WELCOME_FILE" >/dev/null 2>&1; then
+    log "welcome.pure compiled - ready for go()"
+  else
+    fail "WARNING: welcome.pure failed to compile - check it manually before go()"
+  fi
+elif [[ -z "${WELCOME_FILE:-}" ]]; then
+  log "NOTE: no welcome.pure configured for this project - skipping warm-up"
+else
+  log "NOTE: no welcome.pure found at $WELCOME_FILE - skipping warm-up"
+fi
+
+log "ready - bridge on port $PORT (socket $SOCKET_PORT)"
