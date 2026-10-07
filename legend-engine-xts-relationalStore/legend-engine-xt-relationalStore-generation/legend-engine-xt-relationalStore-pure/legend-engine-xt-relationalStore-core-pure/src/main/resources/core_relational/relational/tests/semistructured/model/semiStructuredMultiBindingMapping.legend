@@ -153,10 +153,10 @@ Mapping multiBinding::relationFunctionMapping::H2Mapping
   *multiBinding::model::Employee: Relation 
   {
     ~func multiBinding::personFunction():Relation<Any>[1]
-    firstName: $src.FIRSTNAME->toOne(),
-    lastName: $src.LASTNAME->toOne(),
-    firm: Binding multiBinding::store::FirmBinding : $src.FIRM_DETAILS->toOne(),
-    address: Binding multiBinding::store::AddressBinding : $src.ADDRESS_DETAILS->toOne()
+    firstName: $row.FIRSTNAME->toOne(),
+    lastName: $row.LASTNAME->toOne(),
+    firm: Binding multiBinding::store::FirmBinding : $row.FIRM_DETAILS->toOne(),
+    address: Binding multiBinding::store::AddressBinding : $row.ADDRESS_DETAILS->toOne()
   }
 )
 
