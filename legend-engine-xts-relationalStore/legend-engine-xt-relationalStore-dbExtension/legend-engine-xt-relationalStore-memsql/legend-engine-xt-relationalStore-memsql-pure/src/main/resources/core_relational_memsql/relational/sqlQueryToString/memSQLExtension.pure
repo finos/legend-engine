@@ -453,7 +453,7 @@ function meta::relational::functions::sqlQueryToString::memsql::translateDropTab
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   if($createTableSQL.isTempTable->isTrue(),|
-   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
+   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextMemSQL($c.type->toOne()),
                                                                                                     r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
   ,|let t= $createTableSQL.table;
     let applyConstraints = $createTableSQL.applyConstraints;
@@ -469,6 +469,7 @@ function meta::relational::functions::sqlQueryToString::memsql::translateCreateT
 function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $columnType->match([
+      t : meta::relational::metamodel::datatype::Timestamp[1] | 'DATETIME(6)',
       s : meta::relational::metamodel::datatype::Json[1] | 'JSON',
       u : meta::relational::metamodel::datatype::UnsignedBigInt[1] | 'BIGINT UNSIGNED',
       u : meta::relational::metamodel::datatype::UnsignedInt[1] | 'INT UNSIGNED',
