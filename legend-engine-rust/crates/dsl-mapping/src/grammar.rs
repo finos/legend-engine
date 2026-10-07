@@ -122,6 +122,25 @@ pub trait MappingElementGrammar: Send + Sync {
         &self,
         element: &MappingElement,
     ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError>;
+
+    /// Writes [`MappingElementGrammar::convert`]'s JSON at the end of `out`,
+    /// the mapping's JSON, rather than into a buffer of its own that is
+    /// then copied there, and says which of the mapping's lists it goes in.
+    /// The default copies `convert`'s; a grammar of many or large elements
+    /// writes them in place.
+    ///
+    /// # Errors
+    ///
+    /// As for [`MappingElementGrammar::convert`].
+    fn convert_into(
+        &self,
+        element: &MappingElement,
+        out: &mut Vec<u8>,
+    ) -> Result<MappingElementKind, ConvertError> {
+        let (kind, json) = self.convert(element)?;
+        out.extend_from_slice(json.get().as_bytes());
+        Ok(kind)
+    }
 }
 
 /// The grammar of one type of legacy test input data, e.g. `Object`.

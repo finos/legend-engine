@@ -27,7 +27,7 @@ use serde::Serialize;
 use serde_json::Value;
 use serde_json::value::RawValue;
 
-use crate::{ErrorKind, SectionError, SectionRequest, section_json};
+use crate::{Elements, ErrorKind, SectionError, SectionRequest, WrittenElements, section_elements};
 
 /// What the engine puts in front of a model's code: code before any header
 /// is a `###Pure` section.
@@ -87,6 +87,40 @@ pub fn parse_model(request: &ModelRequest<'_>) -> Result<ModelResult, SectionErr
 /// [`parse_model`]'s elements as JSON text, each written once, the section
 /// index last.
 pub(crate) fn model_json(request: &ModelRequest<'_>) -> Result<Vec<Box<RawValue>>, SectionError> {
+    let mut elements = Vec::new();
+    let index = model(request, &mut elements)?;
+    let mut json: Vec<Box<RawValue>> = elements.into_iter().map(|element| element.json).collect();
+    json.push(
+        serde_json::value::to_raw_value(&index)
+            .map_err(|e| SectionError::from(ConvertError::from(e)))?,
+    );
+    Ok(json)
+}
+
+/// [`parse_model`]'s JSON object, `{"elements":[…]}`, written at the end of
+/// `out`: every element in place, then the section index.
+pub(crate) fn model_json_into(
+    request: &ModelRequest<'_>,
+    out: &mut Vec<u8>,
+) -> Result<(), SectionError> {
+    out.extend_from_slice(br#"{"elements":["#);
+    let mut elements = WrittenElements { out, count: 0 };
+    let index = model(request, &mut elements)?;
+    if elements.count > 0 {
+        out.push(b',');
+    }
+    serde_json::to_writer(&mut *out, &index)
+        .map_err(|e| SectionError::from(ConvertError::from(e)))?;
+    out.extend_from_slice(b"]}");
+    Ok(())
+}
+
+/// Parses the model's sections, converting their elements into `elements`;
+/// returns the section index.
+fn model(
+    request: &ModelRequest<'_>,
+    elements: &mut impl Elements,
+) -> Result<SectionIndexJson, SectionError> {
     if request.line_offset < 0 || request.column_offset < 0 {
         return Err(SectionError::new(
             ErrorKind::Unsupported,
@@ -98,7 +132,6 @@ pub(crate) fn model_json(request: &ModelRequest<'_>) -> Result<Vec<Box<RawValue>
         ));
     }
     let text = format!("{DEFAULT_SECTION_BEGIN}{}", request.code);
-    let mut elements = Vec::new();
     let mut sections = Vec::new();
     for section in split(&text) {
         let line_offset = i32::try_from(section.header.line)
@@ -107,56 +140,53 @@ pub(crate) fn model_json(request: &ModelRequest<'_>) -> Result<Vec<Box<RawValue>
             .ok_or_else(|| {
                 SectionError::new(ErrorKind::Unsupported, "the model is too long", None)
             })?;
-        let result = section_json(&SectionRequest {
-            section_type: section.name,
-            code: section.content,
-            source_id: request.source_id,
-            line_offset,
-            column_offset: 0,
-        })?;
+        let (paths, imports) = section_elements(
+            &SectionRequest {
+                section_type: section.name,
+                code: section.content,
+                source_id: request.source_id,
+                line_offset,
+                column_offset: 0,
+            },
+            elements,
+        )?;
         sections.push(SectionIndexEntryJson {
-            section_type: if result.imports.is_some() {
+            section_type: if imports.is_some() {
                 "importAware"
             } else {
                 "default"
             },
-            parser_name: section.name,
-            elements: distinct(result.elements.iter().map(|element| element.path.clone())),
+            parser_name: section.name.to_string(),
+            elements: distinct(paths),
             source_information: span(&section, request),
-            imports: result.imports.map(distinct),
+            imports: imports.map(distinct),
         });
-        elements.extend(result.elements.into_iter().map(|element| element.json));
     }
-    let index = SectionIndexJson {
+    Ok(SectionIndexJson {
         package: "__internal__",
         name: "SectionIndex",
         sections,
-    };
-    elements.push(
-        serde_json::value::to_raw_value(&index)
-            .map_err(|e| SectionError::from(ConvertError::from(e)))?,
-    );
-    Ok(elements)
+    })
 }
 
 /// The engine's `SectionIndex`: each section's type, its elements' paths
 /// and its imports, each once, and its span in the code.
 #[derive(Serialize)]
 #[serde(tag = "_type", rename = "sectionIndex")]
-struct SectionIndexJson<'a> {
+struct SectionIndexJson {
     package: &'static str,
     name: &'static str,
-    sections: Vec<SectionIndexEntryJson<'a>>,
+    sections: Vec<SectionIndexEntryJson>,
 }
 
 /// A section of the index: an `importAware` one, with its imports, or a
 /// `default` one.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-struct SectionIndexEntryJson<'a> {
+struct SectionIndexEntryJson {
     #[serde(rename = "_type")]
     section_type: &'static str,
-    parser_name: &'a str,
+    parser_name: String,
     elements: Vec<String>,
     source_information: SourceInformation,
     #[serde(skip_serializing_if = "Option::is_none")]

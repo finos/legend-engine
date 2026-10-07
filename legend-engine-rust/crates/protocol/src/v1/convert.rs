@@ -1335,16 +1335,9 @@ pub struct ElementJson {
 ///
 /// As for [`convert_element`].
 pub fn convert_element_json(elem: &ast::element::Element) -> Result<ElementJson> {
-    use ast::element::PackageableElement as _;
-
     if let ast::element::Element::DSLElement(element) = elem {
-        let name = element.name();
-        let path = match element.package() {
-            Some(package) => format!("{package}::{name}"),
-            None => name.to_string(),
-        };
         return Ok(ElementJson {
-            path,
+            path: dsl_path(element.as_ref()),
             json: crate::element_protocol::convert_dsl_element(element.as_ref())?,
         });
     }
@@ -1353,6 +1346,32 @@ pub fn convert_element_json(elem: &ast::element::Element) -> Result<ElementJson>
         path: protocol.path(),
         json: serde_json::value::to_raw_value(&protocol)?,
     })
+}
+
+/// [`convert_element_json`] written at the end of `out`, the model's JSON,
+/// rather than into a buffer of its own; returns the element's path.
+///
+/// # Errors
+///
+/// As for [`convert_element`].
+pub fn convert_element_into(elem: &ast::element::Element, out: &mut Vec<u8>) -> Result<String> {
+    if let ast::element::Element::DSLElement(element) = elem {
+        crate::element_protocol::convert_dsl_element_into(element.as_ref(), out)?;
+        return Ok(dsl_path(element.as_ref()));
+    }
+    let protocol = convert_element(elem)?;
+    serde_json::to_writer(&mut *out, &protocol)?;
+    Ok(protocol.path())
+}
+
+/// A section grammar's element's path: its name, behind its package if it
+/// has one.
+fn dsl_path(element: &dyn ast::dsl::DSLElement) -> String {
+    let name = element.name();
+    match element.package() {
+        Some(package) => format!("{package}::{name}"),
+        None => name.to_string(),
+    }
 }
 
 fn convert_class(c: &ast::element::ClassDef) -> Result<v1::element::ProtocolClass> {

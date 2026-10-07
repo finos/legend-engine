@@ -236,42 +236,68 @@ impl MappingElementGrammar for RelationalMappingGrammar {
         &self,
         element: &MappingElement,
     ) -> Result<(MappingElementKind, Box<RawValue>), ConvertError> {
-        let body = element
-            .body
-            .as_any()
-            .downcast_ref::<RelationalMappingBody>()
-            .ok_or_else(|| {
-                ConvertError::plugin(
-                    "RelationalMappingGrammar: the body is not a relational mapping's",
-                    Some(&element.source_info),
-                )
-            })?;
-        let header = &element.header;
-        Ok(match body {
-            RelationalMappingBody::Class(class_mapping) => (
-                MappingElementKind::Class,
-                to_raw_value(&ClassMappingJson::new(
-                    class_mapping,
-                    header,
-                    &element.source_info,
-                ))?,
-            ),
-            RelationalMappingBody::Association(mappings) => (
-                MappingElementKind::Association,
-                to_raw_value(&AssociationMappingJson {
-                    association: AssociationPointerJson {
-                        element_type: "ASSOCIATION",
-                        path: &header.target.path,
-                        source_information: position(&header.target.source_info),
-                    },
-                    property_mappings: mappings.iter().map(PropertyMappingJson::from).collect(),
-                    stores: stores(mappings),
-                    source_information: position(&element.source_info),
-                    id: header.id.as_ref().map(|id| id.text.as_str()),
-                })?,
-            ),
-        })
+        let (kind, json) = element_json(element)?;
+        Ok((kind, to_raw_value(&json)?))
     }
+
+    fn convert_into(
+        &self,
+        element: &MappingElement,
+        out: &mut Vec<u8>,
+    ) -> Result<MappingElementKind, ConvertError> {
+        let (kind, json) = element_json(element)?;
+        serde_json::to_writer(&mut *out, &json)?;
+        Ok(kind)
+    }
+}
+
+/// A relational mapping element's JSON: a class mapping's or an
+/// association mapping's.
+#[derive(Serialize)]
+#[serde(untagged)]
+enum ElementJson<'a> {
+    Class(Box<ClassMappingJson<'a>>),
+    Association(AssociationMappingJson<'a>),
+}
+
+fn element_json(
+    element: &MappingElement,
+) -> Result<(MappingElementKind, ElementJson<'_>), ConvertError> {
+    let body = element
+        .body
+        .as_any()
+        .downcast_ref::<RelationalMappingBody>()
+        .ok_or_else(|| {
+            ConvertError::plugin(
+                "RelationalMappingGrammar: the body is not a relational mapping's",
+                Some(&element.source_info),
+            )
+        })?;
+    let header = &element.header;
+    Ok(match body {
+        RelationalMappingBody::Class(class_mapping) => (
+            MappingElementKind::Class,
+            ElementJson::Class(Box::new(ClassMappingJson::new(
+                class_mapping,
+                header,
+                &element.source_info,
+            ))),
+        ),
+        RelationalMappingBody::Association(mappings) => (
+            MappingElementKind::Association,
+            ElementJson::Association(AssociationMappingJson {
+                association: AssociationPointerJson {
+                    element_type: "ASSOCIATION",
+                    path: &header.target.path,
+                    source_information: position(&header.target.source_info),
+                },
+                property_mappings: mappings.iter().map(PropertyMappingJson::from).collect(),
+                stores: stores(mappings),
+                source_information: position(&element.source_info),
+                id: header.id.as_ref().map(|id| id.text.as_str()),
+            }),
+        ),
+    })
 }
 
 /// `~filter …? ~distinct? ~groupBy(…)? ~primaryKey(…)? ~mainTable …?`

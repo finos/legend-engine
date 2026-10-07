@@ -48,17 +48,25 @@ impl ElementProtocol for DatabaseProtocol {
     }
 
     fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
-        let database = element.as_any().downcast_ref::<Database>().ok_or_else(|| {
-            ConvertError::plugin(
-                format!(
-                    "DatabaseProtocol: a '{}' element is not a Database",
-                    element.kind()
-                ),
-                None,
-            )
-        })?;
-        Ok(to_raw_value(&DatabaseJson::from(database))?)
+        Ok(to_raw_value(&DatabaseJson::from(as_database(element)?))?)
     }
+
+    fn convert_into(&self, element: &dyn DSLElement, out: &mut Vec<u8>) -> Result<()> {
+        serde_json::to_writer(&mut *out, &DatabaseJson::from(as_database(element)?))?;
+        Ok(())
+    }
+}
+
+fn as_database(element: &dyn DSLElement) -> Result<&Database> {
+    element.as_any().downcast_ref::<Database>().ok_or_else(|| {
+        ConvertError::plugin(
+            format!(
+                "DatabaseProtocol: a '{}' element is not a Database",
+                element.kind()
+            ),
+            None,
+        )
+    })
 }
 
 /// The engine's relational `Database`.

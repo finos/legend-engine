@@ -52,10 +52,12 @@ use serde_json::Value;
 use serde_json::value::{RawValue, to_raw_value};
 
 use crate::ast::{
-    IncludeKind, LegacyTest, Mapping, MappingInclude, MappingTest, SECTION_KIND, StoreTestData,
-    TestSuite,
+    IncludeKind, LegacyTest, Mapping, MappingElement, MappingInclude, MappingTest, SECTION_KIND,
+    StoreTestData, TestSuite,
 };
-use crate::grammar::{MappingElementKind, mapping_element_grammar, test_input_grammar};
+use crate::grammar::{
+    MappingElementGrammar, MappingElementKind, mapping_element_grammar, test_input_grammar,
+};
 
 /// Protocol converter for mappings.
 pub struct MappingProtocol;
@@ -67,71 +69,145 @@ impl ElementProtocol for MappingProtocol {
     }
 
     fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>> {
-        let mapping = element.as_any().downcast_ref::<Mapping>().ok_or_else(|| {
-            ConvertError::plugin(
-                format!(
-                    "MappingProtocol: a '{}' element is not a Mapping",
-                    element.kind()
-                ),
-                None,
-            )
-        })?;
-        let package = mapping
-            .package
-            .as_ref()
-            .map(ToString::to_string)
-            .unwrap_or_default();
-        let name = mapping.name.value.to_string();
-        let path = if package.is_empty() {
-            name.clone()
-        } else {
-            format!("{package}::{name}")
-        };
+        let mapping = as_mapping(element)?;
+        let (package, name, path) = names(mapping);
         let (mut class_mappings, mut enumeration_mappings, mut association_mappings) =
             (Vec::new(), Vec::new(), Vec::new());
         for element in &mapping.elements {
-            let type_name = &element.header.type_name.text;
-            let grammar = mapping_element_grammar(type_name).ok_or_else(|| {
-                ConvertError::unsupported(
-                    format!("no mapping element grammar is linked for '{type_name}'"),
-                    &element.source_info,
-                )
-            })?;
-            let (kind, json) = grammar.convert(element)?;
+            let (kind, json) = grammar_of(element)?.convert(element)?;
             match kind {
                 MappingElementKind::Class => class_mappings.push(json),
                 MappingElementKind::Enumeration => enumeration_mappings.push(json),
                 MappingElementKind::Association => association_mappings.push(json),
             }
         }
-        let tests = mapping
-            .legacy_tests
-            .iter()
-            .map(|test| legacy_test(test, &path))
-            .collect::<Result<_>>()?;
-        let test_suites = mapping
-            .test_suites
-            .as_ref()
-            .map(|suites| {
-                suites
-                    .iter()
-                    .map(|suite| test_suite(suite, &path))
-                    .collect::<Result<_>>()
-            })
-            .transpose()?;
         let json = MappingJson {
             package,
             name,
-            included_mappings: mapping.includes.iter().map(include).collect(),
+            included_mappings: includes(mapping),
             class_mappings,
             enumeration_mappings,
             association_mappings,
-            tests,
-            test_suites,
+            tests: tests(mapping, &path)?,
+            test_suites: test_suites(mapping, &path)?,
             source_information: SourceInformation::from(&mapping.source_info),
         };
         Ok(to_raw_value(&json)?)
     }
+
+    /// The mapping written in place with its elements, which are most of its
+    /// JSON: `MappingJson`'s object, field by field, each element written
+    /// where it goes by its grammar's `convert_into`. Class mappings, nearly
+    /// all of them, go straight into their list; the others wait for theirs.
+    fn convert_into(&self, element: &dyn DSLElement, out: &mut Vec<u8>) -> Result<()> {
+        let mapping = as_mapping(element)?;
+        let (package, name, path) = names(mapping);
+        out.extend_from_slice(br#"{"_type":"mapping","package":"#);
+        serde_json::to_writer(&mut *out, &package)?;
+        out.extend_from_slice(br#","name":"#);
+        serde_json::to_writer(&mut *out, &name)?;
+        out.extend_from_slice(br#","includedMappings":"#);
+        serde_json::to_writer(&mut *out, &includes(mapping))?;
+        out.extend_from_slice(br#","classMappings":["#);
+        let (mut enumerations, mut associations) = (Vec::new(), Vec::new());
+        let mut classes = 0;
+        for element in &mapping.elements {
+            let start = out.len();
+            if classes > 0 {
+                out.push(b',');
+            }
+            let json = out.len();
+            let list = match grammar_of(element)?.convert_into(element, out)? {
+                MappingElementKind::Class => {
+                    classes += 1;
+                    continue;
+                }
+                MappingElementKind::Enumeration => &mut enumerations,
+                MappingElementKind::Association => &mut associations,
+            };
+            if !list.is_empty() {
+                list.push(b',');
+            }
+            list.extend_from_slice(&out[json..]);
+            out.truncate(start);
+        }
+        out.extend_from_slice(br#"],"enumerationMappings":["#);
+        out.extend_from_slice(&enumerations);
+        out.extend_from_slice(br#"],"associationMappings":["#);
+        out.extend_from_slice(&associations);
+        out.extend_from_slice(br#"],"tests":"#);
+        serde_json::to_writer(&mut *out, &tests(mapping, &path)?)?;
+        if let Some(suites) = test_suites(mapping, &path)? {
+            out.extend_from_slice(br#","testSuites":"#);
+            serde_json::to_writer(&mut *out, &suites)?;
+        }
+        out.extend_from_slice(br#","sourceInformation":"#);
+        serde_json::to_writer(&mut *out, &SourceInformation::from(&mapping.source_info))?;
+        out.push(b'}');
+        Ok(())
+    }
+}
+
+fn as_mapping(element: &dyn DSLElement) -> Result<&Mapping> {
+    element.as_any().downcast_ref::<Mapping>().ok_or_else(|| {
+        ConvertError::plugin(
+            format!(
+                "MappingProtocol: a '{}' element is not a Mapping",
+                element.kind()
+            ),
+            None,
+        )
+    })
+}
+
+/// The mapping's package, name and path.
+fn names(mapping: &Mapping) -> (String, String, String) {
+    let package = mapping
+        .package
+        .as_ref()
+        .map(ToString::to_string)
+        .unwrap_or_default();
+    let name = mapping.name.value.to_string();
+    let path = if package.is_empty() {
+        name.clone()
+    } else {
+        format!("{package}::{name}")
+    };
+    (package, name, path)
+}
+
+/// The linked grammar of `element`'s type.
+fn grammar_of(
+    element: &MappingElement,
+) -> Result<&'static (dyn MappingElementGrammar + Send + Sync)> {
+    let type_name = &element.header.type_name.text;
+    mapping_element_grammar(type_name).ok_or_else(|| {
+        ConvertError::unsupported(
+            format!("no mapping element grammar is linked for '{type_name}'"),
+            &element.source_info,
+        )
+    })
+}
+
+fn includes(mapping: &Mapping) -> Vec<IncludeJson> {
+    mapping.includes.iter().map(include).collect()
+}
+
+fn tests(mapping: &Mapping, path: &str) -> Result<Vec<LegacyTestJson>> {
+    mapping
+        .legacy_tests
+        .iter()
+        .map(|test| legacy_test(test, path))
+        .collect()
+}
+
+/// Absent without suites, as the engine leaves them null.
+fn test_suites(mapping: &Mapping, path: &str) -> Result<Option<Vec<TestSuiteJson>>> {
+    mapping
+        .test_suites
+        .as_ref()
+        .map(|suites| suites.iter().map(|suite| test_suite(suite, path)).collect())
+        .transpose()
 }
 
 /// The engine's `Mapping`. Its elements are their grammars' JSON.

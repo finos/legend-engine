@@ -57,6 +57,19 @@ pub trait ElementProtocol: Send + Sync {
     /// [`ConvertError::Plugin`] when `element` is not the expected concrete
     /// type, or any nested conversion failure.
     fn convert(&self, element: &dyn DSLElement) -> Result<Box<RawValue>>;
+
+    /// Writes [`ElementProtocol::convert`]'s JSON at the end of `out`, the
+    /// model's JSON, rather than into a buffer of its own that is then
+    /// copied there. The default copies `convert`'s; a converter of large
+    /// elements writes them in place.
+    ///
+    /// # Errors
+    ///
+    /// As for [`ElementProtocol::convert`].
+    fn convert_into(&self, element: &dyn DSLElement, out: &mut Vec<u8>) -> Result<()> {
+        out.extend_from_slice(self.convert(element)?.get().as_bytes());
+        Ok(())
+    }
 }
 
 /// Distributed slice into which each section grammar crate registers its
@@ -101,17 +114,31 @@ where
 /// [`ConvertError::Unsupported`] when no linked crate registered a converter
 /// for the element's kind; otherwise the converter's own error.
 pub fn convert_dsl_element(element: &dyn DSLElement) -> Result<Box<RawValue>> {
+    protocol_of(element)?.convert(element)
+}
+
+/// [`convert_dsl_element`], written at the end of `out`.
+///
+/// # Errors
+///
+/// As for [`convert_dsl_element`].
+pub fn convert_dsl_element_into(element: &dyn DSLElement, out: &mut Vec<u8>) -> Result<()> {
+    protocol_of(element)?.convert_into(element, out)
+}
+
+/// The registered converter for `element`'s kind.
+fn protocol_of(element: &dyn DSLElement) -> Result<&'static (dyn ElementProtocol + Send + Sync)> {
     let kind = element.kind();
     discovered_element_protocols()
         .iter()
+        .copied()
         .find(|p| p.kind() == kind)
         .ok_or_else(|| {
             ConvertError::unsupported(
                 format!("no protocol converter is registered for element kind '{kind}'"),
                 element.source_info(),
             )
-        })?
-        .convert(element)
+        })
 }
 
 #[cfg(test)]

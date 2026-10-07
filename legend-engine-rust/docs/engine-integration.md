@@ -187,8 +187,9 @@ engine. `parse_model(&ModelRequest)` parses a whole model as described above:
 the engine's split, each section by `parse_section` (the first section's
 error wins; a section type without a linked grammar, or offsets below zero,
 make the model unsupported), then the section index.
-`parse_section_json` / `parse_model_json` / `capabilities_json` are the JSON
-forms the JNI layer returns.
+`parse_section_json` / `parse_expression_json` / `parse_model_json_bytes` (a
+model written in one buffer) / `capabilities_json` are the JSON forms the JNI
+layer returns.
 
 ### Generic JNI surface
 

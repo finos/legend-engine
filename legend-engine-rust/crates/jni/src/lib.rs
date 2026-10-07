@@ -26,7 +26,7 @@
 //! | `byte[] capabilities()` | [`legend_pure_parser_api::capabilities_json`] |
 //! | `byte[] parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_section_json`] |
 //! | `byte[] parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_expression_json`] |
-//! | `byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_model_json`] |
+//! | `byte[] parseModel(String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_model_json_bytes`] |
 //!
 //! The surface is generic: adding a grammar never changes it. The grammars
 //! available are whatever crates are linked into the library — here every
@@ -193,30 +193,33 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     respond(&mut env, |env| {
         let code = java_string(env, &code, "code")?;
         let source_id = java_string(env, &source_id, "sourceId")?;
-        Ok(legend_pure_parser_api::parse_model_json(&ModelRequest {
-            code: &code,
-            source_id: &source_id,
-            line_offset,
-            column_offset,
-        }))
+        Ok(legend_pure_parser_api::parse_model_json_bytes(
+            &ModelRequest {
+                code: &code,
+                source_id: &source_id,
+                line_offset,
+                column_offset,
+            },
+        ))
     })
 }
 
 /// Runs `compute`, turning an argument error or a panic into the internal
 /// error JSON, and hands the result to Java as UTF-8 bytes.
-fn respond<'local>(
+fn respond<'local, T: Into<Vec<u8>>>(
     env: &mut JNIEnv<'local>,
-    compute: impl FnOnce(&mut JNIEnv<'local>) -> Result<String, String>,
+    compute: impl FnOnce(&mut JNIEnv<'local>) -> Result<T, String>,
 ) -> jbyteArray {
-    let json = match catch_unwind(AssertUnwindSafe(|| compute(env))) {
-        Ok(Ok(json)) => json,
-        Ok(Err(message)) => internal_error(message),
+    let json: Vec<u8> = match catch_unwind(AssertUnwindSafe(|| compute(env))) {
+        Ok(Ok(json)) => json.into(),
+        Ok(Err(message)) => internal_error(message).into_bytes(),
         Err(panic) => internal_error(format!(
             "panic in the Rust parser: {}",
             panic_message(&*panic)
-        )),
+        ))
+        .into_bytes(),
     };
-    env.byte_array_from_slice(json.as_bytes())
+    env.byte_array_from_slice(&json)
         .map_or(std::ptr::null_mut(), JByteArray::into_raw)
 }
 

@@ -51,7 +51,7 @@ use legend_pure_parser_parser::section_parser::discovered_section_parsers;
 use legend_pure_parser_protocol::ConvertError;
 use legend_pure_parser_protocol::island_protocol::discovered_island_protocols;
 use legend_pure_parser_protocol::v1::convert::{
-    ElementJson, convert_element_json, convert_expression_typed,
+    ElementJson, convert_element_into, convert_element_json, convert_expression_typed,
 };
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use legend_pure_parser_protocol::v1::value_spec::{LambdaFunction, ValueSpecification};
@@ -195,8 +195,53 @@ pub(crate) struct SectionJson {
     pub(crate) imports: Option<Vec<String>>,
 }
 
+/// Where a section's elements go as they are converted.
+pub(crate) trait Elements {
+    /// Converts `element` and keeps its JSON; returns its path.
+    fn convert(&mut self, element: &Element) -> Result<String, SectionError>;
+}
+
+/// Each element's JSON as text of its own: for the functions that return
+/// values, and sections.
+impl Elements for Vec<ElementJson> {
+    fn convert(&mut self, element: &Element) -> Result<String, SectionError> {
+        let json = convert_element_json(element)?;
+        let path = json.path.clone();
+        self.push(json);
+        Ok(path)
+    }
+}
+
+/// The elements written in place, one after another, into a JSON array: a
+/// model's, in one buffer, rather than each into its own and then copied.
+pub(crate) struct WrittenElements<'a> {
+    pub(crate) out: &'a mut Vec<u8>,
+    pub(crate) count: usize,
+}
+
+impl Elements for WrittenElements<'_> {
+    fn convert(&mut self, element: &Element) -> Result<String, SectionError> {
+        if self.count > 0 {
+            self.out.push(b',');
+        }
+        self.count += 1;
+        Ok(convert_element_into(element, self.out)?)
+    }
+}
+
 /// [`parse_section`]'s elements as JSON text, written once.
 pub(crate) fn section_json(request: &SectionRequest<'_>) -> Result<SectionJson, SectionError> {
+    let mut elements = Vec::new();
+    let (_, imports) = section_elements(request, &mut elements)?;
+    Ok(SectionJson { elements, imports })
+}
+
+/// Parses a section and converts its elements into `elements`; returns
+/// their paths, and the section's imports if its grammar has them.
+pub(crate) fn section_elements(
+    request: &SectionRequest<'_>,
+    elements: &mut impl Elements,
+) -> Result<(Vec<String>, Option<Vec<String>>), SectionError> {
     let offset = source_offset(request.line_offset, request.column_offset)?;
     require_linked(request.section_type)?;
     let has_imports = request.section_type == PURE_SECTION
@@ -218,18 +263,15 @@ pub(crate) fn section_json(request: &SectionRequest<'_>) -> Result<SectionJson, 
 
     engine_profile(&file)?;
 
-    let mut elements = Vec::new();
+    let mut paths = Vec::new();
     let mut imports = Vec::new();
     for section in &file.sections {
         imports.extend(section.imports.iter().map(|i| i.path.to_string()));
         for element in &section.elements {
-            elements.push(convert_element_json(element)?);
+            paths.push(elements.convert(element)?);
         }
     }
-    Ok(SectionJson {
-        elements,
-        imports: has_imports.then_some(imports),
-    })
+    Ok((paths, has_imports.then_some(imports)))
 }
 
 /// JSON text read back as a value, for the functions that return values.
@@ -479,18 +521,25 @@ struct SectionText<'a> {
 /// section index last, the [`parse_section_json`] error shape on failure.
 #[must_use]
 pub fn parse_model_json(request: &ModelRequest<'_>) -> String {
-    match model::model_json(request) {
-        Ok(elements) => to_json(&ModelText {
-            elements: elements.iter().map(AsRef::as_ref).collect(),
-        }),
-        Err(error) => error_json(&error),
-    }
+    String::from_utf8(parse_model_json_bytes(request)).unwrap_or_else(|e| {
+        error_json(&SectionError::new(
+            ErrorKind::Internal,
+            format!("the model's JSON is not UTF-8: {e}"),
+            None,
+        ))
+    })
 }
 
-/// [`parse_model_json`]'s success shape.
-#[derive(Serialize)]
-struct ModelText<'a> {
-    elements: Vec<&'a RawValue>,
+/// [`parse_model_json`] as UTF-8 bytes, what the JNI library hands Java:
+/// every element written in place, in one buffer.
+#[must_use]
+pub fn parse_model_json_bytes(request: &ModelRequest<'_>) -> Vec<u8> {
+    // Large models' protocol JSON runs to about twelve times their code.
+    let mut out = Vec::with_capacity(request.code.len().saturating_mul(12));
+    match model::model_json_into(request, &mut out) {
+        Ok(()) => out,
+        Err(error) => error_json(&error).into_bytes(),
+    }
 }
 
 /// [`parse_expression`] as a JSON string: `{"value":…}` on success, the

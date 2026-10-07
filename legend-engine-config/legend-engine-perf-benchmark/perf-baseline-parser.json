@@ -3,7 +3,7 @@
   "suite" : "parser",
   "environments" : {
     "Mac OS X|aarch64|Apple M4 Max|16|8192|17" : {
-      "generatedAt" : "2026-10-02T19:52:12.466227Z",
+      "generatedAt" : "2026-10-07T01:50:56.301968Z",
       "environment" : {
         "os" : "Mac OS X",
         "osVersion" : "26.6.2",
@@ -16,7 +16,7 @@
         "jvmName" : "OpenJDK 64-Bit Server VM",
         "jvmArgs" : "[-Xmx8g, -Xss8m]",
         "engineVersion" : "unknown",
-        "gitCommit" : "39d7ae44ec0f5b8b7bbde14744cc30062afb221f",
+        "gitCommit" : "c946f56f18462253b810a6e10ae465e2448306d5",
         "ci" : false,
         "rustParser" : {
           "available" : true,
@@ -44,14 +44,14 @@
         "warmup" : 10,
         "rustParser" : "measured",
         "coldMs" : {
-          "parse" : 492,
-          "parseRust" : 206,
-          "rustNative" : 29
+          "parse" : 582,
+          "parseRust" : 198,
+          "rustNative" : 23
         },
         "warmMedianMs" : {
-          "parse" : 95,
-          "parseRust" : 39,
-          "rustNative" : 26
+          "parse" : 97,
+          "parseRust" : 34,
+          "rustNative" : 21
         },
         "planJsonChars" : null
       }, {
@@ -75,14 +75,14 @@
         "warmup" : 10,
         "rustParser" : "measured",
         "coldMs" : {
-          "parse" : 340,
+          "parse" : 273,
           "parseRust" : 182,
-          "rustNative" : 78
+          "rustNative" : 113
         },
         "warmMedianMs" : {
-          "parse" : 388,
-          "parseRust" : 121,
-          "rustNative" : 79
+          "parse" : 394,
+          "parseRust" : 105,
+          "rustNative" : 66
         },
         "planJsonChars" : null
       }, {
@@ -106,14 +106,14 @@
         "warmup" : 10,
         "rustParser" : "measured",
         "coldMs" : {
-          "parse" : 87,
+          "parse" : 78,
           "parseRust" : 16,
-          "rustNative" : 6
+          "rustNative" : 5
         },
         "warmMedianMs" : {
-          "parse" : 41,
-          "parseRust" : 10,
-          "rustNative" : 6
+          "parse" : 37,
+          "parseRust" : 8,
+          "rustNative" : 5
         },
         "planJsonChars" : null
       }, {
@@ -137,8 +137,8 @@
         "warmup" : 10,
         "rustParser" : "measured",
         "coldMs" : {
-          "parse" : 13,
-          "parseRust" : 2,
+          "parse" : 16,
+          "parseRust" : 1,
           "rustNative" : 0
         },
         "warmMedianMs" : {
@@ -168,7 +168,7 @@
         "warmup" : 10,
         "rustParser" : "measured",
         "coldMs" : {
-          "parse" : 6,
+          "parse" : 8,
           "parseRust" : 3,
           "rustNative" : 0
         },
@@ -185,21 +185,21 @@
         "numerator" : "simple@scale3000/H2",
         "denominator" : "simple@scale3000/H2",
         "guards" : "the Rust parser's cost against the Java parser's",
-        "value" : 0.31
+        "value" : 0.27
       }, {
         "name" : "rustNativeShare",
         "phase" : "rustNative/parseRust",
         "numerator" : "simple@scale3000/H2",
         "denominator" : "simple@scale3000/H2",
         "guards" : "the share of the Rust parse spent in the native call rather than reading its JSON in Java",
-        "value" : 0.65
+        "value" : 0.63
       }, {
         "name" : "rustParseVsModelSize",
         "phase" : "parseRust",
         "numerator" : "simple@scale3000/H2",
         "denominator" : "simple@scale1000/H2",
         "guards" : "superlinear terms in the Rust parser and its protocol conversion",
-        "value" : 3.1
+        "value" : 3.09
       } ]
     }
   }

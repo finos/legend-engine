@@ -128,9 +128,18 @@ name its positions' source after the mapping, as the engine's walker does.
 
 **The `api` crate keeps two paths:**
 
-- `parse_section_json`, `parse_model_json` and `parse_expression_json` are what
-  JNI calls. They write each element's text once. A model's section index takes
-  its element paths from the AST (`convert_element_json`), not from the JSON.
+- `parse_section_json`, `parse_expression_json` and `parse_model_json_bytes`
+  are what JNI calls. They write each element's text once. A model's section
+  index takes its element paths from the AST, not from the JSON.
+- **A model is written in one buffer.** `parse_model_json_bytes` writes every
+  element in place through `convert_into` (`ElementProtocol`,
+  `MappingElementGrammar`), rather than into a `Box<RawValue>` of its own that
+  is then copied. `convert_into` copies `convert`'s text by default. Converters
+  of large elements override it: core elements, databases, relational class
+  mappings, and mappings. `MappingProtocol::convert_into` writes the mapping
+  field by field around its elements, so it must stay in step with
+  `MappingJson`; `tests/model_json_in_place.rs` compares the two over the
+  corpus.
 - `parse_section`, `parse_model` and `parse_expression` read that text back into
   values, for tests and tools.
 
