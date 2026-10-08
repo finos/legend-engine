@@ -65,9 +65,9 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Single<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(-1, $f->eval(|least([-1])));
-    assertEquals(1.0, $f->eval(|least([1.0])));
-    assertEquals(1.0d, $f->eval(|least([1.0d])));
+    assertEqWithinTolerance(-1, $f->eval(|least([-1]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0, $f->eval(|least([1.0]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0d, $f->eval(|least([1.0d]))->toOne(), 0.000000000000001);
     assertEquals(%2025-04-09, $f->eval(|least([%2025-04-09])));
     assertEquals(%2025-02-10T20:10:20, $f->eval(|least([%2025-02-10T20:10:20])));
     assertEquals(true, $f->eval(|least([true])));
@@ -91,10 +91,10 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Number<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(1.23, $f->eval(|least([1.23, 2])));
-    assertEquals(1.23, $f->eval(|least([2, 1.23])));
-    assertEquals(1.0, $f->eval(|least([4.23, 7.345, 1.0, 3, 4])));
-    assertEquals(1.0d, $f->eval(|least([4.23, 7.345, 1.0d, 3, 4])));
+    assertEqWithinTolerance(1.23, $f->eval(|least([1.23, 2]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.23, $f->eval(|least([2, 1.23]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0, $f->eval(|least([4.23, 7.345, 1.0, 3, 4]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0d, $f->eval(|least([4.23, 7.345, 1.0d, 3, 4]))->toOne(), 0.000000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_StrictDate<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

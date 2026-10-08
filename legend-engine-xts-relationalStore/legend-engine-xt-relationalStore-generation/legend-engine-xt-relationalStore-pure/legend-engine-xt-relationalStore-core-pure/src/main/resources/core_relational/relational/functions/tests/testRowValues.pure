@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::query::function::rowValues::testSeveralValuesOfARow():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill')
+                                     ->project([p|$p.firstName, p|[$p.age->toOne(), 20]->max(), p|[$p.age->toOne(), 20]->min(), p|[$p.age->toOne(), 20.5]->max(), p|[$p.age->toOne(), 20]->sum(), p|[$p.age->toOne(), 20]->plus(), p|[$p.age->toOne(), 20.5]->sum()],
+                                               ['name', 'max', 'min', 'maxNumber', 'sum', 'plus', 'sumNumber'])
+                                     ->sort('name'),
+                        simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(['John,20,12,20.5,32,32,32.5', 'Oliver,32,20,32.0,52,52,52.5'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".FIRSTNAME as "name", greatest("root".AGE, 20) as "max", least("root".AGE, 20) as "min", greatest("root".AGE, cast(20.5 as float)) as "maxNumber", "root".AGE + 20 as "sum", "root".AGE + 20 as "plus", "root".AGE + cast(20.5 as float) as "sumNumber" from personTable as "root" where "root".LASTNAME = \'Hill\' order by "name" asc', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::function::rowValues::testOneValueOfARowOrNone():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill')
+                                     ->project([p|$p.firstName, p|$p.manager.age->max(), p|$p.manager.age->sum(), p|$p.manager.age->plus(), p|$p.manager.age->map(a|$a->toFloat())->sum(), p|[$p.age->toOne()]->min(), p|[]->cast(@Integer)->max(), p|[]->cast(@Integer)->sum()],
+                                               ['name', 'max', 'sum', 'plus', 'sumFloat', 'min', 'maxOfNone', 'sumOfNone'])
+                                     ->sort('name'),
+                        simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(['John,22,22,22,22.0,12,TDSNull,0', 'Oliver,TDSNull,0,0,0.0,32,TDSNull,0'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".FIRSTNAME as "name", "persontable_1".AGE as "max", coalesce("persontable_1".AGE, 0) as "sum", coalesce("persontable_1".AGE, 0) as "plus", coalesce(cast("persontable_1".AGE as float), cast(0.0 as float)) as "sumFloat", "root".AGE as "min", null as "maxOfNone", 0 as "sumOfNone" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID) where "root".LASTNAME = \'Hill\' order by "name" asc', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::function::rowValues::testValuesOfManyRowsAggregate():Boolean[1]
+{
+   let result = execute(|Firm.all()->filter(f|$f.legalName == 'Firm X')->project([f|[$f.employees.age]->max(), f|$f.employees.age->min(), f|$f.employees.age->sum(), f|$f.employees.age->plus()], ['max', 'min', 'sum', 'plus']),
+                        simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(['35,12,149,149'], $result.values.rows->map(r|$r.values->makeString(',')));
+}
+
+function <<test.Test>> meta::relational::tests::query::function::rowValues::testValuesOfARowInsideGroupBy():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill')
+                                     ->groupBy([p|$p.lastName], [agg(p|[$p.age->toOne(), 20]->max(), y|$y->sum()), agg(p|$p.manager.age->sum(), y|$y->max())], ['lastName', 'sumOfMax', 'maxOfSum']),
+                        simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(['Hill,52,22'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertEquals('select "root".LASTNAME as "lastName", sum(greatest("root".AGE, 20)) as "sumOfMax", max(coalesce("persontable_1".AGE, 0)) as "maxOfSum" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID) where "root".LASTNAME = \'Hill\' group by "lastName"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::function::rowValues::testValuesOfARowInRelation():Boolean[1]
+{
+   let extended = meta::pure::executionPlan::executionPlan({|#>{meta::relational::tests::dbInc.personTable}#
+                                                              ->extend(~[max: x|[$x.AGE->toOne(), 20]->max(), min: x|[$x.AGE->toOne()]->min(), sum: x|$x.AGE->sum(), plus: x|[$x.AGE->toOne(), $x.ID]->plus()])
+                                                              ->filter(x|[$x.AGE->toOne(), $x.ID]->max() > 30)
+                                                              ->select(~[ID, max, min, sum, plus])},
+                                                           simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('Relational(type=TDS[(ID,meta::pure::precisePrimitives::Int,INT,""),(max,Integer,INT,""),(min,Integer,INT,""),(sum,Integer,INT,""),(plus,Integer,INT,"")]resultColumns=[("ID",INT),("max",""),("min",INT),("sum",""),("plus","")]sql=select"persontable_0".IDas"ID",greatest("persontable_0".AGE,20)as"max","persontable_0".AGEas"min",coalesce("persontable_0".AGE,0)as"sum","persontable_0".AGE+"persontable_0".IDas"plus"frompersonTableas"persontable_0"wheregreatest("persontable_0".AGE,"persontable_0".ID)>30connection=TestDatabaseConnection(type="H2"))', $extended->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+
+   let grouped = meta::pure::executionPlan::executionPlan({|#>{meta::relational::tests::dbInc.personTable}#
+                                                             ->groupBy(~[FIRMID], ~[sumOfMax: x|[$x.AGE->toOne(), $x.ID]->max() : y|$y->sum(), maxOfSum: x|$x.AGE->sum() : y|$y->max()])},
+                                                          simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('Relational(type=TDS[(FIRMID,meta::pure::precisePrimitives::Int,INT,""),(sumOfMax,Integer,INT,""),(maxOfSum,Integer,INT,"")]resultColumns=[("FIRMID",INT),("sumOfMax",""),("maxOfSum","")]sql=select"persontable_0".FIRMIDas"FIRMID",sum(greatest("persontable_0".AGE,"persontable_0".ID))as"sumOfMax",max(coalesce("persontable_0".AGE,0))as"maxOfSum"frompersonTableas"persontable_0"groupby"FIRMID"connection=TestDatabaseConnection(type="H2"))', $grouped->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
