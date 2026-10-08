@@ -2308,7 +2308,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //that later re-derives the schema from the expression then sees no columns.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasSingleExecutionContext(sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):Boolean[1]
 {
-  ($sources->distinctRuntimes($extensions)->size() <= 1) && ($sources->distinctMappings()->size() <= 1);
+  ($sources->distinctRuntimes($extensions)->size() <= 1) && ($sources->distinctMappings()->size() <= 1) && $sources.executionOptions->isEmpty() && $sources.executionContext->isEmpty();
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(context:SqlTransformContext[1]):SqlTransformContext[1]
