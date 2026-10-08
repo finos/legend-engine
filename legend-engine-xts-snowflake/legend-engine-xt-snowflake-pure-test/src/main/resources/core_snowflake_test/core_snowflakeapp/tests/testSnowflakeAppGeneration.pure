@@ -138,6 +138,16 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> {doc.doc = 'OneMany ([1..*]) must flatten identically to ZeroMany ([*]) in an in() filter'}
+meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithOneManyCollectionParams():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".AGE in (select "root".value from Table(Flatten(input => ages)) as "root") $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithOneManyCollectionParams(Integer[1..*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingContainsInExtend():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("names" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"NEWCOL" BOOLEAN) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".FIRSTNAME in (select "root".value from Table(Flatten(input => names)) as "root") as "newCol" from personTable as "root" $$;';
@@ -529,6 +539,12 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContains(ages: Integer[*]):TabularDataSet[1]
 {
     PersonX.all()->filter(p| $ages->contains($p.age->toOne()))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithOneManyCollectionParams(ages: Integer[1..*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age->in($ages) )->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 

@@ -1321,8 +1321,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    // processSemiStructuredArrayFlattenOutputForDatabricks) resolve.
    //
    // See processSemiStructuredArrayFlattenForDatabricks for the try_cast rationale.
-   let processedNavigation = $s.navigation->processOperation($sgc);
-   '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $processedNavigation + ' as array<variant>))))';
+   $s.navigation->match([
+      c: ColumnName[1] | $c->flattenTableFunctionParameterForDatabricks(),
+      n: RelationalOperationElement[1] | '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $n->processOperation($sgc) + ' as array<variant>))))'
+   ]);
+}
+
+// Function activation lowers a collection parameter to a flatten over the parameter name. Databricks does
+// not resolve a function parameter referenced inside a nested subquery, so it is read through the
+// func_param_table CTE that createFunction emits. The parameter is already a typed ARRAY, so it is exploded
+// without the variant cast, which would otherwise make the surrounding comparison fail on type mismatch.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::flattenTableFunctionParameterForDatabricks(c:ColumnName[1]): String[1]
+{
+   '(select `col` as `VALUE` from (select explode_outer(param_' + $c.name + ') from func_param_table))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenOutputForDatabricks(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
