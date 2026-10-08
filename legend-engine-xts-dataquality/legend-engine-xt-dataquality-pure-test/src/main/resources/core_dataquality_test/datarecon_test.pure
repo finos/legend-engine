@@ -52,6 +52,46 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
 }
 
+
+//the dynamicHash lambda above, with a scalar let on each side. The lets are hoisted onto the front
+//of the generated lambda and prefixed per side, and each side's filter reads its own copy.
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_multiExpression():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+
+  let source = {| let minId = -1;
+                  #>{meta::external::dataquality::tests::domain::db.personTable}#->filter(r | $r.ID > $minId)->from($runtime);};
+  let target = {| let minId = -1;
+                  #>{meta::external::dataquality::tests::domain::db.personTable}#->filter(r | $r.ID > $minId)->from($runtime);};
+
+  let lambda = {| let source_minId = -1;
+    let target_minId = -1;
+    #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->filter(r | $r.ID > $source_minId)
+    ->select(~[ID,FIRSTNAME,LASTNAME])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[ID_SOURCE,DIGEST_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->filter(r | $r.ID > $target_minId)
+          ->select(~[ID,FIRSTNAME,LASTNAME])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET]);
+  };
+
+  testRecon($lambda, $source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
+}
+
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_preComputedHash():Boolean[1]
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
@@ -736,4 +776,187 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 {
   let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual, false);
+}
+
+function meta::external::dataquality::tests::reconTestRuntime():PackageableRuntime[1]
+{
+  loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+}
+
+function meta::external::dataquality::tests::reconLetName(vs: meta::pure::metamodel::valuespecification::ValueSpecification[1]): String[1]
+{
+  $vs->cast(@meta::pure::metamodel::valuespecification::SimpleFunctionExpression).parametersValues
+    ->evaluateAndDeactivate()->at(0)
+    ->cast(@meta::pure::metamodel::valuespecification::InstanceValue).values->toOne()->cast(@String);
+}
+
+function meta::external::dataquality::tests::generateReconLambda(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1]): LambdaFunction<Any>[1]
+{
+  getDataReconLambda(createReconInput($source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+}
+
+//lets on one side only: hoisted in declaration order, with the other side contributing none
+function <<test.Test>> meta::external::dataquality::tests::testDataRecon_hoistsOneSidedLetsInOrder():Boolean[1]
+{
+  let runtime = reconTestRuntime();
+  let source = {| let minId = 0;
+                  let maxId = 1000;
+                  #>{meta::external::dataquality::tests::domain::db.personTable}#->filter(r | ($r.ID > $minId) && ($r.ID < $maxId))->from($runtime);};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+
+  let exprs = generateReconLambda($source, $target).expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(3, $exprs->size());
+  assertEquals(['source_minId', 'source_maxId'], $exprs->init()->map(e | reconLetName($e)));
+}
+
+//both sides may bind the same name; the source_/target_ prefixes are what keep them apart
+function <<test.Test>> meta::external::dataquality::tests::testDataRecon_bothSidesSameLetName():Boolean[1]
+{
+  let runtime = reconTestRuntime();
+  let source = {| let minId = 0;
+                  #>{meta::external::dataquality::tests::domain::db.personTable}#->filter(r | $r.ID > $minId)->from($runtime);};
+  let target = {| let minId = 0;
+                  #>{meta::external::dataquality::tests::domain::db.personTable}#->filter(r | $r.ID > $minId)->from($runtime);};
+
+  let exprs = generateReconLambda($source, $target).expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(3, $exprs->size());
+  assertEquals(['source_minId', 'target_minId'], $exprs->init()->map(e | reconLetName($e)));
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testDataRecon_relationValuedLetIsHoisted():Boolean[1]
+{
+  let runtime = reconTestRuntime();
+  let source = {| let base = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME,LASTNAME]);
+                  $base->from($runtime);};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+
+  let exprs = generateReconLambda($source, $target).expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(2, $exprs->size());
+  assertEquals('source_base', reconLetName($exprs->at(0)));
+}
+
+function meta::external::dataquality::tests::reconVarNames(vs: meta::pure::metamodel::valuespecification::ValueSpecification[1]): String[*]
+{
+  $vs->match([
+    v:meta::pure::metamodel::valuespecification::VariableExpression[1] | $v.name,
+    s:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
+        $s.parametersValues->evaluateAndDeactivate()->map(p | reconVarNames($p)),
+    i:meta::pure::metamodel::valuespecification::InstanceValue[1] |
+        $i.values->map(x | $x->match([
+          l:LambdaFunction<Any>[1] | $l.expressionSequence->evaluateAndDeactivate()->map(e | reconVarNames($e)),
+          k:meta::pure::metamodel::function::KeyExpression[1] | $k.expression->evaluateAndDeactivate()->map(e | reconVarNames($e)),
+          v:meta::pure::metamodel::valuespecification::ValueSpecification[1] | reconVarNames($v),
+          a:Any[1] | []->cast(@String)
+        ])),
+    o:meta::pure::metamodel::valuespecification::ValueSpecification[1] | []->cast(@String)
+  ])
+}
+
+//a single-expression query must come back untouched
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_singleExpressionUntouched():Boolean[1]
+{
+  let l = {|'hello'};
+  let renamed = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_');
+  assertEquals(1, $renamed.expressionSequence->evaluateAndDeactivate()->size());
+  assertEquals([], reconVarNames($renamed.expressionSequence->evaluateAndDeactivate()->toOne()));
+}
+
+//bindings and references both renamed, declaration order preserved, later let reading an earlier one
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_bindingsAndReferences():Boolean[1]
+{
+  let l = {|
+            let first = 'a';
+            let second = $first + 'b';
+            $second + $first;
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(3, $exprs->size());
+  assertEquals(['source_first', 'source_second'], $exprs->init()->map(e | reconLetName($e)));
+  //the second let reads the first, so its value must have been renamed too
+  assertEquals(['source_first'], reconVarNames($exprs->at(1)));
+  assertEquals(['source_second', 'source_first'], reconVarNames($exprs->last()->toOne()));
+}
+
+//renaming one name at a time would turn x into source_x and then rewrite it again as the real
+//source_x is processed; a single pass over the whole map cannot capture like that
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_doesNotCaptureAlreadyPrefixedName():Boolean[1]
+{
+  let l = {|
+            let x = 'a';
+            let source_x = 'b';
+            $x + $source_x;
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(['source_x', 'source_source_x'], $exprs->init()->map(e | reconLetName($e)));
+  assertEquals(['source_x', 'source_source_x'], reconVarNames($exprs->last()->toOne()));
+}
+
+//a nested lambda that rebinds the name shadows the let, so references inside it must be left alone
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_respectsNestedLambdaShadowing():Boolean[1]
+{
+  let l = {|
+            let a = 'outer';
+            ['p', 'q']->map(a | $a->toUpper())->joinStrings('') + $a;
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(['source_a'], $exprs->init()->map(e | reconLetName($e)));
+  //'a' is the map lambda's own parameter and stays; the trailing reference is the let and is renamed
+  let names = reconVarNames($exprs->last()->toOne());
+  assert($names->contains('a'), | 'shadowed inner reference must not be renamed, got ' + $names->joinStrings(','));
+  assert($names->contains('source_a'), | 'outer reference must be renamed, got ' + $names->joinStrings(','));
+  assertEquals(0, $names->filter(n | $n == 'source_source_a')->size());
+}
+
+//shadowing is per name: a nested lambda hiding one let must not stop the others being renamed inside it
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_shadowingIsPerName():Boolean[1]
+{
+  let l = {|
+            let a = 'A';
+            let b = 'B';
+            ['p']->map(a | $a + $b)->joinStrings('');
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(['source_a', 'source_b'], $exprs->init()->map(e | reconLetName($e)));
+  let names = reconVarNames($exprs->last()->toOne());
+  assert($names->contains('a'), | 'shadowed name must stay, got ' + $names->joinStrings(','));
+  assert($names->contains('source_b'), | 'unshadowed name must be renamed inside the lambda, got ' + $names->joinStrings(','));
+}
+
+//once a name is shadowed it must stay shadowed further down, while the rest of the map keeps applying
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_shadowingPropagatesThroughNesting():Boolean[1]
+{
+  let l = {|
+            let a = 'A';
+            let b = 'B';
+            ['p']->map(a | ['q']->map(q | $a + $b + $q)->joinStrings(''))->joinStrings('');
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  let names = reconVarNames($exprs->last()->toOne());
+  assert($names->contains('a'), | 'a is shadowed at the outer lambda and must stay so two levels down, got ' + $names->joinStrings(','));
+  assert($names->contains('source_b'), | 'b is never shadowed and must be renamed two levels down, got ' + $names->joinStrings(','));
+  assert($names->contains('q'), | 'the inner lambda parameter must be untouched, got ' + $names->joinStrings(','));
+  assertEquals(0, $names->filter(n | $n == 'source_a')->size());
+}
+
+//a ValueSpecification that is neither a variable, a function expression nor an instance value -
+//^Class(k = v) yields KeyExpressions - must pass through rather than fail the match
+function <<test.Test>> meta::external::dataquality::tests::testRenameLet_passesThroughOtherValueSpecifications():Boolean[1]
+{
+  let l = {|
+            let who = 'Alice';
+            ^meta::external::dataquality::tests::domain::Person(name = $who, age = 30).name;
+          };
+  let exprs = meta::external::dataquality::datarecon::renameLetVariables($l, 'source_').expressionSequence->evaluateAndDeactivate();
+
+  assertEquals(['source_who'], $exprs->init()->map(e | reconLetName($e)));
+  assert(reconVarNames($exprs->last()->toOne())->contains('source_who'),
+         | 'reference inside the constructor must be renamed');
 }
