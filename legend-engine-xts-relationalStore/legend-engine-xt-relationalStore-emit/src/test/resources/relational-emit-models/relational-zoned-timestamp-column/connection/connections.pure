@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The rows are set up by SQL, since testDataSetupCSV creates each table from
+// the store's column types, which would make the column a plain TIMESTAMP. They
+// ride on the connection rather than on the test, because a test that brings
+// its own `connections:` block has its connection rebuilt without the time zone
+// the connection names.
+
+###Connection
+RelationalDatabaseConnection demo::connection::ReadingNoZoneConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ReadingUtcConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  timezone: 'UTC';
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ReadingNewYorkConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  timezone: 'America/New_York';
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+###Runtime
+Runtime demo::runtime::ReadingNoZoneRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingNoZoneConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ReadingUtcRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingUtcConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ReadingNewYorkRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingNewYorkConnection
+    ]
+  ];
+}

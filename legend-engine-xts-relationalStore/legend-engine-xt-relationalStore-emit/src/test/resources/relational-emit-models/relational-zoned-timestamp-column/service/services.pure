@@ -1,0 +1,252 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A graph fetch and a projection through each connection. Every test expects
+// the same moments: a zoned timestamp holds a moment, so the zone a connection
+// names, which says where the database keeps its wall clocks, cannot move it.
+
+###Service
+Service demo::service::ReadingFetchNoZoneService
+{
+  pattern: '/api/readings/fetch/no-zone';
+  documentation: 'Readings fetched as a graph through a connection naming no time zone.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->graphFetch(#{demo::Reading{id, recordedAt}}#)->serialize(#{demo::Reading{id, recordedAt}}#);
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingNoZoneRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"recordedAt":"2012-05-20T03:10:52.501000000"},{"id":2,"recordedAt":"2012-05-20T07:10:52.501000000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::service::ReadingProjectNoZoneService
+{
+  pattern: '/api/readings/project/no-zone';
+  documentation: 'Readings projected to rows through a connection naming no time zone.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->project([x|$x.id, x|$x.recordedAt], ['Id', 'Recorded At'])->sort('Id');
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingNoZoneRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Recorded At":"2012-05-20T03:10:52.501000000+0000"},{"Id":2,"Recorded At":"2012-05-20T07:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::service::ReadingFetchUtcService
+{
+  pattern: '/api/readings/fetch/utc';
+  documentation: 'Readings fetched as a graph through a connection naming UTC.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->graphFetch(#{demo::Reading{id, recordedAt}}#)->serialize(#{demo::Reading{id, recordedAt}}#);
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingUtcRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"recordedAt":"2012-05-20T03:10:52.501000000"},{"id":2,"recordedAt":"2012-05-20T07:10:52.501000000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::service::ReadingProjectUtcService
+{
+  pattern: '/api/readings/project/utc';
+  documentation: 'Readings projected to rows through a connection naming UTC.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->project([x|$x.id, x|$x.recordedAt], ['Id', 'Recorded At'])->sort('Id');
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingUtcRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Recorded At":"2012-05-20T03:10:52.501000000+0000"},{"Id":2,"Recorded At":"2012-05-20T07:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::service::ReadingFetchNewYorkService
+{
+  pattern: '/api/readings/fetch/new-york';
+  documentation: 'Readings fetched as a graph through a connection naming America/New_York.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->graphFetch(#{demo::Reading{id, recordedAt}}#)->serialize(#{demo::Reading{id, recordedAt}}#);
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingNewYorkRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"recordedAt":"2012-05-20T03:10:52.501000000"},{"id":2,"recordedAt":"2012-05-20T07:10:52.501000000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::service::ReadingProjectNewYorkService
+{
+  pattern: '/api/readings/project/new-york';
+  documentation: 'Readings projected to rows through a connection naming America/New_York.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Reading.all()->project([x|$x.id, x|$x.recordedAt], ['Id', 'Recorded At'])->sort('Id');
+    mapping: demo::ReadingMapping;
+    runtime: demo::runtime::ReadingNewYorkRuntime;
+  }
+  testSuites:
+  [
+    readingSuite:
+    {
+      tests:
+      [
+        recordedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadEachZonedTimestampAsTheMomentItHolds:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Recorded At":"2012-05-20T03:10:52.501000000+0000"},{"Id":2,"Recorded At":"2012-05-20T07:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
