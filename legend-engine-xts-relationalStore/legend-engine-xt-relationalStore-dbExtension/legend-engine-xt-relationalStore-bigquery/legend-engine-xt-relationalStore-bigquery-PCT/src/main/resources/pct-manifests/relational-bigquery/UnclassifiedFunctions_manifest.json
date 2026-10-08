@@ -1,0 +1,73 @@
+{
+  "adapter": "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test": "meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: CURRENT_USER"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nThird argument (pad pattern) for LPAD/RPAD cannot be empty"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nThird argument (pad pattern) for LPAD/RPAD cannot be empty"
+    }
+  ]
+}

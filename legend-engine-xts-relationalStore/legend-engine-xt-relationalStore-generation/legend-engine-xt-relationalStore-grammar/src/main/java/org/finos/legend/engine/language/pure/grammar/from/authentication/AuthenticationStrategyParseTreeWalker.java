@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPServiceAccountKeyAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.OAuthAuthenticationStrategy;
@@ -107,6 +108,15 @@ public class AuthenticationStrategyParseTreeWalker
         {
             authStrategy.additionalGcpScopes = ListIterate.collect(additionalGcpScopesRefContext.gcpScopesArray().STRING(), ctx -> PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
         }
+        return authStrategy;
+    }
+
+    public GCPServiceAccountKeyAuthenticationStrategy visitGCPServiceAccountKeyAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.GcpServiceAccountKeyAuthContext authCtx)
+    {
+        GCPServiceAccountKeyAuthenticationStrategy authStrategy = new GCPServiceAccountKeyAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.ServiceAccountKeyVaultReferenceRefContext serviceAccountKeyVaultReferenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.serviceAccountKeyVaultReferenceRef(), "serviceAccountKeyVaultReference", code.getSourceInformation());
+        authStrategy.serviceAccountKeyVaultReference = PureGrammarParserUtility.fromGrammarString(serviceAccountKeyVaultReferenceContext.STRING().getText(), true);
         return authStrategy;
     }
 

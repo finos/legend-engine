@@ -42,6 +42,8 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-path-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar</dependency>
@@ -181,6 +183,14 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
         </dependency>
 
         <!-- TEST -->
