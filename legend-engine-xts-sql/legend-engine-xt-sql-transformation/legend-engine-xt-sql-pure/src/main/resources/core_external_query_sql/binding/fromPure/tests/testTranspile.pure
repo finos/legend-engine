@@ -4486,6 +4486,45 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   //   }->meta::pure::router::preeval::preval(sqlExtensions()), $relSources, true, false, true);
 }
 
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowArgumentOverGroupedJoin():Boolean[1]
+{
+  test(
+    'SELECT a.mx FROM (SELECT q."Float" AS sal, MAX("Float") OVER (ORDER BY q."Integer") AS mx ' +
+    'FROM service."/service/service1" q LEFT JOIN service."/service/service2" d ON q."Integer" = d."ID" ' +
+    'GROUP BY q."Integer", q."Float") a',
+
+    [
+      c({|
+        FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_q)
+          ->rename(~Integer, ~Integer_q)
+          ->rename(~Float, ~Float_q)
+          ->rename(~Decimal, ~Decimal_q)
+          ->rename(~StrictDate, ~StrictDate_q)
+          ->rename(~DateTime, ~DateTime_q)
+          ->rename(~String, ~String_q)
+          ->join(
+              FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->rename(~ID, ~ID_d)
+                ->rename(~Integer, ~Integer_d)
+                ->rename(~String, ~String_d), JoinKind.LEFT, {row1, row2 | $row1.Integer_q == $row2.ID_d}
+            )
+          ->extend(~[sal : x | $x.Float_q])
+          ->select(~[Integer_q, Float_q, sal])
+          ->distinct()
+          ->extend(~Integer_q->ascending()->over(), ~[mx : {p, w, r | $r.Float_q} : y | $y->max()])
+          ->select(~[sal, mx])
+          ->select(~[mx])
+      }, true, false)
+    ]
+  )
+}
+
+
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimpleNested():Boolean[1]
 {
   test(
