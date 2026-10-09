@@ -65,7 +65,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
-      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForDatabricks_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -808,6 +808,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         $windowSpec +
         + ')';
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinStringsOperationForDatabricks(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc,
+      {col, sep| 'array_join(collect_list(' + $col + '), ' + $sep + ')'},
+      {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |', ' + $sep + ', '), ')')});
 }
 
 // The shared default processFrameValue hard-fails on FrameIntervalValue ('Window function with
