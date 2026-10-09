@@ -45,7 +45,7 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
     {
 
         this.allocator = new RootAllocator();
-        Calendar calendar = TimeZones.newCalendar((resultSet.getRelationalDatabaseTimeZone() == null) ? "GMT" : resultSet.getRelationalDatabaseTimeZone());
+        Calendar calendar = TimeZones.newCalendarLegacy((resultSet.getRelationalDatabaseTimeZone() == null) ? "GMT" : resultSet.getRelationalDatabaseTimeZone());
         // Newer JDBC drivers (Snowflake 4.x, H2 2.x, ...) report TIMESTAMP_TZ / TIMESTAMP_LTZ columns as
         // java.sql.Types.TIMESTAMP_WITH_TIMEZONE (2014), which the default arrow-jdbc type converter
         // does not handle (see JdbcToArrowUtils.getArrowTypeFromJdbcType). Map it to the same

@@ -21,6 +21,7 @@ import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpret
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.extract.NativeDateElementFunction;
 
 import java.time.temporal.WeekFields;
+import java.util.Locale;
 
 public class WeekOfYear extends NativeDateElementFunction
 {
@@ -36,9 +37,9 @@ public class WeekOfYear extends NativeDateElementFunction
         {
             throw new InvalidDateElementException("Cannot get week of year for " + date);
         }
-        // ISO 8601 numbering: a week starts on Monday, and week 1 is the one holding the year's first
-        // Thursday. Fixed rather than read from the JVM locale, so a query answers the same wherever
-        // it runs, and answers what the relational stores do when it is pushed down to them.
-        return PureDateToJava.start().toLocalDate(date).get(WeekFields.ISO.weekOfWeekBasedYear());
+        // Weeks are numbered as the JVM's default format locale numbers them, which is what
+        // Calendar.WEEK_OF_YEAR answered: the locale says which day a week starts on, and how many
+        // days of the year the first week must hold.
+        return PureDateToJava.start().toLocalDate(date).get(WeekFields.of(Locale.getDefault(Locale.Category.FORMAT)).weekOfWeekBasedYear());
     }
 }

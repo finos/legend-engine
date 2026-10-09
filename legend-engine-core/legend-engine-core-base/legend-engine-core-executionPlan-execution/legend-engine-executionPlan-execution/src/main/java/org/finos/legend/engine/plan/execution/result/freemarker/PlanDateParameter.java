@@ -38,9 +38,7 @@ class PlanDateParameter implements freemarker.template.TemplateDateModel
 
     public PlanDateParameter(LocalDateTime date, DateTimeFormatter dateTimeFormatter, String targetTz)
     {
-        // Compatibility only: the connection grammar quotes a zone id and the parser now strips those quotes, so a
-        // zone id arrives bare. Plans generated before that fix carry the quotes, and ZoneId.of rejects them.
-        String validTargetTz = targetTz.replaceAll("^['\"]+|['\"]+$", "");
+        String validTargetTz = targetTz.replaceAll("^['\"]+|['\"]+$", ""); // Sanitize the targetTz input by trimming any leading or trailing quotes before processing it
         LocalDateTime dateTimeAdjustedForTargetTz = getTargetZonedDateTime(date, validTargetTz);
         formattedDate = dateTimeAdjustedForTargetTz.format(dateTimeFormatter);
         processedDate = Date.from(dateTimeAdjustedForTargetTz.atZone(TimeZones.parse(validTargetTz)).toInstant());

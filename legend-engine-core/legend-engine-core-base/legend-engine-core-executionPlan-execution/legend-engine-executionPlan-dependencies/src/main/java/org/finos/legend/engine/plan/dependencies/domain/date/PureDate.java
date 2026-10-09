@@ -1209,7 +1209,9 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
     /**
      * Resolve the name of a time zone to the zone it stands for.
      *
-     * <p>Delegates to {@link TimeZones}, which is where every time zone name in Legend is resolved.
+     * <p>Delegates to {@link TimeZones}, which is where every time zone name in Legend is resolved. For now it
+     * resolves a name the legacy way, through {@link java.util.TimeZone#getTimeZone(String)}, which reads a name it
+     * does not recognize as GMT. That is wrong, and is kept only for the transition to strict resolution.
      * It sits here because the Java a relational node generates is compiled against a curated
      * classpath -- see {@code GeneratePureConfig.MAIN_DEPENDENCIES} -- which carries this class and
      * not that one, and a second resolver reading names its own way is the thing {@link TimeZones}
@@ -1220,7 +1222,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
      */
     public static ZoneId resolveTimeZone(String timeZone)
     {
-        return TimeZones.parse(timeZone);
+        return TimeZones.parseLegacy(timeZone);
     }
 
     /**
@@ -1234,7 +1236,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
      */
     public static Calendar newCalendar(String timeZone)
     {
-        return TimeZones.newCalendar(timeZone);
+        return TimeZones.newCalendarLegacy(timeZone);
     }
 
     /**

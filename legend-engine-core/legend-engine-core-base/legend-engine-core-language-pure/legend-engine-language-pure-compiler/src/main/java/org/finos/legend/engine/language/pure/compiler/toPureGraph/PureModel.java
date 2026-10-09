@@ -97,6 +97,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.MutableRuntimeOptions;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.tools.ConcurrentHashSet;
@@ -109,6 +110,7 @@ import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLo
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
+import org.finos.legend.pure.runtime.java.shared.time.TimeZoneResolutionOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,8 +222,15 @@ public class PureModel implements IPureModel
                     null,
                     console,
                     null,
+                    null,
+                    null,
                     Sets.mutable.empty(),
-                    compiledExtensions
+                    compiledExtensions,
+                    // The Pure this model runs, plan generation included, resolves time zone names the legacy way,
+                    // through TimeZone.getTimeZone, as the engine did before it adopted strict resolution. This is
+                    // temporary: the legacy way reads a name it does not know as GMT, which is wrong, and is kept
+                    // only to ease the transition.
+                    TimeZoneResolutionOption.setLegacyTimeZoneResolution(MutableRuntimeOptions.fromSystemProperties())
             );
 
             ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();

@@ -711,7 +711,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             //TODO, throw exception, TZ should always be specified
             //Till then, default to PURE default which is "GMT"
-            this.calendar = TimeZones.newCalendar((timeZoneId == null) ? "GMT" : timeZoneId);
+            this.calendar = TimeZones.newCalendarLegacy((timeZoneId == null) ? "GMT" : timeZoneId);
         }
         return this.calendar;
     }

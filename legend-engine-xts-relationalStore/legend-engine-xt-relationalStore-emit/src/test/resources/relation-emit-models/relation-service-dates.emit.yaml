@@ -15,8 +15,7 @@ description: |
   other filters the table itself with a relation expression that names its
   runtime with from(), and so names no mapping at all.
 
-  The connection names no time zone; relation-service-dates-time-zone asks the
-  same questions of the same rows through one that does.
+  The connection names no time zone.
 
 modelSources:
   model:
