@@ -41,6 +41,9 @@ runs:
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
 
+    - name: Set up Maven
+      uses: ./.github/workflows/actions/setup-maven
+
     - name: Cache Maven dependencies
       uses: actions/cache/restore@v5
       env:
