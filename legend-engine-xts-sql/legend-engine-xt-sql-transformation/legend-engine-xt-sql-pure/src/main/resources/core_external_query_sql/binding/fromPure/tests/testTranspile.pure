@@ -5293,6 +5293,39 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralUnqualifiedCorrelatedColumn():Boolean[1]
+{
+  test(
+    'SELECT sub."c" FROM (SELECT "String" AS nm FROM service."/service/service1") A ' +
+    'INNER JOIN (SELECT "String" AS dn FROM service."/service/service2") B ON A.nm = B.dn ' +
+    'CROSS JOIN LATERAL (SELECT t2."ID" AS c FROM service."/service/service2" t2 WHERE t2."String" = dn) sub',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->select(~[String])
+          ->rename(~String, ~nm)
+          ->rename(~nm, ~nm_A)
+          ->join(
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->select(~[String])
+                ->rename(~String, ~dn)
+                ->rename(~dn, ~dn_B), JoinKind.INNER, {row1, row2 | $row1.nm_A == $row2.dn_B}
+            )
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->filter(x | $x.String == $r.dn_B)
+                ->select(~[ID])
+                ->rename(~ID, ~c))
+          ->select(~[c])
+      }, true, false)
+    ]
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralChained():Boolean[1]
 {
   test(
