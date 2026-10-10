@@ -1,0 +1,38 @@
+name: relational-zoned-timestamp-column
+title: "Zoned Timestamp Column Read by Relational Services"
+description: |
+  One table whose timestamp column the database holds as a TIMESTAMP WITH TIME
+  ZONE, with two rows written at different offsets, and a graph fetch and a
+  projection read through three connections: one naming no time zone, one
+  naming UTC, and one naming America/New_York. A zoned timestamp holds a
+  moment, so every service test expects the same two moments in UTC whatever
+  the connection names. The store declares the column as a TIMESTAMP, since it
+  has no zoned type, and the rows are created by setup SQL on each connection.
+
+modelSources:
+  model:
+    root: relational-zoned-timestamp-column
+    files:
+      - model/model.pure
+      - connection/connections.pure
+      - service/services.pure
+
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-zoned-timestamp
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - service-test
+  - graph-fetch
+  - time-zone
+  - date-time

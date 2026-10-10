@@ -916,6 +916,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `store:relational-semistructured-explode` | `explodeSemiStructured` fanning a JSON array into rows |
 | `store:relational-semistructured-flatten` | Lateral flatten of a to-many semi-structured property |
 | `store:relational-semistructured-navigation` | Path navigation into a semi-structured document |
+| `store:relational-zoned-timestamp` | Column the database holds as a `TIMESTAMP WITH TIME ZONE` (declared `TIMESTAMP` in the store, which has no zoned type) |
 | `store:service-store` | Service store |
 | `store:flat-data-store` | Flat-data store |
 

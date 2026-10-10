@@ -70,7 +70,7 @@ public class EMIT_to_HTML
             "store:relational-semistructured", "store:relational-semistructured-array-functions",
             "store:relational-semistructured-array-index", "store:relational-semistructured-binding",
             "store:relational-semistructured-explode", "store:relational-semistructured-flatten",
-            "store:relational-semistructured-navigation",
+            "store:relational-semistructured-navigation", "store:relational-zoned-timestamp",
             "store:service-store",
             // milestoning
             "milestoning:all-versions-in-range-query", "milestoning:all-versions-query",
