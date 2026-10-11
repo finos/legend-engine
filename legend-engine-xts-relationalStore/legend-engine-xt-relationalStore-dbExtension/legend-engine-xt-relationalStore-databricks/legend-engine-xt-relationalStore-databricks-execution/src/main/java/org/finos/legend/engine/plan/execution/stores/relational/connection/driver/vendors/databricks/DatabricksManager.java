@@ -24,9 +24,33 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DatabricksManager extends DatabaseManager
 {
+    // Databricks' JDBC driver (via its Hive Thrift server bridge) returns SQLException#getMessage() as the
+    // entire server-side response wrapper, not the raised text alone, e.g.:
+    //   Operation failed with error: [no error details from server] for statement [<uuid>], with response
+    //   [TGetOperationStatusResp(..., errorMessage:org.apache.hive.service.cli.HiveSQLException: Error running
+    //   query: [USER_RAISED_EXCEPTION] org.apache.spark.SparkRuntimeException: [USER_RAISED_EXCEPTION] <raised
+    //   message> SQLSTATE: P0001
+    //       at org.apache.spark.sql.hive.thriftserver...(full server-side stack trace as literal text)
+    // The greedy '.*' anchors to the LAST "[USER_RAISED_EXCEPTION]" tag (Spark nests it once per wrapping
+    // exception class), so the captured group is only the raised message, not an outer exception's own text.
+    private static final Pattern USER_RAISED_EXCEPTION_PATTERN =
+            Pattern.compile(".*\\[USER_RAISED_EXCEPTION]\\s*(.*?)\\s*SQLSTATE:\\s*\\S+.*", Pattern.DOTALL);
+
+    public String cleanErrorMessage(String rawMessage)
+    {
+        if (rawMessage == null)
+        {
+            return null;
+        }
+        Matcher matcher = USER_RAISED_EXCEPTION_PATTERN.matcher(rawMessage);
+        return matcher.matches() ? matcher.group(1) : rawMessage;
+    }
+
     @Override
     public MutableList<String> getIds()
     {

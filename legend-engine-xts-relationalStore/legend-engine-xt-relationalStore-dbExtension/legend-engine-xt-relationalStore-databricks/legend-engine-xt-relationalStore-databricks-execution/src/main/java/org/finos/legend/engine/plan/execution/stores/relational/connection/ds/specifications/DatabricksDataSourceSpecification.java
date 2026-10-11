@@ -16,10 +16,16 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksErrorCleaningJdbcProxy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 public class DatabricksDataSourceSpecification extends DataSourceSpecification
 {
@@ -52,5 +58,12 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public Properties getConnectionProperties()
     {
         return this.extraDatasourceProperties;
+    }
+
+    @Override
+    protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourcePoolBuilder)
+    {
+        Connection connection = super.getConnection(identityState, dataSourcePoolBuilder);
+        return DatabricksErrorCleaningJdbcProxy.wrapConnection(connection, (DatabricksManager) this.getDatabaseManager());
     }
 }

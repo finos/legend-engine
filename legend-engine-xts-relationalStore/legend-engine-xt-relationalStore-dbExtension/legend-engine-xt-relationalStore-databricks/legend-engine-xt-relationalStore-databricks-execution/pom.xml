@@ -143,6 +143,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- Test-scoped, like the rest of this module's Pure-compiler dependencies: main code
+                 (DatabricksErrorCleaningJdbcProxy) constructs PureExecutionException reflectively instead of
+                 depending on it at compile time - see that class's Javadoc - because this module is also
+                 pulled in by legend-engine-xt-relationalStore-executionPlan-connection-authentication-default,
+                 which enforces a "no Pure" banned-dependency rule. TestDatabricksErrorCleaningJdbcProxy still
+                 references the type directly, which is why this stays a real (test-scope) dependency rather
+                 than being dropped. -->
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
             <scope>test</scope>

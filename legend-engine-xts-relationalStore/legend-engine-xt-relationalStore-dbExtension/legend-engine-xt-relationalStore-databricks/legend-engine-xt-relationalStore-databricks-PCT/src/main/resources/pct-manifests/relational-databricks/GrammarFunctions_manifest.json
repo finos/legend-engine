@@ -5,7 +5,7 @@
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
@@ -20,7 +20,7 @@
     "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
@@ -54,9 +54,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
     "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
-    "expectedError" : "range step must not be 0"
   }, {
     "test" : "meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
@@ -96,12 +93,6 @@
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
-    "test" : "meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 0.5238095238095238\nactual:   0.52381\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 0.010416666666666666\nactual:   0.010417"
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: -4.0D\nactual:   -4.0"
