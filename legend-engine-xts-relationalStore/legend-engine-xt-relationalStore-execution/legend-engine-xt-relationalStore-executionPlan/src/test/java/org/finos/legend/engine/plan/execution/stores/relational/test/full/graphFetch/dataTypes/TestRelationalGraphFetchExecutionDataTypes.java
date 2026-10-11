@@ -234,6 +234,98 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
         Assert.assertEquals("Error reading in property 'integer' of type Integer from SQL column of type 'VARCHAR'.", e.getMessage());
     }
 
+    @Test
+    public void testGraphFetchTimestampWithTimeZoneColumnDefaultConnectionTimeZone() throws Exception
+    {
+        assertTimestampWithTimeZoneColumns(null, "2020-01-01T00:00:00.000000000");
+    }
+
+    @Test
+    public void testGraphFetchTimestampWithTimeZoneColumnConnectionTimeZoneBehindUtc() throws Exception
+    {
+        assertTimestampWithTimeZoneColumns("America/New_York", "2020-01-01T05:00:00.000000000");
+    }
+
+    @Test
+    public void testGraphFetchTimestampWithTimeZoneColumnConnectionTimeZoneAheadOfUtc() throws Exception
+    {
+        assertTimestampWithTimeZoneColumns("Asia/Tokyo", "2019-12-31T15:00:00.000000000");
+    }
+
+    private void assertTimestampWithTimeZoneColumns(String connectionTimeZone, String expectedPlainTimestamp) throws Exception
+    {
+        String model = "###Pure\n" +
+                "Class test::TzClass\n" +
+                "{\n" +
+                "    id: Integer[1];\n" +
+                "    plain: DateTime[0..1];\n" +
+                "    zoned: DateTime[0..1];\n" +
+                "    zonedAsDate: Date[0..1];\n" +
+                "}\n\n" +
+                "###Relational\n" +
+                "Database test::TzDB\n" +
+                "(\n" +
+                "    Table tzTable\n" +
+                "    (\n" +
+                "        pk INTEGER PRIMARY KEY,\n" +
+                "        ts TIMESTAMP,\n" +
+                "        tstz TIMESTAMP\n" +
+                "    )\n" +
+                ")\n\n" +
+                "###Mapping\n" +
+                "Mapping test::Map\n" +
+                "(\n" +
+                "    test::TzClass: Relational\n" +
+                "    {\n" +
+                "       scope([test::TzDB] tzTable)\n" +
+                "       (\n" +
+                "          id: pk,\n" +
+                "          plain: ts,\n" +
+                "          zoned: tstz,\n" +
+                "          zonedAsDate: tstz\n" +
+                "       )\n" +
+                "    }\n" +
+                ")\n\n" +
+                "###Runtime\n" +
+                "Runtime test::Runtime\n" +
+                "{\n" +
+                "  mappings: [test::Map];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::TzDB:\n" +
+                "    [\n" +
+                "      c1: #{\n" +
+                "        RelationalDatabaseConnection\n" +
+                "        {\n" +
+                "          type: H2;\n" +
+                "          specification: LocalH2 {};\n" +
+                "          auth: DefaultH2;\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  |test::TzClass.all()\n" +
+                "    ->graphFetch(#{test::TzClass{id, plain, zoned, zonedAsDate}}#, 1)\n" +
+                "    ->serialize(#{test::TzClass{id, plain, zoned, zonedAsDate}}#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlan(model, connectionTimeZone);
+        JsonStreamingResult res = (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, Identity.getAnonymousIdentity());
+        String stringResult = res.flush(new JsonStreamToPureFormatSerializer(res));
+
+        String expected = "[" +
+                "{\"id\":0,\"plain\":\"" + expectedPlainTimestamp + "\",\"zoned\":\"2020-01-01T05:00:00.000000000\",\"zonedAsDate\":\"2020-01-01T05:00:00.000000000\"}," +
+                "{\"id\":1,\"plain\":\"" + expectedPlainTimestamp + "\",\"zoned\":\"2020-01-01T00:00:00.000000000\",\"zonedAsDate\":\"2020-01-01T00:00:00.000000000\"}," +
+                "{\"id\":2,\"plain\":\"" + expectedPlainTimestamp + "\",\"zoned\":\"2020-01-01T12:30:00.000000000\",\"zonedAsDate\":\"2020-01-01T12:30:00.000000000\"}," +
+                "{\"id\":3,\"plain\":null,\"zoned\":null,\"zonedAsDate\":null}" +
+                "]";
+        Assert.assertEquals(expected, new ObjectMapper().readTree(stringResult).toString());
+    }
+
     private JsonStreamingResult getJsonStreamingResultForAllDataTypes(String storeModel)
     {
         String fetchFunction = "###Pure\n" +
@@ -295,5 +387,11 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
         s.execute("Create Table dataTable(pk INT NOT NULL,ti TINYINT NULL,si SMALLINT NULL,int INT NULL,bi BIGINT NULL,vc VARCHAR(200) NULL,c CHAR(1) NULL,date DATE NULL,ts TIMESTAMP NULL,f FLOAT NULL,d DOUBLE NULL,bit BIT NULL,dec DECIMAL(38,15) NULL, r REAL NULL, n NUMERIC(38,15) NULL, PRIMARY KEY(pk));");
         s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (0, 1, 2, 3, 1000, 'Something', 'c', '2003-07-19', '2003-07-19 00:00:00', 1.1, 2.2, 1, 123456789.123456789012345, 987654321.098765432154321, 987654321.098765432154321)");
         s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (1, null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
+        s.execute("Drop table if exists tzTable;");
+        s.execute("Create Table tzTable(pk INT NOT NULL, ts TIMESTAMP NULL, tstz TIMESTAMP WITH TIME ZONE NULL, PRIMARY KEY(pk));");
+        s.execute("insert into tzTable (pk, ts, tstz) values (0, TIMESTAMP '2020-01-01 00:00:00', TIMESTAMP WITH TIME ZONE '2020-01-01 00:00:00-05:00')");
+        s.execute("insert into tzTable (pk, ts, tstz) values (1, TIMESTAMP '2020-01-01 00:00:00', TIMESTAMP WITH TIME ZONE '2020-01-01 09:00:00+09:00')");
+        s.execute("insert into tzTable (pk, ts, tstz) values (2, TIMESTAMP '2020-01-01 00:00:00', TIMESTAMP WITH TIME ZONE '2020-01-01 18:00:00+05:30')");
+        s.execute("insert into tzTable (pk, ts, tstz) values (3, null, null)");
     }
 }

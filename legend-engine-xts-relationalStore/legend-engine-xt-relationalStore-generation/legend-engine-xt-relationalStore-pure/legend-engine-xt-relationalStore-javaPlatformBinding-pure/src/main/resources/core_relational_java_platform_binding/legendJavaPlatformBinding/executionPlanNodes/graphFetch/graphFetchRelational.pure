@@ -228,7 +228,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DECIMAL_TYPES', 'Arrays.asList(Types.DECIMAL, Types.NUMERIC, Types.NULL)'),
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'BOOL_TYPES', 'Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL)'),
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRICT_DATE_TYPES', 'Arrays.asList(Types.DATE, Types.NULL)'),
-         javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.NULL)'),
+         javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE, Types.NULL)'),
          javaField(['private'], javaResultSet(), 'resultSet'),
          javaField(['private'], javaString(), 'databaseTimeZone'),
          javaField(['private'], javaString(), 'databaseConnection'),
