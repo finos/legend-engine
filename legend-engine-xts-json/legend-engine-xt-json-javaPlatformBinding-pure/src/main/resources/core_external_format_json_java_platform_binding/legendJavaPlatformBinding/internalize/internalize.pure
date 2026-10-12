@@ -113,10 +113,10 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
      );
 
   let executeProject = newProject()->addClasses($executeClass);
+  // [B] reader-method deps stay attached to $executeClass; root resolves the union once.
   let allProjects    = $executeProject
     ->concatenate($dataClassesProject)
     ->concatenate($jsonReaderProject)
-    ->concatenate($createReaderMethodCodes->dependencies()->resolveAndGetProjects())
     ->toOneMany();
 
   $allProjects->mergeProjects()->generatedCode($executeClass);

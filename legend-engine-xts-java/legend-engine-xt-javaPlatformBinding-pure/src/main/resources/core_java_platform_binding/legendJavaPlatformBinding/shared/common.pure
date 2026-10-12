@@ -143,7 +143,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createQ
             javaMethod('public', $returnType, $conventions->getterName($qp), $params, $body)
          ));
 
-         mergeProjects($project->concatenate($newProject)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany());
+         // [B] emit node classes with deps attached; the root resolves the union once.
+         mergeProjects($project->concatenate($newProject)->toOneMany());
       },
       newProject()
    );
@@ -184,7 +185,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createG
             javaMethod('public', $returnType, $conventions->getterName($mp), $params->cast(@meta::external::language::java::metamodel::Parameter), $bodyWithMultiplicityCast)
          ));
 
-         mergeProjects($project->concatenate($newProject)->concatenate($bodyWithMultiplicityCast->dependencies()->resolveAndGetProjects())->toOneMany());
+         // [B] emit node classes with deps attached; the root resolves the union once.
+         mergeProjects($project->concatenate($newProject)->toOneMany());
       },
       newProject()
    );
@@ -242,7 +244,15 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
 
    let withQualifiedPropertyGetters = $typeInfo.qualifiedProperties->fold(
       {q, c|
-         $c->addMethod($q->generateInterfaceQualifiedPropertyGetter($conventions))
+         let cWithParam = $c->addMethod($q->generateInterfaceQualifiedPropertyGetter($conventions));
+         // [A] the serializer reads a fetched qualified property via its zero-arg getter, which no _Impl
+         // materialises; emit that form as a throwing `default` so those calls resolve
+         let getter   = $conventions->getterName($q);
+         let hasParams = $q->functionType().parameters->evaluateAndDeactivate()->tail()->isNotEmpty();
+         let hasZeroArg = $cWithParam.methods->exists(m | $m.name == $getter && $m.parameters->isEmpty());
+         if($hasParams && !$hasZeroArg,
+            | $cWithParam->addMethod(javaMethod(['default'], $conventions->pureTypeToJavaType($q), $getter, [], j_throw(javaUnsupportedOperationException()->j_new(j_string('Qualified property \'' + $q.name->toOne() + '\' (no-arg fetched form) was not provided by this plan'))))),
+            | $cWithParam);
       },
       $withPropertyGetters
    );
@@ -254,17 +264,22 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       |$withQualifiedPropertyGetters->implements($iReferencedObject)->addMethod(javaMethod(javaString(), $iReferencedObject.methods->toOne().name, [])));
 }
 
+// [A] interface getters are throwing `default` methods: the shared interface carries the union of
+// properties, while each per-plan _Impl implements only the subset its query fetched
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
-   javaMethod($conventions->pureTypeToJavaType($p), $conventions->getterName($p), []);
+   javaMethod(['default'], $conventions->pureTypeToJavaType($p), $conventions->getterName($p), [],
+      j_throw(javaUnsupportedOperationException()->j_new(j_string('Property \'' + $p.name->toOne() + '\' was not fetched by this plan'))));
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfaceQualifiedPropertyGetter(q: QualifiedProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    javaMethod(
+      ['default'],
       $conventions->pureTypeToJavaType($q),
       $conventions->getterName($q),
-      $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))
+      $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name)),
+      j_throw(javaUnsupportedOperationException()->j_new(j_string('Qualified property \'' + $q.name->toOne() + '\' was not fetched by this plan')))
    );
 }
 

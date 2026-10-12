@@ -199,10 +199,10 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    );
 
    let executeProject = newProject()->addClasses($executeClass);
+   // [B] stream-reader deps stay attached to $executeClass; root resolves the union once.
    let allProjects    = $executeProject
       ->concatenate($dataClassesProject)
       ->concatenate($modifiedStoreReaderProj)
-      ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
       ->toOneMany();
 
    $allProjects->mergeProjects()->generatedCode($executeClass);
