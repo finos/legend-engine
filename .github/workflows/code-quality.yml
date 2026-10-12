@@ -65,6 +65,9 @@ jobs:
         with:
           java-version: 17
 
+      - name: Set up Maven
+        uses: ./.github/workflows/actions/setup-maven
+
       - name: Check Java version
         run: java -version
 

@@ -51,6 +51,9 @@ jobs:
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
 
+      - name: Set up Maven
+        uses: ./.github/workflows/actions/setup-maven
+
       - name: Update And Commit Legend Stack Version Upgrade
         run: |
           pureVersion="${{ github.event.client_payload.legendPureVersion }}"

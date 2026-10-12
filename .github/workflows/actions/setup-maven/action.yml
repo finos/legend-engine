@@ -1,0 +1,37 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Set up Maven
+
+description: Install a pinned Maven and put it first on the PATH, whatever the runner image ships
+
+# Pinned below 3.10. The ubuntu-latest image moved to Maven 3.10 (Resolver 2)
+# in October 2026, which breaks the build here and the Central bundle in
+# central-publishing-maven-plugin (0.7.0 through 0.11.0). See
+# https://github.com/finos/legend-pure/pull/1362.
+runs:
+  using: "composite"
+  steps:
+    - name: Install Maven
+      shell: bash
+      env:
+        MAVEN_VERSION: 3.9.16
+        MAVEN_SHA512: 831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6
+      run: |
+        set -euo pipefail
+        archive="${RUNNER_TEMP}/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+        curl -fsSL -o "${archive}" "https://repo1.maven.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+        echo "${MAVEN_SHA512}  ${archive}" | sha512sum -c -
+        tar -xzf "${archive}" -C "${RUNNER_TEMP}"
+        echo "${RUNNER_TEMP}/apache-maven-${MAVEN_VERSION}/bin" >> "${GITHUB_PATH}"
