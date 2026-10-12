@@ -1348,3 +1348,26 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   assert($result->contains('"sql":"select \\"personview_0\\".ID as \\"ID\\", \\"personview_0\\".age as \\"age\\", \\"personview_0\\".name as \\"name\\" from (select \\"root\\".ID as ID, \\"root\\".AGE as age, \\"root\\".\\"FIRST NAME\\" as name from personTable as \\"root\\") as \\"personview_0\\""'));
   assert($result->contains('"result" : {"columns" : ["ID","age","name"], "rows" : [{"values": [1,23,"Peter"]},{"values": [2,30,"John"]},{"values": [3,23,"Jane"]},{"values": [4,19,"Anthony"]},{"values": [5,45,"Fabrice"]},{"values": [6,26,"Oliver"]},{"values": [7,52,"David"]}]'));
 }
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRelationFunctionMappingWithExtends():Boolean[1]
+{
+   let result = execute(
+      |PersonWithFirmId.all()->project(~[name:x|$x.firstName, age:x|$x.age, firmId:x|$x.firmId]),
+      meta::relational::tests::mapping::relation::ExtendsRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, age, firmId
+        Anthony, 19, 3
+        David, 52, 5
+        Fabrice, 45, 4
+        Jane, 23, 2
+        John, 30, 1
+        Oliver, 26, 4
+        Peter, 23, 1
+     #->toString(),
+     $result.values->at(0)->sort(~name->ascending())->toString()
+   );
+}

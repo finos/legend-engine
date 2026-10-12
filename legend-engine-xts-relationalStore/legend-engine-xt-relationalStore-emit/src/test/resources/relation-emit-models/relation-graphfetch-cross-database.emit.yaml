@@ -1,0 +1,69 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+name: relation-graphfetch-cross-database
+title: "Relation Function Mapping — Graph Fetch Across Two Databases (and an M2M Chain Over It)"
+description: |
+  Employee is backed by a relation function over EmployeeDB and Firm by a relation function
+  over a second database, FirmRegistryDB, joined by an XStore association. Each mapping test
+  supplies data for both stores, so the runner provisions one H2 connection per database.
+  Graph fetch from either root pulls its children from the other database (Employee ->
+  employer and Firm -> employees, including a firm with no employees), proving that the
+  cross-set child fetch is planned as a separate cross-database query rather than a SQL join.
+  A Service adds a model-to-model mapping on top (EmployeeCard sourced from Employee, its
+  employerName read through the association), chained to the relation mapping through a
+  ModelChainConnection in an explicit Runtime with both H2 connections.
+
+modelSources:
+  model:
+    root: relation-graphfetch-cross-database
+    files:
+      - store/firmRegistryDb.pure   # second ###Relational Database + its relation function
+      - mapping/crossDatabaseGraphFetchMapping.pure   # ###Mapping with XStore across databases + graph-fetch testSuites
+      - data/testData.pure   # FirmRegistryDB data; EmployeeDB data comes from relation-shared-data
+      - chain/modelChain.pure   # M2M class + mapping, connections, runtime with ModelChainConnection, Service with testSuite
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-chained-relational
+  - mapping:m2m-transform
+  - mapping:relation-local-property
+  - mapping:relation-xstore-association
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-chain-connection
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - graph-fetch
+  - cross-database
+  - xstore
+  - m2m
+  - model-chain

@@ -1,0 +1,536 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsDB
+(
+  Table RFGF_MS_PERSON
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    FIRMID INTEGER NOT NULL
+  )
+
+  Table RFGF_MS_FIRM_BT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+)
+
+###Pure
+Class meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPerson
+{
+  firstName: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtPerson
+{
+  firstName: String[1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBiPerson
+{
+  firstName: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm
+{
+  legalName: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtEmployment
+{
+  firstName: String[1];
+  legalName: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtPerson_RfgfMsBtFirm
+{
+  btEmployees: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtPerson[*];
+  btFirm: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPerson_RfgfMsBtFirm
+{
+  employees: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPerson[*];
+  firm: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm[0..1];
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::businessTemporalPersonFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_BUSINESS_TEMPORAL}#->select(~[ID, FIRSTNAME, FIRMID, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::biTemporalPersonFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_BITEMPORAL}#->select(~[ID, FIRSTNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::businessTemporalFirmFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_BUSINESS_TEMPORAL}#->select(~[ID, LEGALNAME, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfPersonFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsDB.RFGF_MS_PERSON}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfBtFirmFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsDB.RFGF_MS_FIRM_BT}#
+}
+
+// Both join inputs are select()-ed: without that, milestoning this join fails with 'Duplicate column names between input TDS'.
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfEmploymentNonMilestonedFirstFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsDB.RFGF_MS_PERSON}#->select(~[ID, FIRSTNAME, FIRMID])
+    ->join(
+      #>{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsDB.RFGF_MS_FIRM_BT}#->select(~[ID, LEGALNAME, FROM_Z])->rename(~ID, ~FIRM_ID),
+      meta::pure::functions::relation::JoinKind.INNER,
+      {p, f | $p.FIRMID == $f.FIRM_ID}
+    )
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::personFirm1Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->filter(x | $x.FIRMID == 1)
+    ->select(~[ID, 'FIRST NAME', FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::personFirm4Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->filter(x | $x.FIRMID == 4)
+    ->select(~[ID, 'FIRST NAME', FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allPersonFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[ID, 'FIRST NAME', FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allFirmFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->select(~[ID, legalName])
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::graphFetch::temporalUnion::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsMilestonedDBMapping
+(
+  RfgfMsBtPerson[btPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::businessTemporalPersonFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  RfgfMsBiPerson[biPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::biTemporalPersonFn():Relation<Any>[1]
+    firstName: FIRSTNAME
+  }
+
+  RfgfMsBtFirm[btFirm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::businessTemporalFirmFn():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  RfgfMsBtPerson_RfgfMsBtFirm: ModelJoin
+  {
+    {btEmployees: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtPerson[1], btFirm: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm[1] | $btFirm.id == $btEmployees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsOwnDBMapping
+(
+  RfgfMsPerson[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfPersonFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  RfgfMsBtFirm[btFirm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfBtFirmFn():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  RfgfMsBtEmployment[employment]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::rfgfEmploymentNonMilestonedFirstFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    legalName: LEGALNAME
+  }
+
+  RfgfMsPerson_RfgfMsBtFirm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPerson[1], firm: meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPropertyUnionMapping
+(
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allFirmFn():Relation<Any>[1]
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  *Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFirm1, personFirm4)
+  }
+
+  Person[personFirm1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::personFirm1Fn():Relation<Any>[1]
+    firstName: 'FIRST NAME',
+    +firmId: Integer[1]: FIRMID
+  }
+
+  Person[personFirm4]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::personFirm4Fn():Relation<Any>[1]
+    firstName: 'FIRST NAME',
+    +firmId: Integer[1]: FIRMID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsMixedRootUnionMapping
+(
+  *Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfPerson, relationalPerson)
+  }
+
+  Person[rfPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::personFirm1Fn():Relation<Any>[1]
+    firstName: 'FIRST NAME'
+  }
+
+  Person[relationalPerson]: Relational
+  {
+    firstName: [meta::relational::tests::mapping::relation::testDB]personWithAddressTable.FIRSTNAME
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPropertySubTypeMapping
+(
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allFirmFn():Relation<Any>[1]
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  *PersonWithFirmId[personSub]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allPersonFn():Relation<Any>[1]
+    firstName: 'FIRST NAME',
+    firmId: FIRMID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::execution::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::graphFetch::temporalUnion::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::setUp():Boolean[1]
+{
+  meta::relational::tests::mapping::relation::createTablesAndFillDb();
+  setUpTables();
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::setUpTables():Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(RfgfMsDB).connectionByElement(RfgfMsDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+  executeInDb('Drop table if exists RFGF_MS_PERSON;', $connection);
+  executeInDb('Create Table RFGF_MS_PERSON(ID INT, FIRSTNAME VARCHAR(100), FIRMID INT);', $connection);
+  executeInDb('insert into RFGF_MS_PERSON(ID, FIRSTNAME, FIRMID) values (1, \'Alice\', 1);', $connection);
+  executeInDb('insert into RFGF_MS_PERSON(ID, FIRSTNAME, FIRMID) values (2, \'Bob\',   2);', $connection);
+  executeInDb('insert into RFGF_MS_PERSON(ID, FIRSTNAME, FIRMID) values (3, \'Carol\', 3);', $connection);
+  executeInDb('insert into RFGF_MS_PERSON(ID, FIRSTNAME, FIRMID) values (4, \'Dan\',   1);', $connection);
+
+  executeInDb('Drop table if exists RFGF_MS_FIRM_BT;', $connection);
+  executeInDb('Create Table RFGF_MS_FIRM_BT(ID INT, LEGALNAME VARCHAR(100), FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into RFGF_MS_FIRM_BT(ID, LEGALNAME, FROM_Z, THRU_Z) values (1, \'Firm One v1\', \'2020-01-01\', \'2024-01-01\');', $connection);
+  executeInDb('insert into RFGF_MS_FIRM_BT(ID, LEGALNAME, FROM_Z, THRU_Z) values (1, \'Firm One v2\', \'2024-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_MS_FIRM_BT(ID, LEGALNAME, FROM_Z, THRU_Z) values (2, \'Firm Two\',    \'2020-01-01\', \'2023-06-01\');', $connection);
+  executeInDb('insert into RFGF_MS_FIRM_BT(ID, LEGALNAME, FROM_Z, THRU_Z) values (3, \'Firm Three\',  \'2023-01-01\', \'9999-12-31\');', $connection);
+  true;
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::milestonedDBRuntime():meta::core::runtime::Runtime[1]
+{
+  meta::external::store::relational::tests::testRuntime(MilestonedDB)
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::ownDBRuntime():meta::core::runtime::Runtime[1]
+{
+  meta::external::store::relational::tests::testRuntime(RfgfMsDB)
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testDBRuntime():meta::core::runtime::Runtime[1]
+{
+  meta::external::store::relational::tests::testRuntime(testDB)
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchBusinessTemporalRoot():Boolean[1]
+{
+  let tree = #{
+    RfgfMsBtPerson {
+      firstName,
+      businessDate
+    }
+  }#;
+
+  let result = execute(
+    |RfgfMsBtPerson.all(%2025-01-01)->graphFetch($tree)->serialize($tree),
+    RfgfMsMilestonedDBMapping,
+    milestonedDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","businessDate":"2025-01-01"},{"firstName":"Jane","businessDate":"2025-01-01"},{"firstName":"Anthony","businessDate":"2025-01-01"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchBiTemporalRoot():Boolean[1]
+{
+  let tree = #{
+    RfgfMsBiPerson {
+      firstName,
+      processingDate,
+      businessDate
+    }
+  }#;
+
+  let result = execute(
+    |RfgfMsBiPerson.all(%2025-01-01, %2024-12-30)->graphFetch($tree)->serialize($tree),
+    RfgfMsMilestonedDBMapping,
+    milestonedDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","processingDate":"2025-01-01","businessDate":"2024-12-30"},{"firstName":"Jane","processingDate":"2025-01-01","businessDate":"2024-12-30"}]',
+    $result.values
+  );
+}
+
+// Unfiltered, Firm X would also list John and Firm B Anthony; only the propagated 2024-12-30 business date excludes them.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedPropertyWithDatePropagatedFromRoot():Boolean[1]
+{
+  let queryString = 'function my::func():String[1]\n' +
+                    '{\n' +
+                    '  meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm.all(%2024-12-30)\n' +
+                    '    ->graphFetch(#{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm {legalName, btEmployees {firstName}}}#)\n' +
+                    '    ->serialize(#{meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsBtFirm {legalName, btEmployees() {firstName}}}#)\n' +
+                    '}';
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::pure::router::execute(
+    $query,
+    RfgfMsMilestonedDBMapping,
+    milestonedDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","btEmployees(2024-12-30)":[{"firstName":"Peter"}]},' +
+    '{"legalName":"Firm B","btEmployees(2024-12-30)":[]},' +
+    '{"legalName":"Firm C","btEmployees(2024-12-30)":[{"firstName":"Fabrice"},{"firstName":"Oliver"}]},' +
+    '{"legalName":"Firm D","btEmployees(2024-12-30)":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedPropertyWithExplicitDate():Boolean[1]
+{
+  let tree = #{
+    RfgfMsPerson {
+      firstName,
+      firm(%2023-08-01) {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |RfgfMsPerson.all()->graphFetch($tree)->serialize($tree),
+    RfgfMsOwnDBMapping,
+    ownDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"firstName":"Alice","firm(2023-08-01)":{"legalName":"Firm One v1"}},{"firstName":"Bob","firm(2023-08-01)":null},{"firstName":"Carol","firm(2023-08-01)":{"legalName":"Firm Three"}},{"firstName":"Dan","firm(2023-08-01)":{"legalName":"Firm One v1"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchAllVersionsRoot():Boolean[1]
+{
+  let tree = #{
+    RfgfMsBtFirm {
+      legalName
+    }
+  }#;
+
+  let result = execute(
+    |RfgfMsBtFirm.allVersions()->graphFetch($tree)->serialize($tree),
+    RfgfMsOwnDBMapping,
+    ownDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm One v1"},{"legalName":"Firm One v2"},{"legalName":"Firm Two"},{"legalName":"Firm Three"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedTableJoinedAfterNonMilestonedTable():Boolean[1]
+{
+  let tree = #{
+    RfgfMsBtEmployment {
+      firstName,
+      legalName,
+      businessDate
+    }
+  }#;
+
+  let result = execute(
+    |RfgfMsBtEmployment.all(%2023-08-01)->graphFetch($tree)->serialize($tree),
+    RfgfMsOwnDBMapping,
+    ownDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"firstName":"Alice","legalName":"Firm One v1","businessDate":"2023-08-01"},{"firstName":"Carol","legalName":"Firm Three","businessDate":"2023-08-01"},{"firstName":"Dan","legalName":"Firm One v1","businessDate":"2023-08-01"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchUnionPropertyLevel():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        firstName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->graphFetch($tree)->serialize($tree),
+    RfgfMsPropertyUnionMapping,
+    testDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]},' +
+    '{"legalName":"Firm A","employees":[]},' +
+    '{"legalName":"Firm B","employees":[]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice"},{"firstName":"Oliver"}]},' +
+    '{"legalName":"Firm D","employees":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchUnionRootLevelWithRelationalSet():Boolean[1]
+{
+  let tree = #{
+    Person {
+      firstName
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    RfgfMsMixedRootUnionMapping,
+    testDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter"},{"firstName":"John"},{"firstName":"John"},{"firstName":"Oliver"},{"firstName":"David"},{"firstName":"Fabrice"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchPropertyLevelSubType():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees->subType(@PersonWithFirmId) {
+        firstName,
+        firmId
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->graphFetch($tree)->serialize($tree),
+    RfgfMsPropertySubTypeMapping,
+    testDBRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","firmId":1},{"firstName":"John","firmId":1}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane","firmId":2}]},' +
+    '{"legalName":"Firm B","employees":[{"firstName":"Anthony","firmId":3}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","firmId":4},{"firstName":"Oliver","firmId":4}]},' +
+    '{"legalName":"Firm D","employees":[{"firstName":"David","firmId":5}]}]',
+    $result.values
+  );
+}

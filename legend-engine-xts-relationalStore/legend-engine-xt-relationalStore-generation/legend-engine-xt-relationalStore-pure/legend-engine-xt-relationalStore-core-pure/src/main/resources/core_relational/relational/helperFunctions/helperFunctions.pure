@@ -446,9 +446,11 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
 
 // RelationFunctionInstanceSetImplementation is a sibling of RelationalInstanceSetImplementation
 // (neither extends the other) so it cannot be dispatched through the match above.
+// The columns stay anchored on $rsi itself: join aliases match RelationFunction owners by identity.
 function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
-   $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
+   let primaryKey = if($rsi.primaryKey->isEmpty(), | $rsi->meta::relational::mapping::resolveRelationFunctionPrimaryKey([]), | $rsi.primaryKey);
+   $rsi->meta::relational::mapping::relationFunctionColumnsAsTableAliasColumns($primaryKey);
 }
 
 function meta::relational::mapping::resolvePrimaryKey(isi: InstanceSetImplementation[1]):RelationalOperationElement[*]
@@ -467,11 +469,35 @@ function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetI
    ])
 }
 
+function meta::relational::mapping::resolveMainTable(isi: InstanceSetImplementation[1]):Table[1]
+{
+   $isi->match([
+      rsi: RelationalInstanceSetImplementation[1]       | $rsi->resolveMainTable(),
+      rfi: RelationFunctionInstanceSetImplementation[1] |
+         let sourceTables = $rfi->meta::relational::mapping::relationFunctionSourceTables()->removeDuplicates();
+         assert($sourceTables->isNotEmpty(), | 'Cannot resolve a backing table for RelationFunction class mapping \'' + $rfi.id + '\' (no #>{db.table}# accessor found in its relation function); required e.g. for milestoning.');
+         $sourceTables->first()->toOne();
+   ])
+}
+
 function meta::relational::mapping::resolveMainRelation(rsi: RelationalInstanceSetImplementation[1]):Relation[1]
 {
    $rsi->match([
       ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner->mainRelation(),
       rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi->mainRelation()
+   ])
+}
+
+function meta::relational::mapping::resolveMainRelation(rsi: RelationFunctionInstanceSetImplementation[1]):Relation[1]
+{
+   ^meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction(owner = $rsi)
+}
+
+function meta::relational::mapping::resolveMainRelation(isi: InstanceSetImplementation[1]):Relation[1]
+{
+   $isi->match([
+      rsi: RelationalInstanceSetImplementation[1]       | $rsi->resolveMainRelation(),
+      rfi: RelationFunctionInstanceSetImplementation[1] | $rfi->resolveMainRelation()
    ])
 }
 
@@ -501,8 +527,13 @@ function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpec
 // into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction.
 function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
+  $classMapping->meta::relational::mapping::relationFunctionColumnsAsTableAliasColumns($classMapping.primaryKey);
+}
+
+function <<access.private>> meta::relational::mapping::relationFunctionColumnsAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1], columns:meta::pure::metamodel::relation::Column<Nil, Any|*>[*]):TableAliasColumn[*]
+{
   let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
-  $classMapping.primaryKey->map(c |
+  $columns->map(c |
     let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
     ^TableAliasColumn(
       alias = $alias,
@@ -534,6 +565,32 @@ function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
     v: meta::relational::metamodel::relation::View[1]  | $v.primaryKey.name,
     a: Any[*] | []
   ])->map(n | $n->toOne());
+}
+
+function meta::relational::mapping::relationFunctionSourceTables(r:RelationFunctionInstanceSetImplementation[1]):meta::relational::metamodel::relation::Table[*]
+{
+  $r.relationFunction.expressionSequence->evaluateAndDeactivate()->map(e | $e->meta::relational::mapping::scanRelationStoreAccessorTables());
+}
+
+function <<access.private>> meta::relational::mapping::scanRelationStoreAccessorTables(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):meta::relational::metamodel::relation::Table[*]
+{
+  $vs->match([
+    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] |
+        $iv.values->map(v | $v->match([
+          rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->match([t: meta::relational::metamodel::relation::Table[1] | $t, a: Any[*] | []]),
+          a:   Any[*] | []
+        ])),
+    cvs: meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] |
+        $cvs.val->meta::relational::mapping::scanRelationStoreAccessorTables(),
+    fe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
+        let fn = $fe.func;
+        let fromBody = if($fn->instanceOf(meta::pure::metamodel::function::ConcreteFunctionDefinition) && !$fn->elementToPath()->startsWith('meta::pure::functions::relation::'),
+          | $fn->cast(@meta::pure::metamodel::function::ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->map(b | $b->meta::relational::mapping::scanRelationStoreAccessorTables()),
+          | []
+        );
+        $fromBody->concatenate($fe.parametersValues->evaluateAndDeactivate()->map(p | $p->meta::relational::mapping::scanRelationStoreAccessorTables()));,
+    a: meta::pure::metamodel::valuespecification::ValueSpecification[1] | []
+  ]);
 }
 
 // Synthetic Extension carrying just the relational accessor — used by the

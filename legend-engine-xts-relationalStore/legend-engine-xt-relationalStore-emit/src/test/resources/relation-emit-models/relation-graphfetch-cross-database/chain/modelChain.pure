@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+Class demo::relation::m2m::EmployeeCard
+{
+  name: String[1];
+  employerName: String[1];
+}
+
+###Mapping
+Mapping demo::relation::mapping::EmployeeCardChainMapping
+(
+  *demo::relation::m2m::EmployeeCard: Pure
+  {
+    ~src demo::relation::domain::Employee
+    name: $src.firstName,
+    employerName: $src.employer.legalName
+  }
+)
+
+###Connection
+RelationalDatabaseConnection demo::relation::connection::EmployeeH2Connection
+{
+  store: demo::relation::db::EmployeeDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::relation::connection::FirmRegistryH2Connection
+{
+  store: demo::relation::db::FirmRegistryDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+ModelChainConnection demo::relation::connection::EmployeeCardModelChainConnection
+{
+  mappings: [ demo::relation::mapping::EmployeeFirmCrossDatabaseMapping ];
+}
+
+###Runtime
+Runtime demo::relation::runtime::EmployeeCardChainRuntime
+{
+  mappings:
+  [
+    demo::relation::mapping::EmployeeCardChainMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      chain: demo::relation::connection::EmployeeCardModelChainConnection
+    ],
+    demo::relation::db::EmployeeDB:
+    [
+      employeeH2: demo::relation::connection::EmployeeH2Connection
+    ],
+    demo::relation::db::FirmRegistryDB:
+    [
+      firmRegistryH2: demo::relation::connection::FirmRegistryH2Connection
+    ]
+  ];
+}
+
+###Service
+// A Service rather than a mapping testSuite: MappingTestRunner builds its runtime from the
+// test's store data alone, so only a Service's explicit Runtime can carry the ModelChainConnection.
+Service demo::relation::service::EmployeeCardChainService
+{
+  pattern: '/api/relation/employeeCards';
+  documentation: 'Employee cards mapped model-to-model over relation-function classes spread across two databases.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::m2m::EmployeeCard.all()->graphFetch(#{demo::relation::m2m::EmployeeCard{name, employerName}}#)->serialize(#{demo::relation::m2m::EmployeeCard{name, employerName}}#);
+    mapping: demo::relation::mapping::EmployeeCardChainMapping;
+    runtime: demo::relation::runtime::EmployeeCardChainRuntime;
+  }
+  testSuites:
+  [
+    employeeCardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          employeeH2:
+            Reference
+            #{
+              demo::relation::data::EmployeeData
+            }#,
+          firmRegistryH2:
+            Reference
+            #{
+              demo::relation::data::FirmRegistryData
+            }#
+        ]
+      ]
+      tests:
+      [
+        allEmployeeCards:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldResolveEmployerNameAcrossDatabasesThroughChain:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","employerName":"Acme Holdings"},{"name":"Bob","employerName":"Beta Partners"},{"name":"Carol","employerName":"Acme Holdings"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

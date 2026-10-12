@@ -5493,13 +5493,15 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
           rr:RootRelationalInstanceSetImplementation[1] | let milestoningContext = getMilestoningContextForAll($expression, $rr, $parameters, $state, $vars, $context, $extensions);
                                                           processGetAll($rr, $rr.class, $joinType, $nodeId, true, -1, !$state.inProject, $milestoningContext, $state, $context, $extensions);,
           rf:RelationFunctionInstanceSetImplementation[1] | let mc = getMilestoningContextForAll($expression, $rf, $parameters, $state, $vars, $context, $extensions);
-                                                            processRelationFunctionClassMapping($rf, $vars, $state, $mc, $joinType, $nodeId, $context, $extensions);
+                                                            if($state.graphFetchFlow == true,
+                                                               | processRelationFunctionClassMappingForGraphFetch($rf, $rf.class, $joinType, $nodeId, true, !$state.inProject, $mc, $state, $context, $extensions);,
+                                                               | processRelationFunctionClassMapping($rf, $vars, $state, $mc, $joinType, $nodeId, $context, $extensions);
+                                                            );
         ])
    };
 
    $setImplementation->match([r:RootRelationalInstanceSetImplementation[1]| $processSetImpl->eval($r),
-                              r:RelationFunctionInstanceSetImplementation[1]| let milestoningContext = getMilestoningContextForAll($expression,$r, $parameters, $state, $vars, $context, $extensions);
-                                                                              processRelationFunctionClassMapping($r, $vars, $state, $milestoningContext, $joinType, $nodeId, $context, $extensions);,
+                              r:RelationFunctionInstanceSetImplementation[1]| $processSetImpl->eval($r),
                               r:meta::pure::router::clustering::CrossSetImplementation[1]| let newTable = ^VarCrossSetPlaceHolder(varName=$r.varName, name=$r.varName, schema=^Schema(name='default', database=^Database()), crossSetImplementation = $r);
                                                                                            let treeNode = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable));
                                                                                            ^SelectWithCursor(select = ^SelectSQLQuery(data = $treeNode), currentTreeNode = $treeNode);,
@@ -5535,6 +5537,46 @@ function meta::relational::functions::pureToSqlQuery::processRelationFunctionCla
   let cursor = $relationExpression->processValueSpecification([], $newCursor, $vars, $newState, $joinType, $nodeId, ^List<ColumnGroup>(), $context, $extensions)->toOne()->cast(@SelectWithCursor);
   let newSelect = $cursor.select->moveSelectQueryToSubSelect($cursor.currentTreeNode, [], $nodeId, $context, $extensions);
   ^$cursor(select = $newSelect, currentTreeNode = $newSelect.data);
+}
+
+// Mirrors the pk_N + property column shape of processRelationalMappingSpecification so the relational
+// temp-table graphFetch nodes are reused unchanged.
+function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMappingForGraphFetch(rf:RelationFunctionInstanceSetImplementation[1], c:Class<Any>[0..1], joinType:JoinType[1], nodeId:String[1], addPk:Boolean[1], addAllColumns:Boolean[1], milestoningContext:TemporalMilestoningContext[0..1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+   let mainRelation = $rf->meta::relational::mapping::resolveMainRelation()->processRelation($c, $joinType, $nodeId, $addPk, -1, $addAllColumns, $milestoningContext, $state, $context, $extensions);
+   let currentNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainRelation));
+   let base = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode);
+
+   let properties = if($addAllColumns,
+                       | columnNamesWithRelationalElement($rf, $c, $base, $nodeId, $state, $context, $extensions)->map(col |
+                            let newQuery = $col.second->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+                            rebuildSelectWithCursor($col.first, [], $newQuery, true);),
+                       | []);
+
+   let pkCols = if($addPk, | viewSpecificationPrimaryKey($rf), | []);
+   let pks = $pkCols->map(pm |
+                let offset = $pkCols->indexOf($pm);
+                let newQuery = $pm->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+                rebuildSelectWithCursor('pk_'+$offset->toString(), [], $newQuery, true););
+
+   let pksAndProperties = $pks->concatenate($properties).select->mergeSQLQueryData($nodeId, ^$state(shouldIsolate=true), $context, $extensions);
+
+   let merged = $pksAndProperties->concatenate($base.select)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+
+   let s = ^SelectWithCursor(
+      select = ^SelectSQLQuery(
+                  distinct = false,
+                  columns = $merged.columns,
+                  data = $merged.data,
+                  filteringOperation = $merged.filteringOperation,
+                  savedFilteringOperation = $merged.savedFilteringOperation,
+                  extraFilteringOperation = $merged.extraFilteringOperation,
+                  groupBy = $merged.groupBy
+               ),
+      currentTreeNode = $merged.data
+   );
+
+   if(!$milestoningContext->isEmpty(), | applyMilestoningTypeFilters($s, $milestoningContext->toOne(), $state, false, false, $extensions), | $s);
 }
 
 function meta::relational::functions::pureToSqlQuery::getAllExpressionSetImplementations(expression:FunctionExpression[1]):RootRelationalInstanceSetImplementation[*]
@@ -5616,7 +5658,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalMappingSp
    let quoteColumnAliases = shouldQuoteColumnAliases($viewSpecification);
    let requiresAllProperties = ($addAllColumns || (!$viewSpecification->getGroupBy()->isEmpty()) || ($viewSpecification->getDistinct()->toOne()));
 
-   let properties = if($requiresAllProperties, | columnNamesWithRelationalElement($viewSpecification, $c, $state)->map(c | let newQuery = $c.second->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
+   let properties = if($requiresAllProperties, | columnNamesWithRelationalElement($viewSpecification, $c, $base, $nodeId, $state, $context, $extensions)->map(c | let newQuery = $c.second->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
                                                                                                            rebuildSelectWithCursor($c.first, [], $newQuery, $quoteColumnAliases);)
                                              , | [] );
 
@@ -5711,7 +5753,7 @@ function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilter
          ^$select(select=$selectWithTemporalColumns, milestoningContext=$milestoningContext););
 }
 
-function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::columnNamesWithRelationalElement(vs: RelationalMappingSpecification[1], c:Class<Any>[0..1], state: State[1]):Pair<String, RelationalOperationElement>[*]
+function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::columnNamesWithRelationalElement(vs: RelationalMappingSpecification[1], c:Class<Any>[0..1], base: SelectWithCursor[1], nodeId:String[1], state: State[1], context:DebugContext[1], extensions:Extension[*]):Pair<String, RelationalOperationElement>[*]
 {
    $vs->match([
                r:RootRelationalInstanceSetImplementation[1] | $r->dataTypePropertyMappings()
@@ -5720,6 +5762,14 @@ function meta::relational::functions::pureToSqlQuery::relationalmappingspecifica
                                                                           ,
                v:View[1] | $v.columnMappings->map(cm|pair($cm.columnName, $cm.relationalOperationElement));
               ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::columnNamesWithRelationalElement(rf: RelationFunctionInstanceSetImplementation[1], c:Class<Any>[0..1], base: SelectWithCursor[1], nodeId:String[1], state: State[1], context:DebugContext[1], extensions:Extension[*]):Pair<String, RelationalOperationElement>[*]
+{
+   $rf->allPropertyMappings()->filter(pm | $pm->instanceOf(RelationFunctionPropertyMapping))->cast(@RelationFunctionPropertyMapping)
+      ->filter(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))
+      ->filter(pm | if($state.graphFetchFlow == true, | $pm.property->in($state.graphFetchProperties), | true))
+      ->map(pm | pair($pm.property.name->toOne(), $pm->transformRelationFunctionPropertyMappingToRelational($base, $state, JoinType.LEFT_OUTER, $nodeId, ^List<ColumnGroup>(), $context, $extensions).relationalOperationElement););
 }
 function meta::relational::functions::pureToSqlQuery::buildPossibleEnumMappingPushDown(mapping: RelationalPropertyMapping[1],  state: State[1]): RelationalPropertyMapping[1]
 {
@@ -5744,6 +5794,11 @@ function meta::relational::functions::pureToSqlQuery::relationalmappingspecifica
                 r:RootRelationalInstanceSetImplementation[1] | $r->resolvePrimaryKey(),
                 v:View[1] | []
               ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::viewSpecificationPrimaryKey(rf: RelationFunctionInstanceSetImplementation[1]):RelationalOperationElement[*]
+{
+   $rf->meta::relational::mapping::resolvePrimaryKey();
 }
 
 function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::shouldQuoteColumnAliases(vs: RelationalMappingSpecification[1]):Boolean[1]
