@@ -555,9 +555,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// ToFix: the filter inside the qualifier resolves AGE against the Firm relation-function sub-select instead of the joined Person one;
-// the same query also fails under project(), so this is not graph-fetch specific.
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::features::testQualifierWithParameterReturningAssociatedClass():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testQualifierWithParameterReturningAssociatedClass():Boolean[1]
 {
   let tree = #{Firm {legalName, employeesOlderThan(40) {firstName}}}#;
   assertJsonStringsEqual(

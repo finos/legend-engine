@@ -2090,17 +2090,11 @@ function meta::relational::functions::pureToSqlQuery::doJoinToClass(joinTree: Jo
   let queryWithJoin = applyJoinInTree($base.select.data->toOne(), $base.currentTreeNode->toOne(), $joinTree, $base, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
 
   if($setImpl->instanceOf(RelationFunctionInstanceSetImplementation),
-    | $queryWithJoin,
+    | $queryWithJoin->withSavedRootAndBaseFilter($base, $extensions),
     | let setImplementation = $setImpl->cast(@RootRelationalInstanceSetImplementation);
       if($skipTargetProcessing,
         | // Target already materialized (filter/groupBy/distinct baked into subselect)
-          let queryWithSaved = ^$queryWithJoin(savedRoot=if(!$queryWithJoin.select.data->isEmpty() && !$queryWithJoin.currentTreeNode->isEmpty(),|pair($queryWithJoin.select.data->toOne(),$queryWithJoin.currentTreeNode->toOne()),|[]));
-          let select = $queryWithSaved.select;
-          ^$queryWithSaved(
-            select = ^$select(
-              filteringOperation = $select.filteringOperation->concatenate($base.select.filteringOperation)->andFilters($extensions)
-            )
-          );,
+          $queryWithJoin->withSavedRootAndBaseFilter($base, $extensions),
         | // Potentially add filter
           let queryWithFilterNoSaved = if ($setImplementation->resolveFilter()->isEmpty() || ($setImplementation->resolveDistinct() == true) || !$setImplementation->resolveGroupBy()->isEmpty(),
             | $queryWithJoin,
@@ -2133,6 +2127,17 @@ function meta::relational::functions::pureToSqlQuery::doJoinToClass(joinTree: Jo
               $queryAllFilters->replaceJoinTableWithSelectQuery($getAllSelectWithCursor.select, $queryAllFilters.currentTreeNode->toOne(), '', $nodeId, $context, $extensions);
           );
       );
+  );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::withSavedRootAndBaseFilter(queryWithJoin:SelectWithCursor[1], base:SelectWithCursor[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let queryWithSaved = ^$queryWithJoin(savedRoot=if(!$queryWithJoin.select.data->isEmpty() && !$queryWithJoin.currentTreeNode->isEmpty(),|pair($queryWithJoin.select.data->toOne(),$queryWithJoin.currentTreeNode->toOne()),|[]));
+  let select = $queryWithSaved.select;
+  ^$queryWithSaved(
+    select = ^$select(
+      filteringOperation = $select.filteringOperation->concatenate($base.select.filteringOperation)->andFilters($extensions)
+    )
   );
 }
 

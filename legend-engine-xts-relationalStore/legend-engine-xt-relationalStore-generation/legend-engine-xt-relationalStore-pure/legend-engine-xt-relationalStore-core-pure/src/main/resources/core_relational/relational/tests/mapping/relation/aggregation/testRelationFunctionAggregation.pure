@@ -77,8 +77,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// TODO: filter inside collection navigation — AGE column fails to resolve against inner relation.
-function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
       |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet),
@@ -110,8 +109,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// TODO: map+arithmetic — inner lambda dropped during relation-function sub-aggregation.
-function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
       |Firm.all()->project(~[name:x|$x.legalName, s:x|$x.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet),
