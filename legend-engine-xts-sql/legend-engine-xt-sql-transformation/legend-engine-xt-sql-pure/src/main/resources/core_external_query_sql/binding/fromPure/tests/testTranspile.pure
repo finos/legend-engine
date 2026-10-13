@@ -4461,6 +4461,49 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     ], true)
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCorrelatedQualifiedReferenceIntoJoinInsideExists():Boolean[1]
+{
+  test(
+    'SELECT abt."String" FROM service."/service/service1" abt WHERE EXISTS (' +
+    'SELECT d."ID" FROM service."/service/service2" d ' +
+    'INNER JOIN service."/service/service1" q ON q."Integer" = d."Integer" ' +
+    'WHERE d."Integer" = abt."Integer")',
+
+    [
+      c({|
+        FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->rename(~ID, ~ID_d)
+                ->rename(~Integer, ~Integer_d)
+                ->rename(~String, ~String_d)
+                ->join(
+                    FlatInput.all()
+                      ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+                      ->rename(~Boolean, ~Boolean_q)
+                      ->rename(~Integer, ~Integer_q)
+                      ->rename(~Float, ~Float_q)
+                      ->rename(~Decimal, ~Decimal_q)
+                      ->rename(~StrictDate, ~StrictDate_q)
+                      ->rename(~DateTime, ~DateTime_q)
+                      ->rename(~String, ~String_q), JoinKind.INNER, {row1, row2 | $row2.Integer_q == $row1.Integer_d}
+                  )
+                ->rename(~ID_d, ~ID)
+                ->rename(~Boolean_q, ~Boolean)
+                ->rename(~Float_q, ~Float)
+                ->rename(~Decimal_q, ~Decimal)
+                ->rename(~StrictDate_q, ~StrictDate)
+                ->rename(~DateTime_q, ~DateTime)
+                ->exists(e | $e.Integer_d == $x.Integer)
+          )
+          ->select(~[String])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingNoMapping():Boolean[1]
 {
   let sql = 'SELECT * FROM service."/service/service1"';
