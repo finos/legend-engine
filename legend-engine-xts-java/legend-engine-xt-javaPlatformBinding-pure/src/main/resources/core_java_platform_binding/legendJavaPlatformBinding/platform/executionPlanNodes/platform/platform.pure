@@ -241,5 +241,6 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let expressionCode  = $p.expression->generateJava($newContext.conventions, $debug)->j_return();
    let body            = $requiredVariableInputs->concatenate($expressionCode)->j_block();
    let execClass       = $body->buildExecuteClass($nodeContext, $path, $newContext.conventions);
-   generatedCode(mergeProjects(newProject()->addClass($execClass)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany()), $execClass);
+   // [B] $body's deps stay attached to its method in $execClass; root resolves once.
+   generatedCode(newProject()->addClass($execClass), $execClass);
 }
