@@ -22,8 +22,12 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 
+import java.util.regex.Pattern;
+
 public class RelationStoreAccessorPureParser implements EmbeddedPureParser
 {
+    private static final Pattern PATH_SEPARATOR_OUTSIDE_QUOTES = Pattern.compile("\\.(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+
     @Override
     public String getType()
     {
@@ -34,7 +38,7 @@ public class RelationStoreAccessorPureParser implements EmbeddedPureParser
     public Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
         RelationStoreAccessor relationStoreAccessor = new RelationStoreAccessor();
-        relationStoreAccessor.path = Lists.mutable.with(code.trim().split("\\."));
+        relationStoreAccessor.path = Lists.mutable.with(PATH_SEPARATOR_OUTSIDE_QUOTES.split(code.trim()));
         relationStoreAccessor.sourceInformation = sourceInformation;
         return relationStoreAccessor;
     }
