@@ -38,10 +38,11 @@ function meta::external::function::activator::snowflakeApp::generation::generate
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug()));
   let variables = $plan.rootExecutionNode.childNodes->filter(n| $n->instanceOf(ConstantExecutionNode) && $n->cast(@ConstantExecutionNode).values->type()==VariableDeclaration)->cast(@ConstantExecutionNode)->first().values->cast(@VariableDeclaration);
-  let resultStub = if($s.function->functionReturnType().rawType==meta::pure::metamodel::relation::Relation,
-      | let resultStub = relationGenerateResultTypeStub($s.function);,
-      | let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
-    );
+  let returnType = $s.function->functionReturnType();
+  let resultStub = if($returnType.rawType == meta::pure::metamodel::relation::Relation && $returnType.typeArguments->at(0).rawType->toOne()->instanceOf(meta::pure::metamodel::relation::RelationType),
+        | relationGenerateResultTypeStub($s.function),
+        | generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions)
+  );
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
   let usedTables =  $generatedQueryNode.metadata->filter(m|$m->instanceOf(RelationMetadata))->cast(@RelationMetadata).relations->filter(r|$r->instanceOf(Table))->cast(@Table)->map(i|$i.schema.name + '.' + $i.name)->removeDuplicates();
   if($variables->isEmpty(),
