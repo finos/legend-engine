@@ -21,10 +21,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.application.query.model.CubeSearchSpecification;
 import org.finos.legend.engine.application.query.model.DataCubeQuery;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.application.query.model.StoredCube;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -38,6 +40,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Application - Query")
 @Path("pure/v1/query")
@@ -46,11 +49,13 @@ public class ApplicationQuery
 {
     private final QueryStoreManager queryStoreManager;
     private final DataCubeQueryStoreManager dataCubeQueryStoreManager;
+    private final CubeStoreManager cubeStoreManager;
 
     public ApplicationQuery(MongoClient mongoClient)
     {
         this.queryStoreManager = new QueryStoreManager(mongoClient);
         this.dataCubeQueryStoreManager = new DataCubeQueryStoreManager(mongoClient);
+        this.cubeStoreManager = new CubeStoreManager(mongoClient);
     }
 
     private static String getCurrentUser(ProfileManager profileManager)
@@ -465,6 +470,157 @@ public class ApplicationQuery
                 return ((ApplicationQueryException) e).toResponse();
             }
             return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_STATS_ERROR, null);
+        }
+    }
+
+    // --------------------------------------------- Legend Cube ---------------------------------------------
+
+    @POST
+    @Path("cube/search")
+    @Operation(summary = "Search saved Legend Cubes, without their content")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response searchCubes(CubeSearchSpecification searchSpecification)
+    {
+        try
+        {
+            return Response.ok().entity(this.cubeStoreManager.searchCubes(searchSpecification)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.SEARCH_QUERIES_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("cube/{cubeId}")
+    @Operation(summary = "Get the latest version of a saved Legend Cube")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getCube(@PathParam("cubeId") String cubeId)
+    {
+        try
+        {
+            return Response.ok(this.cubeStoreManager.getCube(cubeId)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("cube/{cubeId}/version/{version}")
+    @Operation(summary = "Get a saved version of a Legend Cube")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getCubeVersion(@PathParam("cubeId") String cubeId, @PathParam("version") int version)
+    {
+        try
+        {
+            return Response.ok(this.cubeStoreManager.getCubeVersion(cubeId, version)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
+        }
+    }
+
+    @POST
+    @Path("cube")
+    @Operation(summary = "Save a new Legend Cube; the store makes its id, and the caller is its first owner")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response createCube(StoredCube cube, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            return Response.ok().entity(this.cubeStoreManager.createCube(cube, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @PUT
+    @Path("cube/{cubeId}")
+    @Operation(summary = "Save a Legend Cube's content over the version read (409 when it has changed since); owners only")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response updateCube(@PathParam("cubeId") String cubeId, StoredCube cube, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            return Response.ok().entity(this.cubeStoreManager.updateCube(cubeId, cube, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @PATCH
+    @Path("cube/{cubeId}")
+    @Operation(summary = "Change a Legend Cube's name, owners or tags over the version read; owners only")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response patchCube(@PathParam("cubeId") String cubeId, Map<String, Object> patch, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            return Response.ok().entity(this.cubeStoreManager.patchCube(cubeId, patch, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @DELETE
+    @Path("cube/{cubeId}")
+    @Operation(summary = "Delete a Legend Cube at the version read: softly, or for good with its versions; owners only")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response deleteCube(@PathParam("cubeId") String cubeId, @QueryParam("version") @Parameter(description = "The version that was read") Integer version, @QueryParam("permanent") @DefaultValue("false") @Parameter(description = "Whether to remove the cube and its versions for good") boolean permanent, @Parameter(hidden = true) @Pac4JProfileManager ProfileManager profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            this.cubeStoreManager.deleteCube(cubeId, version, permanent, getCurrentUser(profileManager));
+            return Response.noContent().build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, identity.getName());
         }
     }
 }
