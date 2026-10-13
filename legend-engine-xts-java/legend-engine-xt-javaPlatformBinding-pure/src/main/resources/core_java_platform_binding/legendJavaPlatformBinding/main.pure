@@ -95,7 +95,21 @@ function meta::pure::executionPlan::platformBinding::legendJava::currentResoluti
       | $context.resolutionState->toOne());
 }
 
+// [B] one plan bound to node code only, plus its TypeInfoSet contribution to the global union
+Class meta::pure::executionPlan::platformBinding::legendJava::BoundNodePlan
+{
+   plan: ExecutionPlan[1];
+   project: Project[0..1];
+   typeInfos: TypeInfoSet[1];
+}
 
+// [B] a service's plans bound to node code only, with the merged node AST and its TypeInfoSet
+Class meta::pure::executionPlan::platformBinding::legendJava::NodesAndTypeInfos
+{
+   plans: ExecutionPlan[*];
+   project: Project[0..1];
+   typeInfos: TypeInfoSet[1];
+}
 
 // ----------------------------------------------------------------------------------------------------------
 // --- Plan generation
@@ -104,19 +118,28 @@ function meta::pure::executionPlan::platformBinding::legendJava::currentResoluti
 
 function meta::pure::executionPlan::platformBinding::legendJava::projectToImplementation(project:Project[1]):JavaPlatformImplementation[1]
 {
-   let sfer = newStringifier($project);
-
+   // [C] package by package: removes the O(classes^2) scan and keeps the Stringifier small
    ^JavaPlatformImplementation
     (
-       classes = $project->allClasses()->map({cl |
-          ^meta::pure::executionPlan::JavaClass
-           (
-             package = $cl.package->packageToString(),
-             name    = $cl.simpleName,
-             source  = $sfer->ofClass($cl->meta::external::language::java::factory::inferImports())
-          )
-       })
+       classes = $project->meta::external::language::java::metamodel::project::allDirectories()
+                         ->map(dir | $dir->serializeDirectoryClasses())
     );
+}
+
+// [C][D] one package; independent, so callers may run these concurrently (reassemble in directory order)
+function meta::pure::executionPlan::platformBinding::legendJava::serializeDirectoryClasses(dir:meta::external::language::java::metamodel::project::ProjectDirectory[1]):meta::pure::executionPlan::JavaClass[*]
+{
+   let pkgNames = $dir.classes->map(c | $c.simpleName);
+   let sfer     = newPackageStringifier($pkgNames);
+
+   $dir.classes->map({cl |
+      ^meta::pure::executionPlan::JavaClass
+       (
+         package = $cl.package->packageToString(),
+         name    = $cl.simpleName,
+         source  = $sfer->ofClass($cl->meta::external::language::java::factory::inferImports())
+      )
+   });
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
