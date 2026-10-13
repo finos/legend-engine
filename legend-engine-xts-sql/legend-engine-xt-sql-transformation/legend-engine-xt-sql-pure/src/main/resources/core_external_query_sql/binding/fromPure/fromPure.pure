@@ -1179,7 +1179,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOlapGroupBy(windows:SelectItem[*], select: Select[1], extensions:SelectItem[*], havingExtensions:SelectItem[*], groupByExtensions:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
 {
-  let renamedItems = $select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn);
+  //A window column is produced by the extend below, not by a rename, so exclude it by shape and
+  //not only by identity.
+  let renamedItems = $select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn) && !$c->isSelectItemWindow())->cast(@SingleColumn);
+
 
   //When the input is already the projected post-group relation (aggregate+window combined branch),
   //processRename would be destructive: it derives renames from each item's expression default-name
@@ -1462,8 +1465,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | let w = $fc.window->toOne();
       let newPartitions = $w.partitions->map(p | resolveKeyThroughContext($p, $selectItems, $context));
       let newOrderBy = $w.orderBy->map(si | ^$si(sortKey = resolveKeyThroughContext($si.sortKey, $selectItems, $context)));
-      ^$sc(expression = ^$fc(window = ^$w(partitions = $newPartitions, orderBy = $newOrderBy)));
-  );
+
+      let newArguments = $fc.arguments->map(a | $a->match([
+        q:QualifiedNameReference[1] | resolveKeyThroughContext($q, $selectItems, $context),
+        x:meta::external::query::sql::metamodel::Expression[1] | $x
+      ]));
+    ^$sc(expression = ^$fc(arguments = $newArguments, window = ^$w(partitions = $newPartitions, orderBy = $newOrderBy)));
+);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::resolveKeyThroughContext(e:meta::external::query::sql::metamodel::Expression[1], selectItems: SelectItem[*], context: SqlTransformContext[1]):meta::external::query::sql::metamodel::Expression[1]

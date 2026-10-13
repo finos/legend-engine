@@ -14,6 +14,13 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  - id: comp_window_arg_is_grouping_column_over_join
+    sql: "SELECT a.mx FROM (SELECT q.salary AS sal, MAX(salary) OVER (ORDER BY q.id) AS mx FROM persons q LEFT JOIN departments d ON q.dept_id = d.id GROUP BY q.id, q.salary) a ORDER BY 1"
+    feature: "window argument is a grouping column, over a realiased join"
+    category: "agg_window_mix"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
   # Running percentage within partition
   - id: comp_running_pct
     sql: "SELECT name, dept_id, salary, ROUND(salary * 100.0 / SUM(salary) OVER (PARTITION BY dept_id), 2) AS pct_of_dept FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
