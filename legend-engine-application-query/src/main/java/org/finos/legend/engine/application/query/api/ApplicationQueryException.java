@@ -14,11 +14,17 @@
 
 package org.finos.legend.engine.application.query.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.Collections;
 
 public class ApplicationQueryException extends RuntimeException
 {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final Response.Status statusCode;
 
     public ApplicationQueryException(String message, Response.Status statusCode)
@@ -27,8 +33,28 @@ public class ApplicationQueryException extends RuntimeException
         this.statusCode = statusCode;
     }
 
+    public Response.Status getStatus()
+    {
+        return this.statusCode;
+    }
+
     public Response toResponse()
     {
-        return Response.status(this.statusCode).type(MediaType.APPLICATION_JSON_TYPE).entity("{\"message\":\"" + this.getMessage() + "\"}").build();
+        return Response.status(this.statusCode).type(MediaType.APPLICATION_JSON_TYPE).entity(this.toJson()).build();
+    }
+
+    /**
+     * The message as JSON, escaped, so that a message quoting a name with a quote or a backslash stays valid JSON
+     */
+    String toJson()
+    {
+        try
+        {
+            return OBJECT_MAPPER.writeValueAsString(Collections.singletonMap("message", this.getMessage()));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }
