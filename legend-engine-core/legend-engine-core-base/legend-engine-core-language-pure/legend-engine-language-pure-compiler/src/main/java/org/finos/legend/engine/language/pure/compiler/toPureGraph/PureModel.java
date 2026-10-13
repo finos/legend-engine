@@ -33,6 +33,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
@@ -534,6 +535,30 @@ public class PureModel implements IPureModel
     public MutableList<? extends Defect> getDefects()
     {
         return this.defects;
+    }
+
+    public synchronized void checkNoErrorDefect()
+    {
+        MutableList<Defect> errors = this.defects.select(d -> d.defectSeverityLevel == DefectSeverityLevel.ERROR);
+        if (errors.isEmpty())
+        {
+            return;
+        }
+        if (errors.size() == 1)
+        {
+            throw new EngineException(errors.getFirst().message, errors.getFirst().sourceInformation, EngineErrorType.COMPILATION);
+        }
+        throw new EngineException(
+                "Found " + errors.size() + " compilation errors:\n" + errors.collect(PureModel::describeDefect).makeString("\n"),
+                errors.getFirst().sourceInformation,
+                EngineErrorType.COMPILATION);
+    }
+
+    private static String describeDefect(Defect defect)
+    {
+        SourceInformation sourceInformation = defect.sourceInformation;
+        boolean hasLocation = sourceInformation != null && sourceInformation.sourceId != null && sourceInformation != SourceInformation.getUnknownSourceInformation();
+        return "- " + (hasLocation ? sourceInformation.getMessage() + ": " : "") + defect.message;
     }
     // ------------------------------------------ INITIALIZATION -----------------------------------------
 

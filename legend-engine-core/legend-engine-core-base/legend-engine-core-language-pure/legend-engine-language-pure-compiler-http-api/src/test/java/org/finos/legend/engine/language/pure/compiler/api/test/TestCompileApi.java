@@ -15,13 +15,19 @@
 package org.finos.legend.engine.language.pure.compiler.api.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
 import net.javacrumbs.jsonunit.JsonAssert;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesInput;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesResult;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -36,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.Pack
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -43,6 +50,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.Exception
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -400,5 +408,61 @@ public class TestCompileApi
         Assert.assertEquals("{\"message\":\"OK\",\"defects\":[]}", objectMapper.writeValueAsString(response));
     }
 
-}
+    @Test
+    public void testErrorDefectIsReturnedAsDefectByDefault() throws JsonProcessingException
+    {
+        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")));
+        Response response = compileSimpleModel(api);
 
+        Assert.assertEquals(200, response.getStatus());
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
+        Assert.assertEquals("OK", json.get("message").asText());
+        Assert.assertEquals("ERROR", json.get("defects").get(0).get("defectSeverityLevel").asText());
+    }
+
+    @Test
+    public void testErrorDefectFailsCompilationWhenEnabled() throws JsonProcessingException
+    {
+        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")), true);
+        Response response = compileSimpleModel(api);
+
+        Assert.assertEquals(400, response.getStatus());
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
+        Assert.assertEquals("COMPILATION", json.get("errorType").asText());
+        Assert.assertEquals("the error", json.get("message").asText());
+        Assert.assertEquals(2, json.get("sourceInformation").get("startLine").asInt());
+    }
+
+    @Test
+    public void testWarningDefectDoesNotFailCompilationWhenEnabled() throws JsonProcessingException
+    {
+        Compile api = new Compile(modelManagerAddingDefects(new Warning(new SourceInformation("src", 2, 3, 2, 9), "a warning")), true);
+        Response response = compileSimpleModel(api);
+
+        Assert.assertEquals(200, response.getStatus());
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
+        Assert.assertEquals("OK", json.get("message").asText());
+        Assert.assertEquals("WARN", json.get("defects").get(0).get("defectSeverityLevel").asText());
+    }
+
+    private static Response compileSimpleModel(Compile api)
+    {
+        PureModelContextText text = new PureModelContextText();
+        text.code = "Class my::A { x: String[1]; }";
+        return api.compile(text, null, null, null);
+    }
+
+    private static ModelManager modelManagerAddingDefects(Defect... defects)
+    {
+        return new ModelManager(DeploymentMode.TEST)
+        {
+            @Override
+            public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
+            {
+                Pair<PureModelContextData, PureModel> result = super.loadModelAndData(context, clientVersion, identity, packageOffset);
+                result.getTwo().addDefects(Arrays.asList(defects));
+                return result;
+            }
+        };
+    }
+}
