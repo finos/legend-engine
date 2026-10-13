@@ -34,8 +34,8 @@ import meta::pure::tds::schema::*;
     6) join 2 datasets using keys
     7) filter where source and target hash are different
 */
-function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): LambdaFunction<Any>[1]
-{  
+function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]): LambdaFunction<Any>[1]
+{
   let baseLambda = $reconInput.source;
 
   // Extract parameters from source and target lambdas
@@ -48,8 +48,8 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
 
   let allParams = $renamedSourceParams->concatenate($renamedTargetParams);
 
-  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
-  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
+  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler, $extensions));
+  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler, $extensions));
 
   //join by keys
   let withJoin = buildJoinExpression($sourceDataset, $targetDataset, JoinKind.FULL, getJoinColumns($reconInput.keys), $reconInput.sourceHashCol, $reconInput.targetHashCol);
@@ -109,8 +109,8 @@ function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentCo
   $desired->filter(c | $currentColNames->contains($c));
 }
 
-function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], additionalPersistCols: String[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): ValueSpecification[1]
-{  
+function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], additionalPersistCols: String[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]): ValueSpecification[1]
+{
   let hasFrom = $dataset->isEndingWithFromFunction();
   let withoutFrom = if ($hasFrom,
     | $dataset->popTerminalFunctionExpression().expressionSequence->evaluateAndDeactivate()->last()->toOne(), //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
@@ -119,7 +119,7 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
 
   //if lambda returning Tablular Data Set (TDS) then add cast to Relation
   let input = if ($dataset->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet),
-    | $dataset->buildCastToRelation($withoutFrom),
+    | $dataset->buildCastToRelation($withoutFrom, $extensions),
     | $withoutFrom
   );
   validateColumns($input, $type, $keys, $colsForHash, $hashCol);
@@ -197,9 +197,9 @@ function meta::external::dataquality::datarecon::enrichDqColumns(input: ValueSpe
   $withRuleName->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($newRelTypeWithRuleName, [$sourceHasCol, $targetHashCol], $relParamName, false, []), $relParamName, $newRelTypeWithRuleName, $newRelTypeWithLogicalDefectId, String);
 }
 
-function meta::external::dataquality::datarecon::buildCastToRelation(dataset: LambdaFunction<Any>[1], input: ValueSpecification[1]): ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildCastToRelation(dataset: LambdaFunction<Any>[1], input: ValueSpecification[1], extensions: meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
-  let columns = $dataset->resolveSchema([])->map(c |
+  let columns = $dataset->resolveSchema($extensions)->map(c |
     let col = ^Column<Nil,Any|*>(name = $c.name->toOne(), nameWildCard = false);
     let type = ^GenericType(rawType = Column, typeArguments = [ ^GenericType(rawType = Nil), ^GenericType(rawType = $c.type->toOne())], multiplicityArguments = PureOne);
     ^$col(classifierGenericType = $type); //need to copy column and set correct type as can't set type directly in constructor since this is set by the generic type provided to ^Column<Nil,Any|*>

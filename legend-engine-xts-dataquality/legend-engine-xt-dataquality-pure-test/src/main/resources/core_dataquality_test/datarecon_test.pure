@@ -24,6 +24,8 @@ import meta::pure::precisePrimitives::*;
 import meta::external::dataquality::tests::domain::*;
 import meta::pure::metamodel::relation::*;
 import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::functions::math::olap::*;
+import meta::pure::tds::extensions::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_dynamicHash():Boolean[1]
 {
@@ -509,7 +511,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -541,7 +543,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -569,7 +571,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], 'HASH', 'HASH', false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], 'HASH', 'HASH', false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -599,7 +601,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], true, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], true, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -632,7 +634,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME])->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'ADDRESSID'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'ADDRESSID'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -667,7 +669,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME,LASTNAME,AGE])->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME,LASTNAME,AGE])->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -711,8 +713,116 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->extend(~HASH_S: row | $row.HASH)->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->extend(~HASH_S: row | $row.HASH)->from($runtime)};
-  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['HASH', 'HASH_S'], [], [], false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['HASH', 'HASH_S'], [], [], false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
+}
+
+// A TDS source whose schema can only be resolved with store extensions registered - tds::join has
+// no core handler, it is contributed by the relational extension. Regression guard for
+// buildCastToRelation passing an empty extensions list, which made this fail with an opaque
+// "Match failure: []" deep inside tdsSchema.pure.
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsJoinSourceNeedsExtensions():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])->from($runtime)};
+  let target = {| Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH' ])
+                    ->join(Person.all()->project([ x|$x.id, x|$x.age ],[ 'ID', 'AGE' ]), meta::relational::metamodel::join::JoinType.INNER, 'ID')
+                    ->from($mapping, $runtime)};
+
+  let actual = getDataReconLambda(
+    createReconInput($source, $target, 'ID', false, [], 'HASH', 'HASH', false, [], false, false),
+    {l:LambdaFunction<Any>[1] | compileViaGrammar($l)},
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let relType = $actual.expressionSequence->last()->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+  assertEquals(['HASH_SOURCE', 'HASH_TARGET', 'ID_SOURCE', 'ID_TARGET'], $relType.columns.name);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsRowAndOlapOperatorsChain():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+
+  let source = {| Person.all()->project([x|$x.id, x|$x.name, x|$x.age], ['ID', 'FULL_NAME', 'AGE_SUM'])->from($mapping, $runtime)};
+  let target = {| Person.all()->project([x|$x.id, x|$x.name, x|$x.age], ['ID', 'FULL_NAME', 'AGE'])
+                    ->olapGroupBy(['FULL_NAME'], func('AGE', y|$y->sum()), 'AGE_SUM')
+                    ->olapGroupBy(asc('AGE'), y|$y->rank(), 'AGE_RANK')
+                    ->restrictDistinct(['ID', 'FULL_NAME', 'AGE_SUM'])
+                    ->limit(10->first())
+                    ->paginated(1, 10)
+                    ->from($mapping, $runtime)};
+
+  assertReconOutputColumns($source, $target, 'ID', ['FULL_NAME', 'AGE_SUM'],
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FULL_NAME_SOURCE', 'FULL_NAME_TARGET', 'AGE_SUM_SOURCE', 'AGE_SUM_TARGET']);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsProjectionVariantsChain():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+
+  let source = {| Person.all()->project([x|$x.id, x|$x.name], ['ID', 'NAME'])->from($mapping, $runtime)};
+  let target = {| Person.all()->project([x|$x.id, x|$x.name], ['ID', 'NAME'])
+                    ->concatenate(Person.all()->projectWithColumnSubset([x|$x.id, x|$x.name, x|$x.age], ['ID', 'NAME', 'AGE'], ['ID', 'NAME']))
+                    ->concatenate(Person.all()->groupByWithWindowSubset([x|$x.id, x|$x.name], [agg(x|$x.age, y|$y->sum())], ['ID', 'NAME', 'AGE_SUM'], ['ID', 'NAME'], []))
+                    ->sort(['NAME'])
+                    ->from($mapping, $runtime)};
+
+  assertReconOutputColumns($source, $target, 'ID', ['NAME'],
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'NAME_SOURCE', 'NAME_TARGET']);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsAnalyticsExtensionsChain():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+
+  let source = {| Person.all()->project([x|$x.id, x|'inlier', x|true], ['ID', 'AGE_CLASS', 'row_matched'])->from($mapping, $runtime)};
+  let target = {| Person.all()->project([x|$x.id, x|$x.age], ['ID', 'AGE'])
+                    ->rowValueDifference(Person.all()->project([x|$x.id, x|$x.age], ['ID', 'AGE']), ['ID'], ['AGE'])
+                    ->zScore([], ['AGE_1'], ['AGE_ZSCORE'])
+                    ->iqrClassify([], ['AGE_1'], ['AGE_CLASS'])
+                    ->from($mapping, $runtime)};
+
+  assertReconOutputColumns($source, $target, 'ID', ['AGE_CLASS', 'row_matched'],
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'AGE_CLASS_SOURCE', 'AGE_CLASS_TARGET', 'row_matched_SOURCE', 'row_matched_TARGET']);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_tdsUserDefinedFunction():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])->from($runtime)};
+  let target = {| meta::external::dataquality::tests::udf::personIdHashTds()->from($mapping, $runtime)};
+
+  assertReconOutputColumns($source, $target, 'ID', ['HASH'],
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'HASH_SOURCE', 'HASH_TARGET']);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_relationUserDefinedFunction():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])->from($runtime)};
+  let target = {| meta::external::dataquality::tests::udf::personIdHashRelation()->from($runtime)};
+
+  assertReconOutputColumns($source, $target, 'ID', ['HASH'],
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'HASH_SOURCE', 'HASH_TARGET']);
+}
+
+function meta::external::dataquality::tests::assertReconOutputColumns(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], colsForHash: String[*], expectedColumns: String[*]):Boolean[1]
+{
+  let actual = getDataReconLambda(
+    createReconInput($source, $target, $keys, false, $colsForHash, [], [], true, [], false, false),
+    {l:LambdaFunction<Any>[1] | compileViaGrammar($l)},
+    meta::relational::extension::relationalExtensions()
+  );
+  let relType = $actual.expressionSequence->last()->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+  assertEquals($expectedColumns, $relType.columns.name);
 }
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
@@ -734,6 +844,6 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]):Boolean[1]
 {
-  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}, meta::relational::extension::relationalExtensions());
   assertLambdaEquals($expected, $actual, false);
 }
