@@ -231,3 +231,10 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  # UNQUALIFIED correlated reference inside a lateral.
+  - id: lateral_unqualified_correlated_column
+    sql: "SELECT x.c FROM (SELECT name AS nm FROM persons) A INNER JOIN (SELECT name AS dn FROM departments) B ON A.nm = B.dn CROSS JOIN LATERAL (SELECT p2.name AS c FROM persons p2 WHERE p2.name = dn) x ORDER BY 1"
+    feature: "unqualified correlated reference inside LATERAL over a realiased join"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

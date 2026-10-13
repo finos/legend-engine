@@ -5697,7 +5697,8 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
                        | [],
                        | $this.contexts->filter(c |
                              $c.name->isNotEmpty() && $c.columnByName($n, false)->isNotEmpty()));
-    if ($owners->size() == 1, | $owners->toOne(), | []);
+    let sources  = $owners->filter(o | !$owners->exists(other | $other.id != $o.id && $o.contexts.id->contains($other.id)));
+    if ($sources->size() == 1, | $sources->toOne(), | []);
   }:SqlTransformContext[0..1];
 
   columnByNameParts(parts:String[*], failIfNotFound:Boolean[1])
