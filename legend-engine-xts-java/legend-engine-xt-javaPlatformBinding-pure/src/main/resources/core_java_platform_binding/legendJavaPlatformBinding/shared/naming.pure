@@ -60,5 +60,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::naming:
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::naming::planNodeClass(conventions:Conventions[1], modifiers:String[*], path:String[1], simpleName:String[1]): meta::external::language::java::metamodel::Class[1]
 {
-   javaClass($modifiers, javaPackage($conventions.basePackageName + '.plan.'+$path)->packageToString()+'.'+$simpleName);
+   // [A] node classes namespaced per plan so differing plans do not collide on merge; model-derived
+   // types stay plan-independent and dedup
+   let planPrefix = if($conventions.planId->isEmpty(), | '', | $conventions->identifier('plan_' + $conventions.planId->toOne()) + '.');
+   javaClass($modifiers, javaPackage($conventions.basePackageName + '.' + $planPrefix + 'plan.' + $path)->packageToString()+'.'+$simpleName);
 }

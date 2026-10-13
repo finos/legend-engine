@@ -204,7 +204,12 @@ public class PureModel implements IPureModel
         try
         {
             ConsoleCompiled console = new ConsoleCompiled();
-            console.disable();
+            // Opt-in Pure console: setting -Dlegend.pure.console.enabled=true keeps println(...) output
+            // from Pure code visible on stdout (useful for ad-hoc diagnostics in Java-generation code).
+            if (!Boolean.getBoolean("legend.pure.console.enabled"))
+            {
+                console.disable();
+            }
             this.executionSupport = new CompiledExecutionSupport(
                     new JavaCompilerState(null, classLoader),
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),

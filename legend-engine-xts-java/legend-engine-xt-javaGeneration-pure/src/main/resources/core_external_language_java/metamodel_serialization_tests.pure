@@ -959,6 +959,55 @@ function <<test.Test>> meta::external::language::java::serialization::tests::pac
    );
 }
 
+// Same shadowing rule as packageClassCausesLangToBeQualified, but exercising the per-package fast path used by
+// whole-project serialization (newPackageStringifier). The enclosing package declares its own 'String', so the
+// reference to java.lang.String must still be written fully qualified.
+function <<test.Test>> meta::external::language::java::serialization::tests::packageClassCausesLangToBeQualifiedPerPackage():Boolean[1]
+{
+   let class = javaClass('org.finos.test.Test')
+                  ->addMethod(javaMethod('public', javaString(), 'test', [],
+                       j_return(j_string('Hello'))
+                    ));
+
+   // simple names declared in org.finos.test - as serializeDirectoryClasses would supply them
+   test('package org.finos.test;\n' +
+        '\n' +
+        'class Test\n' +
+        '{\n' +
+        '    public java.lang.String test()\n' +
+        '    {\n' +
+        '        return "Hello";\n' +
+        '    }\n' +
+        '}',
+        $class,
+        newPackageStringifier(['String', 'Test'])
+   );
+}
+
+// Counterpart: when the enclosing package does NOT declare a competing 'String', the short name must be used.
+// This is what guards against the shadowing check being accidentally disabled - without it, a check that always
+// returns false would still pass the test above only if it also always qualified, which this rules out.
+function <<test.Test>> meta::external::language::java::serialization::tests::noPackageClashLeavesLangUnqualified():Boolean[1]
+{
+   let class = javaClass('org.finos.test.Test')
+                  ->addMethod(javaMethod('public', javaString(), 'test', [],
+                       j_return(j_string('Hello'))
+                    ));
+
+   test('package org.finos.test;\n' +
+        '\n' +
+        'class Test\n' +
+        '{\n' +
+        '    public String test()\n' +
+        '    {\n' +
+        '        return "Hello";\n' +
+        '    }\n' +
+        '}',
+        $class,
+        newPackageStringifier(['Test'])
+   );
+}
+
 function <<test.Test>> meta::external::language::java::serialization::tests::emptyString():Boolean[1]
 {
    test('package org.finos.test;\n' +
