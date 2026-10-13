@@ -530,7 +530,7 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          let vs = $t.relationFunction.expressionSequence->evaluateAndDeactivate();
          assert($vs->size() == 1, 'Function used in Relation function class mapping can only have a single expression!');
          assert($vs->at(0)->instanceOf(StoreClusteredValueSpecification), 'Relation function for set \'' + $setImpl.id + '\' in mapping \'' + $mapping->elementToPath() + '\' may not have been routed correctly. Found a ' + $vs->type().name->toOne() + ' instead of a StoreClusteredValueSpecification.');
-         let store = $vs->at(0)->cast(@StoreClusteredValueSpecification).store;
+         let store = $mapping->resolveStore($vs->at(0)->cast(@StoreClusteredValueSpecification).store);
          pair(meta::pure::extension::storeContractFromStore($extensions, $store), $store);,
       i: InstanceSetImplementation[1]|
          let storeContract = $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne());

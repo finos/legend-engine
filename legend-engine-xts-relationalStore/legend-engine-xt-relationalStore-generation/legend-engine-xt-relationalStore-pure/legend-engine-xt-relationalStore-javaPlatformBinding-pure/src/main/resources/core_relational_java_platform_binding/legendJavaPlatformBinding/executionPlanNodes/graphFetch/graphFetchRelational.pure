@@ -381,7 +381,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                      {|
                         let partialClassResultType = $node.resultType->cast(@PartialClassResultType);
                         let resultClass = $node->typeFromStoreLocalNode()->cast(@meta::pure::metamodel::type::Class<Any>);
-                        let sets = $partialClassResultType.setImplementations->cast(@RelationalInstanceSetImplementation);
+                        let sets = $partialClassResultType.setImplementations->cast(@InstanceSetImplementation);
                         let nonExplodingSimplePrimitiveProperties = $typeInfos->allProperties($typeInfos->forClass($resultClass))->filter(x | $x->isPrimitiveValueProperty() && (!$x->hasGeneratedMilestoningPropertyStereotype()) && $x->functionReturnMultiplicity()->hasToOneUpperBound())->filter(x | $x->in($partialClassResultType.propertiesWithParameters.property));
                         [
                            $propertyIndicesField->j_assign(j_new(javaArrayList(javaList(javaInt())), []))
@@ -458,8 +458,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                                           {|
                                              if ($propertyType->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                 {|
-                                                   let allPropertyMappings = $sets->at($s)->meta::relational::mapping::dataTypePropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType));
-                                                   let currentPropertyMapping = $allPropertyMappings->filter(x | $x.property == $prop)->removeDuplicates({u,v|$u.property == $v.property && $u.sourceSetImplementationId == $v.sourceSetImplementationId && $u.targetSetImplementationId == $v.targetSetImplementationId })->toOne()->cast(@RelationalPropertyMapping);
+                                                   let currentPropertyMapping = meta::relational::graphFetch::executionPlan::enumPropertyMappingForSet($sets->at($s), $prop);
                                                    $enumPropertyGetterCodes->eval($prop, $propertyType, $currentPropertyMapping);
                                                 },
                                                 {|
@@ -572,7 +571,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                      let partialClassResultType    = $node.resultType->cast(@PartialClassResultType);
                      let resultClass               = $node->typeFromStoreLocalNode()->cast(@meta::pure::metamodel::type::Class<Any>);
                      let implClass                 = $node->graphImplClass($path, $context);
-                     let sets                      = $partialClassResultType.setImplementations->cast(@RelationalInstanceSetImplementation);
+                     let sets                      = $partialClassResultType.setImplementations->cast(@InstanceSetImplementation);
                      let simplePrimitiveProperties = $typeInfos->allProperties($typeInfos->forClass($resultClass))->filter(x | $x->isPrimitiveValueProperty() && (!$x->hasGeneratedMilestoningPropertyStereotype()) && $x->functionReturnMultiplicity()->hasToOneUpperBound())->filter(x | $x->in($partialClassResultType.propertiesWithParameters.property));
 
                      if ($sets->size() == 1,
@@ -681,7 +680,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                let currentSets = $node.resultType->cast(@PartialClassResultType).setImplementations;
                let currentKeyStrings = $currentSets->map({set |
                   let setIdx = $currentSets->indexOf($set);
-                  let setPk = $set->cast(@RelationalInstanceSetImplementation)->resolvePrimaryKey();
+                  let setPk = $set->cast(@InstanceSetImplementation)->resolvePrimaryKey();
                   $setPk->map(x | 'pk$_' + $setPk->indexOf($x)->toString() + if($currentSets->size() == 1, | '', | '_' + $setIdx->toString()));
                });
                $spe->addMethod(
@@ -704,12 +703,12 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
             {|
                let partialClassResultType = $node.resultType->cast(@PartialClassResultType);
                let resultClass            = $node->typeFromStoreLocalNode()->cast(@meta::pure::metamodel::type::Class<Any>);
-               let sets                   = $partialClassResultType.setImplementations->cast(@RelationalInstanceSetImplementation);
+               let sets                   = $partialClassResultType.setImplementations->cast(@InstanceSetImplementation);
                let pairType               = javaParameterizedType(javaClass('org.eclipse.collections.api.tuple.Pair'), [javaString(), javaString()]);
 
                let currentSets            = $node.resultType->cast(@PartialClassResultType).setImplementations;
                let setIndexParam          = j_parameter(javaInt(), 'setIndex');
-               let keyStringsFunction     = {set: RelationalInstanceSetImplementation[1] |
+               let keyStringsFunction     = {set: InstanceSetImplementation[1] |
                   let setIdx = $currentSets->indexOf($set);
                   let setPk  = $set->resolvePrimaryKey();
                   $setPk->map(x | 'pk_' + $setPk->indexOf($x)->toString() + if($currentSets->size() == 1, | '', | '_' + $setIdx->toString()))->map(x | j_string($x));
@@ -869,7 +868,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          )
       });
 }
-function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties(set: RelationalInstanceSetImplementation[1], node: RelationalGraphFetchExecutionNode[1]):Boolean[1]
+function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties(set: InstanceSetImplementation[1], node: RelationalGraphFetchExecutionNode[1]):Boolean[1]
 {
     getTemporalMilestoningStrategy($set.class)->isNotEmpty() &&   ( $node.graphFetchTree->instanceOf(RoutedPropertyGraphFetchTree)  && !$node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree).property->isEdgePointProperty() || !$node.graphFetchTree->instanceOf(RoutedPropertyGraphFetchTree)  )                       
     && getTemporalMilestoningStrategy($set.class)->toOne()->expandToSingleTemporalStrategies()->forAll(s| $s->relationalElementCanSupportStrategy($set->resolveMainTable()));
@@ -923,7 +922,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    });
 }
 
-function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::objectCreationCodes(specificsClass: meta::external::language::java::metamodel::Class[1], implClass: meta::external::language::java::metamodel::Class[1], set: RelationalInstanceSetImplementation[1], allSets: RelationalInstanceSetImplementation[*], properties: Property<Nil,Any|*>[*], index: Integer[1], context:GenerationContext[1]):Code[*]
+function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::objectCreationCodes(specificsClass: meta::external::language::java::metamodel::Class[1], implClass: meta::external::language::java::metamodel::Class[1], set: InstanceSetImplementation[1], allSets: InstanceSetImplementation[*], properties: Property<Nil,Any|*>[*], index: Integer[1], context:GenerationContext[1]):Code[*]
 {
    let conventions = $context.conventions;
    let jThis = j_this($specificsClass);
@@ -1047,7 +1046,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithPrimaryKeys(implClass: meta::external::language::java::metamodel::Class[1], node: RelationalGraphFetchExecutionNode[1], context: GenerationContext[1]): Project[1]
 {
    let conventions = $context.conventions;
-   let sets        = $node.resultType->cast(@ClassResultType).setImplementations->cast(@RelationalInstanceSetImplementation);
+   let sets        = $node.resultType->cast(@ClassResultType).setImplementations->cast(@InstanceSetImplementation);
 
    let withKeys = $sets->fold({set, cl |
       let setIdx = $sets->indexOf($set);
@@ -1089,7 +1088,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          ->addMethods([
             javaMethod(['public'], javaString(), $conventions->getterName($setIdProp), [], 'return this.' + $setIdField + ';'),
             javaMethod(['public'], javaVoid(), $conventions->setterName($setIdProp), [javaParam(javaString(), 'setId')], 'this.' + $setIdField + ' = setId;'),
-            relationalReferenceIdentifierGetterMethodForImplementation($node.resultType->cast(@ClassResultType).setImplementations->cast(@RelationalInstanceSetImplementation), $implClass, $conventions),
+            relationalReferenceIdentifierGetterMethodForImplementation($node.resultType->cast(@ClassResultType).setImplementations->cast(@InstanceSetImplementation), $implClass, $conventions),
             javaMethod(['public'], javaVoid(), $conventions->setterName($referenceProp), [javaParam(javaString(), 'reference')], 'this.' + $referenceField + ' = reference;')
          ]);
 

@@ -1,0 +1,64 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+name: relation-graphfetch-union-milestoning
+title: "Relation Function Mapping — Graph Fetch Over Union, Subtype and Milestoned Roots"
+description: |
+  Graph fetch at the root of Relation (~func) class mappings that resolve to more than one
+  set or carry temporal semantics: a union Operation over two relation-function sets
+  (contract and full-time employees); an inheritance Operation over separate class
+  mappings for two Employee subclasses, fetched with a root ->subType(@ExtendedEmployee)
+  sub-tree so the subclass-only property appears just on those instances; and
+  processing-temporal and business-temporal milestoned classes fetched with .all(%date).
+  Verifies that Operation member sets are each routed to their own relation function and
+  that the milestoning filter is applied to the relation-function sub-select of the root.
+
+modelSources:
+  model:
+    root: relation-graphfetch-union-milestoning
+    files:
+      - mapping/unionMilestoningGraphFetchMapping.pure   # ###Pure (ContractEmployee) + union, subtype and temporal ###Mappings with graph-fetch testSuites
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:enumeration-mapping
+  - mapping:operation-mapping
+  - mapping:relation-expression-rhs
+  - mapping:relation-union
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - graph-fetch
+  - union
+  - subtype
+  - milestoning
+  - temporal

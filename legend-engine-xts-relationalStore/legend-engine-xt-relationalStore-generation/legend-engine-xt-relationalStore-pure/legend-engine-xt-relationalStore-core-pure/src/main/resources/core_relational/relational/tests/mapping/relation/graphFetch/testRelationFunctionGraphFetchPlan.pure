@@ -1,0 +1,215 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<access.private>> meta::relational::tests::mapping::relation::graphFetch::plan::planString(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):String[1]
+{
+  meta::pure::executionPlan::executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions())
+    ->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::plan::testRelationFunctionGraphFetchPlanRootPrimitivesOnly():Boolean[1]
+{
+  let tree = #{meta::relational::tests::mapping::relation::Person {firstName, age}}#;
+  let plan = meta::relational::tests::mapping::relation::graphFetch::plan::planString(
+    |meta::relational::tests::mapping::relation::Person.all()->graphFetch($tree)->serialize($tree),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB)
+  );
+
+  assertEquals(
+    'PureExp\n' +
+    '(\n' +
+    '  type = String\n' +
+    '  expression =  -> serialize(#{meta::relational::tests::mapping::relation::Person {firstName, age}}#)\n' +
+    '  (\n' +
+    '    StoreMappingGlobalGraphFetch\n' +
+    '    (\n' +
+    '      type = PartialClass[impls=[(meta::relational::tests::mapping::relation::Person | SimpleMapping.person)], propertiesWithParameters = [age, firstName]]\n' +
+    '      resultSizeRange = *\n' +
+    '      store = meta::relational::tests::mapping::relation::testDB\n' +
+    '      localGraphFetchExecutionNode = \n' +
+    '         RelationalGraphFetch\n' +
+    '         (\n' +
+    '           type = PartialClass[impls=[(meta::relational::tests::mapping::relation::Person | SimpleMapping.person)], propertiesWithParameters = [age, firstName]]\n' +
+    '           nodeIndex = 0\n' +
+    '           relationalNode = \n' +
+    '              SQL\n' +
+    '              (\n' +
+    '                type = meta::pure::metamodel::type::Any\n' +
+    '                resultColumns = [("pk_0", INT), ("firstName", VARCHAR(1024)), ("age", INT)]\n' +
+    '                sql = select "root"."ID" as "pk_0", "root"."FIRST NAME" as "firstName", "root"."AGE" as "age" from (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root"\n' +
+    '                connection = TestDatabaseConnection(type = "H2")\n' +
+    '              )\n' +
+    '           children = [\n' +
+    '              \n' +
+    '           ]\n' +
+    '         )\n' +
+    '      children = [\n' +
+    '         \n' +
+    '      ]\n' +
+    '      localTreeIndices = [0, 1, 2]\n' +
+    '      dependencyIndices = []\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n',
+    $plan
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::plan::testRelationFunctionGraphFetchPlanNestedRelationFunctionChild():Boolean[1]
+{
+  let tree = #{meta::relational::tests::mapping::relation::Person {firstName, firm {legalName}}}#;
+  let plan = meta::relational::tests::mapping::relation::graphFetch::plan::planString(
+    |meta::relational::tests::mapping::relation::Person.all()->graphFetch($tree)->serialize($tree),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB)
+  );
+
+  assertEquals(
+    'PureExp\n' +
+    '(\n' +
+    '  type = String\n' +
+    '  expression =  -> serialize(#{meta::relational::tests::mapping::relation::Person {firstName, firm {legalName}}}#)\n' +
+    '  (\n' +
+    '    StoreMappingGlobalGraphFetch\n' +
+    '    (\n' +
+    '      type = PartialClass[impls=[(meta::relational::tests::mapping::relation::Person | SimpleMapping.person)], propertiesWithParameters = [firm, firstName]]\n' +
+    '      resultSizeRange = *\n' +
+    '      store = meta::relational::tests::mapping::relation::testDB\n' +
+    '      localGraphFetchExecutionNode = \n' +
+    '         RelationalGraphFetch\n' +
+    '         (\n' +
+    '           type = PartialClass[impls=[(meta::relational::tests::mapping::relation::Person | SimpleMapping.person)], propertiesWithParameters = [firm, firstName]]\n' +
+    '           nodeIndex = 0\n' +
+    '           relationalNode = \n' +
+    '              SQL\n' +
+    '              (\n' +
+    '                type = meta::pure::metamodel::type::Any\n' +
+    '                resultColumns = [("pk_0", INT), ("firstName", VARCHAR(1024))]\n' +
+    '                sql = select "root"."ID" as "pk_0", "root"."FIRST NAME" as "firstName" from (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root"\n' +
+    '                connection = TestDatabaseConnection(type = "H2")\n' +
+    '              )\n' +
+    '           children = [\n' +
+    '              RelationalGraphFetch\n' +
+    '              (\n' +
+    '                type = PartialClass[impls=[(meta::relational::tests::mapping::relation::Firm | SimpleMapping.firm)], propertiesWithParameters = [legalName]]\n' +
+    '                nodeIndex = 2\n' +
+    '                relationalNode = \n' +
+    '                   SQL\n' +
+    '                   (\n' +
+    '                     type = meta::pure::metamodel::type::Any\n' +
+    '                     resultColumns = [("parent_key_gen_0", INT), ("pk_0", INT), ("legalName", VARCHAR(1024))]\n' +
+    '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "firmtable_0"."ID" as "pk_0", "firmtable_0"."legalName" as "legalName" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join (select "persontable_1".ID as "ID", "persontable_1"."FIRST NAME" as "FIRST NAME", "persontable_1".AGE as "AGE", "persontable_1".FIRMID as "FIRMID", "persontable_1".EMPLOYEE_TYPE as "EMPLOYEE_TYPE", "persontable_1".IS_MALE as "IS_MALE", "persontable_1".SALARY as "SALARY" from (select top 5 "persontable_2".ID as ID, "persontable_2"."FIRST NAME" as "FIRST NAME", "persontable_2".AGE as AGE, "persontable_2".FIRMID as FIRMID, "persontable_2".EMPLOYEE_TYPE as EMPLOYEE_TYPE, "persontable_2".IS_MALE as IS_MALE, "persontable_2".SALARY as SALARY from personTable as "persontable_2" where "persontable_2".AGE > 25) as "persontable_1") as "root" on ("temp_table_node_0_0".pk_0 = "root"."ID") left outer join (select "subselect"."ID" as "ID", "subselect"."legalName" as "legalName" from (select "firmtable_2"."ID" as "ID", "firmtable_2"."legalName" as "legalName" from (select top 10 "firmtable_3".ID as "ID", "firmtable_3".legalName as "legalName" from firmTable as "firmtable_3") as "firmtable_2") as "subselect") as "firmtable_0" on ("root"."FIRMID" = "firmtable_0"."ID") where "firmtable_0"."ID" is not null\n' +
+    '                     connection = TestDatabaseConnection(type = "H2")\n' +
+    '                   )\n' +
+    '                children = [\n' +
+    '                   \n' +
+    '                ]\n' +
+    '              )\n' +
+    '\n' +
+    '           ]\n' +
+    '         )\n' +
+    '      children = [\n' +
+    '         \n' +
+    '      ]\n' +
+    '      localTreeIndices = [0, 1, 2, 3]\n' +
+    '      dependencyIndices = []\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n',
+    $plan
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::plan::testRelationFunctionGraphFetchPlanCrossDatabaseChild():Boolean[1]
+{
+  let tree = #{meta::relational::tests::mapping::relation::crossDb::Firm {legalName, ceo {name}}}#;
+  let runtime = ^Runtime(connectionStores = meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::crossDb::RfpmEmployeeDB)->concatenate(meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::crossDb::RfpmFirmDB)).connectionStores);
+  let plan = meta::relational::tests::mapping::relation::graphFetch::plan::planString(
+    |meta::relational::tests::mapping::relation::crossDb::Firm.all()->graphFetch($tree)->serialize($tree),
+    meta::relational::tests::mapping::relation::crossDb::RfpmCrossDatabaseMapping,
+    $runtime
+  );
+
+  assertEquals(
+    'PureExp\n' +
+    '(\n' +
+    '  type = String\n' +
+    '  expression =  -> serialize(#{meta::relational::tests::mapping::relation::crossDb::Firm {legalName, ceo {name}}}#)\n' +
+    '  (\n' +
+    '    StoreMappingGlobalGraphFetch\n' +
+    '    (\n' +
+    '      type = PartialClass[impls=[(meta::relational::tests::mapping::relation::crossDb::Firm | RfpmCrossDatabaseMapping.firm)], propertiesWithParameters = [ceo, ceoId, legalName]]\n' +
+    '      resultSizeRange = *\n' +
+    '      store = meta::relational::tests::mapping::relation::crossDb::RfpmFirmDB\n' +
+    '      localGraphFetchExecutionNode = \n' +
+    '         RelationalGraphFetch\n' +
+    '         (\n' +
+    '           type = PartialClass[impls=[(meta::relational::tests::mapping::relation::crossDb::Firm | RfpmCrossDatabaseMapping.firm)], propertiesWithParameters = [ceoId, legalName]]\n' +
+    '           nodeIndex = 0\n' +
+    '           relationalNode = \n' +
+    '              SQL\n' +
+    '              (\n' +
+    '                type = meta::pure::metamodel::type::Any\n' +
+    '                resultColumns = [("pk_0", INT), ("ceoId", INT), ("legalName", VARCHAR(1024))]\n' +
+    '                sql = select "root"."id" as "pk_0", "root"."ceoIdentifier" as "ceoId", "root"."legalName" as "legalName" from (select "firm_1".id as "id", "firm_1".legalName as "legalName", "firm_1".ceoIdentifier as "ceoIdentifier" from (select "firm_2".id as id, "firm_2".legalName as legalName, "firm_2".ceoIdentifier as ceoIdentifier from firm as "firm_2") as "firm_1") as "root"\n' +
+    '                connection = TestDatabaseConnection(type = "H2")\n' +
+    '              )\n' +
+    '           children = [\n' +
+    '              \n' +
+    '           ]\n' +
+    '         )\n' +
+    '      children = [\n' +
+    '         StoreMappingGlobalGraphFetch\n' +
+    '         (\n' +
+    '           type = PartialClass[impls=[(meta::relational::tests::mapping::relation::crossDb::Ceo | RfpmCrossDatabaseMapping.ceo)], propertiesWithParameters = [ceoId, name]]\n' +
+    '           store = meta::relational::tests::mapping::relation::crossDb::RfpmEmployeeDB\n' +
+    '           localGraphFetchExecutionNode = \n' +
+    '              RelationalGraphFetch\n' +
+    '              (\n' +
+    '                type = PartialClass[impls=[(meta::relational::tests::mapping::relation::crossDb::Ceo | RfpmCrossDatabaseMapping.ceo)], propertiesWithParameters = [ceoId, name]]\n' +
+    '                nodeIndex = 2\n' +
+    '                relationalNode = \n' +
+    '                   SQL\n' +
+    '                   (\n' +
+    '                     type = meta::pure::metamodel::type::Any\n' +
+    '                     resultColumns = [("cross_join_op$", BIT), ("pk_0", VARCHAR(1024)), ("ceoId", INT), ("name", VARCHAR(1024)), ("parent_cross_key_0", INT)]\n' +
+    '                     sql = select distinct "cross_temp_table_node_0_0".ceoId = "root"."identifier" as "cross_join_op$", "root"."name" as "pk_0", "root"."identifier" as "ceoId", "root"."name" as "name", "cross_temp_table_node_0_0".ceoId as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join (select "ceo_1".name as "name", "ceo_1".identifier as "identifier" from (select "ceo_2".name as name, "ceo_2".identifier as identifier from ceo as "ceo_2") as "ceo_1") as "root" on (1 = 1) where "cross_temp_table_node_0_0".ceoId is not distinct from "root"."identifier"\n' +
+    '                     connection = TestDatabaseConnection(type = "H2")\n' +
+    '                   )\n' +
+    '                children = [\n' +
+    '                   \n' +
+    '                ]\n' +
+    '              )\n' +
+    '           children = [\n' +
+    '              \n' +
+    '           ]\n' +
+    '           parentIndex = 0\n' +
+    '           xStorePropertyMapping = ceo[firm -> ceo]\n' +
+    '           localTreeIndices = [2, 3, 4]\n' +
+    '           dependencyIndices = [5]\n' +
+    '         )\n' +
+    '\n' +
+    '      ]\n' +
+    '      localTreeIndices = [0, 1, 5]\n' +
+    '      dependencyIndices = []\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n',
+    $plan
+  );
+}

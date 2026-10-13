@@ -1,0 +1,330 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Mapping
+Mapping demo::relation::mapping::EmployeeGraphFetchXStoreMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  testSuites:
+  [
+    toOneSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->graphFetch(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#)
+                  ->serialize(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#);
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchEmployerPerEmployee:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","employer":{"legalName":"Acme"}},{"firstName":"Bob","employer":{"legalName":"Beta"}},{"firstName":"Carol","employer":{"legalName":"Acme"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    toManySuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#);
+      tests:
+      [
+        allFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchEmployeesPerFirmIncludingEmpty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Acme","employees":[{"firstName":"Alice"},{"firstName":"Carol"}]},{"legalName":"Beta","employees":[{"firstName":"Bob"}]},{"legalName":"Gamma","employees":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    deepChainSuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{legalName, employees{firstName, employer{legalName}}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{legalName, employees{firstName, employer{legalName}}}}#);
+      tests:
+      [
+        allFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchBackThroughEmployer:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Acme","employees":[{"firstName":"Alice","employer":{"legalName":"Acme"}},{"firstName":"Carol","employer":{"legalName":"Acme"}}]},{"legalName":"Beta","employees":[{"firstName":"Bob","employer":{"legalName":"Beta"}}]},{"legalName":"Gamma","employees":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping demo::relation::mapping::EmployeeGraphFetchModelJoinMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: ModelJoin
+  {
+    {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
+  }
+
+  testSuites:
+  [
+    modelJoinToManySuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#);
+      tests:
+      [
+        allFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchEmployeesThroughModelJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Acme","employees":[{"firstName":"Alice"},{"firstName":"Carol"}]},{"legalName":"Beta","employees":[{"firstName":"Bob"}]},{"legalName":"Gamma","employees":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping
+(
+  *demo::relation::domain::Employee[emp]: Relational
+  {
+    ~primaryKey ([demo::relation::db::EmployeeDB]EmployeeTable.ID)
+    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
+    id: [demo::relation::db::EmployeeDB]EmployeeTable.ID,
+    firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
+    lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [demo::relation::db::EmployeeDB]EmployeeTable.EMP_TYPE,
+    active: case(equal([demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE, 1), sqlTrue(), sqlFalse()),
+    hireDate: [demo::relation::db::EmployeeDB]EmployeeTable.HIRE_DATE,
+    salary: [demo::relation::db::EmployeeDB]EmployeeTable.SALARY,
+    +firmId: Integer[1]: [demo::relation::db::EmployeeDB]EmployeeTable.FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  testSuites:
+  [
+    relationRootRelationalChildSuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#);
+      tests:
+      [
+        allFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchRelationalEmployeesUnderRelationFirm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Acme","employees":[{"firstName":"Alice"},{"firstName":"Carol"}]},{"legalName":"Beta","employees":[{"firstName":"Bob"}]},{"legalName":"Gamma","employees":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    relationalRootRelationChildSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->graphFetch(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#)
+                  ->serialize(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#);
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmGraphFetchData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchRelationFirmUnderRelationalEmployee:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","employer":{"legalName":"Acme"}},{"firstName":"Bob","employer":{"legalName":"Beta"}},{"firstName":"Carol","employer":{"legalName":"Acme"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

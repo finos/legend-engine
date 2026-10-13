@@ -95,11 +95,11 @@ function <<access.private>> meta::pure::router::store::routing::convertLocalizab
 function <<access.private>> meta::pure::router::store::routing::maybeConvertXStoreToModelJoin(x:meta::pure::mapping::xStore::XStoreAssociationImplementation[1], topMapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], classMappings:SetImplementation[*]):AssociationImplementation[1]
 {
   let mappingIds       = $x.propertyMappings.sourceSetImplementationId->concatenate($x.propertyMappings.targetSetImplementationId);
-  let inScopeClassMaps = $classMappings->filter(c | $c.id->in($mappingIds))->distinct();
-  let inScopeStores    = $inScopeClassMaps->map(setImpl | $setImpl->match([
-    r:RelationFunctionInstanceSetImplementation[1] | $runtime.connectionStores.element->cast(@meta::pure::store::Store)->toOne('Relation mapping only supported for queries having a single store definitions!'),
-    a:SetImplementation[1]                         | meta::pure::router::clustering::storeContractForSetImplementation($setImpl, $topMapping, $extensions).second
-  ]));
+  let inScopeClassMaps = $classMappings->filter(c | $c.id->in($mappingIds))->distinct()
+                           ->map(c | $c->potentiallyRouteRelationFunctionSet($topMapping, $runtime, $extensions));
+  let inScopeStores    = $inScopeClassMaps->map(setImpl |
+    meta::pure::router::clustering::storeContractForSetImplementation($setImpl, $topMapping, $extensions).second
+  );
 
   // A localize step rewrites this XStore as a ModelJoinAssociationImplementation, which is
   // only safe when *every* participating store has a translator that can compile a
@@ -188,7 +188,8 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet
 {
   $s->match(
     [
-      t:RelationFunctionInstanceSetImplementation[1]|^$t(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions)),
+      t:RelationFunctionInstanceSetImplementation[1]|let withPrimaryKey = if($t.primaryKey->isEmpty(), | ^$t(primaryKey = $t->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey([], $extensions)), | $t);
+                                                     ^$withPrimaryKey(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions));,
       e:EmbeddedSetImplementation[1]|$e,
       s:InstanceSetImplementation[1]|$s,
       o:OperationSetImplementation[1]|if($o->isOperationSetRouted(),
@@ -788,7 +789,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
               let resolvedPermSetsHavingRootClassImpl = $permSetsHavingRootClassImpl->map(pSet | ^$pSet(sets = $pSet.sets->map(s |  let setImplToBeProcessed = [inheritance_OperationSetImplementation_1__SetImplementation_MANY_,union_OperationSetImplementation_1__SetImplementation_MANY_];
                                                                                                                                     assert(!($rootGraphFetchTree.subTypeTrees->size() > 0 && !($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation->in($setImplToBeProcessed))), 'union or inheritance mapping should be used with subTypeGraphFetchTree');
                                                                                                                                     if($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation->in($setImplToBeProcessed),
-                                                                                                                                      | $s->resolveOperation($mapping),
+                                                                                                                                      | $s->resolveOperation($mapping)->map(m | $m->potentiallyRouteRelationFunctionSet($mapping, $routingStrategy.runtime, $extensions)),
                                                                                                                                       | $s
                                                                                                                                     );
                                                                                                                               )

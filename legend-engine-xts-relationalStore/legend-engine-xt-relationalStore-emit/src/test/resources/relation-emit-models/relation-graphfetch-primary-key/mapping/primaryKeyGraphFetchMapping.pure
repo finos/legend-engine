@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Mapping
+Mapping demo::relation::mapping::EmployeeGraphFetchPrimaryKeyMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    ~primaryKey: ID
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    ~primaryKey: [ID, LEGAL_NAME]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  testSuites:
+  [
+    singleKeyRootSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->graphFetch(#{demo::relation::domain::Employee{id, firstName, employer{legalName}}}#)
+                  ->serialize(#{demo::relation::domain::Employee{id, firstName, employer{legalName}}}#);
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchSingleKeyRootsWithEmployer:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"firstName":"Alice","employer":{"legalName":"Acme"}},{"id":2,"firstName":"Bob","employer":{"legalName":"Beta"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    compositeKeyRootSuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{id, legalName, employees{id, firstName}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{id, legalName, employees{id, firstName}}}#);
+      tests:
+      [
+        allFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchCompositeKeyRootsWithEmployees:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"legalName":"Acme","employees":[{"id":1,"firstName":"Alice"}]},{"id":2,"legalName":"Beta","employees":[{"id":2,"firstName":"Bob"}]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

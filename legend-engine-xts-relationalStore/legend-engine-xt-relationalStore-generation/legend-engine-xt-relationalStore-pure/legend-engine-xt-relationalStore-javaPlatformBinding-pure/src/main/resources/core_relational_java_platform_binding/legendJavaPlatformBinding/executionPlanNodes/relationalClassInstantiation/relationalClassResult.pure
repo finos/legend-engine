@@ -1249,7 +1249,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
    )
 }
 
-function meta::relational::executionPlan::platformBinding::legendJava::classResult::relationalReferenceIdentifierGetterMethodForImplementation(sets: RelationalInstanceSetImplementation[*], implClass: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]):meta::external::language::java::metamodel::Method[1]
+function meta::relational::executionPlan::platformBinding::legendJava::classResult::relationalReferenceIdentifierGetterMethodForImplementation(sets: InstanceSetImplementation[*], implClass: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]):meta::external::language::java::metamodel::Method[1]
 {
    let referenceIdentifier = $conventions->fieldName($conventions->storeObjectReferenceIdentifier());
    javaMethod(
