@@ -74,7 +74,7 @@ public class QueryRealiaser extends BaseNodeModifierVisitor
 
         //reset the state
         root = false;
-        realiases = UnifiedMap.newMap();
+        realiases = UnifiedMap.newMap(scopeRealiases);
         AliasedRelation result = (AliasedRelation) super.visit(val);
 
         //we always rename non root aliases.

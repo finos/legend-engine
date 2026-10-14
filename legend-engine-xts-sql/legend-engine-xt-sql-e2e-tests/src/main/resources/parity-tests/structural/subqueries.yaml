@@ -97,6 +97,13 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  - id: subquery_exists_correlated_into_nested_derived_table
+    sql: "SELECT abt.nm FROM (SELECT name AS nm, dept_id AS dk FROM persons GROUP BY name, dept_id) AS abt WHERE EXISTS (SELECT hist.b FROM (SELECT d.id AS b FROM departments d INNER JOIN persons q ON q.dept_id = d.id WHERE d.id = abt.dk) AS hist) ORDER BY 1"
+    feature: "Correlated reference into a derived table inside EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
   # Subquery with aggregate comparison - a subquery in value position under a comparison is a scalar subquery
   - id: subquery_agg_comparison
     sql: "SELECT name, salary FROM persons WHERE salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"

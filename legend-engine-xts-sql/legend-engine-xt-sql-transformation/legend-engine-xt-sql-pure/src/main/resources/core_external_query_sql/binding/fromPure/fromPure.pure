@@ -2234,8 +2234,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //all of the child contexts are in scope for joining on so the new context needs to know about them
   let leftContexts = if ($join.left->instanceOf(Join), | $left.contexts, | $left);
   let rightContexts = if ($join.right->instanceOf(Join), | $right.contexts, | $right);
-  //inside a correlated subquery or a lateral body the enclosing relation is in scope too
-  let outerContexts = if ($context.lateralOuterAliases->isEmpty(), | [], | $context.contexts);
+  //inside a correlated subquery or a lateral body the enclosing relation is in scope too, except
+  //where a join side rebinds its name - an inner binding shadows the outer one, and carrying both
+  //would leave two contexts answering to that name for columnByNameParts to choose between.
+  //TODO: this inner-name shadowing (innerNames + the outerContexts filter below) is a workaround. Remove it once correlated-subquery context management is properly handled
+  let innerNames = $leftContexts->concatenate($rightContexts).name;
+  let outerContexts = if ($context.lateralOuterAliases->isEmpty(),
+                        | [],
+                        | $context.contexts->filter(c | $c.name->isEmpty() || !$c.name->toOne()->in($innerNames)));
   let newContext = ^$context(contexts = $outerContexts->concatenate($leftContexts)->concatenate($rightContexts));
 
   let row1 = ^VariableExpression(multiplicity = PureOne, name = 'row1', genericType = ^GenericType(rawType = TDSRow));
@@ -3590,6 +3596,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     //the enclosing relation joins the visible contexts so columnByNameParts can resolve a
     //correlated 'outer.col' against it rather than falling back to the sub-relation
     contexts = $context.contexts->concatenate($context),
+    //the enclosing relation is now a named child, so keeping its name here too would leave the
+    //sub-relation and that child both answering to it. columnByNameParts prefers its own name,
+    //so the duplicate makes a correlated reference resolve against the sub-relation instead.
+    name = [],
     rowVarName = subQueryVarName($expContext)
   );
 
