@@ -32,20 +32,14 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                  revsForTest(
                       'meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::min()',
+                            'select null'
                         ),
-                        revError('|1.0->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1.0->meta::pure::functions::math::min()',
+                            'select 1.0'
                         ),
-                        revError('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::min()',
+                            'select least(4.23, 7.345, 1.0, 3.678, 4.6)'
                         )
                       ]
                  ),
@@ -63,20 +57,14 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                  revsForTest(
                       'meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::min()',
+                            'select null'
                         ),
-                        revError('|1->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1->meta::pure::functions::math::min()',
+                            'select 1'
                         ),
-                        revError('|[4, 7, 1, 3, 4]->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4, 7, 1, 3, 4]->meta::pure::functions::math::min()',
+                            'select least(4, 7, 1, 3, 4)'
                         )
                       ]
                  ),
@@ -89,35 +77,25 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                         rev('|2->meta::pure::functions::math::min(1.23)',
                             'select case when 1.23 < 2 then 1.23 else 2 end'
                         ),
-                        revError('|2->meta::pure::functions::math::min(1.23D)',
-                                 'select case when cast(1.23 as DECIMAL(32, 16)) < 2 then cast(1.23 as DECIMAL(32, 16)) else 2 end',
-                                 'expected: 1.23D\nactual:   1.2300000000000000D',
-                                 'Issue with return type formatting'
+                        rev('|2->meta::pure::functions::math::min(1.23D)',
+                            'select case when cast(1.23 as DECIMAL(32, 16)) < 2 then cast(1.23 as DECIMAL(32, 16)) else 2 end'
                         )
                       ]
                  ),
                  revsForTest(
                       'meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::min()',
+                            'select null'
                         ),
-                        revError('|1.0D->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1.0D->meta::pure::functions::math::min()',
+                            'select cast(1.0 as DECIMAL(32, 16))'
                         ),
-                        revError('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::min()',
+                            'select least(4.23, 7.345, 1.0, 3, 4)'
                         ),
-                        revError('|[4.23D, 7.345, 1.0D, 3, 4]->meta::pure::functions::math::min()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23D, 7.345, 1.0D, 3, 4]->meta::pure::functions::math::min()',
+                            'select least(cast(4.23 as DECIMAL(32, 16)), 7.345, cast(1.0 as DECIMAL(32, 16)), 3, 4)'
                         )
                       ]
                  ),
@@ -242,11 +220,11 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
 function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::min::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::min::testMin_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::min::testMin_IntegersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::min::testMin_IntegersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::min::testMin_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::min::testMin_FloatsArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::min::testMin_FloatsArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::min::testMin_Numbers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::min::testMin_NumbersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::min::testMin_NumbersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);

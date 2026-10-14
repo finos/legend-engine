@@ -192,13 +192,13 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
 function <<test.Test>> meta::relational::tests::projection::function::testNestedPlusFunctionAndMappingDynaFunction():Boolean[1]
 {
    let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithPlus, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity + "root".quantity as "pnl" from orderTable as "root" where "root".quantity + "root".quantity > 0', $resultForAdd->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity + "root".quantity as "pnl" from orderTable as "root" where coalesce("root".quantity + "root".quantity, cast(0.0 as float)) > 0', $resultForAdd->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::function::testNestedPlusFunctionAndNestedMappingDynaFunction():Boolean[1]
 {
    let resultForAdd = execute(|Order.all()->filter(o|$o.pnl->plus() > 0), simpleRelationalMappingWithNestedPlus, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".quantity + "root".quantity + 3 as "pnl" from orderTable as "root" where "root".quantity + "root".quantity + 3 > 0', $resultForAdd->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".quantity + "root".quantity + 3 as "pnl" from orderTable as "root" where coalesce("root".quantity + "root".quantity + 3, cast(0.0 as float)) > 0', $resultForAdd->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::function::testSameBehaviorForNestedAddAndPlus():Boolean[1]

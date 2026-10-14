@@ -37,25 +37,17 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Date)->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[]->meta::pure::functions::lang::cast(@Date)->meta::pure::functions::date::max()',
+                            'select null'
                         ),
-                        revError('|[%2025-02-10T20:10:20+0000, %2025-02-10]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-10T20:10:20+0000, %2025-02-10]->meta::pure::functions::date::max()',
+                            'select greatest(Timestamp\'2025-02-10 20:10:20\', Date\'2025-02-10\')'
                         ),
-                        revError('|[%2025-02-10, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-10, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::max()',
+                            'select greatest(Date\'2025-02-10\', Timestamp\'2025-02-10 20:10:20\')'
                         ),
-                        revError('|[%2025-02-09, %2025-04-09, %2025-02-09T01:15:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-09, %2025-04-09, %2025-02-09T01:15:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::max()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\', Timestamp\'2025-02-09 01:15:20\', Timestamp\'2025-01-10 15:25:30\')'
                         )
                       ]
                  ),
@@ -77,30 +69,20 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@DateTime)->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[]->meta::pure::functions::lang::cast(@DateTime)->meta::pure::functions::date::max()',
+                            'select null'
                         ),
-                        revError('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max()',
+                            'select Timestamp\'2025-02-10 20:10:20\''
                         ),
-                        revError('|[%2025-02-10T20:10:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-10T20:10:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::max()',
+                            'select greatest(Timestamp\'2025-02-10 20:10:20\', Timestamp\'2025-01-10 15:25:30\')'
                         ),
-                        revError('|[%2025-01-10T15:25:30+0000, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-01-10T15:25:30+0000, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::max()',
+                            'select greatest(Timestamp\'2025-01-10 15:25:30\', Timestamp\'2025-02-10 20:10:20\')'
                         ),
-                        revError('|[%2025-01-10T15:25:30+0000, %2025-02-10T10:11:15+0000, %2025-02-10T20:10:20+0000, %2024-05-17T23:11:14+0000]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-01-10T15:25:30+0000, %2025-02-10T10:11:15+0000, %2025-02-10T20:10:20+0000, %2024-05-17T23:11:14+0000]->meta::pure::functions::date::max()',
+                            'select greatest(Timestamp\'2025-01-10 15:25:30\', Timestamp\'2025-02-10 10:11:15\', Timestamp\'2025-02-10 20:10:20\', Timestamp\'2024-05-17 23:11:14\')'
                         )
                       ]
                  ),
@@ -122,30 +104,20 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@StrictDate)->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[]->meta::pure::functions::lang::cast(@StrictDate)->meta::pure::functions::date::max()',
+                            'select null'
                         ),
-                        revError('|%2025-02-09->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|%2025-02-09->meta::pure::functions::date::max()',
+                            'select Date\'2025-02-09\''
                         ),
-                        revError('|[%2025-04-09, %2025-02-09]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-04-09, %2025-02-09]->meta::pure::functions::date::max()',
+                            'select greatest(Date\'2025-04-09\', Date\'2025-02-09\')'
                         ),
-                        revError('|[%2025-02-09, %2025-04-09]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-09, %2025-04-09]->meta::pure::functions::date::max()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\')'
                         ),
-                        revError('|[%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02]->meta::pure::functions::date::max()',
-                                 '',
-                                 'Unexpected token',
-                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        rev('|[%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02]->meta::pure::functions::date::max()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\', Date\'2025-01-01\', Date\'2024-12-14\', Date\'2025-04-02\')'
                         )
                       ]
                  ),
@@ -171,10 +143,10 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
 function meta::external::query::sql::reversePCT::tests::standard::date::aggregator::max::exec():Boolean[1]
 {
    meta::pure::functions::date::tests::max::testMax_Date(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::date::tests::max::testMax_DateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::max::testMax_DateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::date::tests::max::testMax_DateTime(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::date::tests::max::testMax_DateTimeArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::max::testMax_DateTimeArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::date::tests::max::testMax_StrictDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::date::tests::max::testMax_StrictDateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::max::testMax_StrictDateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    //meta::pure::functions::date::tests::max::testExtendMaxDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

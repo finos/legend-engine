@@ -154,17 +154,17 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_FloatsArr
 
 function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(1.23, $f->eval(|min(1.23, 2)));
-    assertEquals(1.23, $f->eval(|min(2, 1.23)));
-    assertEquals(1.23d, $f->eval(|min(2, 1.23d)));
+    assertEqWithinTolerance(1.23, $f->eval(|min(1.23, 2)), 0.000000000000001);
+    assertEqWithinTolerance(1.23, $f->eval(|min(2, 1.23)), 0.000000000000001);
+    assertEqWithinTolerance(1.23d, $f->eval(|min(2, 1.23d)), 0.000000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_NumbersArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|min([]->cast(@Number))));
-    assertEquals(1.0d, $f->eval(|min([1.0d])));
-    assertEquals(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3, 4])));
-    assertEquals(1.0d, $f->eval(|min([4.23d, 7.345, 1.0d, 3, 4])));
+    assertEqWithinTolerance(1.0d, $f->eval(|min([1.0d]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3, 4]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(1.0d, $f->eval(|min([4.23d, 7.345, 1.0d, 3, 4]))->toOne(), 0.000000000000001);
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

@@ -54,13 +54,13 @@ function meta::external::query::sql::reversePCT::tests::grammar::math::operation
                       'meta::pure::functions::math::tests::plus::testSinglePlus_Function_1__Boolean_1_',
                       [
                         rev('|+(1)',
-                            'select sum(1)'
+                            'select 1'
                         ),
                         rev('|+(+(1))',
-                            'select sum(1)'
+                            'select 1'
                         ),
                         rev('|+(+(+(1)))',
-                            'select sum(1)'
+                            'select 1'
                         )
                       ]
                  ),
