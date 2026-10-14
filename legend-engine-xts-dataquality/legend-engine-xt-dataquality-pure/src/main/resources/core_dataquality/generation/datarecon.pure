@@ -36,7 +36,7 @@ import meta::pure::tds::schema::*;
 */
 function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): LambdaFunction<Any>[1]
 {
-  getDataReconLambda($reconInput, $compiler, []);
+  meta::external::dataquality::datarecon::getDataReconLambda($reconInput, $compiler, []);
 }
 
 function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]): LambdaFunction<Any>[1]
