@@ -15,6 +15,7 @@
 package org.finos.legend.engine.generation.dataquality;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_datarecon_DataQualityReconInput;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -24,6 +25,10 @@ import static org.finos.legend.engine.generation.dataquality.DataQualityProfilin
 
 public class DataQualityReconLambdaGenerator
 {
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput)
+    {
+        return generateLambda(pureModel, reconInput, Lists.immutable.empty());
+    }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
