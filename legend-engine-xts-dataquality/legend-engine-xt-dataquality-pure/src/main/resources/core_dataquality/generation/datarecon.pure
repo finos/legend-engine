@@ -34,6 +34,11 @@ import meta::pure::tds::schema::*;
     6) join 2 datasets using keys
     7) filter where source and target hash are different
 */
+function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): LambdaFunction<Any>[1]
+{
+  getDataReconLambda($reconInput, $compiler, []);
+}
+
 function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]): LambdaFunction<Any>[1]
 {
   let baseLambda = $reconInput.source;
