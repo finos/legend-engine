@@ -736,9 +736,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   assertJsonStringsEqual('[]', $result.values);
 }
 
-// A single-set XStore self-association is never localized (routing.pure maybeConvertXStoreToModelJoin expects two
-// distinct sets) and the unlocalized XStorePropertyMapping then fails in pureToSQLQuery processPropertyMapping.
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToOneChain():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToOneChain():Boolean[1]
 {
   let tree = #{
     Person {
@@ -769,9 +767,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
   );
 }
 
-// A single-set XStore self-association is never localized (routing.pure maybeConvertXStoreToModelJoin expects two
-// distinct sets) and the unlocalized XStorePropertyMapping then fails in pureToSQLQuery processPropertyMapping.
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToMany():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToMany():Boolean[1]
 {
   let tree = #{
     Person {

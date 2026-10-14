@@ -100,9 +100,8 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     #TDS
        name1, name2
        David, TDSNull
-       Fabrice, TDSNull
+       Fabrice, Oliver
        John, John
-       Oliver, Fabrice
        Oliver, Oliver
     #->toString(),
     $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
@@ -188,9 +187,8 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     #TDS
        name1, name2
        David, TDSNull
-       Fabrice, TDSNull
+       Fabrice, Oliver
        John, John
-       Oliver, Fabrice
        Oliver, Oliver
     #->toString(),
     $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()

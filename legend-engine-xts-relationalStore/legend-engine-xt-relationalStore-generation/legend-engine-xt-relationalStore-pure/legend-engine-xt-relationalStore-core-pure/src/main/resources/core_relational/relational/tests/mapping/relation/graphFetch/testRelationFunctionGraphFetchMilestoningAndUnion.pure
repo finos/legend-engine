@@ -124,11 +124,6 @@ function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::
     ->select(~[ID, 'FIRST NAME', FIRMID])
 }
 
-function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allPersonFn():meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[ID, 'FIRST NAME', FIRMID])
-}
-
 function meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allFirmFn():meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->select(~[ID, legalName])
@@ -248,28 +243,6 @@ Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::R
   }
 )
 
-Mapping meta::relational::tests::mapping::relation::graphFetch::temporalUnion::RfgfMsPropertySubTypeMapping
-(
-  *Firm[firm]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allFirmFn():Relation<Any>[1]
-    legalName: legalName,
-    +id: Integer[1]: ID
-  }
-
-  *PersonWithFirmId[personSub]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::graphFetch::temporalUnion::allPersonFn():Relation<Any>[1]
-    firstName: 'FIRST NAME',
-    firmId: FIRMID
-  }
-
-  Person_Firm: ModelJoin
-  {
-    {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
-  }
-)
-
 ###Pure
 import meta::pure::graphFetch::execution::*;
 import meta::relational::metamodel::execute::*;
@@ -363,6 +336,8 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 }
 
 // Unfiltered, Firm X would also list John and Firm B Anthony; only the propagated 2024-12-30 business date excludes them.
+// ToFix, not relation-function specific: Java serializer generation fails for a date-propagated no-arg milestoned property
+// (serialize.pure); a Relational mapping of the same association fails the same way.
 function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedPropertyWithDatePropagatedFromRoot():Boolean[1]
 {
   let queryString = 'function my::func():String[1]\n' +
@@ -413,7 +388,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchAllVersionsRoot():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchAllVersionsRoot():Boolean[1]
 {
   let tree = #{
     RfgfMsBtFirm {
@@ -434,7 +409,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
   );
 }
 
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedTableJoinedAfterNonMilestonedTable():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchMilestonedTableJoinedAfterNonMilestonedTable():Boolean[1]
 {
   let tree = #{
     RfgfMsBtEmployment {
@@ -457,7 +432,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
   );
 }
 
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchUnionPropertyLevel():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchUnionPropertyLevel():Boolean[1]
 {
   let tree = #{
     Firm {
@@ -502,35 +477,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 
   assertJsonStringsEqual(
     '[{"firstName":"Peter"},{"firstName":"John"},{"firstName":"John"},{"firstName":"Oliver"},{"firstName":"David"},{"firstName":"Fabrice"}]',
-    $result.values
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::temporalUnion::testRelationFunctionGraphFetchPropertyLevelSubType():Boolean[1]
-{
-  let tree = #{
-    Firm {
-      legalName,
-      employees->subType(@PersonWithFirmId) {
-        firstName,
-        firmId
-      }
-    }
-  }#;
-
-  let result = execute(
-    |Firm.all()->graphFetch($tree)->serialize($tree),
-    RfgfMsPropertySubTypeMapping,
-    testDBRuntime(),
-    meta::relational::extension::relationalExtensions()
-  );
-
-  assertJsonStringsEqual(
-    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","firmId":1},{"firstName":"John","firmId":1}]},' +
-    '{"legalName":"Firm A","employees":[{"firstName":"Jane","firmId":2}]},' +
-    '{"legalName":"Firm B","employees":[{"firstName":"Anthony","firmId":3}]},' +
-    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","firmId":4},{"firstName":"Oliver","firmId":4}]},' +
-    '{"legalName":"Firm D","employees":[{"firstName":"David","firmId":5}]}]',
     $result.values
   );
 }

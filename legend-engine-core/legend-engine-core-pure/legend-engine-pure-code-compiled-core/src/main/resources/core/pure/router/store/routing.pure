@@ -109,7 +109,7 @@ function <<access.private>> meta::pure::router::store::routing::maybeConvertXSto
 
   let sameConnection = if($runtime.connectionStores->size() >= 1,
                           | let connections = $inScopeStores->map(s | $runtime->connectionByElementFailSafe($s));
-                            ($connections->size() == 2 && $connections->distinct()->size() == 1)
+                            ($connections->size() == $inScopeStores->size() && $connections->size()->in([1, 2]) && $connections->distinct()->size() == 1)
                                || ($connections->size() == 0 && $runtime.preprocessFunction->isNotEmpty());,
                           | false);
 
@@ -188,8 +188,11 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet
 {
   $s->match(
     [
-      t:RelationFunctionInstanceSetImplementation[1]|let withPrimaryKey = if($t.primaryKey->isEmpty(), | ^$t(primaryKey = $t->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey([], $extensions)), | $t);
-                                                     ^$withPrimaryKey(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions));,
+      t:RelationFunctionInstanceSetImplementation[1]|if($t->isRelationFunctionRouted(),
+                                                       | $t,
+                                                       | let withPrimaryKey = if($t.primaryKey->isEmpty(), | ^$t(primaryKey = $t->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey([], $extensions)), | $t);
+                                                         ^$withPrimaryKey(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions));
+                                                     ),
       e:EmbeddedSetImplementation[1]|$e,
       s:InstanceSetImplementation[1]|$s,
       o:OperationSetImplementation[1]|if($o->isOperationSetRouted(),

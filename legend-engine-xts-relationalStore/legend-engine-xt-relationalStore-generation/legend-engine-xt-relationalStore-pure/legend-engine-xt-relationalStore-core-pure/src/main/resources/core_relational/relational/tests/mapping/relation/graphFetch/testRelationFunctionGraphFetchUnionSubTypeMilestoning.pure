@@ -1,0 +1,1634 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB
+(
+  Table RFGF_US_WORKER
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    KIND VARCHAR(10) NOT NULL,
+    DEPTID INTEGER,
+    SALARY INTEGER,
+    AGENCY VARCHAR(100)
+  )
+
+  Table RFGF_US_DEPT
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_US_LAPTOP
+  (
+    ID INTEGER PRIMARY KEY,
+    MODEL VARCHAR(100) NOT NULL,
+    OWNERID INTEGER NOT NULL
+  )
+
+  Table RFGF_US_TRADE1
+  (
+    ID INTEGER PRIMARY KEY,
+    QTY INTEGER NOT NULL,
+    INSTRID INTEGER NOT NULL,
+    BOOKID INTEGER NOT NULL,
+    TRADER VARCHAR(100)
+  )
+
+  Table RFGF_US_TRADE2
+  (
+    ID INTEGER PRIMARY KEY,
+    QTY INTEGER NOT NULL,
+    INSTRID INTEGER NOT NULL,
+    BOOKID INTEGER NOT NULL,
+    TRADER VARCHAR(100)
+  )
+
+  Table RFGF_US_TRADE3
+  (
+    ID INTEGER PRIMARY KEY,
+    QTY INTEGER NOT NULL,
+    INSTRID INTEGER NOT NULL,
+    BOOKID INTEGER NOT NULL,
+    TRADER VARCHAR(100)
+  )
+
+  Table RFGF_US_INSTR1
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_US_INSTR2
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_US_BOOK1
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_US_BOOK2
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_US_ORDER
+  (
+    ID INTEGER PRIMARY KEY,
+    PRODID INTEGER NOT NULL
+  )
+
+  Table RFGF_US_ORDER_U
+  (
+    ID INTEGER PRIMARY KEY,
+    PRODID INTEGER NOT NULL
+  )
+
+  Table RFGF_US_PRODUCT_BT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    TYPE VARCHAR(10) NOT NULL,
+    CLASSID INTEGER,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+
+  Table RFGF_US_PRODUCT_BT2
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    TYPE VARCHAR(10) NOT NULL,
+    CLASSID INTEGER,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+
+  Table RFGF_US_CLASSIF_BT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    DESCRIPTION VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+
+  Table RFGF_US_CLASSIF_BT2
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    DESCRIPTION VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+
+  Table RFGF_US_PRODUCT_SNAP
+  (
+    milestoning
+    (
+      business(BUS_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    CLASSID INTEGER NOT NULL,
+    SNAPSHOTDATE DATE PRIMARY KEY
+  )
+
+  Table RFGF_US_CLASSIF_SNAP
+  (
+    milestoning
+    (
+      business(BUS_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    DESCRIPTION VARCHAR(100) NOT NULL,
+    SNAPSHOTDATE DATE PRIMARY KEY
+  )
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::graphFetch::unionSubType::*;
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Worker
+{
+  id: Integer[1];
+  name: String[1];
+  kind: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee extends Worker
+{
+  salary: Integer[0..1];
+  laptopModel() {$this.laptop.model}: String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Contractor extends Worker
+{
+  agency: String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Department
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Laptop
+{
+  model: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Worker_Department
+{
+  workers: Worker[*];
+  department: Department[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee_Laptop
+{
+  owner: Employee[0..1];
+  laptop: Laptop[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade
+{
+  tradeId: Integer[1];
+  quantity: Integer[1];
+  trader: String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Instrument
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Book
+{
+  name: String[1];
+  totalQuantity() {$this.bookTrades.quantity->sum()}: Integer[1];
+  traderOfTrade(tradeId: Integer[1]) {$this.bookTrades->filter(t | $t.tradeId == $tradeId).trader->first()}: String[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade_Instrument
+{
+  trades: Trade[*];
+  instrument: Instrument[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Book_Trade
+{
+  book: Book[0..1];
+  bookTrades: Trade[*];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::unionSubType::Order
+{
+  id: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product
+{
+  id: Integer[1];
+  name: String[1];
+  type: String[1];
+  classificationDescription() {$this.classification($this.businessDate).description}: String[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::Classification
+{
+  description: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Order_Product
+{
+  orders: Order[*];
+  product: Product[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product_Classification
+{
+  products: Product[*];
+  classification: Classification[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapProduct
+{
+  name: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapClassification
+{
+  description: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapProduct_SnapClassification
+{
+  snapProducts: SnapProduct[*];
+  snapClassification: SnapClassification[0..1];
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::employeeFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_WORKER}#->filter(w | $w.KIND == 'E')->select(~[ID, NAME, KIND, DEPTID, SALARY])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::contractorFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_WORKER}#->filter(w | $w.KIND == 'C')->select(~[ID, NAME, KIND, DEPTID, AGENCY])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::deptFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_DEPT}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::laptopFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_LAPTOP}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_TRADE1}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_TRADE2}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade3Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_TRADE3}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr1Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_INSTR1}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr2Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_INSTR2}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::book1Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_BOOK1}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::book2Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_BOOK2}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::orderFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_ORDER}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::orderUFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_ORDER_U}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::productBtFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_PRODUCT_BT}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::productBt2Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_PRODUCT_BT2}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifBtFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_CLASSIF_BT}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifBt2Fn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_CLASSIF_BT2}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::productSnapFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_PRODUCT_SNAP}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifSnapFn():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::unionSubType::UsDB.RFGF_US_CLASSIF_SNAP}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::unionSubType::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::SubTypeUnionMapping
+(
+  *Worker: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_employee, us_contractor)
+  }
+
+  Employee[us_employee]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::employeeFn():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    kind: KIND,
+    salary: SALARY,
+    +deptId: Integer[0..1]: DEPTID
+  }
+
+  Contractor[us_contractor]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::contractorFn():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    kind: KIND,
+    agency: AGENCY,
+    +deptId: Integer[0..1]: DEPTID
+  }
+
+  *Department[us_dept]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::deptFn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  *Laptop[us_laptop]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::laptopFn():Relation<Any>[1]
+    model: MODEL,
+    +ownerId: Integer[1]: OWNERID
+  }
+
+  Worker_Department: ModelJoin
+  {
+    {workers: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Worker[1], department: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Department[1] | $workers.deptId == $department.id}
+  }
+
+  Employee_Laptop: ModelJoin
+  {
+    {owner: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee[1], laptop: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Laptop[1] | $laptop.ownerId == $owner.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::NestedRootUnionMapping
+(
+  *Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade12, us_trade3)
+  }
+
+  Trade[us_trade12]: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade1, us_trade2)
+  }
+
+  Trade[us_trade1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER
+  }
+
+  Trade[us_trade2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER
+  }
+
+  Trade[us_trade3]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade3Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::PartialRootUnionMapping
+(
+  *Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade1, us_trade2)
+  }
+
+  Trade[us_trade1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER
+  }
+
+  Trade[us_trade2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::RootUnionSingleChildMapping
+(
+  *Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade1, us_trade2)
+  }
+
+  Trade[us_trade1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID
+  }
+
+  Trade[us_trade2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID
+  }
+
+  *Instrument[us_instr1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr1Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Trade_Instrument: ModelJoin
+  {
+    {trades: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade[1], instrument: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Instrument[1] | $trades.instrId == $instrument.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::UnionTargetMapping
+(
+  *Book[us_book1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::book1Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  *Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade1, us_trade2, us_trade3)
+  }
+
+  Trade[us_trade1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  Trade[us_trade2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  Trade[us_trade3]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade3Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  *Instrument: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_instr1, us_instr2)
+  }
+
+  Instrument[us_instr1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr1Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Instrument[us_instr2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr2Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Book_Trade: ModelJoin
+  {
+    {book: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Book[1], bookTrades: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade[1] | $book.id == $bookTrades.bookId}
+  }
+
+  Trade_Instrument: ModelJoin
+  {
+    {trades: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade[1], instrument: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Instrument[1] | $trades.instrId == $instrument.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::UnionSourceMapping
+(
+  *Book: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_book1, us_book2)
+  }
+
+  Book[us_book1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::book1Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Book[us_book2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::book2Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  *Trade: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_trade1, us_trade2, us_trade3)
+  }
+
+  Trade[us_trade1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade1Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  Trade[us_trade2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade2Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  Trade[us_trade3]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::trade3Fn():Relation<Any>[1]
+    tradeId: ID,
+    quantity: QTY,
+    trader: TRADER,
+    +instrId: Integer[1]: INSTRID,
+    +bookId: Integer[1]: BOOKID
+  }
+
+  *Instrument: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_instr1, us_instr2)
+  }
+
+  Instrument[us_instr1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr1Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Instrument[us_instr2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::instr2Fn():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID
+  }
+
+  Book_Trade: ModelJoin
+  {
+    {book: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Book[1], bookTrades: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade[1] | $book.id == $bookTrades.bookId}
+  }
+
+  Trade_Instrument: ModelJoin
+  {
+    {trades: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Trade[1], instrument: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Instrument[1] | $trades.instrId == $instrument.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::MilestoningMapping
+(
+  *Order[us_order]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::orderFn():Relation<Any>[1]
+    id: ID,
+    +prodId: Integer[1]: PRODID
+  }
+
+  *Product[us_product]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::productBtFn():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    type: TYPE,
+    +classId: Integer[0..1]: CLASSID
+  }
+
+  *Classification[us_classif]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifBtFn():Relation<Any>[1]
+    description: DESCRIPTION,
+    +id: Integer[1]: ID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {orders: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Order[1], product: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product[1] | $orders.prodId == $product.id}
+  }
+
+  Product_Classification: ModelJoin
+  {
+    {products: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product[1], classification: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Classification[1] | $products.classId == $classification.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapshotMapping
+(
+  *SnapProduct[us_snap_product]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::productSnapFn():Relation<Any>[1]
+    name: NAME,
+    +classId: Integer[1]: CLASSID
+  }
+
+  *SnapClassification[us_snap_classif]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifSnapFn():Relation<Any>[1]
+    description: DESCRIPTION,
+    +id: Integer[1]: ID
+  }
+
+  SnapProduct_SnapClassification: ModelJoin
+  {
+    {snapProducts: meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapProduct[1], snapClassification: meta::relational::tests::mapping::relation::graphFetch::unionSubType::SnapClassification[1] | $snapProducts.classId == $snapClassification.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::unionSubType::MilestonedUnionMapping
+(
+  *Order[us_order_u]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::orderUFn():Relation<Any>[1]
+    id: ID,
+    +prodId: Integer[1]: PRODID
+  }
+
+  *Product: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_product1, us_product2)
+  }
+
+  Product[us_product1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::productBtFn():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    type: TYPE,
+    +classId: Integer[0..1]: CLASSID
+  }
+
+  Product[us_product2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::productBt2Fn():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    type: TYPE,
+    +classId: Integer[0..1]: CLASSID
+  }
+
+  *Classification: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(us_classif1, us_classif2)
+  }
+
+  Classification[us_classif1]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifBtFn():Relation<Any>[1]
+    description: DESCRIPTION,
+    +id: Integer[1]: ID
+  }
+
+  Classification[us_classif2]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::unionSubType::classifBt2Fn():Relation<Any>[1]
+    description: DESCRIPTION,
+    +id: Integer[1]: ID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {orders: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Order[1], product: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product[1] | $orders.prodId == $product.id}
+  }
+
+  Product_Classification: ModelJoin
+  {
+    {products: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Product[1], classification: meta::relational::tests::mapping::relation::graphFetch::unionSubType::Classification[1] | $products.classId == $classification.id}
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::relation::graphFetch::unionSubType::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::setUp():Boolean[1]
+{
+  setUpTables();
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::setUpTables():Boolean[1]
+{
+  let connection = usRuntime().connectionByElement(UsDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+  executeInDb('Drop table if exists RFGF_US_WORKER;', $connection);
+  executeInDb('Create Table RFGF_US_WORKER(ID INT, NAME VARCHAR(100), KIND VARCHAR(10), DEPTID INT, SALARY INT, AGENCY VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_WORKER values (1, \'Ann\', \'E\', 1, 100, null);', $connection);
+  executeInDb('insert into RFGF_US_WORKER values (2, \'Ben\', \'C\', 1, null, \'Acme\');', $connection);
+  executeInDb('insert into RFGF_US_WORKER values (3, \'Cat\', \'E\', 2, 200, null);', $connection);
+  executeInDb('insert into RFGF_US_WORKER values (4, \'Dov\', \'C\', 2, null, \'Bolt\');', $connection);
+  executeInDb('insert into RFGF_US_WORKER values (5, \'Eve\', \'E\', 1, 300, null);', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_DEPT;', $connection);
+  executeInDb('Create Table RFGF_US_DEPT(ID INT, NAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_DEPT values (1, \'Sales\');', $connection);
+  executeInDb('insert into RFGF_US_DEPT values (2, \'Ops\');', $connection);
+  executeInDb('insert into RFGF_US_DEPT values (3, \'Legal\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_LAPTOP;', $connection);
+  executeInDb('Create Table RFGF_US_LAPTOP(ID INT, MODEL VARCHAR(100), OWNERID INT);', $connection);
+  executeInDb('insert into RFGF_US_LAPTOP values (1, \'L-100\', 1);', $connection);
+  executeInDb('insert into RFGF_US_LAPTOP values (2, \'L-200\', 3);', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_TRADE1;', $connection);
+  executeInDb('Create Table RFGF_US_TRADE1(ID INT, QTY INT, INSTRID INT, BOOKID INT, TRADER VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_TRADE1 values (1, 100, 30, 1, \'abc\');', $connection);
+  executeInDb('insert into RFGF_US_TRADE1 values (2, 200, 31, 2, \'abc\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_TRADE2;', $connection);
+  executeInDb('Create Table RFGF_US_TRADE2(ID INT, QTY INT, INSTRID INT, BOOKID INT, TRADER VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_TRADE2 values (3, 300, 30, 1, \'xyz\');', $connection);
+  executeInDb('insert into RFGF_US_TRADE2 values (4, 400, 40, 2, \'xyz\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_TRADE3;', $connection);
+  executeInDb('Create Table RFGF_US_TRADE3(ID INT, QTY INT, INSTRID INT, BOOKID INT, TRADER VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_TRADE3 values (5, 500, 40, 1, \'pqr\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_INSTR1;', $connection);
+  executeInDb('Create Table RFGF_US_INSTR1(ID INT, NAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_INSTR1 values (30, \'Instr_30\');', $connection);
+  executeInDb('insert into RFGF_US_INSTR1 values (31, \'Instr_31\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_INSTR2;', $connection);
+  executeInDb('Create Table RFGF_US_INSTR2(ID INT, NAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_INSTR2 values (40, \'Instr_40\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_BOOK1;', $connection);
+  executeInDb('Create Table RFGF_US_BOOK1(ID INT, NAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_BOOK1 values (1, \'Book A\');', $connection);
+  executeInDb('insert into RFGF_US_BOOK1 values (3, \'Book C\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_BOOK2;', $connection);
+  executeInDb('Create Table RFGF_US_BOOK2(ID INT, NAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_US_BOOK2 values (2, \'Book B\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_ORDER;', $connection);
+  executeInDb('Create Table RFGF_US_ORDER(ID INT, PRODID INT);', $connection);
+  executeInDb('insert into RFGF_US_ORDER values (1, 1);', $connection);
+  executeInDb('insert into RFGF_US_ORDER values (2, 2);', $connection);
+  executeInDb('insert into RFGF_US_ORDER values (3, 3);', $connection);
+  executeInDb('insert into RFGF_US_ORDER values (4, 9);', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_ORDER_U;', $connection);
+  executeInDb('Create Table RFGF_US_ORDER_U(ID INT, PRODID INT);', $connection);
+  executeInDb('insert into RFGF_US_ORDER_U values (1, 1);', $connection);
+  executeInDb('insert into RFGF_US_ORDER_U values (2, 5);', $connection);
+  executeInDb('insert into RFGF_US_ORDER_U values (3, 6);', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_PRODUCT_BT;', $connection);
+  executeInDb('Create Table RFGF_US_PRODUCT_BT(ID INT, NAME VARCHAR(100), TYPE VARCHAR(10), CLASSID INT, FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT values (1, \'Prod1 v1\', \'STOCK\',  10, \'2015-01-01\', \'2016-01-01\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT values (1, \'Prod1 v2\', \'STOCK\',  10, \'2016-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT values (2, \'Prod2\',    \'OPTION\', 20, \'2015-06-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT values (3, \'Prod3\',    \'STOCK\',  30, \'2017-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT values (4, \'Prod4\',    \'BOND\',   10, \'2014-01-01\', \'2015-03-01\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_PRODUCT_BT2;', $connection);
+  executeInDb('Create Table RFGF_US_PRODUCT_BT2(ID INT, NAME VARCHAR(100), TYPE VARCHAR(10), CLASSID INT, FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT2 values (5, \'Prod5\',    \'STOCK\',  20, \'2015-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT2 values (6, \'Prod6 v1\', \'OPTION\', 40, \'2015-01-01\', \'2017-01-01\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_BT2 values (6, \'Prod6 v2\', \'OPTION\', 40, \'2017-01-01\', \'9999-12-31\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_CLASSIF_BT;', $connection);
+  executeInDb('Create Table RFGF_US_CLASSIF_BT(ID INT, DESCRIPTION VARCHAR(100), FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT values (10, \'Equity v1\',  \'2015-01-01\', \'2017-01-01\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT values (10, \'Equity v2\',  \'2017-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT values (20, \'Derivative\', \'2015-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT values (30, \'Equity new\', \'2017-06-01\', \'9999-12-31\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_CLASSIF_BT2;', $connection);
+  executeInDb('Create Table RFGF_US_CLASSIF_BT2(ID INT, DESCRIPTION VARCHAR(100), FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT2 values (40, \'Commodity v1\', \'2015-01-01\', \'2017-03-01\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_BT2 values (40, \'Commodity v2\', \'2017-03-01\', \'9999-12-31\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_PRODUCT_SNAP;', $connection);
+  executeInDb('Create Table RFGF_US_PRODUCT_SNAP(ID INT, NAME VARCHAR(100), CLASSID INT, SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_SNAP values (1, \'SnapA old\', 10, \'2017-06-14\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_SNAP values (1, \'SnapA\',     10, \'2017-06-15\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_SNAP values (2, \'SnapB\',     20, \'2017-06-15\');', $connection);
+  executeInDb('insert into RFGF_US_PRODUCT_SNAP values (3, \'SnapC\',     10, \'2017-06-14\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_US_CLASSIF_SNAP;', $connection);
+  executeInDb('Create Table RFGF_US_CLASSIF_SNAP(ID INT, DESCRIPTION VARCHAR(100), SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_SNAP values (10, \'Equity old\', \'2017-06-14\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_SNAP values (10, \'Equity\',     \'2017-06-15\');', $connection);
+  executeInDb('insert into RFGF_US_CLASSIF_SNAP values (20, \'Bond\',       \'2017-06-15\');', $connection);
+  true;
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::usRuntime():meta::core::runtime::Runtime[1]
+{
+  meta::external::store::relational::tests::testRuntime(UsDB)
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::workerTree(treeBody:String[1]):RootGraphFetchTree<Worker>[1]
+{
+  meta::legend::compileLegendValueSpecification('#{meta::relational::tests::mapping::relation::graphFetch::unionSubType::Worker {' + $treeBody + '}}#')->cast(@RootGraphFetchTree<Worker>)
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::fetchWorkers(tree:RootGraphFetchTree<Worker>[1]):String[1]
+{
+  execute(
+    |Worker.all()->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  ).values->toOne()
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::sortedByKey(json:String[1], key:String[1]):String[1]
+{
+  let array = $json->meta::json::parseJSON()->cast(@meta::json::JSONArray);
+  ^meta::json::JSONArray(values = $array.values->sortBy(v | $v->cast(@meta::json::JSONObject)->meta::json::getValue($key)->cast(@meta::json::JSONNumber).value->toOne()->cast(@Integer)))->meta::json::toCompactJSONString();
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::unionSubType::planString(query:FunctionDefinition<Any>[1], mapping:meta::pure::mapping::Mapping[1]):String[1]
+{
+  meta::pure::executionPlan::executionPlan($query, $mapping, usRuntime(), meta::relational::extension::relationalExtensions())
+    ->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootSubTypeWithSimpleProperty():Boolean[1]
+{
+  assertJsonStringsEqual(
+    '[{"id":1,"salary":100},{"id":3,"salary":200},{"id":5,"salary":300},{"id":2},{"id":4}]',
+    fetchWorkers(workerTree('id, ->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {salary}'))
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootMultipleSubTypes():Boolean[1]
+{
+  assertJsonStringsEqual(
+    '[{"id":1,"name":"Ann","salary":100},{"id":3,"name":"Cat","salary":200},{"id":5,"name":"Eve","salary":300},' +
+    '{"id":2,"name":"Ben","agency":"Acme"},{"id":4,"name":"Dov","agency":"Bolt"}]',
+    fetchWorkers(workerTree(
+      'id, name,' +
+      '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {salary},' +
+      '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Contractor) {agency}'
+    ))
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootCommonPropertyAlongsideSubTypeTrees():Boolean[1]
+{
+  assertJsonStringsEqual(
+    '[{"kind":"E","name":"Ann"},{"kind":"E","name":"Cat"},{"kind":"E","name":"Eve"},{"kind":"C","name":"Ben"},{"kind":"C","name":"Dov"}]',
+    fetchWorkers(workerTree(
+      'kind,' +
+      '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {name},' +
+      '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Contractor) {name}'
+    ))
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootSubTypeWithFilter():Boolean[1]
+{
+  let tree = workerTree(
+    'id,' +
+    '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {salary},' +
+    '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Contractor) {agency}'
+  );
+  let result = execute(
+    |Worker.all()->filter(w | $w.id->in([1, 4]))->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual('[{"id":1,"salary":100},{"id":4,"agency":"Bolt"}]', $result.values);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootSubTypeWithComplexProperty():Boolean[1]
+{
+  assertJsonStringsEqual(
+    '[{"id":1,"department":{"name":"Sales"},"salary":100,"laptop":{"model":"L-100"}},' +
+    '{"id":3,"department":{"name":"Ops"},"salary":200,"laptop":{"model":"L-200"}},' +
+    '{"id":5,"department":{"name":"Sales"},"salary":300,"laptop":null},' +
+    '{"id":2,"department":{"name":"Sales"}},' +
+    '{"id":4,"department":{"name":"Ops"}}]',
+    fetchWorkers(workerTree(
+      'id, department {name},' +
+      '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {salary, laptop {model}}'
+    ))
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootSubTypeWithQualifiedProperty():Boolean[1]
+{
+  assertJsonStringsEqual(
+    '[{"id":1,"laptopModel()":"L-100"},{"id":3,"laptopModel()":"L-200"},{"id":5,"laptopModel()":null},{"id":2},{"id":4}]',
+    fetchWorkers(workerTree('id, ->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {laptopModel}'))
+  );
+}
+
+// ToFix, not relation-function specific: graphFetchChecked drops the base properties of root subtype trees (serialize.pure toPropertyTree);
+// the Relational RootSubTypeWithSubtypeLevelPropertyUnionMappingChecked produces the same output.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootSubTypeChecked():Boolean[1]
+{
+  let tree = workerTree(
+    'id,' +
+    '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Employee) {salary},' +
+    '->subType(@meta::relational::tests::mapping::relation::graphFetch::unionSubType::Contractor) {agency}'
+  );
+  let result = execute(
+    |Worker.all()->graphFetchChecked($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"id":1,"salary":100}},{"defects":[],"value":{"id":3,"salary":200}},{"defects":[],"value":{"id":5,"salary":300}},' +
+    '{"defects":[],"value":{"id":2,"agency":"Acme"}},{"defects":[],"value":{"id":4,"agency":"Bolt"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testUnionOfSubTypeSetsWithoutSubTypeTree():Boolean[1]
+{
+  let tree = #{
+    Worker {
+      id,
+      name,
+      department {
+        name
+      }
+    }
+  }#;
+  let result = execute(
+    |Worker.all()->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"name":"Ann","department":{"name":"Sales"}},{"id":3,"name":"Cat","department":{"name":"Ops"}},{"id":5,"name":"Eve","department":{"name":"Sales"}},' +
+    '{"id":2,"name":"Ben","department":{"name":"Sales"}},{"id":4,"name":"Dov","department":{"name":"Ops"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testPropertyLevelSubTypeOverUnionTarget():Boolean[1]
+{
+  let tree = #{
+    Department {
+      name,
+      workers->subType(@Employee) {
+        name,
+        salary
+      }
+    }
+  }#;
+  let result = execute(
+    |Department.all()->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Sales","workers":[{"name":"Ann","salary":100},{"name":"Eve","salary":300}]},' +
+    '{"name":"Ops","workers":[{"name":"Cat","salary":200}]},' +
+    '{"name":"Legal","workers":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testPropertyLevelSubTypeWithComplexProperty():Boolean[1]
+{
+  let tree = #{
+    Department {
+      name,
+      workers->subType(@Employee) {
+        name,
+        laptop {
+          model
+        }
+      }
+    }
+  }#;
+  let result = execute(
+    |Department.all()->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Sales","workers":[{"name":"Ann","laptop":{"model":"L-100"}},{"name":"Eve","laptop":null}]},' +
+    '{"name":"Ops","workers":[{"name":"Cat","laptop":{"model":"L-200"}}]},' +
+    '{"name":"Legal","workers":[]}]',
+    $result.values
+  );
+}
+
+// ToFix, not relation-function specific: aliased subtype trees on one property generate the same serializer method name
+// (serialize.pure names methods by property, not alias), whatever the store.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testPropertyLevelMultipleAliasedSubTypes():Boolean[1]
+{
+  let tree = #{
+    Department {
+      name,
+      'employees': workers->subType(@Employee) {
+        name,
+        salary
+      },
+      'contractors': workers->subType(@Contractor) {
+        name,
+        agency
+      }
+    }
+  }#;
+  let result = execute(
+    |Department.all()->graphFetch($tree)->serialize($tree),
+    SubTypeUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Sales","employees":[{"name":"Ann","salary":100},{"name":"Eve","salary":300}],"contractors":[{"name":"Ben","agency":"Acme"}]},' +
+    '{"name":"Ops","employees":[{"name":"Cat","salary":200}],"contractors":[{"name":"Dov","agency":"Bolt"}]},' +
+    '{"name":"Legal","employees":[],"contractors":[]}]',
+    $result.values
+  );
+}
+
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootQualifierUsesBusinessDate():Boolean[1]
+{
+  let tree = #{
+    Product {
+      name,
+      classificationDescription
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2016-06-01)->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Prod1 v2","classificationDescription()":"Equity v1"},{"name":"Prod2","classificationDescription()":"Derivative"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootWithFilter():Boolean[1]
+{
+  let tree = #{
+    Product {
+      id,
+      name
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2017-06-15)->filter(p | $p.type == 'STOCK')->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual('[{"id":1,"name":"Prod1 v2"},{"id":3,"name":"Prod3"}]', $result.values);
+}
+
+// ToFix, not relation-function specific: %latest as a graph fetch property parameter has no Java type (LatestDate in conventions.pure);
+// the Relational testMilestonedPropertyWithLatest is also ToFix.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedPropertyWithLatestDate():Boolean[1]
+{
+  let tree = #{
+    Order {
+      id,
+      product(%latest) {
+        name
+      }
+    }
+  }#;
+  let result = execute(
+    |Order.all()->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"product(%latest)":{"name":"Prod1 v2"}},{"id":2,"product(%latest)":{"name":"Prod2"}},{"id":3,"product(%latest)":{"name":"Prod3"}},{"id":4,"product(%latest)":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedPropertyAllVersions():Boolean[1]
+{
+  let tree = #{
+    Order {
+      id,
+      productAllVersions {
+        name
+      }
+    }
+  }#;
+  let result = execute(
+    |Order.all()->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"productAllVersions":[{"name":"Prod1 v1"},{"name":"Prod1 v2"}]},{"id":2,"productAllVersions":[{"name":"Prod2"}]},{"id":3,"productAllVersions":[{"name":"Prod3"}]},{"id":4,"productAllVersions":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootWithMilestonedPropertyAllVersions():Boolean[1]
+{
+  let tree = #{
+    Product {
+      name,
+      classificationAllVersions {
+        description
+      }
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2017-06-15)->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Prod1 v2","classificationAllVersions":[{"description":"Equity v1"},{"description":"Equity v2"}]},' +
+    '{"name":"Prod2","classificationAllVersions":[{"description":"Derivative"}]},' +
+    '{"name":"Prod3","classificationAllVersions":[{"description":"Equity new"}]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootWithMilestonedPropertyAtOtherDate():Boolean[1]
+{
+  let tree = #{
+    Product {
+      name,
+      classification(%2016-06-01) {
+        description
+      }
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2017-06-15)->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Prod1 v2","classification(2016-06-01)":{"description":"Equity v1"}},' +
+    '{"name":"Prod2","classification(2016-06-01)":{"description":"Derivative"}},' +
+    '{"name":"Prod3","classification(2016-06-01)":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMultiLevelMilestoning():Boolean[1]
+{
+  let result = execute(
+    {|
+      let bd = %2017-06-15;
+      Order.all()
+        ->graphFetch(#{Order {id, product($bd) {name, businessDate, classification($bd) {description, businessDate}}}}#)
+        ->serialize(#{Order {id, product($bd) {name, businessDate, classification($bd) {description, businessDate}}}}#);
+    },
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"product($bd)":{"name":"Prod1 v2","businessDate":"2017-06-15","classification($bd)":{"description":"Equity v2","businessDate":"2017-06-15"}}},' +
+    '{"id":2,"product($bd)":{"name":"Prod2","businessDate":"2017-06-15","classification($bd)":{"description":"Derivative","businessDate":"2017-06-15"}}},' +
+    '{"id":3,"product($bd)":{"name":"Prod3","businessDate":"2017-06-15","classification($bd)":{"description":"Equity new","businessDate":"2017-06-15"}}},' +
+    '{"id":4,"product($bd)":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedPropertyWithDateTimeInQuery():Boolean[1]
+{
+  let tree = #{
+    Order {
+      id,
+      product(%2016-06-01T00:00:00) {
+        name
+      }
+    }
+  }#;
+  let result = execute(
+    |Order.all()->graphFetch($tree)->serialize($tree),
+    MilestoningMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"product(2016-06-01T00:00:00+0000)":{"name":"Prod1 v2"}},{"id":2,"product(2016-06-01T00:00:00+0000)":{"name":"Prod2"}},' +
+    '{"id":3,"product(2016-06-01T00:00:00+0000)":null},{"id":4,"product(2016-06-01T00:00:00+0000)":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testBusinessSnapshotRootWithMilestonedPropertyFilter():Boolean[1]
+{
+  let result = execute(
+    {|
+      let bd = %2017-06-15;
+      SnapProduct.all($bd)
+        ->filter(p | $p.snapClassification.description == 'Equity')
+        ->graphFetch(#{SnapProduct {name, snapClassification($bd) {description}}}#)
+        ->serialize(#{SnapProduct {name, snapClassification($bd) {description}}}#);
+    },
+    SnapshotMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual('{"name":"SnapA","snapClassification($bd)":{"description":"Equity"}}', $result.values);
+}
+
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootUnionOfUnion():Boolean[1]
+{
+  let tree = #{
+    Trade {
+      tradeId,
+      quantity,
+      trader
+    }
+  }#;
+  let result = execute(
+    |Trade.all()->graphFetch($tree)->serialize($tree),
+    NestedRootUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"tradeId":1,"quantity":100,"trader":"abc"},{"tradeId":2,"quantity":200,"trader":"abc"},' +
+    '{"tradeId":3,"quantity":300,"trader":"xyz"},{"tradeId":4,"quantity":400,"trader":"xyz"},' +
+    '{"tradeId":5,"quantity":500,"trader":"pqr"}]',
+    sortedByKey($result.values->toOne(), 'tradeId')
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootUnionWithPropertyUnmappedInOneSetFails():Boolean[1]
+{
+  let tree = #{
+    Trade {
+      tradeId,
+      trader
+    }
+  }#;
+
+  assertError(
+    | planString({|Trade.all()->graphFetch($tree)->serialize($tree)}, PartialRootUnionMapping),
+    'Property "trader" is not mapped in the set: "us_trade2"'
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testRootUnionWithChildFromSingleSet():Boolean[1]
+{
+  let tree = #{
+    Trade {
+      tradeId,
+      instrument {
+        name
+      }
+    }
+  }#;
+  let result = execute(
+    |Trade.all()->graphFetch($tree)->serialize($tree),
+    RootUnionSingleChildMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"tradeId":1,"instrument":{"name":"Instr_30"}},{"tradeId":2,"instrument":{"name":"Instr_31"}},' +
+    '{"tradeId":3,"instrument":{"name":"Instr_30"}},{"tradeId":4,"instrument":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testPropertyLevelUnionTargetWithNestedUnionChild():Boolean[1]
+{
+  let tree = #{
+    Book {
+      name,
+      bookTrades {
+        tradeId,
+        instrument {
+          name
+        }
+      }
+    }
+  }#;
+  let result = execute(
+    |Book.all()->graphFetch($tree)->serialize($tree),
+    UnionTargetMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Book A","bookTrades":[{"tradeId":1,"instrument":{"name":"Instr_30"}},{"tradeId":3,"instrument":{"name":"Instr_30"}},{"tradeId":5,"instrument":{"name":"Instr_40"}}]},' +
+    '{"name":"Book C","bookTrades":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testPropertyLevelUnionSourceAndTarget():Boolean[1]
+{
+  let tree = #{
+    Book {
+      name,
+      bookTrades {
+        tradeId,
+        instrument {
+          name
+        }
+      }
+    }
+  }#;
+  let result = execute(
+    |Book.all()->graphFetch($tree)->serialize($tree),
+    UnionSourceMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Book A","bookTrades":[{"tradeId":1,"instrument":{"name":"Instr_30"}},{"tradeId":3,"instrument":{"name":"Instr_30"}},{"tradeId":5,"instrument":{"name":"Instr_40"}}]},' +
+    '{"name":"Book C","bookTrades":[]},' +
+    '{"name":"Book B","bookTrades":[{"tradeId":2,"instrument":{"name":"Instr_31"}},{"tradeId":4,"instrument":{"name":"Instr_40"}}]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testQualifiedPropertyOverUnionTarget():Boolean[1]
+{
+  let tree = #{
+    Book {
+      name,
+      totalQuantity,
+      traderOfTrade(3)
+    }
+  }#;
+  let result = execute(
+    |Book.all()->graphFetch($tree)->serialize($tree),
+    UnionSourceMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Book A","totalQuantity()":900,"traderOfTrade(3)":"xyz"},' +
+    '{"name":"Book C","totalQuantity()":0,"traderOfTrade(3)":null},' +
+    '{"name":"Book B","totalQuantity()":600,"traderOfTrade(3)":null}]',
+    $result.values
+  );
+}
+
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootUnion():Boolean[1]
+{
+  let tree = #{
+    Product {
+      id,
+      name,
+      businessDate
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2016-06-01)->graphFetch($tree)->serialize($tree),
+    MilestonedUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"name":"Prod1 v2","businessDate":"2016-06-01"},{"id":2,"name":"Prod2","businessDate":"2016-06-01"},' +
+    '{"id":5,"name":"Prod5","businessDate":"2016-06-01"},{"id":6,"name":"Prod6 v1","businessDate":"2016-06-01"}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedRootUnionWithMilestonedUnionProperty():Boolean[1]
+{
+  let tree = #{
+    Product {
+      name,
+      classification(%2017-06-15) {
+        description
+      }
+    }
+  }#;
+  let result = execute(
+    |Product.all(%2017-06-15)->graphFetch($tree)->serialize($tree),
+    MilestonedUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Prod1 v2","classification(2017-06-15)":{"description":"Equity v2"}},{"name":"Prod2","classification(2017-06-15)":{"description":"Derivative"}},' +
+    '{"name":"Prod3","classification(2017-06-15)":{"description":"Equity new"}},' +
+    '{"name":"Prod5","classification(2017-06-15)":{"description":"Derivative"}},{"name":"Prod6 v2","classification(2017-06-15)":{"description":"Commodity v2"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMilestonedUnionPropertyWithQualifiedProperty():Boolean[1]
+{
+  let tree = #{
+    Order {
+      id,
+      product(%2016-06-01) {
+        name,
+        classificationDescription
+      }
+    }
+  }#;
+  let result = execute(
+    |Order.all()->graphFetch($tree)->serialize($tree),
+    MilestonedUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"product(2016-06-01)":{"name":"Prod1 v2","classificationDescription()":"Equity v1"}},' +
+    '{"id":2,"product(2016-06-01)":{"name":"Prod5","classificationDescription()":"Derivative"}},' +
+    '{"id":3,"product(2016-06-01)":{"name":"Prod6 v1","classificationDescription()":"Commodity v1"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::unionSubType::testMultiLevelMilestonedUnion():Boolean[1]
+{
+  let tree = #{
+    Order {
+      id,
+      product(%2017-06-15) {
+        name,
+        classification(%2017-06-15) {
+          description
+        }
+      }
+    }
+  }#;
+  let result = execute(
+    |Order.all()->graphFetch($tree)->serialize($tree),
+    MilestonedUnionMapping,
+    usRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"id":1,"product(2017-06-15)":{"name":"Prod1 v2","classification(2017-06-15)":{"description":"Equity v2"}}},' +
+    '{"id":2,"product(2017-06-15)":{"name":"Prod5","classification(2017-06-15)":{"description":"Derivative"}}},' +
+    '{"id":3,"product(2017-06-15)":{"name":"Prod6 v2","classification(2017-06-15)":{"description":"Commodity v2"}}}]',
+    $result.values
+  );
+}
