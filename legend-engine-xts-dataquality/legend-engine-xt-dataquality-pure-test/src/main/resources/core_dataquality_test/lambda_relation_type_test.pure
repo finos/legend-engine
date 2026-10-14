@@ -50,7 +50,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '         ];' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // assertRelationNotEmpty → buildOneRowIfEmptyExpression → COUNT-only relation.
   assertEquals(['COUNT'], $relType.columns.name);
 }
@@ -71,7 +71,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '         ];' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // assertRelationEmpty(~[cols]) → buildSelectExpression → projected columns only.
   assertEquals(['FIRSTNAME', 'LASTNAME'], $relType.columns.name);
 }
@@ -92,7 +92,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '         ];' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // Filter is preserved upstream; projection controls the emitted column set.
   assertEquals(['FIRSTNAME'], $relType.columns.name);
 }
@@ -114,7 +114,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '         ];' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   assertEquals(['FIRSTNAME', 'LASTNAME'], $relType.columns.name);
 }
 
@@ -133,7 +133,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '        strategy: MD5Hash;' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // Reconciliation output columns: hash cols first, then key SOURCE/TARGET, then compare SOURCE/TARGET.
   assertEquals(
     ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'LASTNAME_SOURCE', 'LASTNAME_TARGET'],
@@ -158,7 +158,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '        };' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   assertEquals(['HASH_SOURCE', 'HASH_TARGET', 'ID_SOURCE', 'ID_TARGET'], $relType.columns.name);
 }
 
@@ -176,7 +176,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '        strategy: MD5Hash;' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // Additional-persist cols come after compare cols; AGE exists on both sides so both variants are emitted.
   assertEquals(
     ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'LASTNAME_SOURCE', 'LASTNAME_TARGET', 'AGE_SOURCE', 'AGE_TARGET'],
@@ -198,7 +198,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '        strategy: MD5Hash;' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // ADDRESSID only exists on source, so only ADDRESSID_SOURCE is projected.
   assertEquals(
     ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'ADDRESSID_SOURCE'],
@@ -220,7 +220,7 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
     '        strategy: MD5Hash;' +
     '      }'
   );
-  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler(), meta::relational::extension::relationalExtensions());
   // FIRMID only exists on target, so only FIRMID_TARGET is projected.
   assertEquals(
     ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'FIRMID_TARGET'],
