@@ -21,7 +21,7 @@ function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
   compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 ): RelationType<Any>[1]
 {
-  getLambdaRelationType($element, $compiler, []);
+  meta::external::dataquality::lambdaRelationType::getLambdaRelationType($element, $compiler, []);
 }
 
 function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
