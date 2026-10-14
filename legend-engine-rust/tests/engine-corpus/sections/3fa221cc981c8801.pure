@@ -1,0 +1,6 @@
+
+Class demo::relation::m2m::EmployeeCard
+{
+  name: String[1];
+  employerName: String[1];
+}

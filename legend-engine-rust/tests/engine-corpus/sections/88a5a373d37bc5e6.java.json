@@ -1,0 +1,1728 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::domain::FirmDepartments",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 75,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 75
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "firm",
+              "sourceInformation" : {
+                "endColumn" : 102,
+                "endLine" : 77,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 98,
+                "startLine" : 77
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 105,
+              "endLine" : 77,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 104,
+              "startLine" : 77
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "departments",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 77,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 110,
+                "startLine" : 77
+              }
+            } ],
+            "property" : "firmId",
+            "sourceInformation" : {
+              "endColumn" : 128,
+              "endLine" : 77,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 123,
+              "startLine" : 77
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 108,
+            "endLine" : 77,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 107,
+            "startLine" : 77
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 77,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 12,
+                "startLine" : 77
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 77,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 77
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Department",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 77,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 58,
+                "startLine" : 77
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "departments",
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 77,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 45,
+            "startLine" : 77
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 128,
+          "endLine" : 77,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 96,
+          "startLine" : 77
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 78,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 75
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::domain::DepartmentStaff",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 80,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 80
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "department",
+              "sourceInformation" : {
+                "endColumn" : 112,
+                "endLine" : 82,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 102,
+                "startLine" : 82
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 115,
+              "endLine" : 82,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 114,
+              "startLine" : 82
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "staff",
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 82,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 120,
+                "startLine" : 82
+              }
+            } ],
+            "property" : "departmentId",
+            "sourceInformation" : {
+              "endColumn" : 138,
+              "endLine" : 82,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 127,
+              "startLine" : 82
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 82,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 117,
+            "startLine" : 82
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Department",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 82,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 82
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "department",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 82,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 82
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Employee",
+              "sourceInformation" : {
+                "endColumn" : 95,
+                "endLine" : 82,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 64,
+                "startLine" : 82
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "staff",
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 82,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 57,
+            "startLine" : 82
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 138,
+          "endLine" : 82,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 100,
+          "startLine" : 82
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 83,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 80
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 43,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 43,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 43
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LEGAL_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 44,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 44
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::firms():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 42,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 42
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 45,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Department",
+      "id" : "dept",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Department",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 50,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 50,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 50
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Department",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 51,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 51,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "CODE",
+        "property" : {
+          "class" : "demo::relation::domain::Department",
+          "property" : "code",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 52,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 52,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 52
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRM_ID",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 53,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 53
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Department",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 53,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 53
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 53,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 53
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::chainedDepartments():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 49,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 49
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 54,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 47
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Employee",
+      "id" : "emp",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 59,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 59
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 59,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 59
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 60,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 60,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 60
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 61,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 61
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 61,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 61
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 62,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 62
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 62,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 62
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 63,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 63
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 63,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 63
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 63,
+                  "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 63
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 63,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 63
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 63,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 63
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 63,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 63
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 69,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 69
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 64,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 64
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 64,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 64
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 65,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 65
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 65,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 65
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "DEPARTMENT_ID",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 0,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 66,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 66
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "departmentId",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 66,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 66
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 66,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 66
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::employeesWithAddress():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 58,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 58
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 67,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 56
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 69,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 69
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 73,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 69
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "ChainedModelJoinMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 200,
+      "sourceId" : "mapping/chainedModelJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 90,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 90
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 90,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 46,
+                "startLine" : 90
+              }
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 92,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 21,
+                "startLine" : 92
+              },
+              "values" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 27,
+                      "endLine" : 92,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 26,
+                      "startLine" : 92
+                    }
+                  } ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 92,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 29,
+                    "startLine" : 92
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 92,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 24,
+                  "startLine" : 92
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 45,
+                        "endLine" : 92,
+                        "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                        "startColumn" : 44,
+                        "startLine" : 92
+                      }
+                    } ],
+                    "property" : "departments",
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 92,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 47,
+                      "startLine" : 92
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 92,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 59,
+                    "startLine" : 92
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 92,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 42,
+                  "startLine" : 92
+                }
+              } ]
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 93,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 21,
+                "startLine" : 93
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 93,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 22,
+                  "startLine" : 93
+                },
+                "value" : "Legal Name"
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 93,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 36,
+                  "startLine" : 93
+                },
+                "value" : "Dept Name"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 91,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 91
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 95,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 26,
+              "startLine" : 95
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 95,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 27,
+                "startLine" : 95
+              },
+              "value" : "Legal Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 95,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 41,
+                "startLine" : 95
+              },
+              "value" : "Dept Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 95,
+            "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 95
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 95,
+          "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 90
+        }
+      },
+      "id" : "singleHopSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 123,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 87
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Legal Name\":\"Acme\",\"Dept Name\":\"Engineering\"},{\"Legal Name\":\"Acme\",\"Dept Name\":\"Marketing\"},{\"Legal Name\":\"Beta\",\"Dept Name\":\"Research\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 118,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 114
+            }
+          },
+          "id" : "shouldListDepartmentsPerFirm",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 119,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 111
+          }
+        } ],
+        "id" : "firmToDepartment",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 121,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 98
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::ChainedModelJoinData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 106,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 103
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 106,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 103
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 106,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 102
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 102,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 102
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 127,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 127
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 127,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 46,
+                "startLine" : 127
+              }
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 129,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 21,
+                "startLine" : 129
+              },
+              "values" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 27,
+                      "endLine" : 129,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 26,
+                      "startLine" : 129
+                    }
+                  } ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 129,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 29,
+                    "startLine" : 129
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 129,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 24,
+                  "startLine" : 129
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 45,
+                          "endLine" : 129,
+                          "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                          "startColumn" : 44,
+                          "startLine" : 129
+                        }
+                      } ],
+                      "property" : "departments",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 129,
+                        "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                        "startColumn" : 47,
+                        "startLine" : 129
+                      }
+                    } ],
+                    "property" : "staff",
+                    "sourceInformation" : {
+                      "endColumn" : 63,
+                      "endLine" : 129,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 59,
+                      "startLine" : 129
+                    }
+                  } ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 73,
+                    "endLine" : 129,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 65,
+                    "startLine" : 129
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 129,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 42,
+                  "startLine" : 129
+                }
+              } ]
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 130,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 21,
+                "startLine" : 130
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 130,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 22,
+                  "startLine" : 130
+                },
+                "value" : "Legal Name"
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 130,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 36,
+                  "startLine" : 130
+                },
+                "value" : "Employee Name"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 128,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 128
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 132,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 26,
+              "startLine" : 132
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 132,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 27,
+                "startLine" : 132
+              },
+              "value" : "Legal Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 132,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 41,
+                "startLine" : 132
+              },
+              "value" : "Employee Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 132,
+            "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 132
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 132,
+          "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 127
+        }
+      },
+      "id" : "chainedTwoHopSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 160,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 124
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Legal Name\":\"Acme\",\"Employee Name\":\"Alice\"},{\"Legal Name\":\"Acme\",\"Employee Name\":\"Bob\"},{\"Legal Name\":\"Acme\",\"Employee Name\":\"Carol\"},{\"Legal Name\":\"Beta\",\"Employee Name\":\"Dave\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 155,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 151
+            }
+          },
+          "id" : "shouldListEmployeesAcrossTwoHops",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 156,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 148
+          }
+        } ],
+        "id" : "firmToDepartmentToEmployee",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 158,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 135
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::ChainedModelJoinData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 143,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 140
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 143,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 140
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 143,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 139
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 139,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 139
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 163,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 163
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 163,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 46,
+                "startLine" : 163
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 164,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 32,
+                    "startLine" : 164
+                  }
+                } ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 164,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 35,
+                  "startLine" : 164
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 164,
+                "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                "startColumn" : 30,
+                "startLine" : 164
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 164,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 164
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 169,
+              "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+              "startColumn" : 22,
+              "startLine" : 166
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 34,
+                        "endLine" : 167,
+                        "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                        "startColumn" : 33,
+                        "startLine" : 167
+                      }
+                    } ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 44,
+                      "endLine" : 167,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 36,
+                      "startLine" : 167
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 167,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 31,
+                    "startLine" : 167
+                  }
+                },
+                "name" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 167,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 23,
+                  "startLine" : 167
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "count",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "x",
+                          "sourceInformation" : {
+                            "endColumn" : 39,
+                            "endLine" : 168,
+                            "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                            "startColumn" : 38,
+                            "startLine" : 168
+                          }
+                        } ],
+                        "property" : "departments",
+                        "sourceInformation" : {
+                          "endColumn" : 51,
+                          "endLine" : 168,
+                          "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                          "startColumn" : 41,
+                          "startLine" : 168
+                        }
+                      } ],
+                      "property" : "staff",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 168,
+                        "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                        "startColumn" : 53,
+                        "startLine" : 168
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 64,
+                      "endLine" : 168,
+                      "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                      "startColumn" : 60,
+                      "startLine" : 168
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 66,
+                    "endLine" : 168,
+                    "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                    "startColumn" : 36,
+                    "startLine" : 168
+                  }
+                },
+                "name" : "headcount",
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 168,
+                  "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+                  "startColumn" : 23,
+                  "startLine" : 168
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 165,
+            "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 165
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 170,
+          "sourceId" : "demo::relation::mapping::ChainedModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 163
+        }
+      },
+      "id" : "chainedAggregationSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 198,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 161
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Acme\",\"headcount\":3},{\"name\":\"Beta\",\"headcount\":1}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 193,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 189
+            }
+          },
+          "id" : "shouldCountStaffAcrossChainedHops",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 194,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 186
+          }
+        } ],
+        "id" : "headcountAcrossTwoHops",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 196,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 173
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::ChainedModelJoinData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 181,
+                "sourceId" : "mapping/chainedModelJoinMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 178
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 181,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 178
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 181,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 177
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 177,
+              "sourceId" : "mapping/chainedModelJoinMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 177
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

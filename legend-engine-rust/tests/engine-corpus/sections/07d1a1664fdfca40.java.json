@@ -42,7 +42,7 @@
         "startColumn" : 1,
         "startLine" : 2
       },
-      "timeZone" : "EST",
+      "timeZone" : "'EST'",
       "type" : "H2"
     },
     "name" : "mySimpleConnection",

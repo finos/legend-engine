@@ -1,0 +1,116 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeJoinMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  testSuites:
+  [
+    joinSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.employer.legalName],
+                    ['Name', 'Firm']
+                  );
+      tests:
+      [
+        withFirm:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    subAggregationSuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->sortBy(x | $x.legalName)
+                  ->project(
+                    ~[
+                      name: x | $x.legalName,
+                      headcount: x | $x.employees->count(),
+                      totalSalary: x | $x.employees.salary->sum()
+                    ]
+                  );
+      tests:
+      [
+        aggregatedByFirm:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFirmAggData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregateAcrossAssociation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Acme","headcount":2,"totalSalary":150000.0},{"name":"Beta","headcount":1,"totalSalary":75000.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

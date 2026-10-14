@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 47,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        },
+        "table" : "PRODUCT",
+        "values" : "ID,NAME,FROM_Z,THRU_Z\n1,Widget,2025-01-01,2025-07-02\n1,Widget Mk2,2025-07-02,9999-12-31\n2,Gadget,2025-01-01,9999-12-31\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 33,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        },
+        "table" : "ACCOUNT",
+        "values" : "ID,STATUS,IN_Z,OUT_Z\n1,OPEN,2025-01-01 00:00:00,2025-07-02 12:00:00\n1,FROZEN,2025-07-02 12:00:00,9999-12-31 23:59:59\n2,PENDING,2025-01-01 00:00:00,2025-07-02 10:30:00\n2,OPEN,2025-07-02 10:30:00,9999-12-31 23:59:59\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 39,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        },
+        "table" : "RATING",
+        "values" : "ISSUER,GRADE,IN_Z,OUT_Z,FROM_Z,THRU_Z\nAcme,A,2025-01-01 00:00:00,2025-07-02 12:00:00,2025-01-01 00:00:00,2025-07-01 12:00:00\nAcme,AA,2025-07-02 12:00:00,9999-12-31 23:59:59,2025-01-01 00:00:00,2025-07-01 12:00:00\nAcme,A-,2025-01-01 00:00:00,2025-07-02 12:00:00,2025-07-01 12:00:00,9999-12-31 23:59:59\nAcme,BBB,2025-07-02 12:00:00,9999-12-31 23:59:59,2025-07-01 12:00:00,9999-12-31 23:59:59\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 46,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 40
+        },
+        "table" : "TRADE",
+        "values" : "ID,PRODUCT_ID,ACCOUNT_ID,TRADE_DATE,EXECUTED_AT,QUANTITY\n1,1,1,2025-07-01,2025-07-01 16:00:00,100\n2,1,2,2025-07-02,2025-07-02 09:00:00,200\n3,2,1,2025-07-02,2025-07-02 10:45:00,300\n4,2,2,2025-07-02,2025-07-02 13:00:00,400\n5,1,1,2025-07-03,2025-07-03 09:30:00,500\n"
+      } ]
+    },
+    "name" : "TradingData",
+    "package" : "demo::dates::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

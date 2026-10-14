@@ -1,0 +1,1826 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades made on a date, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::dates::Trade",
+                  "sourceInformation" : {
+                    "endColumn" : 40,
+                    "endLine" : 27,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 13,
+                    "startLine" : 27
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 27,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 41,
+                  "startLine" : 27
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t",
+                      "sourceInformation" : {
+                        "endColumn" : 59,
+                        "endLine" : 27,
+                        "sourceId" : "service/filterServices.pure",
+                        "startColumn" : 58,
+                        "startLine" : 27
+                      }
+                    } ],
+                    "property" : "tradeDate",
+                    "sourceInformation" : {
+                      "endColumn" : 69,
+                      "endLine" : 27,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 61,
+                      "startLine" : 27
+                    }
+                  }, {
+                    "_type" : "strictDate",
+                    "sourceInformation" : {
+                      "endColumn" : 84,
+                      "endLine" : 27,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 74,
+                      "startLine" : 27
+                    },
+                    "value" : "2025-07-02"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 27,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 71,
+                    "startLine" : 27
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 27,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 57,
+                  "startLine" : 27
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 49,
+                "startLine" : 27
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 27,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 97,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 27,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 100,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 101,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 96,
+                "startLine" : 27
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 93,
+              "endLine" : 27,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 88,
+              "startLine" : 27
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 137,
+              "endLine" : 27,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 113,
+              "startLine" : 27
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 27,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 116,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 120,
+                  "endLine" : 27,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 119,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 115,
+                "startLine" : 27
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 126,
+                    "endLine" : 27,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 125,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "tradeDate",
+                "sourceInformation" : {
+                  "endColumn" : 136,
+                  "endLine" : 27,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 128,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 124,
+                "startLine" : 27
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 159,
+              "endLine" : 27,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 140,
+              "startLine" : 27
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 144,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 141,
+                "startLine" : 27
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 158,
+                "endLine" : 27,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 147,
+                "startLine" : 27
+              },
+              "value" : "Trade Date"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 111,
+            "endLine" : 27,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 105,
+            "startLine" : 27
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 160,
+          "endLine" : 27,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 12,
+          "startLine" : 27
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 28,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 28
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 29,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 14,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 25
+      }
+    },
+    "name" : "TradesOnDateLiteral",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/on",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 68,
+      "sourceId" : "service/filterServices.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 66,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 5,
+        "startLine" : 33
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 43,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 13,
+                "startLine" : 40
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 43,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 13,
+              "startLine" : 40
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 43,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 11,
+            "startLine" : 39
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 45,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 7,
+          "startLine" : 35
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":2,\"Trade Date\":\"2025-07-02\"},{\"Id\":3,\"Trade Date\":\"2025-07-02\"},{\"Id\":4,\"Trade Date\":\"2025-07-02\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 61,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 57
+            }
+          },
+          "id" : "shouldReturnThatDaysTrades",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 62,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 54
+          }
+        } ],
+        "id" : "secondOfJuly",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 64,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 48
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades made on a date, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::dates::Trade",
+                  "sourceInformation" : {
+                    "endColumn" : 65,
+                    "endLine" : 77,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 38,
+                    "startLine" : 77
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 77,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 66,
+                  "startLine" : 77
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t",
+                      "sourceInformation" : {
+                        "endColumn" : 84,
+                        "endLine" : 77,
+                        "sourceId" : "service/filterServices.pure",
+                        "startColumn" : 83,
+                        "startLine" : 77
+                      }
+                    } ],
+                    "property" : "tradeDate",
+                    "sourceInformation" : {
+                      "endColumn" : 94,
+                      "endLine" : 77,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 86,
+                      "startLine" : 77
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "tradeDate",
+                    "sourceInformation" : {
+                      "endColumn" : 108,
+                      "endLine" : 77,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 99,
+                      "startLine" : 77
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 97,
+                    "endLine" : 77,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 96,
+                    "startLine" : 77
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 77,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 82,
+                  "startLine" : 77
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 74,
+                "startLine" : 77
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 122,
+                    "endLine" : 77,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 121,
+                    "startLine" : 77
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 125,
+                  "endLine" : 77,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 124,
+                  "startLine" : 77
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 120,
+                "startLine" : 77
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 77,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 112,
+              "startLine" : 77
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 161,
+              "endLine" : 77,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 137,
+              "startLine" : 77
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 141,
+                    "endLine" : 77,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 140,
+                    "startLine" : 77
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 144,
+                  "endLine" : 77,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 143,
+                  "startLine" : 77
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 144,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 139,
+                "startLine" : 77
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 150,
+                    "endLine" : 77,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 149,
+                    "startLine" : 77
+                  }
+                } ],
+                "property" : "tradeDate",
+                "sourceInformation" : {
+                  "endColumn" : 160,
+                  "endLine" : 77,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 152,
+                  "startLine" : 77
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 160,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 148,
+                "startLine" : 77
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 183,
+              "endLine" : 77,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 164,
+              "startLine" : 77
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 168,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 165,
+                "startLine" : 77
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 182,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 171,
+                "startLine" : 77
+              },
+              "value" : "Trade Date"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 77,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 129,
+            "startLine" : 77
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "StrictDate",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 77,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 24,
+                "startLine" : 77
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "tradeDate",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 77,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 13,
+            "startLine" : 77
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 184,
+          "endLine" : 77,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 37,
+          "startLine" : 77
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 78,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 78
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 79,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 14,
+          "startLine" : 79
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 80,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 75
+      }
+    },
+    "name" : "TradesOnDateParameter",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/on/{tradeDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 143,
+      "sourceId" : "service/filterServices.pure",
+      "startColumn" : 1,
+      "startLine" : 70
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 141,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 5,
+        "startLine" : 83
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 93,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 13,
+                "startLine" : 90
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 93,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 13,
+              "startLine" : 90
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 93,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 11,
+            "startLine" : 89
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 95,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 7,
+          "startLine" : 85
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":2,\"Trade Date\":\"2025-07-02\"},{\"Id\":3,\"Trade Date\":\"2025-07-02\"},{\"Id\":4,\"Trade Date\":\"2025-07-02\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 115,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 111
+            }
+          },
+          "id" : "shouldReturnThatDaysTrades",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 116,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 108
+          }
+        } ],
+        "id" : "secondOfJuly",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "tradeDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 103,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 25,
+              "startLine" : 103
+            },
+            "value" : "2025-07-02"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 118,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 98
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":5,\"Trade Date\":\"2025-07-03\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 136,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 132
+            }
+          },
+          "id" : "shouldReturnThatDaysTrades",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 137,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 129
+          }
+        } ],
+        "id" : "thirdOfJuly",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "tradeDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 124,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 25,
+              "startLine" : 124
+            },
+            "value" : "2025-07-03"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 139,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 119
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades executed before a moment, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::dates::Trade",
+                  "sourceInformation" : {
+                    "endColumn" : 40,
+                    "endLine" : 154,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 13,
+                    "startLine" : 154
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 154,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 41,
+                  "startLine" : 154
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "lessThan",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t",
+                      "sourceInformation" : {
+                        "endColumn" : 59,
+                        "endLine" : 154,
+                        "sourceId" : "service/filterServices.pure",
+                        "startColumn" : 58,
+                        "startLine" : 154
+                      }
+                    } ],
+                    "property" : "executedAt",
+                    "sourceInformation" : {
+                      "endColumn" : 70,
+                      "endLine" : 154,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 61,
+                      "startLine" : 154
+                    }
+                  }, {
+                    "_type" : "dateTime",
+                    "sourceInformation" : {
+                      "endColumn" : 98,
+                      "endLine" : 154,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 74,
+                      "startLine" : 154
+                    },
+                    "value" : "2025-07-02T15:00:00+0000"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 154,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 72,
+                    "startLine" : 154
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 154,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 57,
+                  "startLine" : 154
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 49,
+                "startLine" : 154
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 112,
+                    "endLine" : 154,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 111,
+                    "startLine" : 154
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 115,
+                  "endLine" : 154,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 114,
+                  "startLine" : 154
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 110,
+                "startLine" : 154
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 154,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 102,
+              "startLine" : 154
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 154,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 127,
+              "startLine" : 154
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 131,
+                    "endLine" : 154,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 130,
+                    "startLine" : 154
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 134,
+                  "endLine" : 154,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 133,
+                  "startLine" : 154
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 134,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 129,
+                "startLine" : 154
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 140,
+                    "endLine" : 154,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 139,
+                    "startLine" : 154
+                  }
+                } ],
+                "property" : "executedAt",
+                "sourceInformation" : {
+                  "endColumn" : 151,
+                  "endLine" : 154,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 142,
+                  "startLine" : 154
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 151,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 138,
+                "startLine" : 154
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 175,
+              "endLine" : 154,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 155,
+              "startLine" : 154
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 159,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 156,
+                "startLine" : 154
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 174,
+                "endLine" : 154,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 162,
+                "startLine" : 154
+              },
+              "value" : "Executed At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 154,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 119,
+            "startLine" : 154
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 176,
+          "endLine" : 154,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 12,
+          "startLine" : 154
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 155,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 155
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 156,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 14,
+          "startLine" : 156
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 157,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 152
+      }
+    },
+    "name" : "TradesExecutedBeforeLiteral",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/before",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 195,
+      "sourceId" : "service/filterServices.pure",
+      "startColumn" : 1,
+      "startLine" : 147
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 193,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 5,
+        "startLine" : 160
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 170,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 13,
+                "startLine" : 167
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 170,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 13,
+              "startLine" : 167
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 170,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 11,
+            "startLine" : 166
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 172,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 7,
+          "startLine" : 162
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Executed At\":\"2025-07-01T16:00:00.000000000+0000\"},{\"Id\":2,\"Executed At\":\"2025-07-02T09:00:00.000000000+0000\"},{\"Id\":3,\"Executed At\":\"2025-07-02T10:45:00.000000000+0000\"},{\"Id\":4,\"Executed At\":\"2025-07-02T13:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 188,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 184
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 189,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 181
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 191,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 175
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades executed before a moment, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::dates::Trade",
+                  "sourceInformation" : {
+                    "endColumn" : 60,
+                    "endLine" : 204,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 33,
+                    "startLine" : 204
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 204,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 61,
+                  "startLine" : 204
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "lessThan",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "t",
+                      "sourceInformation" : {
+                        "endColumn" : 79,
+                        "endLine" : 204,
+                        "sourceId" : "service/filterServices.pure",
+                        "startColumn" : 78,
+                        "startLine" : 204
+                      }
+                    } ],
+                    "property" : "executedAt",
+                    "sourceInformation" : {
+                      "endColumn" : 90,
+                      "endLine" : 204,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 81,
+                      "startLine" : 204
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "cutoff",
+                    "sourceInformation" : {
+                      "endColumn" : 100,
+                      "endLine" : 204,
+                      "sourceId" : "service/filterServices.pure",
+                      "startColumn" : 94,
+                      "startLine" : 204
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 100,
+                    "endLine" : 204,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 92,
+                    "startLine" : 204
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 100,
+                  "endLine" : 204,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 77,
+                  "startLine" : 204
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 69,
+                "startLine" : 204
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 204,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 113,
+                    "startLine" : 204
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 117,
+                  "endLine" : 204,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 116,
+                  "startLine" : 204
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 112,
+                "startLine" : 204
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 204,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 104,
+              "startLine" : 204
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 154,
+              "endLine" : 204,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 129,
+              "startLine" : 204
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 133,
+                    "endLine" : 204,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 132,
+                    "startLine" : 204
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 136,
+                  "endLine" : 204,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 135,
+                  "startLine" : 204
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 131,
+                "startLine" : 204
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 142,
+                    "endLine" : 204,
+                    "sourceId" : "service/filterServices.pure",
+                    "startColumn" : 141,
+                    "startLine" : 204
+                  }
+                } ],
+                "property" : "executedAt",
+                "sourceInformation" : {
+                  "endColumn" : 153,
+                  "endLine" : 204,
+                  "sourceId" : "service/filterServices.pure",
+                  "startColumn" : 144,
+                  "startLine" : 204
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 153,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 140,
+                "startLine" : 204
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 177,
+              "endLine" : 204,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 157,
+              "startLine" : 204
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 161,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 158,
+                "startLine" : 204
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 176,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 164,
+                "startLine" : 204
+              },
+              "value" : "Executed At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 127,
+            "endLine" : 204,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 121,
+            "startLine" : 204
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 204,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 21,
+                "startLine" : 204
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "cutoff",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 204,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 13,
+            "startLine" : 204
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 178,
+          "endLine" : 204,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 32,
+          "startLine" : 204
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 205,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 205
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 206,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 14,
+          "startLine" : 206
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 207,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 14,
+        "startLine" : 202
+      }
+    },
+    "name" : "TradesExecutedBeforeParameter",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/before/{cutoff}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 270,
+      "sourceId" : "service/filterServices.pure",
+      "startColumn" : 1,
+      "startLine" : 197
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 268,
+        "sourceId" : "service/filterServices.pure",
+        "startColumn" : 5,
+        "startLine" : 210
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 220,
+                "sourceId" : "service/filterServices.pure",
+                "startColumn" : 13,
+                "startLine" : 217
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 220,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 13,
+              "startLine" : 217
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 220,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 11,
+            "startLine" : 216
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 222,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 7,
+          "startLine" : 212
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Executed At\":\"2025-07-01T16:00:00.000000000+0000\"},{\"Id\":2,\"Executed At\":\"2025-07-02T09:00:00.000000000+0000\"},{\"Id\":3,\"Executed At\":\"2025-07-02T10:45:00.000000000+0000\"},{\"Id\":4,\"Executed At\":\"2025-07-02T13:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 242,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 238
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 243,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 235
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "cutoff",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 230,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 22,
+              "startLine" : 230
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 245,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 225
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Executed At\":\"2025-07-01T16:00:00.000000000+0000\"},{\"Id\":2,\"Executed At\":\"2025-07-02T09:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 263,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 19,
+              "startLine" : 259
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 264,
+            "sourceId" : "service/filterServices.pure",
+            "startColumn" : 15,
+            "startLine" : 256
+          }
+        } ],
+        "id" : "earlyMorningInNewYork",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "cutoff",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 251,
+              "sourceId" : "service/filterServices.pure",
+              "startColumn" : 22,
+              "startLine" : 251
+            },
+            "value" : "2025-07-02T06:00:00-0400"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 266,
+          "sourceId" : "service/filterServices.pure",
+          "startColumn" : 9,
+          "startLine" : 246
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,12 @@
+
+Data demo::relation::data::BusinessTemporalEmployeeGraphFetchData
+{
+  Relation
+  #{
+    default.BusinessTemporalEmployeeTable:
+      ID,FIRST_NAME,SALARY,FROM_Z,THRU_Z
+      1,Dave,95000.0,2024-01-01,9999-12-31
+      2,Eve,80000.0,2024-06-01,9999-12-31
+      3,Frank,65000.0,2023-01-01,2024-01-01;
+  }#
+}

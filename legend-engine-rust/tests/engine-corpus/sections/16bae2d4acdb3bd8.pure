@@ -1,0 +1,15 @@
+
+Runtime demo::relation::dates::runtime::TradingRuntime
+{
+  mappings:
+  [
+    demo::relation::dates::TradingMapping
+  ];
+  connections:
+  [
+    demo::relation::dates::store::TradingDB:
+    [
+      h2: demo::relation::dates::connection::TradingConnection
+    ]
+  ];
+}

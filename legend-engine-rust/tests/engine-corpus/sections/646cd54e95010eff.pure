@@ -1,0 +1,77 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::RankedEmployeeMapping
+(
+  *demo::relation::domain::RankedEmployee[emp]: Relation
+  {
+    ~func demo::relation::func::rankedEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    rank: RANK,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: ModelJoin
+  {
+    {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
+  }
+
+  testSuites:
+  [
+    rankWithinFirmSuite:
+    {
+      function: |demo::relation::domain::RankedEmployee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.rank, x | $x.employer.legalName],
+                    ['Name', 'Rank', 'Firm']
+                  );
+      tests:
+      [
+        rankedBySalaryWithinFirm:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::RankedEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldRankWithinFirmAndProjectAssociation:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Rank":1,"Firm":"Acme"},{"Name":"Bob","Rank":2,"Firm":"Acme"},{"Name":"Carol","Rank":1,"Firm":"Beta"},{"Name":"David","Rank":2,"Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

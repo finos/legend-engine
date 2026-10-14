@@ -1,0 +1,20 @@
+
+function demo::relation::dates::func::products(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.PRODUCT}#
+}
+
+function demo::relation::dates::func::accounts(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.ACCOUNT}#
+}
+
+function demo::relation::dates::func::ratings(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.RATING}#
+}
+
+function demo::relation::dates::func::trades(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.TRADE}#
+}

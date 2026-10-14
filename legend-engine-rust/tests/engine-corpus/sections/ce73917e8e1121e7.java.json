@@ -1,0 +1,173 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::Reading",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 39,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 4,
+        "startLine" : 39
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::ReadingDB",
+        "mainTableDb" : "demo::store::ReadingDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 45,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 40,
+          "startLine" : 45
+        },
+        "table" : "readingTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 43,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 7,
+          "startLine" : 43
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::ReadingDB",
+          "mainTableDb" : "demo::store::ReadingDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 43,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 31,
+            "startLine" : 43
+          },
+          "table" : "readingTable"
+        },
+        "tableAlias" : "readingTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Reading",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 46,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 46,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 9,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ReadingDB",
+            "mainTableDb" : "demo::store::ReadingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 46,
+              "sourceId" : "model/model.pure",
+              "startColumn" : 33,
+              "startLine" : 46
+            },
+            "table" : "readingTable"
+          },
+          "tableAlias" : "readingTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 46,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 7,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::Reading",
+          "property" : "recordedAt",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 47,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "recordedAt",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 47,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 17,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ReadingDB",
+            "mainTableDb" : "demo::store::ReadingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 47,
+              "sourceId" : "model/model.pure",
+              "startColumn" : 41,
+              "startLine" : 47
+            },
+            "table" : "readingTable"
+          },
+          "tableAlias" : "readingTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 47,
+          "sourceId" : "model/model.pure",
+          "startColumn" : 15,
+          "startLine" : 47
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ReadingMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 37
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

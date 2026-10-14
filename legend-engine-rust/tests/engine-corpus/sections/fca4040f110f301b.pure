@@ -1,0 +1,40 @@
+
+Class <<temporal.businesstemporal>> demo::relation::dates::Product
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Class <<temporal.processingtemporal>> demo::relation::dates::Account
+{
+  id: Integer[1];
+  status: String[1];
+}
+
+Class <<temporal.bitemporal>> demo::relation::dates::Rating
+{
+  issuer: String[1];
+  grade: String[1];
+}
+
+Class demo::relation::dates::Trade
+{
+  id: Integer[1];
+  productId: Integer[1];
+  accountId: Integer[1];
+  tradeDate: StrictDate[1];
+  executedAt: DateTime[1];
+  quantity: Integer[1];
+}
+
+Association demo::relation::dates::TradeProduct
+{
+  productTrades: demo::relation::dates::Trade[*];
+  product: demo::relation::dates::Product[1];
+}
+
+Association demo::relation::dates::TradeAccount
+{
+  accountTrades: demo::relation::dates::Trade[*];
+  account: demo::relation::dates::Account[1];
+}

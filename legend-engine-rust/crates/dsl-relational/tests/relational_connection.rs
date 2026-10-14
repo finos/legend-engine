@@ -90,9 +90,10 @@ fn a_connection_reads_its_fields() {
             "sourceInformation": si(2, 1, 14, 1),
         })
     );
-    // A zone, unquoted.
     let zoned = connection(&format!("{H2}\n  timezone: 'US/Arizona';"));
-    assert_eq!(zoned["timeZone"], "US/Arizona");
+    assert_eq!(zoned["timeZone"], "'US/Arizona'");
+    let escaped = connection(&format!("{H2}\n  timezone: 'US\\\\Arizona';"));
+    assert_eq!(escaped["timeZone"], "'US\\\\Arizona'");
 }
 
 #[test]

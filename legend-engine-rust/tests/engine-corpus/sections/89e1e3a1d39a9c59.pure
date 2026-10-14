@@ -1,0 +1,45 @@
+
+Mapping demo::relation::dates::TradingMapping
+(
+  *demo::relation::dates::Product: Relation
+  {
+    ~func demo::relation::dates::func::products():Relation<Any>[1]
+    id: ID,
+    name: NAME
+  }
+
+  *demo::relation::dates::Account: Relation
+  {
+    ~func demo::relation::dates::func::accounts():Relation<Any>[1]
+    id: ID,
+    status: STATUS
+  }
+
+  *demo::relation::dates::Rating: Relation
+  {
+    ~func demo::relation::dates::func::ratings():Relation<Any>[1]
+    issuer: ISSUER,
+    grade: GRADE
+  }
+
+  *demo::relation::dates::Trade: Relation
+  {
+    ~func demo::relation::dates::func::trades():Relation<Any>[1]
+    id: ID,
+    productId: PRODUCT_ID,
+    accountId: ACCOUNT_ID,
+    tradeDate: TRADE_DATE,
+    executedAt: EXECUTED_AT,
+    quantity: QUANTITY
+  }
+
+  demo::relation::dates::TradeProduct: ModelJoin
+  {
+    {productTrades: demo::relation::dates::Trade[1], product: demo::relation::dates::Product[1] | $productTrades.productId == $product.id}
+  }
+
+  demo::relation::dates::TradeAccount: ModelJoin
+  {
+    {accountTrades: demo::relation::dates::Trade[1], account: demo::relation::dates::Account[1] | $accountTrades.accountId == $account.id}
+  }
+)

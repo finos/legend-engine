@@ -1,0 +1,57 @@
+
+// A Service rather than a mapping testSuite: MappingTestRunner builds its runtime from the
+// test's store data alone, so only a Service's explicit Runtime can carry the ModelChainConnection.
+Service demo::relation::service::EmployeeCardChainService
+{
+  pattern: '/api/relation/employeeCards';
+  documentation: 'Employee cards mapped model-to-model over relation-function classes spread across two databases.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::m2m::EmployeeCard.all()->graphFetch(#{demo::relation::m2m::EmployeeCard{name, employerName}}#)->serialize(#{demo::relation::m2m::EmployeeCard{name, employerName}}#);
+    mapping: demo::relation::mapping::EmployeeCardChainMapping;
+    runtime: demo::relation::runtime::EmployeeCardChainRuntime;
+  }
+  testSuites:
+  [
+    employeeCardSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          employeeH2:
+            Reference
+            #{
+              demo::relation::data::EmployeeData
+            }#,
+          firmRegistryH2:
+            Reference
+            #{
+              demo::relation::data::FirmRegistryData
+            }#
+        ]
+      ]
+      tests:
+      [
+        allEmployeeCards:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldResolveEmployerNameAcrossDatabasesThroughChain:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","employerName":"Acme Holdings"},{"name":"Bob","employerName":"Beta Partners"},{"name":"Carol","employerName":"Acme Holdings"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

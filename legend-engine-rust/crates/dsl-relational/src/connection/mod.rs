@@ -40,12 +40,12 @@ use legend_pure_dsl_connection::grammar::{
 };
 use legend_pure_parser_ast::source_info::SourceInfo;
 use legend_pure_parser_lexer::TokenKind;
+use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::error::ParseError;
 use legend_pure_parser_parser::fields::{optional, required};
 use legend_pure_parser_parser::words::{
     Name, adjacent, identifier, is_word_kind, qualified_name, unexpected,
 };
-use legend_pure_parser_parser::{ParserContext, string_value};
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::source_info::SourceInformation;
 use linkme::distributed_slice;
@@ -145,7 +145,7 @@ pub struct RelationalConnection {
     pub database_type: SmolStr,
     /// `queryTimeOutInSeconds: 30;`.
     pub query_timeout: Option<i32>,
-    /// `timezone: …;`: a zone, unescaped, or an offset as written.
+    /// `timezone: …;`: a quoted zone or an offset, as written.
     pub time_zone: Option<String>,
     /// `quoteIdentifiers: true;`.
     pub quote_identifiers: Option<bool>,
@@ -291,18 +291,13 @@ fn read_fields(ctx: &mut ParserContext<'_>) -> R<ReadFields> {
     }
 }
 
-/// A time zone: `'US/Arizona'` (its quotes are the grammar's), or an offset
-/// from UTC, `-0500`, one token in the engine's lexer.
+/// A time zone as written: `'US/Arizona'`, quotes and escapes kept, or an
+/// offset from UTC, `-0500`, one token in the engine's lexer.
 fn time_zone(ctx: &mut ParserContext<'_>) -> R<String> {
     let sign = ctx.cursor().peek().clone();
     if sign.kind == TokenKind::StringLiteral {
         ctx.cursor().advance();
-        return string_value(&sign.text)
-            .map(|(value, _)| value)
-            .map_err(|message| ParseError::Unexpected {
-                message,
-                source_info: sign.source_info,
-            });
+        return Ok(sign.text.to_string());
     }
     let digits = ctx.cursor().peek_at(1).clone();
     let offset = matches!(sign.kind, TokenKind::Plus | TokenKind::Minus)

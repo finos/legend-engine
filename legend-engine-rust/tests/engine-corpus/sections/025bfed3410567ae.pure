@@ -1,0 +1,10 @@
+
+Mapping demo::relation::mapping::EmployeeCardChainMapping
+(
+  *demo::relation::m2m::EmployeeCard: Pure
+  {
+    ~src demo::relation::domain::Employee
+    name: $src.firstName,
+    employerName: $src.employer.legalName
+  }
+)

@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "SALARY", "FROM_Z", "THRU_Z" ],
+        "paths" : [ "default", "BusinessTemporalEmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Dave", "95000.0", "2024-01-01", "9999-12-31" ]
+        }, {
+          "values" : [ "2", "Eve", "80000.0", "2024-06-01", "9999-12-31" ]
+        }, {
+          "values" : [ "3", "Frank", "65000.0", "2023-01-01", "2024-01-01" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 52,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 48
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 53,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 48
+      }
+    },
+    "name" : "BusinessTemporalEmployeeGraphFetchData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 54,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 44
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

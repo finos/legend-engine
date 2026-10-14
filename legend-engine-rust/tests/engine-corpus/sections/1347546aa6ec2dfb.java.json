@@ -1,0 +1,158 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "EmployeeCardChainRuntime",
+    "package" : "demo::relation::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 72,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 69
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 69,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 5,
+            "startLine" : 69
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::relation::connection::EmployeeCardModelChainConnection",
+            "sourceInformation" : {
+              "endColumn" : 73,
+              "endLine" : 71,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 14,
+              "startLine" : 71
+            }
+          },
+          "id" : "chain",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 71,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 7,
+            "startLine" : 71
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 76,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 73
+        },
+        "store" : {
+          "path" : "demo::relation::db::EmployeeDB",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 73,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 5,
+            "startLine" : 73
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::relation::connection::EmployeeH2Connection",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 75,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 19,
+              "startLine" : 75
+            }
+          },
+          "id" : "employeeH2",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 75,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 7,
+            "startLine" : 75
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 80,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 77
+        },
+        "store" : {
+          "path" : "demo::relation::db::FirmRegistryDB",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 77,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 5,
+            "startLine" : 77
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::relation::connection::FirmRegistryH2Connection",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 79,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 23,
+              "startLine" : 79
+            }
+          },
+          "id" : "firmRegistryH2",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 79,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 7,
+            "startLine" : 79
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::relation::mapping::EmployeeCardChainMapping",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 65,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 65
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 82,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 1,
+        "startLine" : 61
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 61
+    }
+  } ],
+  "imports" : [ ]
+}

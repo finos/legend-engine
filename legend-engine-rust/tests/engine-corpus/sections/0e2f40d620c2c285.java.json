@@ -1,0 +1,1154 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "demo::relation::domain::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 20,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "rfSet", "relSet" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Employee",
+      "id" : "rfSet",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 28,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 28,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 29,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 29,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 30,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 30,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 31,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 31,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 32,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 32,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mixedUnionMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 32
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 32,
+                "sourceId" : "mapping/mixedUnionMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 32
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 32,
+                "sourceId" : "mapping/mixedUnionMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 32
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 32,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 32
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 38,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 38
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 33,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 33,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 34,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "source" : "rfSet",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 34,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::contractEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 27,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 27
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::relation::domain::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 37,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 37
+      },
+      "distinct" : false,
+      "filter" : {
+        "filter" : {
+          "db" : "demo::relation::db::EmployeeDB",
+          "name" : "FullTimeFilter"
+        },
+        "joins" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 39,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 39
+        }
+      },
+      "groupBy" : [ ],
+      "id" : "relSet",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::relation::db::EmployeeDB",
+        "mainTableDb" : "demo::relation::db::EmployeeDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 44,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 48,
+          "startLine" : 44
+        },
+        "table" : "EmployeeTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 42,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 42
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::relation::db::EmployeeDB",
+          "mainTableDb" : "demo::relation::db::EmployeeDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 42,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 39,
+            "startLine" : 42
+          },
+          "table" : "EmployeeTable"
+        },
+        "tableAlias" : "EmployeeTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 45,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 45,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 45,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 48,
+              "startLine" : 45
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "relSet",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 45,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 45
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 46,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LAST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 46,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 46,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 47,
+              "startLine" : 46
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "relSet",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 46,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 46
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 47,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 37
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 49,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 49
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 53,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 49
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeMixedUnionMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 131,
+      "sourceId" : "mapping/mixedUnionMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 59,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 18,
+                  "startLine" : 59
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 59,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 50,
+                "startLine" : 59
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 60,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 32,
+                    "startLine" : 60
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 60,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 35,
+                  "startLine" : 60
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 60,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 30,
+                "startLine" : 60
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 60,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 60
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 62,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 62
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 62,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 26,
+                    "startLine" : 62
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 62,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 29,
+                  "startLine" : 62
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 62,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 24,
+                "startLine" : 62
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 62,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 44,
+                    "startLine" : 62
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 62,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 47,
+                  "startLine" : 62
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 62,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 42,
+                "startLine" : 62
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 63,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 63
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 63,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 22,
+                "startLine" : 63
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 63,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 36,
+                "startLine" : 63
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 61,
+            "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+            "startColumn" : 21,
+            "startLine" : 61
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 64,
+          "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+          "startColumn" : 17,
+          "startLine" : 59
+        }
+      },
+      "id" : "mixedUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 92,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 57
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\",\"Last Name\":\"Green\"},{\"First Name\":\"Bob\",\"Last Name\":\"Smith\"},{\"First Name\":\"Carol\",\"Last Name\":\"White\"},{\"First Name\":\"David\",\"Last Name\":\"Jones\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 87,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 83
+            }
+          },
+          "id" : "shouldCombineMixedSets",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 88,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 80
+          }
+        } ],
+        "id" : "bothLegs",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 90,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 67
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeMixedUnionData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 75,
+                "sourceId" : "mapping/mixedUnionMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 72
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 75,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 72
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 75,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 71
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 71,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 71
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::domain::Employee",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 95,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 18,
+                    "startLine" : 95
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 95,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 50,
+                  "startLine" : 95
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "in",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e",
+                      "sourceInformation" : {
+                        "endColumn" : 33,
+                        "endLine" : 96,
+                        "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                        "startColumn" : 32,
+                        "startLine" : 96
+                      }
+                    } ],
+                    "property" : "lastName",
+                    "sourceInformation" : {
+                      "endColumn" : 42,
+                      "endLine" : 96,
+                      "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                      "startColumn" : 35,
+                      "startLine" : 96
+                    }
+                  }, {
+                    "_type" : "collection",
+                    "multiplicity" : {
+                      "lowerBound" : 2,
+                      "upperBound" : 2
+                    },
+                    "sourceInformation" : {
+                      "endColumn" : 65,
+                      "endLine" : 96,
+                      "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                      "startColumn" : 48,
+                      "startLine" : 96
+                    },
+                    "values" : [ {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 96,
+                        "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                        "startColumn" : 49,
+                        "startLine" : 96
+                      },
+                      "value" : "Green"
+                    }, {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 64,
+                        "endLine" : 96,
+                        "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                        "startColumn" : 58,
+                        "startLine" : 96
+                      },
+                      "value" : "White"
+                    } ]
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 96,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 45,
+                    "startLine" : 96
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "e"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 66,
+                  "endLine" : 96,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 30,
+                  "startLine" : 96
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 96,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 21,
+                "startLine" : 96
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 97,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 32,
+                    "startLine" : 97
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 97,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 35,
+                  "startLine" : 97
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 97,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 30,
+                "startLine" : 97
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 97,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 97
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 99,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 99
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 99,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 26,
+                    "startLine" : 99
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 99,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 29,
+                  "startLine" : 99
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 99,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 24,
+                "startLine" : 99
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 99,
+                    "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                    "startColumn" : 44,
+                    "startLine" : 99
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 99,
+                  "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                  "startColumn" : 47,
+                  "startLine" : 99
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 99,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 42,
+                "startLine" : 99
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 100,
+              "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+              "startColumn" : 21,
+              "startLine" : 100
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 100,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 22,
+                "startLine" : 100
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 100,
+                "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+                "startColumn" : 36,
+                "startLine" : 100
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 98,
+            "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+            "startColumn" : 21,
+            "startLine" : 98
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 101,
+          "sourceId" : "demo::relation::mapping::EmployeeMixedUnionMapping",
+          "startColumn" : 17,
+          "startLine" : 95
+        }
+      },
+      "id" : "lastNameFilterAcrossSetsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 129,
+        "sourceId" : "mapping/mixedUnionMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 93
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\",\"Last Name\":\"Green\"},{\"First Name\":\"Carol\",\"Last Name\":\"White\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 124,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 120
+            }
+          },
+          "id" : "shouldFilterAcrossMixedSetsOnProjectedColumn",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 125,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 117
+          }
+        } ],
+        "id" : "oneRowFromEachLeg",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 127,
+          "sourceId" : "mapping/mixedUnionMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 104
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeMixedUnionData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 112,
+                "sourceId" : "mapping/mixedUnionMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 109
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 112,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 109
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 112,
+            "sourceId" : "mapping/mixedUnionMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 108
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 108,
+              "sourceId" : "mapping/mixedUnionMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 108
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

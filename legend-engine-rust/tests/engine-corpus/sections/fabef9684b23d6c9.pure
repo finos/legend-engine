@@ -1,0 +1,6 @@
+
+Class demo::Reading
+{
+  id: Integer[1];
+  recordedAt: DateTime[0..1];
+}

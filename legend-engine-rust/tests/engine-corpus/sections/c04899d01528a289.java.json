@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "LEGAL_NAME" ],
+        "paths" : [ "default", "FirmRegistryTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Acme Holdings" ]
+        }, {
+          "values" : [ "2", "Beta Partners" ]
+        }, {
+          "values" : [ "3", "Gamma Group" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 21
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 26,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 21
+      }
+    },
+    "name" : "FirmRegistryData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

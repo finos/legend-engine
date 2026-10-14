@@ -1,0 +1,3603 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "demo::relation::domain::Employment",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 45,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 45
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 26,
+                  "startLine" : 47
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 47,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 32,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 47,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 42,
+                  "startLine" : 47
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 47,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 48,
+                "startLine" : 47
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 47,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 47
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employment",
+          "property" : "employer",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 47,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 47,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 47
+        },
+        "target" : "firm"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 48,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 27,
+                  "startLine" : 48
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 48,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 33,
+                "startLine" : 48
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 48,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 39,
+                  "startLine" : 48
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 48,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 45,
+                "startLine" : 48
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 48,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 48
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employment",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 48,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 48,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 48
+        },
+        "target" : "emp"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Employee",
+      "id" : "emp",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 22,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 22,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 23,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 23,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 24,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 24,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 25,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 25,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 26,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 26,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 26
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 26
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 26,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 26
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 26,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 26
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 26,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 26
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 32,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 32
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 27,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 27,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 28,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 28,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRM_ID",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 29,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 29
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 29,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 29
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 29,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::employeesWithAddress():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 21,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 21
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 35,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 35,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LEGAL_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 36,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 36,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::firms():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 34,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 34
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 39,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 39
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeGraphFetchXStoreMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 153,
+      "sourceId" : "mapping/associationGraphFetchMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 55,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 18,
+                  "startLine" : 55
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 55,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 50,
+                "startLine" : 55
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 56,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 34,
+                "startLine" : 56
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 56,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 34,
+                  "startLine" : 56
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 56,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 67,
+                    "startLine" : 56
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employer",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 56,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 78,
+                    "startLine" : 56
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 95,
+                      "endLine" : 56,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                      "startColumn" : 87,
+                      "startLine" : 56
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 56,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 21,
+              "startLine" : 56
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 57,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 33,
+              "startLine" : 57
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Employee",
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 57,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 33,
+                "startLine" : 57
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 57,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 66,
+                  "startLine" : 57
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employer",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 57,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 77,
+                  "startLine" : 57
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 57,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 86,
+                    "startLine" : 57
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 57,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+            "startColumn" : 21,
+            "startLine" : 57
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 57,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+          "startColumn" : 17,
+          "startLine" : 55
+        }
+      },
+      "id" : "toOneSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 85,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 53
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"employer\":{\"legalName\":\"Acme\"}},{\"firstName\":\"Bob\",\"employer\":{\"legalName\":\"Beta\"}},{\"firstName\":\"Carol\",\"employer\":{\"legalName\":\"Acme\"}}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 80,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 76
+            }
+          },
+          "id" : "shouldFetchEmployerPerEmployee",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 81,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 73
+          }
+        } ],
+        "id" : "allEmployees",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 83,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 60
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 68,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 65
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 68,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 65
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 68,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 64
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 64,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 64
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 88,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 18,
+                  "startLine" : 88
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 88,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 46,
+                "startLine" : 88
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 89,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 34,
+                "startLine" : 89
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 89,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 34,
+                  "startLine" : 89
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 71,
+                    "endLine" : 89,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 63,
+                    "startLine" : 89
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 89,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 74,
+                    "startLine" : 89
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 89,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                      "startColumn" : 84,
+                      "startLine" : 89
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 89,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 21,
+              "startLine" : 89
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 90,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 33,
+              "startLine" : 90
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 90,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 33,
+                "startLine" : 90
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 90,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 62,
+                  "startLine" : 90
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 90,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 73,
+                  "startLine" : 90
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 90,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 83,
+                    "startLine" : 90
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 90,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+            "startColumn" : 21,
+            "startLine" : 90
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 90,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+          "startColumn" : 17,
+          "startLine" : 88
+        }
+      },
+      "id" : "toManySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 118,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 86
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Acme\",\"employees\":[{\"firstName\":\"Alice\"},{\"firstName\":\"Carol\"}]},{\"legalName\":\"Beta\",\"employees\":[{\"firstName\":\"Bob\"}]},{\"legalName\":\"Gamma\",\"employees\":[]}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 113,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 109
+            }
+          },
+          "id" : "shouldFetchEmployeesPerFirmIncludingEmpty",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 114,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 106
+          }
+        } ],
+        "id" : "allFirms",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 116,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 93
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 101,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 98
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 101,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 98
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 101,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 97
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 97,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 97
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 121,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 18,
+                  "startLine" : 121
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 121,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 46,
+                "startLine" : 121
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 122,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 34,
+                "startLine" : 122
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 122,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 34,
+                  "startLine" : 122
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 71,
+                    "endLine" : 122,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 63,
+                    "startLine" : 122
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 122,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 74,
+                    "startLine" : 122
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 122,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                      "startColumn" : 84,
+                      "startLine" : 122
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  }, {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "employer",
+                    "sourceInformation" : {
+                      "endColumn" : 102,
+                      "endLine" : 122,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                      "startColumn" : 95,
+                      "startLine" : 122
+                    },
+                    "subTrees" : [ {
+                      "_type" : "propertyGraphFetchTree",
+                      "_type" : "propertyGraphFetchTree",
+                      "parameters" : [ ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 112,
+                        "endLine" : 122,
+                        "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                        "startColumn" : 104,
+                        "startLine" : 122
+                      },
+                      "subTrees" : [ ],
+                      "subTypeTrees" : [ ]
+                    } ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 122,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 21,
+              "startLine" : 122
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 123,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+              "startColumn" : 33,
+              "startLine" : 123
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 123,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                "startColumn" : 33,
+                "startLine" : 123
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 123,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 62,
+                  "startLine" : 123
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 123,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                  "startColumn" : 73,
+                  "startLine" : 123
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 123,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 83,
+                    "startLine" : 123
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employer",
+                  "sourceInformation" : {
+                    "endColumn" : 101,
+                    "endLine" : 123,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                    "startColumn" : 94,
+                    "startLine" : 123
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 111,
+                      "endLine" : 123,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+                      "startColumn" : 103,
+                      "startLine" : 123
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 123,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+            "startColumn" : 21,
+            "startLine" : 123
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 117,
+          "endLine" : 123,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchXStoreMapping",
+          "startColumn" : 17,
+          "startLine" : 121
+        }
+      },
+      "id" : "deepChainSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 151,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 119
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Acme\",\"employees\":[{\"firstName\":\"Alice\",\"employer\":{\"legalName\":\"Acme\"}},{\"firstName\":\"Carol\",\"employer\":{\"legalName\":\"Acme\"}}]},{\"legalName\":\"Beta\",\"employees\":[{\"firstName\":\"Bob\",\"employer\":{\"legalName\":\"Beta\"}}]},{\"legalName\":\"Gamma\",\"employees\":[]}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 146,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 142
+            }
+          },
+          "id" : "shouldFetchBackThroughEmployer",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 147,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 139
+          }
+        } ],
+        "id" : "allFirms",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 149,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 126
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 134,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 131
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 134,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 131
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 134,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 130
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 130,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 130
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::domain::Employment",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 183,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 183
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "employer",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 185,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 98,
+                "startLine" : 185
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 185,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 108,
+              "startLine" : 185
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "employees",
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 185,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 114,
+                "startLine" : 185
+              }
+            } ],
+            "property" : "firmId",
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 185,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 125,
+              "startLine" : 185
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 185,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 111,
+            "startLine" : 185
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 185,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 16,
+                "startLine" : 185
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "employer",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 185,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 185
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::Employee",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 185,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 60,
+                "startLine" : 185
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 185,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 49,
+            "startLine" : 185
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 130,
+          "endLine" : 185,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 96,
+          "startLine" : 185
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 186,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 183
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Employee",
+      "id" : "emp",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 160,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 160
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 160,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 160
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 161,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 161
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 161,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 161
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 162,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 162
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 162,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 162
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 163,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 163
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 163,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 163
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 164,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 164
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 164,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 164
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "row",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 164,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 164
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 164,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 164
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 164,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 164
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 164,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 164
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 170,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 170
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 165,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 165
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 165,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 165
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 166,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 166
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 166,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 166
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRM_ID",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 167,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 167
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 167,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 167
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 167,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 167
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::employeesWithAddress():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 159,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 159
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 168,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 157
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 173,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 173
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 173,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 173
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LEGAL_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 174,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 174
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 174,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 174
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::firms():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 172,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 172
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 175,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 170
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 177,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 177
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 181,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 177
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeGraphFetchModelJoinMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 224,
+      "sourceId" : "mapping/associationGraphFetchMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 155
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 192,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 192
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 192,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                "startColumn" : 46,
+                "startLine" : 192
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 193,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                "startColumn" : 34,
+                "startLine" : 193
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 193,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                  "startColumn" : 34,
+                  "startLine" : 193
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 71,
+                    "endLine" : 193,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                    "startColumn" : 63,
+                    "startLine" : 193
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 193,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                    "startColumn" : 74,
+                    "startLine" : 193
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 193,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                      "startColumn" : 84,
+                      "startLine" : 193
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 193,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 193
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 194,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+              "startColumn" : 33,
+              "startLine" : 194
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 194,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                "startColumn" : 33,
+                "startLine" : 194
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 194,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                  "startColumn" : 62,
+                  "startLine" : 194
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 194,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                  "startColumn" : 73,
+                  "startLine" : 194
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 194,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+                    "startColumn" : 83,
+                    "startLine" : 194
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 194,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 194
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 194,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 192
+        }
+      },
+      "id" : "modelJoinToManySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 222,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 190
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Acme\",\"employees\":[{\"firstName\":\"Alice\"},{\"firstName\":\"Carol\"}]},{\"legalName\":\"Beta\",\"employees\":[{\"firstName\":\"Bob\"}]},{\"legalName\":\"Gamma\",\"employees\":[]}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 217,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 213
+            }
+          },
+          "id" : "shouldFetchEmployeesThroughModelJoin",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 218,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 210
+          }
+        } ],
+        "id" : "allFirms",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 220,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 197
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 205,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 202
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 205,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 202
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 205,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 201
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 201,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 201
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "demo::relation::domain::Employment",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 255,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 255
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 257,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 26,
+                  "startLine" : 257
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 257,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 32,
+                "startLine" : 257
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 257,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 42,
+                  "startLine" : 257
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 257,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 48,
+                "startLine" : 257
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 257,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 257
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employment",
+          "property" : "employer",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 257,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 257
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 257,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 257
+        },
+        "target" : "firm"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 258,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 27,
+                  "startLine" : 258
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 258,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 33,
+                "startLine" : 258
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 258,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 39,
+                  "startLine" : 258
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 258,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 45,
+                "startLine" : 258
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 258,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 258
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "demo::relation::domain::Employment",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 258,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 258
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 258,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 258
+        },
+        "target" : "emp"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 259,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 255
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::relation::domain::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 228,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 228
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "emp",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::relation::db::EmployeeDB",
+        "mainTableDb" : "demo::relation::db::EmployeeDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 231,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 48,
+          "startLine" : 231
+        },
+        "table" : "EmployeeTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 230,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 18,
+          "startLine" : 230
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::relation::db::EmployeeDB",
+          "mainTableDb" : "demo::relation::db::EmployeeDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 230,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 50,
+            "startLine" : 230
+          },
+          "table" : "EmployeeTable"
+        },
+        "tableAlias" : "EmployeeTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 232,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 232
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 232,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 9,
+            "startLine" : 232
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 232,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 41,
+              "startLine" : 232
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 232,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 232
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 233,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 233
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 233,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 233
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 233,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 48,
+              "startLine" : 233
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 233,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 233
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 234,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 234
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LAST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 234,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 234
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 234,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 47,
+              "startLine" : 234
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 234,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 234
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 235,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 235
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "EMP_TYPE",
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 235,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 59,
+            "startLine" : 235
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 235,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 91,
+              "startLine" : 235
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 235,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 17,
+          "startLine" : 235
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 236,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 236
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "case",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 75,
+                "endLine" : 236,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 24,
+                "startLine" : 236
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::relation::db::EmployeeDB",
+                "mainTableDb" : "demo::relation::db::EmployeeDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 236,
+                  "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                  "startColumn" : 56,
+                  "startLine" : 236
+                },
+                "table" : "EmployeeTable"
+              },
+              "tableAlias" : "EmployeeTable"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 78,
+                "endLine" : 236,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 78,
+                "startLine" : 236
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 236,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 18,
+              "startLine" : 236
+            }
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlTrue",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 236,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 82,
+              "startLine" : 236
+            }
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlFalse",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 236,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 93,
+              "startLine" : 236
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 236,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 236
+          }
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 103,
+          "endLine" : 236,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 236
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 237,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 237
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "HIRE_DATE",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 237,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 237
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 237,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 47,
+              "startLine" : 237
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 237,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 237
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::Employee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 238,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 238
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "SALARY",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 238,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 238
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 238,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 45,
+              "startLine" : 238
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 238,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 238
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 239,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 12,
+            "startLine" : 239
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 239,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 239
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRM_ID",
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 239,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 26,
+            "startLine" : 239
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 239,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 58,
+              "startLine" : 239
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        },
+        "source" : "emp",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 239,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 24,
+          "startLine" : 239
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 240,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 228
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 245,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 245
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 245,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 245
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LEGAL_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 246,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 246
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 246,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 246
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::firms():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 244,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 244
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 247,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 242
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 249,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 249
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 253,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 249
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeGraphFetchMixedStoreTypeMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 330,
+      "sourceId" : "mapping/associationGraphFetchMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 226
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 265,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 265
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 265,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 46,
+                "startLine" : 265
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 266,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 34,
+                "startLine" : 266
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 266,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 34,
+                  "startLine" : 266
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 71,
+                    "endLine" : 266,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 63,
+                    "startLine" : 266
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 266,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 74,
+                    "startLine" : 266
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 92,
+                      "endLine" : 266,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                      "startColumn" : 84,
+                      "startLine" : 266
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 266,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+              "startColumn" : 21,
+              "startLine" : 266
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 267,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+              "startColumn" : 33,
+              "startLine" : 267
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Firm",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 267,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 33,
+                "startLine" : 267
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 267,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 62,
+                  "startLine" : 267
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 267,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 73,
+                  "startLine" : 267
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 267,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 83,
+                    "startLine" : 267
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 267,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+            "startColumn" : 21,
+            "startLine" : 267
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 267,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+          "startColumn" : 17,
+          "startLine" : 265
+        }
+      },
+      "id" : "relationRootRelationalChildSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 295,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 263
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Acme\",\"employees\":[{\"firstName\":\"Alice\"},{\"firstName\":\"Carol\"}]},{\"legalName\":\"Beta\",\"employees\":[{\"firstName\":\"Bob\"}]},{\"legalName\":\"Gamma\",\"employees\":[]}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 290,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 286
+            }
+          },
+          "id" : "shouldFetchRelationalEmployeesUnderRelationFirm",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 291,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 283
+          }
+        } ],
+        "id" : "allFirms",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 293,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 270
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 278,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 275
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 278,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 275
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 278,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 274
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 274,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 274
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 298,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 298
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 298,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 50,
+                "startLine" : 298
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 299,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 34,
+                "startLine" : 299
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::domain::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 299,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 34,
+                  "startLine" : 299
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 299,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 67,
+                    "startLine" : 299
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employer",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 299,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 78,
+                    "startLine" : 299
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "legalName",
+                    "sourceInformation" : {
+                      "endColumn" : 95,
+                      "endLine" : 299,
+                      "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                      "startColumn" : 87,
+                      "startLine" : 299
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 299,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+              "startColumn" : 21,
+              "startLine" : 299
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 300,
+              "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+              "startColumn" : 33,
+              "startLine" : 300
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::domain::Employee",
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 300,
+                "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                "startColumn" : 33,
+                "startLine" : 300
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 300,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 66,
+                  "startLine" : 300
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employer",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 300,
+                  "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                  "startColumn" : 77,
+                  "startLine" : 300
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 300,
+                    "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+                    "startColumn" : 86,
+                    "startLine" : 300
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 300,
+            "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+            "startColumn" : 21,
+            "startLine" : 300
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 300,
+          "sourceId" : "demo::relation::mapping::EmployeeGraphFetchMixedStoreTypeMapping",
+          "startColumn" : 17,
+          "startLine" : 298
+        }
+      },
+      "id" : "relationalRootRelationChildSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 328,
+        "sourceId" : "mapping/associationGraphFetchMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 296
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"employer\":{\"legalName\":\"Acme\"}},{\"firstName\":\"Bob\",\"employer\":{\"legalName\":\"Beta\"}},{\"firstName\":\"Carol\",\"employer\":{\"legalName\":\"Acme\"}}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 323,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 319
+            }
+          },
+          "id" : "shouldFetchRelationFirmUnderRelationalEmployee",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 324,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 316
+          }
+        } ],
+        "id" : "allEmployees",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 326,
+          "sourceId" : "mapping/associationGraphFetchMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 303
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeFirmGraphFetchData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 311,
+                "sourceId" : "mapping/associationGraphFetchMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 308
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 311,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 308
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 311,
+            "sourceId" : "mapping/associationGraphFetchMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 307
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 307,
+              "sourceId" : "mapping/associationGraphFetchMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 307
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

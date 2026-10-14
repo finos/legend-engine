@@ -1,0 +1,14 @@
+
+Mapping demo::ReadingMapping
+(
+  *demo::Reading: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ReadingDB]readingTable.id
+    )
+    ~mainTable [demo::store::ReadingDB]readingTable
+    id: [demo::store::ReadingDB]readingTable.id,
+    recordedAt: [demo::store::ReadingDB]readingTable.recordedAt
+  }
+)

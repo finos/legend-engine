@@ -1,0 +1,296 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 21,
+        "sourceId" : "mappingFunction/tables.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::dates::store::TradingDB", "PRODUCT" ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 21,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 3,
+          "startLine" : 21
+        }
+      }
+    } ],
+    "name" : "products__Relation_1_",
+    "package" : "demo::relation::dates::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 19,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 51,
+          "startLine" : 19
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 19,
+            "sourceId" : "mappingFunction/tables.pure",
+            "startColumn" : 93,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "mappingFunction/tables.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 26,
+        "sourceId" : "mappingFunction/tables.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::dates::store::TradingDB", "ACCOUNT" ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 26,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 3,
+          "startLine" : 26
+        }
+      }
+    } ],
+    "name" : "accounts__Relation_1_",
+    "package" : "demo::relation::dates::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 24,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 51,
+          "startLine" : 24
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 24,
+            "sourceId" : "mappingFunction/tables.pure",
+            "startColumn" : 93,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "mappingFunction/tables.pure",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 31,
+        "sourceId" : "mappingFunction/tables.pure",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::dates::store::TradingDB", "RATING" ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 31,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 3,
+          "startLine" : 31
+        }
+      }
+    } ],
+    "name" : "ratings__Relation_1_",
+    "package" : "demo::relation::dates::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 95,
+          "endLine" : 29,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 50,
+          "startLine" : 29
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 29,
+            "sourceId" : "mappingFunction/tables.pure",
+            "startColumn" : 92,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "mappingFunction/tables.pure",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 36,
+        "sourceId" : "mappingFunction/tables.pure",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::dates::store::TradingDB", "TRADE" ],
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 36,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 3,
+          "startLine" : 36
+        }
+      }
+    } ],
+    "name" : "trades__Relation_1_",
+    "package" : "demo::relation::dates::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 94,
+          "endLine" : 34,
+          "sourceId" : "mappingFunction/tables.pure",
+          "startColumn" : 49,
+          "startLine" : 34
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 34,
+            "sourceId" : "mappingFunction/tables.pure",
+            "startColumn" : 91,
+            "startLine" : 34
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "mappingFunction/tables.pure",
+      "startColumn" : 1,
+      "startLine" : 34
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+Database demo::relation::db::FirmRegistryDB
+(
+  Table FirmRegistryTable
+  (
+    ID         INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100) NOT NULL
+  )
+)

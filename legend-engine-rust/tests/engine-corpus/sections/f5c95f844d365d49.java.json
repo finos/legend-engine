@@ -53,7 +53,7 @@
         "startColumn" : 1,
         "startLine" : 2
       },
-      "timeZone" : "US/Arizona",
+      "timeZone" : "'US/Arizona'",
       "type" : "Snowflake"
     },
     "name" : "mySimpleConnection",

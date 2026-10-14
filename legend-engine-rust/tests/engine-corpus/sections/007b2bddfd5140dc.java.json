@@ -1,0 +1,140 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 42,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 3,
+          "startLine" : 42
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 41,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 3,
+          "startLine" : 39
+        }
+      },
+      "element" : "demo::relation::db::EmployeeDB",
+      "elementSourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 37,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 10,
+        "startLine" : 37
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 43,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 1,
+        "startLine" : 35
+      },
+      "type" : "H2"
+    },
+    "name" : "EmployeeH2Connection",
+    "package" : "demo::relation::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 35
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 52,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 3,
+          "startLine" : 52
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 51,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 3,
+          "startLine" : 49
+        }
+      },
+      "element" : "demo::relation::db::FirmRegistryDB",
+      "elementSourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 47,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 10,
+        "startLine" : 47
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 53,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 1,
+        "startLine" : 45
+      },
+      "type" : "H2"
+    },
+    "name" : "FirmRegistryH2Connection",
+    "package" : "demo::relation::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 45
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "demo::relation::mapping::EmployeeFirmCrossDatabaseMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 57,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 3,
+        "startLine" : 57
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 58,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 1,
+        "startLine" : 55
+      }
+    },
+    "name" : "EmployeeCardModelChainConnection",
+    "package" : "demo::relation::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 55
+    }
+  } ],
+  "imports" : [ ]
+}

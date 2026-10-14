@@ -1,0 +1,28 @@
+
+Class <<temporal.businesstemporal>> demo::dates::Product
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Class <<temporal.processingtemporal>> demo::dates::Account
+{
+  id: Integer[1];
+  status: String[1];
+}
+
+Class <<temporal.bitemporal>> demo::dates::Rating
+{
+  issuer: String[1];
+  grade: String[1];
+}
+
+Class demo::dates::Trade
+{
+  id: Integer[1];
+  tradeDate: StrictDate[1];
+  executedAt: DateTime[1];
+  quantity: Integer[1];
+  product: demo::dates::Product[0..1];
+  account: demo::dates::Account[0..1];
+}

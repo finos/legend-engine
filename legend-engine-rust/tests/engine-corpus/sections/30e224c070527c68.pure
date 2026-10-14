@@ -1,0 +1,108 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeInlineEmbeddedMapping
+(
+  *demo::relation::domain::ExtendedEmployee[empAddr]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    address () Inline [addressSet]
+  }
+
+  *demo::relation::domain::Address[addressSet]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    addressCitySuite:
+    {
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.address.city],
+                    ['First Name', 'City']
+                  );
+      tests:
+      [
+        citiesProjected:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldProjectCity:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","City":"London"},{"First Name":"Bob","City":"Paris"},{"First Name":"Carol","City":"Berlin"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    londonFilterSuite:
+    {
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->filter(e | $e.address.city == 'London')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.address.city],
+                    ['First Name', 'City']
+                  );
+      tests:
+      [
+        londonOnly:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnLondon:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","City":"London"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

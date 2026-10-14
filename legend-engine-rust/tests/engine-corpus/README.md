@@ -45,5 +45,11 @@ ones and step 7's at `15e83162476`, where a full dump reproduces the others
 byte for byte), `expressions/` at `8fa8ae050ca`. After the rebase onto finos
 master `43f4e69059b`, the sections of `legend-engine-xt-relationalStore-grammar`'s
 tests were dumped again: 608 of them unchanged, 4 new, for the `BOOLEAN` column
-type (engine #5293). See `docs/engine-integration.md` ("Golden corpus") for the
-comparison and the regeneration commands.
+type (engine #5293). After the rebase onto finos master `b5953ee951c`, whose
+#5341 keeps a connection time zone's quotes again, the sections of the tests of
+`legend-engine-xt-relationalStore-grammar`, `-snowflake-grammar`,
+`-executionPlan` and `-emit` were dumped again: 1049 of them unchanged, 3 with
+a quoted time zone changed, 71 new, from the EMIT models added since (engine
+#5291, #5349, #5352), and 15 with a quoted time zone, parsed only by the tests
+#5341 deleted, removed. See `docs/engine-integration.md` ("Golden corpus") for
+the comparison and the regeneration commands.
