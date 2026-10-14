@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.Snowfl
 import java.util.Date;
 import java.util.List;
 
-public class SnowflakeM2MUdfContent extends FunctionActivatorDeploymentContent
+public class SnowflakeM2MUdfContent extends FunctionActivatorDeploymentContent implements M2MUdfContent
 {
     public String executionPlan;
     public List<String> sqlCommands;
@@ -54,6 +54,58 @@ public class SnowflakeM2MUdfContent extends FunctionActivatorDeploymentContent
     public static String convertToValidDate(Date date)
     {
         return SnowflakeAppContent.convertToValidDate(date);
+    }
+
+    @Override
+    public String getExecutionPlan()
+    {
+        return this.executionPlan;
+    }
+
+    @Override
+    public M2MUdfContent setExecutionPlan(String executionPlan)
+    {
+        this.executionPlan = executionPlan;
+        return this;
+    }
+
+    @Override
+    public String getUdfName()
+    {
+        return this.udfName;
+    }
+
+    @Override
+    public M2MUdfContent setUdfName(String udfName)
+    {
+        this.udfName = udfName;
+        return this;
+    }
+
+    @Override
+    public String getEngineVersion()
+    {
+        return this.engineVersion;
+    }
+
+    @Override
+    public M2MUdfContent setEngineVersion(String engineVersion)
+    {
+        this.engineVersion = engineVersion;
+        return this;
+    }
+
+    @Override
+    public List<String> getSqlCommands()
+    {
+        return this.sqlCommands;
+    }
+
+    @Override
+    public M2MUdfContent setSqlCommands(List<String> sqlCommands)
+    {
+        this.sqlCommands = sqlCommands;
+        return this;
     }
 
 }
