@@ -39,7 +39,8 @@ function meta::external::function::activator::snowflakeApp::tests::testTyping(fu
 
   let x = $elements->filter(f | $f->instanceOf(SnowflakeApp))->cast(@SnowflakeApp)->toOne();
 
-  assertEquals($x.function->relationGenerateResultTypeStub(), $expected);
+  let createQuery = $x->generateFullArtifact().createQuery;
+  assert($createQuery->contains('RETURNS TABLE (' + $expected + ')'), | $createQuery);
 }
 
  function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalFunctionWithTypes(): Boolean[1]
@@ -60,3 +61,11 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   testTyping($function, $expected);
 }
 
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalFunctionWithAnyRelation(): Boolean[1]
+{
+  let expected = '"MYSTRING" VARCHAR,"MYDECIMAL" DECIMAL(7, 8),"MYINTEGER" INTEGER,"MYFLOAT" FLOAT,"MYDATE" DATE';
+
+  let function = '   function: meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithAnyRelation():Relation<Any>[*];\n';
+
+  testTyping($function, $expected);
+}
