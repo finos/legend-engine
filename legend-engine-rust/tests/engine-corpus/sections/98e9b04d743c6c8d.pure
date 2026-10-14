@@ -1,0 +1,28 @@
+
+
+Database sample::test
+(
+  Table table
+  (
+      prop1 CHAR(32),
+      prop2 VARCHAR(32),
+      prop3 NUMERIC(32,23),
+      prop4 DECIMAL(32,23),
+      prop5 FLOAT,
+      prop6 DOUBLE PRIMARY KEY,
+      prop7 REAL,
+      prop8 INT,
+      prop9 INTEGER,
+      prop10 BIGINT NOT NULL,
+      prop11 SMALLINT PRIMARY KEY,
+      prop12 TINYINT,
+      prop13 DATE,
+      prop14 TIMESTAMP,
+      prop15 BINARY(1),
+      prop16 VARBINARY(1) NOT NULL,
+      prop17 BIT,
+      prop18 ARRAY,
+      prop19 OTHER,
+      prop20 BOOLEAN
+   )
+)

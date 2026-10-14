@@ -437,7 +437,8 @@ fn data_type(
         "VARCHAR" => sized(DataType::Varchar),
         "BINARY" => sized(DataType::Binary),
         "VARBINARY" => sized(DataType::Varbinary),
-        "BIT" => plain(DataType::Bit),
+        // `BOOLEAN`, the engine's since #5293, is a `BIT`.
+        "BIT" | "BOOLEAN" => plain(DataType::Bit),
         // `INT` reports as `INTEGER`.
         "INT" | "INTEGER" => plain(DataType::Integer).map_err(|_| ParseError::Unexpected {
             message: format!(

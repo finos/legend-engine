@@ -42,6 +42,8 @@ sections at `8fa8ae050ca`, the `###Data` sections at `a4f8c151c07`, the
 `###Relational` and `###Mapping` ones at `a042af3bc1e`, the
 `###Connection` and `###Runtime` ones at `ed209171d0f`, and the `###Service`
 ones and step 7's at `15e83162476`, where a full dump reproduces the others
-byte for byte), `expressions/` at `8fa8ae050ca`. See
-`docs/engine-integration.md` ("Golden corpus") for the comparison and the
-regeneration commands.
+byte for byte), `expressions/` at `8fa8ae050ca`. After the rebase onto finos
+master `43f4e69059b`, the sections of `legend-engine-xt-relationalStore-grammar`'s
+tests were dumped again: 608 of them unchanged, 4 new, for the `BOOLEAN` column
+type (engine #5293). See `docs/engine-integration.md` ("Golden corpus") for the
+comparison and the regeneration commands.

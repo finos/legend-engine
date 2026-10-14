@@ -210,6 +210,21 @@ fn column_types_are_checked_as_the_engine_checks_them() {
 }
 
 #[test]
+fn a_boolean_column_is_a_bit() {
+    let db = database("Database my::Db\n(\n  Table t (a BOOLEAN, b BIT)\n)\n");
+    let columns = &db["schemas"][0]["tables"][0]["columns"];
+    assert_eq!(columns[0]["type"]["_type"], "Bit");
+    assert_eq!(columns[1]["type"], columns[0]["type"]);
+    let (message, position) = error("Database my::Db\n(\n  Table t (a BOOLEAN(1))\n)\n");
+    assert!(
+        message.contains("Column data type BOOLEAN does not expect any parameters"),
+        "{message}"
+    );
+    // From the type to `)`.
+    assert_eq!(position, (4, 14, 4, 23));
+}
+
+#[test]
 fn a_column_needs_a_table() {
     let (message, position) = error("Database my::Db\n(\n  Filter F(a = 1)\n)\n");
     assert!(
