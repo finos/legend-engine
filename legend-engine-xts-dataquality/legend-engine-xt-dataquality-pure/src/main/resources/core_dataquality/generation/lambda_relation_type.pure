@@ -18,6 +18,14 @@ import meta::external::dataquality::datarecon::*;
 
 function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
   element: PackageableElement[1],
+  compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
+): RelationType<Any>[1]
+{
+  getLambdaRelationType($element, $compiler, []);
+}
+
+function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
+  element: PackageableElement[1],
   compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1],
   extensions: meta::pure::extension::Extension[*]
 ): RelationType<Any>[1]
