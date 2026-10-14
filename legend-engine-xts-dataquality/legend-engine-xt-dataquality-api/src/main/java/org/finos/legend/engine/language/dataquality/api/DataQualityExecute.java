@@ -485,7 +485,7 @@ public class DataQualityExecute
             // 1. create DQ recon input
             Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = createReconInput(pureModel, dqComparisonElement, input, sourceLambdaFunction, targetLambdaFunction);
             // 2. call DQ PURE func to generate recon lambda
-            dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+            dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput, this.extensions.apply(pureModel));
             // 3. build parameter map with source_/target_ prefixes for the recon lambda
             if (input.sourceLambdaParameterValues != null)
             {
@@ -630,8 +630,8 @@ public class DataQualityExecute
             PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
             PackageableElement packageableElement = pureModel.getPackageableElement(dataQualityExecuteInput.packagePath);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> pureRelationType =
-                    core_dataquality_generation_lambda_relation_type.Root_meta_external_dataquality_lambdaRelationType_getLambdaRelationType_PackageableElement_1__Function_1__RelationType_1_(
-                            packageableElement, DataQualityProfilingLambdaGenerator.getLambdaCompiler(pureModel), pureModel.getExecutionSupport());
+                    core_dataquality_generation_lambda_relation_type.Root_meta_external_dataquality_lambdaRelationType_getLambdaRelationType_PackageableElement_1__Function_1__Extension_MANY__RelationType_1_(
+                            packageableElement, DataQualityProfilingLambdaGenerator.getLambdaCompiler(pureModel), this.extensions.apply(pureModel), pureModel.getExecutionSupport());
             org.finos.legend.engine.protocol.pure.m3.relation.RelationType relationType =
                     RelationTypeHelper.convert(pureRelationType, pureModel);
             LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_RELATION_TYPE_END, System.currentTimeMillis() - start).toString());

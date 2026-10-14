@@ -129,6 +129,42 @@ function <<test.Test>> meta::relational::tds::schema::tests::resolveSchemaTest()
             ->extendWithDigestOnColumns('_digest')
             ->sort(asc('tradeDate'))
    });    
+
+  assertSchemaRoundTripEquality(
+      [
+         ^TDSColumn(name = 'name', offset = 0, type = String),
+         ^TDSColumn(name = 'len', offset = 1, type = Integer),
+         ^TDSColumn(name = 'len_zScore', offset = 2, type = Float)
+      ],
+      {|
+         Address.all()
+            ->project([a|$a.name, a|$a.name->length()], ['name', 'len'])
+            ->zScore([], ['len'], ['len_zScore'])
+   });
+
+  assertSchemaRoundTripEquality(
+      [
+         ^TDSColumn(name = 'name', offset = 0, type = String),
+         ^TDSColumn(name = 'len', offset = 1, type = Integer),
+         ^TDSColumn(name = 'len_class', offset = 2, type = String)
+      ],
+      {|
+         Address.all()
+            ->project([a|$a.name, a|$a.name->length()], ['name', 'len'])
+            ->iqrClassify(['name'], ['len'], ['len_class'])
+   });
+
+  assertSchemaRoundTripEquality({|
+         Address.all()
+            ->project([a|$a.name, a|$a.name->length()], ['name', 'len'])
+            ->rowValueDifference(Address.all()->project([a|$a.name, a|$a.name->length()], ['name', 'len']), ['name'], ['len'])
+   });
+
+  assertSchemaRoundTripEquality({|
+         Address.all()
+            ->project([a|$a.name, a|$a.name->length()], ['name', 'len'])
+            ->rowValueDifference(Address.all()->project([a|$a.name, a|$a.name->length()], ['name2', 'len']), ['name'], ['name2'], ['len'])
+   });
 }
 
 function meta::relational::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
