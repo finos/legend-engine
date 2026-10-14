@@ -75,7 +75,7 @@ public class Compile
 
     public Compile(ModelManager modelManager)
     {
-        this(modelManager, false);
+        this(modelManager, true);
     }
 
     public Compile(ModelManager modelManager, boolean failOnErrorDefects)
