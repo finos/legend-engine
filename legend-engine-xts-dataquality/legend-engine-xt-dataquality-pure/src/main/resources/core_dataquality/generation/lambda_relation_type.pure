@@ -21,6 +21,15 @@ function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
   compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 ): RelationType<Any>[1]
 {
+  meta::external::dataquality::lambdaRelationType::getLambdaRelationType($element, $compiler, []);
+}
+
+function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
+  element: PackageableElement[1],
+  compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1],
+  extensions: meta::pure::extension::Extension[*]
+): RelationType<Any>[1]
+{
   let lambda = $element->match([
     v: DataQualityRelationValidation[1] | generateDataqualityRelationValidationLambda($v, [], [], false, false, true, false),
     c: DataQualityRelationComparison[1] | let reconInput = createReconInput(
@@ -34,7 +43,7 @@ function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
                                             true,
                                             $c.additionalColumnsToPersist
                                           );
-                                          getDataReconLambda($reconInput, $compiler);,
+                                          getDataReconLambda($reconInput, $compiler, $extensions);,
     e: PackageableElement[1]            | fail('Unsupported DataQuality element for relation type: ' + $e->elementToPath())->cast(@LambdaFunction<Any>);
   ]);
   $lambda.expressionSequence->last()->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);

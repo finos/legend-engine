@@ -136,3 +136,12 @@ Class <<temporal.bitemporal>> meta::external::dataquality::tests::domain::BiTemp
   name: String[1];
   nonTemporal: meta::external::dataquality::tests::domain::NonTemporal[0..1];
 }
+function meta::external::dataquality::tests::udf::personIdHashTds():meta::pure::tds::TabularDataSet[1]
+{
+  meta::external::dataquality::tests::domain::Person.all()->project([x|$x.id, x|$x.hash], ['ID', 'HASH'])
+}
+
+function meta::external::dataquality::tests::udf::personIdHashRelation():meta::pure::metamodel::relation::Relation<(ID:Integer, HASH:String)>[1]
+{
+  #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH])
+}

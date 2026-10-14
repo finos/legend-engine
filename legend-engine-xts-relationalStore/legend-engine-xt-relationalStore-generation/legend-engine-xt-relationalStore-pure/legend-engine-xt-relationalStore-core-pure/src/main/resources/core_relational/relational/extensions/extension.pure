@@ -224,6 +224,52 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                                       }
                                                     )
                                                 )
+                                             )->concatenate(
+                                              [
+                                                 pair(meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_, Float),
+                                                 pair(meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_, String)
+                                              ]->map(p|
+                                                    pair($p.first->cast(@Function<Any>), {|
+                                                       let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+                                                       let outputCols = $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String)->toOneMany();
+
+                                                       $tdsSchema.extend($outputCols->map(c|^TDSColumn(name = $c, type = $p.second))->toOneMany());
+                                                      }
+                                                    )
+                                                )
+                                             )->concatenate(
+                                              [
+                                                 meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
+                                                 meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_
+                                              ]->map(f|
+                                                    pair($f->cast(@Function<Any>), {|
+                                                       let tdsSchema1 = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+                                                       let tdsSchema2 = resolveSchemaImpl($fe.parametersValues->at(1), $openVars, $extensions);
+                                                       let tds1JoinCols = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String)->toOneMany();
+                                                       let tds2JoinCols = if($fe.parametersValues->size() == 5, | $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String)->toOneMany(), | $tds1JoinCols);
+                                                       let colsToCheck = $fe.parametersValues->last()->toOne()->reactivate($openVars)->cast(@String)->toOneMany();
+
+                                                       let left = $tdsSchema1
+                                                          .restrict($tds1JoinCols->concatenate($colsToCheck)->removeDuplicates()->toOneMany())
+                                                          .rename($colsToCheck->map(c|pair($c, $c + '_1'))->toOneMany());
+                                                       let right = $tdsSchema2
+                                                          .restrict($tds2JoinCols->concatenate($colsToCheck)->removeDuplicates()->toOneMany())
+                                                          .rename($colsToCheck->map(c|pair($c, $c + '_2'))->toOneMany());
+
+                                                       // Models only the LEFT_OUTER half: the RIGHT_OUTER half it is concatenated with ends in the same restrict, so the schema is identical
+                                                       $left.join($right)
+                                                          .extend($colsToCheck->map(c|^TDSColumn(name = $c + '_matched', type = Boolean))->concatenate(^TDSColumn(name = 'row_matched', type = Boolean))->toOneMany())
+                                                          .restrict(
+                                                             $tds1JoinCols->concatenate($tds2JoinCols)->removeDuplicates()
+                                                                ->concatenate($colsToCheck->map(c|$c + '_1'))
+                                                                ->concatenate($colsToCheck->map(c|$c + '_2'))
+                                                                ->concatenate($colsToCheck->map(c|$c + '_matched'))
+                                                                ->concatenate('row_matched')
+                                                                ->toOneMany()
+                                                          );
+                                                      }
+                                                    )
+                                                )
                                              )
                                              ->concatenate(
                                                 pair(tableToTDS_Table_1__TableTDS_1_->cast(@Function<Any>), {|

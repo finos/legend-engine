@@ -354,6 +354,99 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
          {a:String[1], b:String[1], c:String[1], d:String[1], e:String[1], f:String[1], g:String[1] | Person.all()
             ->project([col(p|$p.age->first(), 'age1')])
          });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->limit(10->first())
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->paginated(1, 10)
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->concatenate([
+            Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')]),
+            Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ])
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->renameColumn('lastName', 'surname')
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+         ->restrictDistinct(['lastName'])
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()->project([#/Person/firstName#, #/Person/lastName!surname#])
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()->projectWithColumnSubset([p|$p.firstName, p|$p.lastName, p|$p.age->first()], ['firstName', 'lastName', 'age'], ['lastName', 'age'])
+   });
+
+   assertSchemaRoundTripEquality({|
+      Person.all()->groupByWithWindowSubset([p|$p.firstName, p|$p.lastName], [agg(p|$p.age->first(), y|$y->sum())], ['firstName', 'lastName', 'ageSum'], ['firstName'], ['ageSum'])
+   });
+
+   let olapAggregated = [
+      ^TDSColumn(name = 'firstName', offset= 0, type = String),
+      ^TDSColumn(name = 'age', offset= 1, type = Integer),
+      ^TDSColumn(name = 'ageSum', offset= 2, type = Number)
+   ];
+
+   let olapRanked = [
+      ^TDSColumn(name = 'firstName', offset= 0, type = String),
+      ^TDSColumn(name = 'age', offset= 1, type = Integer),
+      ^TDSColumn(name = 'ageRank', offset= 2, type = Integer)
+   ];
+
+   assertSchemaRoundTripEquality($olapAggregated, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(['firstName'], func('age', y|$y->sum()), 'ageSum')
+   });
+
+   assertSchemaRoundTripEquality($olapAggregated, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(func('age', y|$y->sum()), 'ageSum')
+   });
+
+   assertSchemaRoundTripEquality($olapAggregated, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(asc('age'), func('age', y|$y->sum()), 'ageSum')
+   });
+
+   assertSchemaRoundTripEquality($olapRanked, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(['firstName'], y|$y->meta::pure::functions::math::olap::rank(), 'ageRank')
+   });
+
+   assertSchemaRoundTripEquality($olapRanked, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(y|$y->meta::pure::functions::math::olap::rowNumber(), 'ageRank')
+   });
+
+   assertSchemaRoundTripEquality($olapRanked, {|
+      Person.all()
+         ->project([col(p|$p.firstName, 'firstName'), col(p|$p.age->first(), 'age')])
+         ->olapGroupBy(asc('age'), y|$y->meta::pure::functions::math::olap::denseRank(), 'ageRank')
+   });
 }
 
 function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[*]}>[1]) : Boolean[1]
