@@ -1300,7 +1300,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let processor = aggregateProcessor($aggregationFunctionCall.name, $context.functionProcessors);
   let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall, $context);
 
-  let mapExpression = processMapFunctionArgument($adjusted.map, $context)->evaluateAndDeactivate();
+  let mapExpression = if ($adjusted.mapValueSpecification->isNotEmpty(),
+                        | $adjusted.mapValueSpecification->toOne()->evaluateAndDeactivate(),
+                        | processMapFunctionArgument($adjusted.map, $context)->evaluateAndDeactivate());
 
   let mapReturnType = $mapExpression.genericType.rawType->match([
     t:Type[1] | $t,
@@ -1313,7 +1315,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let mapLambda = lambda($mapFunctionType, $mapExpression);
 
-  let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
+  let aggLambda = processAggregationLambda($adjusted.aggregate, $mapExpression.genericType, $context);
 
   if ($adjusted.sortItems->isEmpty() && $adjusted.filter->isEmpty(),
     | ^TDSBuilder().aggregation($name, $mapLambda, $aggLambda, $context.relation->isTrue()),
@@ -1380,13 +1382,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(expression:meta::external::query::sql::metamodel::Expression[1], type:Type[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
 {
-  let expContext = expressionContext(^VariableExpression(genericType = ^GenericType(rawType = $type),name = 'y', multiplicity = ZeroMany), ^Map<String, VariableExpression>(), $context.relation->isTrue());
+  processAggregationLambda($expression, ^GenericType(rawType = $type), $context);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(expression:meta::external::query::sql::metamodel::Expression[1], genericType:GenericType[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
+{
+  let expContext = expressionContext(^VariableExpression(genericType = $genericType, name = 'y', multiplicity = ZeroMany), ^Map<String, VariableExpression>(), $context.relation->isTrue());
 
   let aggExpression = processExpression($expression, $expContext, $context);
 
   let aggReturnType = $aggExpression.genericType.rawType->toOne();
 
-  let aggFunctionType = functionType('y', ^GenericType(rawType = $type), ZeroMany, $aggExpression.genericType, $aggExpression.multiplicity);
+  let aggFunctionType = functionType('y', $genericType, ZeroMany, $aggExpression.genericType, $aggExpression.multiplicity);
   lambda($aggFunctionType, $aggExpression);
 }
 
@@ -1571,6 +1578,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($processor.isAggregate,
     | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []), $context);
+      unsupported($extacted.mapValueSpecification->isEmpty(), | 'aggregate with a pre-built map value specification is not supported as a window function');
       let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
 
       let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
