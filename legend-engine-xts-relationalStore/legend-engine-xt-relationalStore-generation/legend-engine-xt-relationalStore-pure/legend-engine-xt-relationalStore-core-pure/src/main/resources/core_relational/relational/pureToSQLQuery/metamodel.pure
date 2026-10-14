@@ -27,6 +27,28 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArra
    navigation: RelationalOperationElement[1];
 }
 
+Class meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation extends Relation
+{
+   start: RelationalOperationElement[1];
+   stop: RelationalOperationElement[1];
+   step: RelationalOperationElement[1];
+}
+
+function meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName():String[1]
+{
+   'series_value'
+}
+
+// The relation's stop is inclusive (as SQL generate_series); this is the equivalent bound for dialects whose series function excludes its stop.
+function meta::relational::functions::pureToSqlQuery::metamodel::exclusiveStop(g:GenerateSeriesRelation[1]):RelationalOperationElement[1]
+{
+   if($g.stop->instanceOf(Literal) && $g.step->instanceOf(Literal) && $g.stop->cast(@Literal).value->instanceOf(Integer) && $g.step->cast(@Literal).value->instanceOf(Integer),
+      | let step = $g.step->cast(@Literal).value->cast(@Integer);
+        ^Literal(value = $g.stop->cast(@Literal).value->cast(@Integer) + if($step > 0, |1, |-1));,
+      | ^DynaFunction(name = 'plus', parameters = [$g.stop, ^DynaFunction(name = 'sign', parameters = $g.step)])
+   );
+}
+
 
 Class meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder extends RelationalOperationElement
 [

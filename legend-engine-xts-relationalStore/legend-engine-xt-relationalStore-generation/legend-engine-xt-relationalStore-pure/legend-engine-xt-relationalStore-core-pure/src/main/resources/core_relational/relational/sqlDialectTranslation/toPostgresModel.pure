@@ -105,6 +105,7 @@ function meta::relational::functions::toPostgresModel::convertElement(r:Relation
                                                  $tfr.function.schema.name->concatenate($tfr.function.name),
                                                  $tfr.arguments->map(a | $a.value->convertElementToExpression($state))
                                               ));,
+        g:GenerateSeriesRelation[1]|          ^TableFunction(functionCall = functionCall('generate_series', [$g.start, $g.stop, $g.step]->map(e | $e->convertElementToExpression($state))));,
         l:LiteralList[1]|                     ^InListExpression(values = $l.values->map(v|$v->convertElementToExpression($state)));,
         f:FreeMarkerOperationHolder[1]|       convertFreeMarkerOperationHolder($f, $state);,
         t:TableFunctionParamPlaceHolder[1] |  fail('SQL Dialect translation for TableFunctionParamPlaceHolder not supported yet!'); literal(1);,
@@ -878,7 +879,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 {
   $a.relationalElement->convertElement($state)->match(
     [
-      r:meta::external::query::sql::metamodel::Relation[1]| ^AliasedRelation(alias = convertTableAliasName($a), relation = $r),
+      r:meta::external::query::sql::metamodel::Relation[1]| ^AliasedRelation(alias = convertTableAliasName($a), relation = $r, columnNames = if($a.relationalElement->instanceOf(GenerateSeriesRelation), | generateSeriesColumnName(), | [])),
       c:SingleColumn[1]| ^SingleColumn(expression = $c.expression, alias = $a.name->toIdentifier());,
       e:meta::external::query::sql::metamodel::Expression[1]| ^SingleColumn(expression = $e, alias = $a.name->toIdentifier());
     ]

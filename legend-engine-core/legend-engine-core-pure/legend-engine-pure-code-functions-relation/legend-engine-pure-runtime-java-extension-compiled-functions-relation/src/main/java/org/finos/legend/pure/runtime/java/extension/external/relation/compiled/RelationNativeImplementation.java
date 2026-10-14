@@ -269,7 +269,7 @@ public class RelationNativeImplementation
         return new TDSContainer((TestTDSCompiled) agg, ps);
     }
 
-    public static <T> Relation<? extends Object> flatten(RichIterable<T> toFlatten, String colName, GenericType colType, ExecutionSupport es)
+    public static <T, Z> Relation<? extends Z> flatten(RichIterable<T> toFlatten, String colName, GenericType colType, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
 

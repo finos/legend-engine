@@ -831,3 +831,5 @@ meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__Sort
 meta::pure::functions::math::zScore_Relation_1___Window_1__T_1__ColSpec_1__Float_1_
 meta::pure::functions::math::average_Relation_1___Window_1__T_1__ColSpec_1__Float_1_
 meta::pure::functions::math::stdDevPopulation_Relation_1___Window_1__T_1__ColSpec_1__Number_1_
+meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_
+meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_

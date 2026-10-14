@@ -35,6 +35,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::createDbExte
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
       tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
+      generateSeriesProcessor = {g:GenerateSeriesRelation[1], sgc:SqlGenerationContext[1] | 'generate_series(' + [$g.start, $g.stop, $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')'},
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForH2_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,

@@ -83,7 +83,8 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                                                            u: SetOperationQuery[1]|$u->search($maxLength),
                                                            s: SelectSQLQuery[1]|$s->search($maxLength);,
                                                            s: SemiStructuredArrayFlatten[1]|$s.navigation->search($maxLength),
-                                                           s: SemiStructuredArrayFlattenRelation[1]|$s.navigation->search($maxLength)
+                                                           s: SemiStructuredArrayFlattenRelation[1]|$s.navigation->search($maxLength),
+                                                           g: GenerateSeriesRelation[1]|[]
                                                           ]);,
                      tac:TableAliasColumn[1]| $tac.column->search($maxLength);,
                      tacn:TableAliasColumnName[1]| getSanitizedAndOriginalNamePair($tacn.columnName, $maxLength);,
@@ -99,6 +100,7 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->search($maxLength),
                      s:SemiStructuredArrayFlatten[1] | $s.navigation->search($maxLength),
                      s:SemiStructuredArrayFlattenRelation[1] | $s.navigation->search($maxLength),
+                     g:GenerateSeriesRelation[1] | [$g.start, $g.stop, $g.step]->search($maxLength),
                      s:SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->search($maxLength),
                      any:Any[1]| [];
                    ]);

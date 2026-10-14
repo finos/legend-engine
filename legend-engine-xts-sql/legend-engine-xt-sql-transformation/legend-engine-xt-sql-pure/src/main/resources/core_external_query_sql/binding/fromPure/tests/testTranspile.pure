@@ -5225,6 +5225,40 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGenerateSeries():Boolean[1]
+{
+  test(
+    'select * from generate_series(0, 20, 5) as g(val)',
+
+    [
+      c({|
+          meta::pure::functions::relation::generateSeries(0, 20, 5, ~val)
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGenerateSeriesDefaultStepAndAliasColumn():Boolean[1]
+{
+  test(
+    'select * from generate_series(1, 3) as g',
+
+    [
+      c({|
+          meta::pure::functions::relation::generateSeries(1, 3, ~g)
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGenerateSeriesNonIntegerUnsupported():Boolean[1]
+{
+  error(
+    'select * from generate_series(1.5, 3) as g(val)',
+    'generate_series is only supported for integer arguments'
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testValuesRelation():Boolean[1]
 {
   test(

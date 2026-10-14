@@ -188,6 +188,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
+    tableFunctionProcessor_default(),
     unionProcessor_default(),
     exceptProcessor_distinctOnly(),
     intersectProcessor_distinctOnly(),
@@ -343,6 +344,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Tanh, simpleFunctionProcessor('tanh')),
     pair(Power, simpleFunctionProcessor('power')),
     pair(Sign, simpleFunctionProcessor('sign')),
+    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::GenerateSeries, simpleFunctionProcessor('system_range')),
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),

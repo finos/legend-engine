@@ -1011,5 +1011,23 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_EmptyFirst_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   grp,names\\n   1,N,A,B\\n   2,C\\n#'\nactual:   '#TDS\\n   grp,names\\n   1,A,B,N\\n   2,C\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_FilterExtend_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_NegativeStep_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_SingleValue_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Step_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: Spanner"
   } ]
 }

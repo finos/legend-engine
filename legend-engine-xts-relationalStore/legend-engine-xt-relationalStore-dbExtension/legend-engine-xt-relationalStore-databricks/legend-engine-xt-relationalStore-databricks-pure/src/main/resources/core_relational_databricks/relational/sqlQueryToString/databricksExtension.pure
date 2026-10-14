@@ -58,6 +58,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::databricks::processGenerateSeriesForDatabricks_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       windowColumnProcessor = processWindowColumnForDatabricks_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDatabricks_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
@@ -1646,4 +1647,9 @@ function meta::relational::functions::sqlQueryToString::databricks::processCommo
    // coerced back to the columns the anchor declares.
    $ctes->meta::relational::functions::sqlQueryToString::default::coerceRecursiveBranchToAnchorTypes()
         ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, 'RECURSIVE ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processGenerateSeriesForDatabricks(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select id as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from range(' + [$g.start, $g->meta::relational::functions::pureToSqlQuery::metamodel::exclusiveStop(), $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + '))';
 }

@@ -322,6 +322,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::extractTableAliasC
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns($nContext), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns($nContext),
                               s:meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation[1]|$s.navigation->extractTableAliasColumns($nContext),
+                              g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1]|[$g.start, $g.stop, $g.step]->map(e|$e->extractTableAliasColumns($nContext)),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns($nContext)
                           ]
                       );
