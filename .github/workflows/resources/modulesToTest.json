@@ -19,8 +19,10 @@
         "legend-engine-pure-runtime-java-extension-interpreted-functions-relation",      
         "legend-engine-pure-runtime-java-extension-compiled-functions-standard",
         "legend-engine-pure-runtime-java-extension-interpreted-functions-standard",
-        "legend-engine-pure-runtime-java-extension-compiled-functions-variant",            
-        "legend-engine-pure-runtime-java-extension-interpreted-functions-variant"
+        "legend-engine-pure-runtime-java-extension-compiled-functions-variant",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-variant",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-preeval",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-preeval"
       ]
     },      
     {

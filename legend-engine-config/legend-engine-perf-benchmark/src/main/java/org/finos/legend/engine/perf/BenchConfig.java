@@ -34,6 +34,8 @@ public class BenchConfig
     public boolean milestoned = false;
     public boolean relationFunction = false;
     public boolean modelToModel = false;
+    public boolean fromClause = false;
+    public boolean directPreval = false;
     public int semiDepth = 0;
     public String dbType = "H2";
 
@@ -76,6 +78,8 @@ public class BenchConfig
         config.milestoned = opts.containsKey("milestoning");
         config.relationFunction = opts.containsKey("relfunc");
         config.modelToModel = opts.containsKey("m2m");
+        config.fromClause = opts.containsKey("from");
+        config.directPreval = opts.containsKey("direct-preval");
         config.semiDepth = Integer.parseInt(opts.getOrDefault("semi", "0"));
         config.dbType = opts.getOrDefault("dbtype", "H2");
         config.fileList = opts.get("filelist");
@@ -113,6 +117,14 @@ public class BenchConfig
         {
             b.append("+m2m");
         }
+        if (this.fromClause)
+        {
+            b.append("+from");
+        }
+        if (this.directPreval)
+        {
+            b.append("+direct");
+        }
         if (!"0..1".equals(this.nextMultiplicity))
         {
             b.append("+mult").append(this.nextMultiplicity);
@@ -133,6 +145,8 @@ public class BenchConfig
         map.put("milestoned", this.milestoned);
         map.put("relationFunction", this.relationFunction);
         map.put("modelToModel", this.modelToModel);
+        map.put("fromClause", this.fromClause);
+        map.put("directPreval", this.directPreval);
         map.put("nextMultiplicity", this.nextMultiplicity);
         map.put("execute", this.execute);
         return map;
@@ -165,6 +179,14 @@ public class BenchConfig
         if (this.modelToModel)
         {
             b.append(" m2m");
+        }
+        if (this.fromClause)
+        {
+            b.append(" from");
+        }
+        if (this.directPreval)
+        {
+            b.append(" direct-preval");
         }
         b.append(" nextMult=[").append(this.nextMultiplicity).append("]");
         b.append(" warmup=").append(this.warmup).append(" iters=").append(this.iterations);

@@ -31,7 +31,8 @@ public class QueryGenerator
 
     public String generate()
     {
-        return "###Pure\nfunction test::fetch(): Any[1]\n{\n  {|" + this.body() + "}\n}\n";
+        String from = this.config.fromClause ? "->from(" + this.config.mappingPath + ", test::Runtime)" : "";
+        return "###Pure\nfunction test::fetch(): Any[1]\n{\n  {|" + this.body() + from + "}\n}\n";
     }
 
     private String body()
@@ -47,6 +48,10 @@ public class QueryGenerator
         {
             String tree = "#{test::view::V0{q0,q1,q2}}#";
             return "test::view::V0.all()->graphFetch(" + tree + ")->serialize(" + tree + ")";
+        }
+        if (query.equals("relsort"))
+        {
+            return "#>{test::DB.T0}#->sort([~p0->ascending(), ~p3->descending()])->limit(10)";
         }
         if (query.equals("variantrel"))
         {
