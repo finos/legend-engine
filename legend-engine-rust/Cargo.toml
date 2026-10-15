@@ -34,6 +34,9 @@ members = [
     "crates/dsl-mapping",
     "crates/dsl-memsql-function",
     "crates/dsl-mongodb",
+    "crates/dsl-persistence",
+    "crates/dsl-persistence-cloud",
+    "crates/dsl-persistence-relational",
     "crates/dsl-relational",
     "crates/dsl-relational-snowflake",
     "crates/dsl-runtime",
@@ -70,6 +73,9 @@ legend-pure-dsl-hosted-service = { path = "crates/dsl-hosted-service", version =
 legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
 legend-pure-dsl-memsql-function = { path = "crates/dsl-memsql-function", version = "0.1.0" }
 legend-pure-dsl-mongodb = { path = "crates/dsl-mongodb", version = "0.1.0" }
+legend-pure-dsl-persistence = { path = "crates/dsl-persistence", version = "0.1.0" }
+legend-pure-dsl-persistence-cloud = { path = "crates/dsl-persistence-cloud", version = "0.1.0" }
+legend-pure-dsl-persistence-relational = { path = "crates/dsl-persistence-relational", version = "0.1.0" }
 legend-pure-dsl-relational = { path = "crates/dsl-relational", version = "0.1.0" }
 legend-pure-dsl-relational-snowflake = { path = "crates/dsl-relational-snowflake", version = "0.1.0" }
 legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }

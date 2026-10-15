@@ -44,6 +44,9 @@ legend-pure-dsl-hosted-service = { path = "../dsl-hosted-service" }
 legend-pure-dsl-mapping = { path = "../dsl-mapping" }
 legend-pure-dsl-memsql-function = { path = "../dsl-memsql-function" }
 legend-pure-dsl-mongodb = { path = "../dsl-mongodb" }
+legend-pure-dsl-persistence = { path = "../dsl-persistence" }
+legend-pure-dsl-persistence-cloud = { path = "../dsl-persistence-cloud" }
+legend-pure-dsl-persistence-relational = { path = "../dsl-persistence-relational" }
 legend-pure-dsl-store = { path = "../dsl-store" }
 legend-pure-dsl-relational = { path = "../dsl-relational" }
 legend-pure-dsl-relational-snowflake = { path = "../dsl-relational-snowflake" }

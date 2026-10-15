@@ -29,6 +29,9 @@ use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
+use legend_pure_dsl_persistence as _;
+use legend_pure_dsl_persistence_cloud as _;
+use legend_pure_dsl_persistence_relational as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
@@ -60,6 +63,7 @@ const LINKED: &[&str] = &[
     "###FunctionJar\nFunctionJar a::J\n{\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
     "###HostedService\nHostedService a::HS\n{\n  pattern: '/p';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
     "###Deephaven\nDeephaven a::DS\n(\n  Table trades ( id: INT, at: TIMESTAMP )\n)\n",
+    "###Persistence\nPersistence a::P\n{\n  doc: 'Doc';\n  trigger: Manual;\n  service: a::S;\n  serviceOutputTargets:\n  [\n    TDS { keys: [id] datasetType: Snapshot {} }\n    ->\n    Relational\n    #{\n      table: db.people;\n      database: a::Db;\n      temporality: Unitemporal\n      {\n        processingDimension: DateTime\n        {\n          dateTimeIn: IN_Z;\n          dateTimeOut: OUT_Z;\n        }\n      }\n    }#\n  ];\n}\n\nPersistenceContext a::C\n{\n  persistence: a::P;\n  platform: AwsGlue\n  #{\n    dataProcessingUnits: 10;\n  }#;\n}\n",
 ];
 
 fn request(code: &str) -> ModelRequest<'_> {

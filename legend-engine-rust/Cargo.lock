@@ -442,6 +442,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "legend-pure-dsl-persistence"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-dsl-connection",
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+ "smol_str",
+]
+
+[[package]]
+name = "legend-pure-dsl-persistence-cloud"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-dsl-persistence",
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+]
+
+[[package]]
+name = "legend-pure-dsl-persistence-relational"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-dsl-persistence",
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+]
+
+[[package]]
 name = "legend-pure-dsl-relational"
 version = "0.1.0"
 dependencies = [
@@ -586,6 +626,9 @@ dependencies = [
  "legend-pure-dsl-mapping",
  "legend-pure-dsl-memsql-function",
  "legend-pure-dsl-mongodb",
+ "legend-pure-dsl-persistence",
+ "legend-pure-dsl-persistence-cloud",
+ "legend-pure-dsl-persistence-relational",
  "legend-pure-dsl-relational",
  "legend-pure-dsl-relational-snowflake",
  "legend-pure-dsl-runtime",
@@ -638,6 +681,9 @@ dependencies = [
  "legend-pure-dsl-mapping",
  "legend-pure-dsl-memsql-function",
  "legend-pure-dsl-mongodb",
+ "legend-pure-dsl-persistence",
+ "legend-pure-dsl-persistence-cloud",
+ "legend-pure-dsl-persistence-relational",
  "legend-pure-dsl-relational",
  "legend-pure-dsl-relational-snowflake",
  "legend-pure-dsl-runtime",

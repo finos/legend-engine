@@ -27,6 +27,9 @@ use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
+use legend_pure_dsl_persistence as _;
+use legend_pure_dsl_persistence_cloud as _;
+use legend_pure_dsl_persistence_relational as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
@@ -71,6 +74,7 @@ fn capabilities_report_linked_grammars() {
             "Mapping",
             "MemSql",
             "MongoDB",
+            "Persistence",
             "QueryPostProcessor",
             "Relational",
             "Runtime",

@@ -197,7 +197,11 @@
         "legend-engine-xt-bigqueryFunction-grammar",
         "legend-engine-xt-functionJar-grammar",
         "legend-engine-xt-deephaven-grammar",
-        "legend-engine-xt-hostedService-grammar"
+        "legend-engine-xt-hostedService-grammar",
+        "legend-engine-xt-persistence-grammar",
+        "legend-engine-xt-persistence-cloud-grammar",
+        "legend-engine-xt-persistence-target-relational-grammar",
+        "legend-engine-xt-persistence-emit"
       ]
     }
   ]

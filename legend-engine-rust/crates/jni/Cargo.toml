@@ -46,6 +46,9 @@ legend-pure-dsl-hosted-service = { workspace = true }
 legend-pure-dsl-mapping = { workspace = true }
 legend-pure-dsl-memsql-function = { workspace = true }
 legend-pure-dsl-mongodb = { workspace = true }
+legend-pure-dsl-persistence = { workspace = true }
+legend-pure-dsl-persistence-cloud = { workspace = true }
+legend-pure-dsl-persistence-relational = { workspace = true }
 legend-pure-dsl-store = { workspace = true }
 legend-pure-dsl-relational = { workspace = true }
 legend-pure-dsl-relational-snowflake = { workspace = true }
