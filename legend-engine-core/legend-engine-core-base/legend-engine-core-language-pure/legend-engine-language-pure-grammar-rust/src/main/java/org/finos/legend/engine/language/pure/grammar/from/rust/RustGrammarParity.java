@@ -131,7 +131,8 @@ public final class RustGrammarParity
         ACCEPTED,
         /**
          * The Rust parser reported a grammar the library doesn't link, and the accepted list names it; or the Rust
-         * result has a type no protocol extension on this classpath defines, and the Java parser rejected the input too.
+         * result has a type no protocol extension on this classpath defines, and the Java parser rejected the input
+         * too; or it reported a whole model unsupported, which one of its sections is.
          */
         UNLINKED,
         /**
@@ -286,7 +287,9 @@ public final class RustGrammarParity
         RustModelResult rust = RustModelResult.read(json, returnSourceInfo);
         if (rust.isUnsupported())
         {
-            unsupported(MODEL_COUNTS, input, returnSourceInfo, rust.errorMessage, javaError);
+            // A section of it is: the engine's parser then parses the model section by section, and that section's
+            // own comparison decides.
+            unlinked(MODEL_COUNTS, "unlinked:model");
             return;
         }
         JsonNode rustResult = rust.isError() ? null : RustSectionResult.toJson(rust.elements);

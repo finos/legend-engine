@@ -334,7 +334,9 @@ is parsed by both parsers and compared:
   `unlinked:<kind>:<type>` for a grammar this library doesn't link yet
   (`pending`, naming the change that ports it) or won't (`java-only`). A
   Rust result whose type no protocol extension on the classpath defines,
-  when Java rejected the input too, needs no entry.
+  when Java rejected the input too, needs no entry, nor does a whole model
+  Rust reports unsupported: one of its sections is, and that section's own
+  comparison decides.
 - **Unexpected:** any other comparison. `TestRustParityCoreGrammar` fails on
   one; `-Dlegend.grammar.rust.failOnMismatch=true` fails the test that
   parsed a mismatch instead.
