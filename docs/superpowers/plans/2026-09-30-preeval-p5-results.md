@@ -185,3 +185,13 @@ The baseline has no entry for this machine, so nothing is compared. The CI runne
 | `simple@scale200+relfunc/H2` | 16 |
 | `graph1@scale30/H2` | 32 |
 | `graph4@scale30/H2` | 77 |
+
+### CI at the cutover head (2026-10-15)
+
+PR #5305 run 38790580900 at `468c50b` passed all 28 jobs. It has `JAVA` as the default and is merged with the current `master`; the earlier `SHADOW` evidence predates that merge.
+
+An earlier run, 36775140876 at `caa4295` (30 September, `PURE` default), failed only `sql`, with 913 `TestPostgresParity` failures: `No function matches the given name "GENERATE_SUBSCRIPTS"`. PR CI merges the current `master`, and upstream's `generateSeries` SQL work was in flux that evening (`master` CI was also red then). The failure is unrelated to preeval.
+
+### Final review fix (2026-10-15)
+
+The comparator's catch-all `Relation` branch called `size()` on any `Relation` subclass. A class-modelled relation such as `SQLExpression` (`#SQL{}#`) then failed with a `NullPointerException`. `size()` is now called only on runtime relations, whose type is `Relation` or `TDS`. Other subclasses are walked structurally. Commit `7c4e9e26276`; pinned by `testShadowAcceptsEqualModelledRelations` and `testShadowRejectsModelledRelationsWithDifferentProperties`.

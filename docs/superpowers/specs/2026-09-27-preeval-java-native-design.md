@@ -227,7 +227,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** (relational: `testPrerouting42`, the file's only `<<test.Test>>`; its two `<<test.ToFix>>` tests, `testPrerouting41` and `testPrerouting_Store`, are excluded) |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode — **done** (336/336 under `PURE`, `JAVA` and `SHADOW`) |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences — **done** (five suites, zero `SHADOW`-only failures; see [the manifest](../plans/2026-09-29-preeval-p4-shadow-estate-manifest.md)) |
-| P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain — **done** (`JAVA` is the default; preeval ×1.24–1.30 on fresh models and ×2–3 on reused ones; zero `SHADOW` differences on the full default-profile CI estate; see [the P5 results](../plans/2026-09-30-preeval-p5-results.md)) |
+| P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain — **done** (`JAVA` is the default; preeval ×1.24–1.30 in total on fresh models and ×2–3 on reused ones, with no `planPure` regression and two tiny queries ×0.6 on a fresh model's first call; zero `SHADOW` differences on the full default-profile CI estate; CI green at the cutover head; see [the P5 results](../plans/2026-09-30-preeval-p5-results.md)) |
 | P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
 
 ### P1 status (2026-09-28)
@@ -526,7 +526,7 @@ The protocol could not describe values preeval legitimately evaluates: `_Window`
   - Nested instances print only their raw type: the classifier's type arguments are dropped with the `Any` properties.
   - `Column` values held as values print only their name.
   - Overloaded qualified properties share one identity line; the parameter lines usually differ.
-- **Cost:** the estate's wall-clock time under `SHADOW` was not measured separately. The paired runs of all five suites took about 13 minutes on the development machine, both modes included. P5 should measure `SHADOW` overhead as part of its benchmark. **P5:** `SHADOW` overhead was not benchmarked, since `SHADOW` is a diagnostic mode that never runs in production. The CI estate under `SHADOW` ran as fast as the `PURE` control at job level.
+- **Cost:** the estate's wall-clock time under `SHADOW` was not measured separately. The paired runs of all five suites took about 13 minutes on the development machine, both modes included. P5 should measure `SHADOW` overhead as part of its benchmark. **P5:** `SHADOW` overhead was not measured, since `SHADOW` is a diagnostic mode that never runs in production.
 
 ### P5 status (2026-10-15)
 
@@ -542,9 +542,9 @@ The protocol could not describe values preeval legitimately evaluates: `_Window`
   - read function types directly, as Pure's `functionType()` does, instead of through processor support's per-model cache;
   - cache element lookups per model instead of per call.
 - **After the fixes:** ×1.24–1.30 in total on fresh models, and ×2.0–3.0 at steady state on a reused model.
-- **Remaining gap:** the two smallest queries (`graph4`, `m2mview`) are about 0.15 ms slower on a fresh model's first call. That is below the benchmark's noise floor, and they are ×2.3 faster on a reused model. This closes the §8 per-hook risk: hook callbacks are not the dominant cost.
+- **Remaining gap:** the two smallest queries (`graph4`, `m2mview`) are about 0.15 ms slower on a fresh model's first call (×0.6), and ×2.3 faster on a reused model. The benchmark's regression rule has a 10 ms floor, so it could never flag a preval difference this small. Its "no regressions" verdict is meaningful for `planPure`; preval timings must be read from the table. This closes the §8 per-hook risk: hook callbacks are not the dominant cost.
 
-**Full CI estate under `SHADOW`.** Fork CI cannot run `build.yml`, because its jobs are gated on `finos/legend-engine`. So PR #5305's CI ran the control at `PURE`, then a temporary commit switched the test JVMs to `SHADOW`; the commit was reverted afterwards. The final `SHADOW` run (36754872271) was compared test by test with the control: about 47,500 tests with zero `SHADOW`-only failures, and `relationalStore` at 3,064 tests with 0 failures. It found two problems, both fixed:
+**Full CI estate under `SHADOW`.** Fork CI cannot run `build.yml`, because its jobs are gated on `finos/legend-engine`. So PR #5305's CI ran the control at `PURE`, then a temporary commit switched the test JVMs to `SHADOW`; the commit was reverted afterwards. The control ran at `87aa01e` and the final `SHADOW` run (36754872271) at `1045809`, not the same commit, because two fixes landed in between. They were compared test by test: about 47,500 tests with zero `SHADOW`-only failures, and `relationalStore` at 3,064 tests with 0 failures. It found two problems, both fixed:
 - `Test_Interpreted_Relational_Preeval` ran out of heap in CI's shared Surefire JVM. RC now runs each test class in its own JVM.
 - The `SHADOW` comparator crashed on runtime relations. It now describes each kind differently:
   - `#TDS` literals by `csv` content;
@@ -557,6 +557,7 @@ The protocol could not describe values preeval legitimately evaluates: `_Window`
 - **Relational:** both preeval runners 3/3.
 - **Estate:** the five P4 estate suites show no differences between the new default and `PURE`.
 - **Lint:** Checkstyle is clean on every module P5 touched.
+- **CI at the cutover head:** PR #5305 run 38790580900 at `468c50b` passed all 28 jobs. It has `JAVA` as the default and is merged with the current `master`. It is the post-merge evidence for the whole default-profile estate.
 
 **Upstream drift absorbed.** `master` #5367 added `generateSeries` to `preeval.pure`'s stop list and to the router's `shouldStopFunctions`. The Java implementation reads both through its Pure hooks, so it needed no change. That confirms the hook design keeps the stop lists in one place.
 
