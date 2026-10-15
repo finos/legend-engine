@@ -38,9 +38,14 @@ legend-pure-dsl-authentication = { workspace = true }
 legend-pure-dsl-bigquery-function = { workspace = true }
 legend-pure-dsl-connection = { workspace = true }
 legend-pure-dsl-data = { workspace = true }
+legend-pure-dsl-data-space = { workspace = true }
+legend-pure-dsl-dataquality = { workspace = true }
 legend-pure-dsl-deephaven = { workspace = true }
+legend-pure-dsl-diagram = { workspace = true }
 legend-pure-dsl-elasticsearch = { workspace = true }
+legend-pure-dsl-external-format = { workspace = true }
 legend-pure-dsl-function-jar = { workspace = true }
+legend-pure-dsl-generation = { workspace = true }
 legend-pure-dsl-graph = { workspace = true }
 legend-pure-dsl-hosted-service = { workspace = true }
 legend-pure-dsl-mapping = { workspace = true }
@@ -58,4 +63,5 @@ legend-pure-dsl-service-store = { workspace = true }
 legend-pure-dsl-snowflake = { workspace = true }
 legend-pure-dsl-sql = { workspace = true }
 legend-pure-dsl-tds = { workspace = true }
+legend-pure-dsl-text = { workspace = true }
 jni = { workspace = true }

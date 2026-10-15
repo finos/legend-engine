@@ -132,15 +132,24 @@ legend-pure takes its own back:
 - **legend-pure:** the Pure core (`ast`, `lexer`, `parser`, `protocol`, and
   the `api` and `jni` crates), `#{}#` graph fetch and `#>{}#` relation
   accessor, and the `#TDS{}#` and `#SQL{}#` islands, which only keep their
-  text (in the engine, both are xts extensions), the engine core's embedded
-  data types and `###Data` section (`dsl-data`), and the `###Mapping` section
+  text (in the engine, both are xts extensions), the relational store's
+  `###Relational` section and `Relational #{…}#` test data
+  (`dsl-relational`), the engine core's embedded data types and
+  `###Data` section (`dsl-data`), and the `###Mapping` section
   (`dsl-mapping`, with the engine core's mapping element grammars; see
-  `porting-status.md`), and the relational store's `###Relational` section
-  and its mapping, connection and test data grammars (`dsl-relational`).
-- **legend-engine:** Connection and Runtime (`dsl-connection`,
-  `dsl-runtime`), then a `dsl-*` crate per engine module for its section
-  types, its stores' mapping elements, connections and test data, and its
-  islands (`#GQL{}#`, …), depending on the legend-pure crates.
+  `porting-status.md`).
+- **legend-engine:** Connection, Runtime, Service, DataSpace, the xts
+  stores' mapping elements, connections and test data, and the xts islands
+  (`#GQL{}#`, …): a `dsl-*` crate per engine module (`dsl-connection`,
+  `dsl-runtime`, `dsl-service`, `dsl-persistence` and its extensions',
+  `dsl-bigquery-function`, `dsl-data-space`, `dsl-dataquality`,
+  `dsl-diagram`, `dsl-external-format`, `dsl-function-activator`,
+  `dsl-function-jar`, `dsl-generation`, `dsl-hosted-service`,
+  `dsl-memsql-function`, `dsl-relational-snowflake`, `dsl-service-store`,
+  `dsl-snowflake`, `dsl-text`, `dsl-mongodb`, `dsl-deephaven`,
+  `dsl-elasticsearch`, `dsl-authentication`; the data space include is read
+  in `dsl-mapping`),
+  depending on the legend-pure crates.
 
 ### Native library assembly
 

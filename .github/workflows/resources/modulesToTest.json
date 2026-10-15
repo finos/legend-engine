@@ -201,7 +201,14 @@
         "legend-engine-xt-persistence-grammar",
         "legend-engine-xt-persistence-cloud-grammar",
         "legend-engine-xt-persistence-target-relational-grammar",
-        "legend-engine-xt-persistence-emit"
+        "legend-engine-xt-persistence-emit",
+        "legend-engine-xt-data-space-grammar",
+        "legend-engine-xt-dataquality-grammar",
+        "legend-engine-xt-diagram-grammar",
+        "legend-engine-external-format-grammar",
+        "legend-engine-language-pure-dsl-generation",
+        "legend-engine-xt-text-grammar",
+        "legend-engine-emit-tests"
       ]
     }
   ]

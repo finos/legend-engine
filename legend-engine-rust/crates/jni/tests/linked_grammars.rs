@@ -25,9 +25,15 @@ fn library_links_the_section_and_island_grammars() {
             "BigQuery",
             "Connection",
             "Data",
+            "DataQualityValidation",
+            "DataSpace",
             "Deephaven",
+            "Diagram",
             "Elasticsearch",
+            "ExternalFormat",
+            "FileGeneration",
             "FunctionJar",
+            "GenerationSpecification",
             "HostedService",
             "Mapping",
             "MemSql",
@@ -38,7 +44,8 @@ fn library_links_the_section_and_island_grammars() {
             "Runtime",
             "Service",
             "ServiceStore",
-            "Snowflake"
+            "Snowflake",
+            "Text"
         ]
     );
     assert!(

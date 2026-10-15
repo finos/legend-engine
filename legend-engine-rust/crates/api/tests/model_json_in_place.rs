@@ -21,9 +21,14 @@ use legend_pure_dsl_authentication as _;
 use legend_pure_dsl_bigquery_function as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
+use legend_pure_dsl_data_space as _;
+use legend_pure_dsl_dataquality as _;
 use legend_pure_dsl_deephaven as _;
+use legend_pure_dsl_diagram as _;
 use legend_pure_dsl_elasticsearch as _;
+use legend_pure_dsl_external_format as _;
 use legend_pure_dsl_function_jar as _;
+use legend_pure_dsl_generation as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
@@ -41,6 +46,7 @@ use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
+use legend_pure_dsl_text as _;
 use legend_pure_parser_api::{ModelRequest, parse_model, parse_model_json_bytes};
 use serde_json::{Value, json};
 use std::path::Path;
@@ -64,6 +70,12 @@ const LINKED: &[&str] = &[
     "###HostedService\nHostedService a::HS\n{\n  pattern: '/p';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
     "###Deephaven\nDeephaven a::DS\n(\n  Table trades ( id: INT, at: TIMESTAMP )\n)\n",
     "###Persistence\nPersistence a::P\n{\n  doc: 'Doc';\n  trigger: Manual;\n  service: a::S;\n  serviceOutputTargets:\n  [\n    TDS { keys: [id] datasetType: Snapshot {} }\n    ->\n    Relational\n    #{\n      table: db.people;\n      database: a::Db;\n      temporality: Unitemporal\n      {\n        processingDimension: DateTime\n        {\n          dateTimeIn: IN_Z;\n          dateTimeOut: OUT_Z;\n        }\n      }\n    }#\n  ];\n}\n\nPersistenceContext a::C\n{\n  persistence: a::P;\n  platform: AwsGlue\n  #{\n    dataProcessingUnits: 10;\n  }#;\n}\n",
+    "###DataSpace\nDataSpace a::DS\n{\n  executionContexts:\n  [\n    {\n      name: 'Default';\n      mapping: a::M;\n      defaultRuntime: a::R;\n    }\n  ];\n  defaultExecutionContext: 'Default';\n}\n",
+    "###DataQualityValidation\nDataQualityValidation a::V\n{\n  context: fromMappingAndRuntime(a::M, a::R);\n  validationTree: $[ a::Person{ name } ]$;\n}\n",
+    "###Diagram\nDiagram a::D\n{\n  classView a\n  {\n    class: a::Person;\n    position: (0.0,0.0);\n    rectangle: (100.0,50.0);\n  }\n}\n",
+    "###ExternalFormat\nBinding a::B\n{\n  contentType: 'application/json';\n  modelIncludes: [\n    a::Person\n  ];\n}\n",
+    "###FileGeneration\nJSONSchema a::G\n{\n  scopeElements: [a::Person];\n}\n\n###GenerationSpecification\nGenerationSpecification a::GS\n{\n  fileGenerations: [a::G];\n}\n",
+    "###Text\nText a::T\n{\n  type: HTML;\n  content: 'x';\n}\n",
 ];
 
 fn request(code: &str) -> ModelRequest<'_> {

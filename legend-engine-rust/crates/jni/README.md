@@ -32,21 +32,24 @@ the JVM cannot allocate the result array.
 The library links the island grammars `dsl-graph` (`#{…}#`), `dsl-store`
 (`#>{…}#`), `dsl-sql` (`#SQL{…}#`) and `dsl-tds` (`#TDS{…}#`); the section
 grammars `dsl-bigquery-function` (`###BigQuery`), `dsl-connection`
-(`###Connection`), `dsl-data` (`###Data`), `dsl-deephaven` (`###Deephaven`),
-`dsl-elasticsearch` (`###Elasticsearch`), `dsl-function-jar`
-(`###FunctionJar`), `dsl-hosted-service` (`###HostedService`), `dsl-mapping`
-(`###Mapping`), `dsl-memsql-function` (`###MemSql`), `dsl-mongodb`
-(`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
-`dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
-(`###Relational` and `###QueryPostProcessor`), `dsl-runtime` (`###Runtime`),
-`dsl-service` (`###Service`), `dsl-service-store` (`###ServiceStore`) and
-`dsl-snowflake` (`###Snowflake`); the stores' mapping, connection and test
-data grammars in `dsl-relational`, `dsl-relational-snowflake`,
-`dsl-service-store`, `dsl-mongodb`, `dsl-deephaven` and `dsl-elasticsearch`;
-and the connections' authentication grammar `dsl-authentication`. They
-self-register. To add grammars (e.g. Legend Engine's own), build an aggregator
-`cdylib` that depends on this crate and the grammar crates, and force-links
-them:
+(`###Connection`), `dsl-data` (`###Data`), `dsl-data-space` (`###DataSpace`),
+`dsl-dataquality` (`###DataQualityValidation`), `dsl-deephaven`
+(`###Deephaven`), `dsl-diagram` (`###Diagram`), `dsl-elasticsearch`
+(`###Elasticsearch`), `dsl-external-format` (`###ExternalFormat`),
+`dsl-function-jar` (`###FunctionJar`), `dsl-generation` (`###FileGeneration`
+and `###GenerationSpecification`), `dsl-hosted-service` (`###HostedService`),
+`dsl-mapping` (`###Mapping`), `dsl-memsql-function` (`###MemSql`),
+`dsl-mongodb` (`###MongoDB`), `dsl-persistence` (`###Persistence`, with its
+extensions' `dsl-persistence-relational` and `dsl-persistence-cloud`),
+`dsl-relational` (`###Relational` and `###QueryPostProcessor`), `dsl-runtime`
+(`###Runtime`), `dsl-service` (`###Service`), `dsl-service-store`
+(`###ServiceStore`), `dsl-snowflake` (`###Snowflake`) and `dsl-text`
+(`###Text`); the stores' mapping, connection and test data grammars in
+`dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,
+`dsl-mongodb`, `dsl-deephaven` and `dsl-elasticsearch`; and the connections'
+authentication grammar `dsl-authentication`. They self-register. To add
+grammars (e.g. Legend Engine's own), build an aggregator `cdylib` that depends
+on this crate and the grammar crates, and force-links them:
 >>>>>>> 508c681b75b (feat(rust-parser): the ###Service grammar)
 =======
 `dsl-elasticsearch` (`###Elasticsearch`), `dsl-mapping` (`###Mapping`),

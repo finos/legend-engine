@@ -36,9 +36,14 @@ legend-pure-dsl-authentication = { path = "../dsl-authentication" }
 legend-pure-dsl-bigquery-function = { path = "../dsl-bigquery-function" }
 legend-pure-dsl-connection = { path = "../dsl-connection" }
 legend-pure-dsl-data = { path = "../dsl-data" }
+legend-pure-dsl-data-space = { path = "../dsl-data-space" }
+legend-pure-dsl-dataquality = { path = "../dsl-dataquality" }
 legend-pure-dsl-deephaven = { path = "../dsl-deephaven" }
+legend-pure-dsl-diagram = { path = "../dsl-diagram" }
 legend-pure-dsl-elasticsearch = { path = "../dsl-elasticsearch" }
+legend-pure-dsl-external-format = { path = "../dsl-external-format" }
 legend-pure-dsl-function-jar = { path = "../dsl-function-jar" }
+legend-pure-dsl-generation = { path = "../dsl-generation" }
 legend-pure-dsl-graph = { path = "../dsl-graph" }
 legend-pure-dsl-hosted-service = { path = "../dsl-hosted-service" }
 legend-pure-dsl-mapping = { path = "../dsl-mapping" }
@@ -56,3 +61,4 @@ legend-pure-dsl-service-store = { path = "../dsl-service-store" }
 legend-pure-dsl-snowflake = { path = "../dsl-snowflake" }
 legend-pure-dsl-sql = { path = "../dsl-sql" }
 legend-pure-dsl-tds = { path = "../dsl-tds" }
+legend-pure-dsl-text = { path = "../dsl-text" }

@@ -310,6 +310,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "legend-pure-dsl-data-space"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+ "smol_str",
+]
+
+[[package]]
+name = "legend-pure-dsl-dataquality"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+ "smol_str",
+]
+
+[[package]]
 name = "legend-pure-dsl-deephaven"
 version = "0.1.0"
 dependencies = [
@@ -327,6 +353,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "legend-pure-dsl-diagram"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+ "smol_str",
+]
+
+[[package]]
 name = "legend-pure-dsl-elasticsearch"
 version = "0.1.0"
 dependencies = [
@@ -338,6 +377,19 @@ dependencies = [
  "legend-pure-parser-protocol",
  "linkme",
  "serde",
+ "serde_json",
+ "smol_str",
+]
+
+[[package]]
+name = "legend-pure-dsl-external-format"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
  "serde_json",
  "smol_str",
 ]
@@ -365,6 +417,19 @@ dependencies = [
  "legend-pure-parser-protocol",
  "linkme",
  "serde_json",
+]
+
+[[package]]
+name = "legend-pure-dsl-generation"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+ "smol_str",
 ]
 
 [[package]]
@@ -611,6 +676,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "legend-pure-dsl-text"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+]
+
+[[package]]
 name = "legend-pure-parser-api"
 version = "0.1.0"
 dependencies = [
@@ -618,9 +695,14 @@ dependencies = [
  "legend-pure-dsl-bigquery-function",
  "legend-pure-dsl-connection",
  "legend-pure-dsl-data",
+ "legend-pure-dsl-data-space",
+ "legend-pure-dsl-dataquality",
  "legend-pure-dsl-deephaven",
+ "legend-pure-dsl-diagram",
  "legend-pure-dsl-elasticsearch",
+ "legend-pure-dsl-external-format",
  "legend-pure-dsl-function-jar",
+ "legend-pure-dsl-generation",
  "legend-pure-dsl-graph",
  "legend-pure-dsl-hosted-service",
  "legend-pure-dsl-mapping",
@@ -638,6 +720,7 @@ dependencies = [
  "legend-pure-dsl-sql",
  "legend-pure-dsl-store",
  "legend-pure-dsl-tds",
+ "legend-pure-dsl-text",
  "legend-pure-parser-ast",
  "legend-pure-parser-parser",
  "legend-pure-parser-protocol",
@@ -673,9 +756,14 @@ dependencies = [
  "legend-pure-dsl-bigquery-function",
  "legend-pure-dsl-connection",
  "legend-pure-dsl-data",
+ "legend-pure-dsl-data-space",
+ "legend-pure-dsl-dataquality",
  "legend-pure-dsl-deephaven",
+ "legend-pure-dsl-diagram",
  "legend-pure-dsl-elasticsearch",
+ "legend-pure-dsl-external-format",
  "legend-pure-dsl-function-jar",
+ "legend-pure-dsl-generation",
  "legend-pure-dsl-graph",
  "legend-pure-dsl-hosted-service",
  "legend-pure-dsl-mapping",
@@ -693,6 +781,7 @@ dependencies = [
  "legend-pure-dsl-sql",
  "legend-pure-dsl-store",
  "legend-pure-dsl-tds",
+ "legend-pure-dsl-text",
  "legend-pure-parser-api",
 ]
 

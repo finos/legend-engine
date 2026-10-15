@@ -25,10 +25,15 @@ members = [
     "crates/dsl-bigquery-function",
     "crates/dsl-connection",
     "crates/dsl-data",
+    "crates/dsl-data-space",
+    "crates/dsl-dataquality",
     "crates/dsl-deephaven",
+    "crates/dsl-diagram",
     "crates/dsl-elasticsearch",
+    "crates/dsl-external-format",
     "crates/dsl-function-activator",
     "crates/dsl-function-jar",
+    "crates/dsl-generation",
     "crates/dsl-graph",
     "crates/dsl-hosted-service",
     "crates/dsl-mapping",
@@ -46,6 +51,7 @@ members = [
     "crates/dsl-store",
     "crates/dsl-sql",
     "crates/dsl-tds",
+    "crates/dsl-text",
     "crates/jni",
 ]
 
@@ -64,10 +70,15 @@ legend-pure-dsl-authentication = { path = "crates/dsl-authentication", version =
 legend-pure-dsl-bigquery-function = { path = "crates/dsl-bigquery-function", version = "0.1.0" }
 legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0" }
 legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
+legend-pure-dsl-data-space = { path = "crates/dsl-data-space", version = "0.1.0" }
+legend-pure-dsl-dataquality = { path = "crates/dsl-dataquality", version = "0.1.0" }
 legend-pure-dsl-deephaven = { path = "crates/dsl-deephaven", version = "0.1.0" }
+legend-pure-dsl-diagram = { path = "crates/dsl-diagram", version = "0.1.0" }
 legend-pure-dsl-elasticsearch = { path = "crates/dsl-elasticsearch", version = "0.1.0" }
+legend-pure-dsl-external-format = { path = "crates/dsl-external-format", version = "0.1.0" }
 legend-pure-dsl-function-activator = { path = "crates/dsl-function-activator", version = "0.1.0" }
 legend-pure-dsl-function-jar = { path = "crates/dsl-function-jar", version = "0.1.0" }
+legend-pure-dsl-generation = { path = "crates/dsl-generation", version = "0.1.0" }
 legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
 legend-pure-dsl-hosted-service = { path = "crates/dsl-hosted-service", version = "0.1.0" }
 legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
@@ -85,6 +96,7 @@ legend-pure-dsl-snowflake = { path = "crates/dsl-snowflake", version = "0.1.0" }
 legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
 legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }
 legend-pure-dsl-tds = { path = "crates/dsl-tds", version = "0.1.0" }
+legend-pure-dsl-text = { path = "crates/dsl-text", version = "0.1.0" }
 legend-pure-parser-api = { path = "crates/api", version = "0.1.0" }
 legend-pure-parser-ast = { path = "crates/ast", version = "0.1.0" }
 legend-pure-parser-ast-derive = { path = "crates/ast-derive", version = "0.1.0" }

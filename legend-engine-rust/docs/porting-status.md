@@ -7,12 +7,12 @@ ported yet is `unsupported`, so the engine parses it with Java. Each grammar is
 checked by live parity (`engine-integration.md`, "Live parity"): the engine's
 suites that use it run in `shadow` mode in Build CI.
 
-Every engine grammar was ported on legend-engine's `rust-parser` branch
-(finos/legend-engine#5362). They join this workspace one change at a time;
-each change adds the modules whose suites use its grammars to the live parity
-entry, and removes its grammars' `unlinked:` entries from the accepted list.
+Every section type the engine has is ported. They were ported on
+legend-engine's `rust-parser` branch (finos/legend-engine#5362) and joined this
+workspace one change at a time, each with the modules whose suites use its
+grammars added to the live parity entry.
 
-## In this workspace
+## The grammars
 
 | Grammar | Crate | Engine owner |
 |---|---|---|
@@ -27,17 +27,13 @@ entry, and removes its grammars' `unlinked:` entries from the accepted list.
 | `###ServiceStore` (with its mapping elements, connection and test data), `###MongoDB` (with its mappings and connection), `###Elasticsearch` (with its connection), and connections' authentication specifications | `dsl-service-store`, `dsl-mongodb`, `dsl-elasticsearch`, `dsl-authentication` | serviceStore, mongodb, elasticsearch, authentication |
 | Function activators: `###Snowflake`, `###MemSql`, `###BigQuery`, `###FunctionJar`, `###HostedService`; `###Deephaven` (with its connection) | `dsl-function-activator`, `dsl-snowflake`, `dsl-memsql-function`, `dsl-bigquery-function`, `dsl-function-jar`, `dsl-hosted-service`, `dsl-deephaven` | snowflake, memsqlFunction, bigqueryFunction, functionJar, hostedService, deephaven |
 | `###Persistence`, with its relational target and cloud platform | `dsl-persistence`, `dsl-persistence-relational`, `dsl-persistence-cloud` | persistence |
+| `###DataSpace`, `###DataQualityValidation`, `###Diagram`, `###ExternalFormat`, `###FileGeneration` and `###GenerationSpecification`, `###Text` | `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`, `dsl-external-format`, `dsl-generation`, `dsl-text` | data-space, dataquality, diagram, external format, generation, text |
 | Whole models (`parseModel`): the engine's section split and section index, parsed in Rust in `on` mode, with no ANTLR parsing in Java | `api` | core |
 
-A mapping element, legacy test input, connection or embedded data type that
-only another store's grammar reads makes its section `unsupported` until that
-store's change lands.
-
-## To come
-
-| Grammar | Crates | Engine owner |
-|---|---|---|
-| `###DataSpace`, `###DataQualityValidation`, `###Diagram`, `###ExternalFormat`, `###FileGeneration` and `###GenerationSpecification`, `###Text` | `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`, `dsl-external-format`, `dsl-generation`, `dsl-text` | data-space, dataquality, diagram, external format, generation, text |
+A mapping element, legacy test input, connection, embedded data, island or
+test assertion type that only an engine extension without a Rust port reads
+(`#GQL{…}#`, for instance) makes its section `unsupported`, so the engine parses
+it with Java.
 
 ## Whole models
 

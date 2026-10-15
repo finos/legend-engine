@@ -31,3 +31,6 @@ model-b542693a86609598  accepted: the model holding 4ff54025b761042a
 71d6fca2ff4e0b58  accepted: an operator in a `^Class(p = a + b)` property value; the engine's `processRightSide` reads only the value's first operand (`combinedExpression().expression()`) and drops `+ b`; Rust keeps the whole expression
 unlinked:service-store-security-scheme:INVALID  accepted: the engine rejects a service store security scheme of type `INVALID`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 unlinked:persistence-platform:Unknown  accepted: the engine rejects a persistence platform of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+3f46588323583c5e  accepted: a schema set in the format `Example`, which only the engine's tests define; Rust knows the formats the engine's modules define and reports another unsupported, for the engine to check against the formats it has
+9af6a233d74ce934  accepted: a data space executable with neither a query nor an executable; the engine rejects it without a position, which a Rust error always has, so Rust reports it unsupported and the engine then parses the section
+model-dbb06aea034992f8  accepted: the model holding 71d6fca2ff4e0b58
