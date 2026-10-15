@@ -52,6 +52,15 @@ public interface PureGrammarParserExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    /**
+     * The parser this extension takes the parsing of whole models over with (see {@link ModelParserOverride}); at
+     * most one across all extensions.
+     */
+    default Iterable<? extends ModelParserOverride> getModelParserOverrides()
+    {
+        return Collections.emptyList();
+    }
+
     default Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
         return Collections.emptyList();
