@@ -34,7 +34,6 @@
     {
       "name": "sql",
       "modules": [
-        "legend-engine-xt-sql-expression-grammar",
         "legend-engine-xt-sql-pure",
         "legend-engine-xt-sql-http-api",
         "legend-engine-xt-sql-reversePCT",  
@@ -170,6 +169,20 @@
         "legend-engine-xt-python-reversePCT-legendQL",
         "legend-engine-xt-python-reversePCT-pandasAPI",
         "legend-engine-xt-python-reversePCT-shared"
+      ]
+    },
+    {
+      "name": "rustParserParity",
+      "modules": [
+        "legend-engine-language-pure-grammar-rust",
+        "legend-engine-language-pure-compiler",
+        "legend-engine-language-pure-grammar-http-api",
+        "legend-engine-language-pure-compiler-http-api",
+        "legend-engine-core-emit-tests",
+        "legend-engine-xt-sql-expression-grammar",
+        "legend-engine-xt-sql-expression-compiler",
+        "legend-engine-xt-tds-grammar",
+        "legend-engine-xt-tds-compiler"
       ]
     }
   ]
