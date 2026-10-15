@@ -36,6 +36,22 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  # Unqualified interval literal (no unit) — Postgres defaults the field to seconds
+  - id: interval_date_plus_unqualified
+    sql: "SELECT d + INTERVAL '123' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date + unqualified interval (defaults to seconds)"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Interval literal with a separate unit-field token (value in quotes, unit after)
+  - id: interval_date_plus_days_unit_token
+    sql: "SELECT d + INTERVAL '365' DAY AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date + interval with separate unit token"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   # Timestamp + Interval
   - id: interval_ts_plus_hours
     sql: "SELECT ts + INTERVAL '2 hours' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -119,6 +135,21 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  # Ranged interval literals (X TO Y)
+  - id: interval_range_year_to_month
+    sql: "SELECT d + INTERVAL '1-2' YEAR TO MONTH AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "ranged interval literal YEAR TO MONTH"
+    category: "interval_arithmetic"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: interval_range_day_to_minute
+    sql: "SELECT ts + INTERVAL '1 2:30' DAY TO MINUTE AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "ranged interval literal DAY TO MINUTE"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   # Interval in WHERE predicate
   - id: interval_in_where_filter
     sql: "SELECT d AS result FROM dates WHERE d > CURRENT_DATE - INTERVAL '365 days' AND d IS NOT NULL ORDER BY 1"
@@ -178,6 +209,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: BUG
     expected_rel_status: BUG
+
 
   # make_interval combined with arithmetic
   - id: interval_make_interval_plus_date

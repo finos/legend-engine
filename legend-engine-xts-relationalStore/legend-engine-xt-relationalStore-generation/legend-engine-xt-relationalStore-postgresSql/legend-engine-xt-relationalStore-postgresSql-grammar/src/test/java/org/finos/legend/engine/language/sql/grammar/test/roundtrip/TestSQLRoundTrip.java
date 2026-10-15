@@ -388,6 +388,23 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testIntervalRange()
+    {
+        checkExpression("INTERVAL '1-2' YEAR TO MONTH", "INTERVAL '1 YEAR 2 MONTHS'");
+        checkExpression("INTERVAL '1 2:30' DAY TO MINUTE", "INTERVAL '1 DAY 2 HOURS 30 MINUTES'");
+        checkExpression("INTERVAL '1 02:03:04' DAY TO SECOND", "INTERVAL '1 DAY 2 HOURS 3 MINUTES 4 SECONDS'");
+        checkExpression("INTERVAL '-1-2' YEAR TO MONTH", "INTERVAL '-1 YEARS -2 MONTHS'");
+    }
+
+    @Test
+    public void testIntervalReproduction()
+    {
+        checkExpression("'2015-01-01' :: DATE + INTERVAL '365' DAY", "(CAST('2015-01-01' AS DATE) + INTERVAL '365 DAYS')");
+        checkExpression("INTERVAL '365' DAY", "INTERVAL '365 DAYS'");
+        checkExpression("INTERVAL '365'", "INTERVAL '365 SECONDS'");
+    }
+
+    @Test
     public void testLiterals()
     {
         check("SELECT 1, 'abc', true, 1.0, null FROM myTable");
