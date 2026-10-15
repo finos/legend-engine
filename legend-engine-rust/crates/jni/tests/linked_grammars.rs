@@ -27,7 +27,8 @@ fn library_links_the_section_and_island_grammars() {
             "Mapping",
             "QueryPostProcessor",
             "Relational",
-            "Runtime"
+            "Runtime",
+            "Service"
         ]
     );
     assert!(

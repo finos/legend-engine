@@ -24,6 +24,7 @@ use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
+use legend_pure_dsl_service as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
@@ -39,6 +40,7 @@ const LINKED: &[&str] = &[
     "###Connection\nJsonModelConnection a::C\n{\n  class: a::Person;\n  url: 'data:application/json,{}';\n}\n",
     "###Runtime\nRuntime a::R\n{\n  mappings: [a::M];\n  connections:\n  [\n    ModelStore: [c: a::C]\n  ];\n}\n",
     "###Relational\nDatabase a::Db\n(\n  Table people (id INTEGER PRIMARY KEY, name VARCHAR(200))\n)\n\n###Mapping\nMapping a::RM\n(\n  a::Person: Relational\n  {\n    name: [a::Db]people.name\n  }\n)\n\n###Connection\nRelationalDatabaseConnection a::RC\n{\n  store: a::Db;\n  type: H2;\n  specification: LocalH2 {};\n  auth: DefaultH2;\n}\n",
+    "###Service\nService a::S\n{\n  pattern: '/people';\n  documentation: '';\n  autoActivateUpdates: true;\n  execution: Single\n  {\n    query: |a::Person.all()->graphFetch(#{ a::Person { name } }#)->serialize(#{ a::Person { name } }#);\n    mapping: a::M;\n    runtime: a::R;\n  }\n}\n",
 ];
 
 fn request(code: &str) -> ModelRequest<'_> {

@@ -59,7 +59,7 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 | `legend-pure-parser-parser` | Recursive-descent parser; `SectionParser` / `IslandParser` / `EmbeddedDataParser` plug-in traits | ast, lexer |
 | `legend-pure-parser-protocol` | Protocol v1 model and AST ↔ protocol conversion; `IslandProtocol` / `EmbeddedDataProtocol` / `ElementProtocol` plug-in traits | ast, `serde_json`, `linkme` |
 | `legend-pure-parser-api` | Engine-facing contract: parse one section body (with engine line/column offsets) into protocol elements, or a whole model as the engine's `PureGrammarParser.parseModel` parses it (its section split and section index), or a `parser` / `unsupported` / `internal` error; `capabilities()` | parser, protocol |
-| `legend-pure-parser-jni` | JNI bridge: `liblegend_pure_rust_parser` (`cdylib` + `rlib` for aggregators) exporting `NativeGrammarParser.capabilities` / `parseSection` | api, dsl-connection, dsl-data, dsl-graph, dsl-mapping, dsl-relational, dsl-relational-snowflake, dsl-runtime, dsl-sql, dsl-store, dsl-tds, `jni` |
+| `legend-pure-parser-jni` | JNI bridge: `liblegend_pure_rust_parser` (`cdylib` + `rlib` for aggregators) exporting `NativeGrammarParser.capabilities` / `parseSection` | api, dsl-connection, dsl-data, dsl-graph, dsl-mapping, dsl-relational, dsl-relational-snowflake, dsl-runtime, dsl-service, dsl-sql, dsl-store, dsl-tds, `jni` |
 | `legend-pure-dsl-connection` | The `###Connection` section: connections, each value read by the grammar its type names, the core's model connections built in (parser + protocol) | ast, lexer, parser, protocol |
 | `legend-pure-dsl-data` | The `###Data` section: data elements and their data for other elements (parser + protocol) | ast, lexer, parser, protocol |
 | `legend-pure-dsl-mapping` | The `###Mapping` section: mappings, their includes and tests, and the plug-in grammars of mapping element bodies and legacy test inputs (parser + protocol) | ast, lexer, parser, protocol |
@@ -68,6 +68,7 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 | `legend-pure-dsl-relational` | The relational store: the `###Relational` section (databases), `Relational #{…}#` test data, `Relational` mapping elements and test input, `RelationalDatabaseConnection` with its specifications, and the `###QueryPostProcessor` section's relational mappers (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection |
 | `legend-pure-dsl-relational-snowflake` | The relational store's Snowflake extension: its datasource specification, authentication strategy and local mode in relational connections | dsl-relational |
 | `legend-pure-dsl-runtime` | The `###Runtime` section: runtimes, their mappings and connections, and the runtimes services hold (parser + protocol) | ast, lexer, parser, protocol, dsl-connection |
+| `legend-pure-dsl-service` | The engine's service extension: the `###Service` section's services (executions, test suites, legacy tests, post-validations) and execution environments (parser + protocol) | ast, lexer, parser, protocol, dsl-runtime |
 | `legend-pure-dsl-sql` | SQL expression island `#SQL{…}#`, its text kept as written (parser + protocol) | ast, parser, protocol |
 | `legend-pure-dsl-tds` | TDS literal island `#TDS{…}#`, its CSV body kept as written (parser + protocol) | ast, parser, protocol |
 

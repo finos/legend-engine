@@ -185,7 +185,9 @@
         "legend-engine-xt-tds-compiler",
         "legend-engine-xt-relationalStore-grammar",
         "legend-engine-xt-relationalStore-snowflake-grammar",
-        "legend-engine-xt-relationalStore-emit"
+        "legend-engine-xt-relationalStore-emit",
+        "legend-engine-language-pure-dsl-service",
+        "legend-engine-xt-service-emit"
       ]
     }
   ]

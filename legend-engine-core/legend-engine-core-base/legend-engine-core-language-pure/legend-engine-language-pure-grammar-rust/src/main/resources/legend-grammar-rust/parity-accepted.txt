@@ -24,3 +24,5 @@ model-fe6e65a949eb3b6f  accepted: the model holding 88cf7500ed300bc6
 9a8a59921140adf0  accepted: an element left open at the end of input, as 88cf7500ed300bc6
 model-d7753c8945376cf2  accepted: the model holding 9a8a59921140adf0
 unlinked:relational-query-generation-config:UnknownConfig  accepted: the engine rejects a query generation config of type `UnknownConfig`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+unlinked:embedded-data:Unknown  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+unlinked:test-assertion:Unknown  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section

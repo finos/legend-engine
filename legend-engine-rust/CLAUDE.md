@@ -35,6 +35,7 @@ How converters write protocol JSON: [docs/protocol-json.md](docs/protocol-json.m
 | `dsl-mapping` | The `###Mapping` section: read whole first (its grammar), then walked, as the engine does, so section syntax errors come before errors inside element bodies. Element bodies and legacy test inputs are plug-in grammars (`grammar.rs`), keyed by type; an unlinked type is unsupported |
 | `dsl-connection` | The `###Connection` section, read whole first, then each value by the grammar its type names (`grammar.rs`'s `ConnectionValueGrammar`; the core's model connections in `model.rs`, a store's registered by its crate); `parse_embedded_connection` reads a runtime's own `#{ Type { … } }#` |
 | `dsl-runtime` | The `###Runtime` section (`Runtime`, `SingleConnectionRuntime`), walked as the engine does: runtimes before single connection ones, a store kept only with connections, its own connections read by `dsl-connection`; `parse_embedded_runtime` reads a service's own `#{ … }#` |
+| `dsl-service` | The engine's service extension: the `###Service` section's services and execution environments, read whole first (queries and test values parsed as its grammar does), then walked in the engine walker's order; runtimes of its own read by `dsl-runtime`, test data and assertions by the parser's grammars |
 | `dsl-relational-snowflake` | The relational store's Snowflake extension: the `Snowflake` datasource specification, the `SnowflakePublic` authentication strategy (`dsl-relational`'s `FieldGrammar`s) and its local mode |
 
 ## Build & Test

@@ -63,6 +63,7 @@ use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
+use legend_pure_dsl_service as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
