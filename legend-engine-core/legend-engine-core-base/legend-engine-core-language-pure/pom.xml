@@ -33,6 +33,7 @@
         <module>legend-engine-language-pure-compiler-http-api</module>
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-http-api</module>
+        <module>legend-engine-language-pure-grammar-rust</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
         <module>legend-engine-language-pure-modelManager-sdlc-http-api</module>
