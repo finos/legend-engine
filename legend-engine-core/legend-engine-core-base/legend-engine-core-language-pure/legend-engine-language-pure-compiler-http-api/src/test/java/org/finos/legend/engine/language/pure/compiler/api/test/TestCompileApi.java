@@ -409,9 +409,9 @@ public class TestCompileApi
     }
 
     @Test
-    public void testErrorDefectIsReturnedAsDefectByDefault() throws JsonProcessingException
+    public void testErrorDefectIsReturnedAsDefectWhenDisabled() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")));
+        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")), false);
         Response response = compileSimpleModel(api);
 
         Assert.assertEquals(200, response.getStatus());
@@ -421,9 +421,9 @@ public class TestCompileApi
     }
 
     @Test
-    public void testErrorDefectFailsCompilationWhenEnabled() throws JsonProcessingException
+    public void testErrorDefectFailsCompilationByDefault() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")), true);
+        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")));
         Response response = compileSimpleModel(api);
 
         Assert.assertEquals(400, response.getStatus());
@@ -434,9 +434,9 @@ public class TestCompileApi
     }
 
     @Test
-    public void testWarningDefectDoesNotFailCompilationWhenEnabled() throws JsonProcessingException
+    public void testWarningDefectDoesNotFailCompilationByDefault() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Warning(new SourceInformation("src", 2, 3, 2, 9), "a warning")), true);
+        Compile api = new Compile(modelManagerAddingDefects(new Warning(new SourceInformation("src", 2, 3, 2, 9), "a warning")));
         Response response = compileSimpleModel(api);
 
         Assert.assertEquals(200, response.getStatus());
