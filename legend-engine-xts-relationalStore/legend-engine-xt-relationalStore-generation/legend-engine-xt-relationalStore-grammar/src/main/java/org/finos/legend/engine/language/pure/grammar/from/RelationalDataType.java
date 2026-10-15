@@ -21,6 +21,7 @@ public enum RelationalDataType
     BINARY,
     VARBINARY,
     BIT,
+    BOOLEAN,
     INT,
     INTEGER,
     BIGINT,

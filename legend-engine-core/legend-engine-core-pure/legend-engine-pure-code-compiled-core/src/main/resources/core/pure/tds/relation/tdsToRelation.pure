@@ -230,7 +230,8 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
       swap(limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(take_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(distinct_TabularDataSet_1__TabularDataSet_1_, distinct_Relation_1__Relation_1_, $a, $extensions),
-      swap(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, concatenate_Relation_1__Relation_1__Relation_1_, $a, $extensions)
+      swap(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, unionAll_Relation_1__Relation_1__Relation_1_, $a, $extensions),
+      swap(union_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, union_Relation_1__Relation_1__Relation_1_, $a, $extensions)
     ])->concatenate(getExtensions($a, $extensions))->getValue($func, | defaultTransform($func, $a, $extensions))->eval();
 }
 

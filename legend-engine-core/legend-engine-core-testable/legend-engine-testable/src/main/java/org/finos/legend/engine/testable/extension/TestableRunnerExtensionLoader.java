@@ -71,6 +71,11 @@ public class TestableRunnerExtensionLoader
         return extensions(classLoader).stream().collect(Collectors.toMap(TestableRunnerExtension::getSupportedClassifierPath, Function.identity()));
     }
 
+    public static TestableRunnerExtension getExtensionForElement(PackageableElement element)
+    {
+        return getExtensionsForElement(element, getCurrentThreadClassLoader());
+    }
+
     private static TestableRunnerExtension getExtensionsForElement(PackageableElement element, ClassLoader classLoader)
     {
         return extensions(classLoader).stream()

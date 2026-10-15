@@ -1,0 +1,270 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Dates compared with plain DATE and TIMESTAMP columns rather than used for
+// milestoning.
+
+###Service
+// A calendar date compared with a DATE column.
+Service demo::dates::service::TradesOnDateLiteral
+{
+  pattern: '/api/dates/trades/on';
+  documentation: 'Trades made on a date, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::dates::Trade.all()->filter(t|$t.tradeDate == %2025-07-02)->sortBy(t|$t.id)->project([t|$t.id, t|$t.tradeDate], ['Id', 'Trade Date']);
+    mapping: demo::dates::TradingMapping;
+    runtime: demo::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":2,"Trade Date":"2025-07-02"},{"Id":3,"Trade Date":"2025-07-02"},{"Id":4,"Trade Date":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::dates::service::TradesOnDateParameter
+{
+  pattern: '/api/dates/trades/on/{tradeDate}';
+  documentation: 'Trades made on a date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {tradeDate: StrictDate[1]|demo::dates::Trade.all()->filter(t|$t.tradeDate == $tradeDate)->sortBy(t|$t.id)->project([t|$t.id, t|$t.tradeDate], ['Id', 'Trade Date'])};
+    mapping: demo::dates::TradingMapping;
+    runtime: demo::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            tradeDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":2,"Trade Date":"2025-07-02"},{"Id":3,"Trade Date":"2025-07-02"},{"Id":4,"Trade Date":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        },
+        thirdOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            tradeDate = %2025-07-03
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":5,"Trade Date":"2025-07-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A date-time compared with a TIMESTAMP column, and the matching
+// timestamps read back. With no zone named, both are the wall clock.
+Service demo::dates::service::TradesExecutedBeforeLiteral
+{
+  pattern: '/api/dates/trades/before';
+  documentation: 'Trades executed before a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::dates::Trade.all()->filter(t|$t.executedAt < %2025-07-02T15:00:00+0000)->sortBy(t|$t.id)->project([t|$t.id, t|$t.executedAt], ['Id', 'Executed At']);
+    mapping: demo::dates::TradingMapping;
+    runtime: demo::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T16:00:00.000000000+0000"},{"Id":2,"Executed At":"2025-07-02T09:00:00.000000000+0000"},{"Id":3,"Executed At":"2025-07-02T10:45:00.000000000+0000"},{"Id":4,"Executed At":"2025-07-02T13:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::dates::service::TradesExecutedBeforeParameter
+{
+  pattern: '/api/dates/trades/before/{cutoff}';
+  documentation: 'Trades executed before a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|demo::dates::Trade.all()->filter(t|$t.executedAt < $cutoff)->sortBy(t|$t.id)->project([t|$t.id, t|$t.executedAt], ['Id', 'Executed At'])};
+    mapping: demo::dates::TradingMapping;
+    runtime: demo::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T16:00:00.000000000+0000"},{"Id":2,"Executed At":"2025-07-02T09:00:00.000000000+0000"},{"Id":3,"Executed At":"2025-07-02T10:45:00.000000000+0000"},{"Id":4,"Executed At":"2025-07-02T13:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T16:00:00.000000000+0000"},{"Id":2,"Executed At":"2025-07-02T09:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

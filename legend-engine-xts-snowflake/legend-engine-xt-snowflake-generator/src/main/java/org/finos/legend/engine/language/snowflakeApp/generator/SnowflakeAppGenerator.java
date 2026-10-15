@@ -75,8 +75,15 @@ public class SnowflakeAppGenerator
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
-            String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
+            // Non-native specs (e.g. a Lakehouse-backed Snowflake connection) don't carry a literal
+            // account/region, so the deployed-location link can't be computed until the connection is
+            // actually resolved at deploy time; leave it blank rather than failing generation/validation.
+            String deployedLocation = "";
+            if (connection.datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+            {
+                SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification) connection.datasourceSpecification;
+                deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
+            }
             return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, actionContents, sdlc);
         }
         return new SnowflakeAppArtifact(content, actionContents, sdlc);

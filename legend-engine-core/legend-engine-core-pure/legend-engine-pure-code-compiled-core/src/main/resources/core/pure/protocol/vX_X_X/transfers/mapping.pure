@@ -350,9 +350,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
          // The Pure metamodel only carries `valueFn`; the engine protocol carries both
          // `column` (the legacy bare-column form `propName: COL`) and `valueFn` (the
-         // inline expression form `propName: $src.A + $src.B`) as mutually-exclusive
+         // inline expression form `propName: $row.A + $row.B`) as mutually-exclusive
          // nullable fields.  We always emit `valueFn` here — the engine SecondPass
-         // already lowers the bare-column form to `{| $src.COL}` during compilation, so
+         // already lowers the bare-column form to `{| $row.COL}` during compilation, so
          // round-tripping through `valueFn` is lossless and avoids the brittle
          // pattern-match needed to recover the legacy `column` shape from a compiled
          // lambda.

@@ -23,6 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::hive:
 
    ^DbExtension(
       nullOrderingSupport = nullsLowWithClauseSupport(),
+      setOperationSupport = unionOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,

@@ -1,0 +1,18 @@
+{
+  "name": "core_external_query_sql_e2e",
+  "pattern": "((meta::external::query::sql::e2e)|(e2e))(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_store",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "core",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core_functions_relation",
+    "core_functions_variant",
+    "core_relational",
+    "core_external_store_relational_postgres_sql_parser",
+    "core_external_query_sql"
+  ]
+}

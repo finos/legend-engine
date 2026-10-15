@@ -43,12 +43,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       aliasLimit = 255,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::snowflake::processGenerateSeriesForSnowflake_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       windowColumnProcessor = processWindowColumnForSnowflake_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -155,7 +157,12 @@ function meta::relational::functions::sqlQueryToString::snowflake::tabularFuncti
 
 function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
 {
-   'table(' + meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor($schema, $functionName, $args, $sgc) + ')';
+   let renderedArgs = $args.value->map(v | $v->match([
+      ll:LiteralList[1] | 'ARRAY_CONSTRUCT(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
+      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+   ]))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   'table(' + $qualified + '(' + $renderedArgs + '))';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
@@ -364,7 +371,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     // Typing an extraction as ARRAY(VARIANT) means a transform whose body extracts an array
     // produces ARRAY(ARRAY(VARIANT)), which ARRAY_FLATTEN refuses. Widening to a plain ARRAY
     // first is what it accepts, and the elements stay VARIANT either way.
-    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(cast(%s as ARRAY))')),  
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(cast(%s as ARRAY))')),
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_cat(%s, %s)')), 
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
@@ -599,7 +606,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    let processedOperand = $s.operand->processOperation($sgc);
 
    let elementAccess = $processedOperand + $s->match([
-      p: SemiStructuredPropertyAccess[1]     | '[\'' + $p.property->cast(@Literal).value->cast(@String) + '\']' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+      p: SemiStructuredPropertyAccess[1]     | '[' + $p.property->processOperation($sgc) + ']' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
       a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
    ]);
 
@@ -948,4 +955,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(0).type),
       $lambda.body->processOperation($sgc)
    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processGenerateSeriesForSnowflake(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select value::bigint as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from table(flatten(input => array_generate_range(' + [$g.start, $g->meta::relational::functions::pureToSqlQuery::metamodel::exclusiveStop(), $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + '))))';
 }

@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The store has no type for a zoned timestamp, so it declares the column as a
+// TIMESTAMP. The table the connections create holds it as a TIMESTAMP WITH TIME
+// ZONE, and that is the type the database reports when the column is read.
+
+###Pure
+Class demo::Reading
+{
+  id: Integer[1];
+  recordedAt: DateTime[0..1];
+}
+
+###Relational
+Database demo::store::ReadingDB
+(
+  Table readingTable
+  (
+    id INTEGER PRIMARY KEY,
+    recordedAt TIMESTAMP
+  )
+)
+
+###Mapping
+Mapping demo::ReadingMapping
+(
+  *demo::Reading: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ReadingDB]readingTable.id
+    )
+    ~mainTable [demo::store::ReadingDB]readingTable
+    id: [demo::store::ReadingDB]readingTable.id,
+    recordedAt: [demo::store::ReadingDB]readingTable.recordedAt
+  }
+)

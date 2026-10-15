@@ -16,11 +16,16 @@ package org.finos.legend.engine.language.snowflakeApp.generator.test;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -107,5 +112,35 @@ public class TestSnowflakeAppGenerator
         String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.My_Deployment_Schema.UDTFWITHDEPLOYMENTSCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertNull(((SnowflakeAppContent) artifact.content).grantStatement);
+    }
+
+    /**
+     * A non-native datasource specification (e.g. a Lakehouse-backed Snowflake connection, which
+     * carries a logical environment rather than a literal account/region) must not fail generation -
+     * it simply can't contribute to the cosmetic deployed-location URL.
+     */
+    @Test
+    public void testNonNativeDatasourceSpecificationDoesNotFailGeneration()
+    {
+        givenDeploymentConnectionHasNonNativeDatasourceSpecification();
+        SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::App1", this.pureModel);
+        Assert.assertEquals("", artifact.deployedLocation);
+    }
+
+    private void givenDeploymentConnectionHasNonNativeDatasourceSpecification()
+    {
+        PackageableConnection deploymentConnection = Lists.mutable.withAll(this.contextData.getElementsOfType(PackageableConnection.class))
+                .select(c -> c.getPath().equals("demo::connections::DeploymentConnection"))
+                .getFirst();
+        ((RelationalDatabaseConnection) deploymentConnection.connectionValue).datasourceSpecification = new NonNativeDatasourceSpecification();
+    }
+
+    private static class NonNativeDatasourceSpecification extends DatasourceSpecification
+    {
+        @Override
+        public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
+        {
+            return null;
+        }
     }
 }

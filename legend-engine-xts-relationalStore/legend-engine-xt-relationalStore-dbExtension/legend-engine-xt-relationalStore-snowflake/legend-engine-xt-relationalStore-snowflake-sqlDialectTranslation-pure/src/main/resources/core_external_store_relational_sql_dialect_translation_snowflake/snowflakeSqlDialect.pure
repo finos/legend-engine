@@ -78,6 +78,26 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     pair(
+      'SQLStructureTests - ExceptAll',
+      '[unsupported-api] EXCEPT ALL is not supported for Database Type: Snowflake'
+    ),
+    pair(
+      'SQLStructureTests - IntersectAll',
+      '[unsupported-api] INTERSECT ALL is not supported for Database Type: Snowflake'
+    ),
+    pair(
+      'FuncTests - generate_series(0/2)',
+      'Snowflake SQL Dialect does not support the function - generate_series'
+    ),
+    pair(
+      'FuncTests - generate_series(1/2)',
+      'Snowflake SQL Dialect does not support the function - generate_series'
+    ),
+    pair(
+      'FuncTests - generate_series(2/2)',
+      'Snowflake SQL Dialect does not support the function - generate_series'
+    ),
+    pair(
       // https://docs.snowflake.com/en/sql-reference/functions-date-time#supported-date-and-time-parts
       'FuncTests - date_part(6/6)',
       'Snowflake doesn\'t support millisecond extraction in date_part'
@@ -214,10 +234,13 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
+    tableFunctionProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
     asOfJoinProcessorForSnowflake(),
     unionProcessor_default(),
+    exceptProcessor_distinctOnly(),
+    intersectProcessor_distinctOnly(),
     queryWithScopeProcessor_default(),
     tableSubqueryProcessor_default(),
     extendedQuerySpecificationProcessor_default()

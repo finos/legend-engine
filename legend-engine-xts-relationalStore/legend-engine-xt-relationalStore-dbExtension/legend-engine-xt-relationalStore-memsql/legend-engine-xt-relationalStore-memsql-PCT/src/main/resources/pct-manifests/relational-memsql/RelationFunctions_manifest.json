@@ -76,8 +76,14 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_relational_memsql/relational/sqlQueryToString/memSQLExtension.pure line:341 column:155), \"Cast exception: TableAliasColumn cannot be cast to Literal\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
@@ -530,7 +536,7 @@
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
-    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
@@ -993,5 +999,89 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_ThreeValued_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NoNulls_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_And_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_MixedWithScalarComparison_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_InExtend_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::except::testExcept_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] EXCEPT ALL is not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersect::testIntersect_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT ALL is not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_FilterExtend_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_NegativeStep_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_SingleValue_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Step_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] generateSeries is not supported for Database Type: MemSQL\""
   } ]
 }

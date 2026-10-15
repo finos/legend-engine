@@ -23,6 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spark
 
    ^DbExtension(
       nullOrderingSupport = nullsLowWithClauseSupport(),
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = false,
       collectionThresholdLimit = 250000,
       aliasLimit = 255,

@@ -95,6 +95,7 @@ Apply the rule from `emit.md` §3.2:
 | Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relational-emit-models/`, run by `RelationalEMITTests` |
 | Relation (`~func`) function-based class mapping — `ClassName: Relation { ~func f():Relation<Any>[1]; ... }` | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relation-emit-models/`, run by `RelationEMITTests` |
 | Service shapes — multi-execution, test data shared between services, and the deprecated `test: Single` block on a Service (Phase 5's legacy service test runner) | `legend-engine-xts-service/legend-engine-xt-service-emit`, under `src/test/resources/emit-models/`, run by `ServiceEMITTests` |
+| A Service over an M2M mapping | `legend-engine-xts-service/legend-engine-xt-service-emit`, as above. `legend-engine-core-emit-tests` has no service test runner, and giving it one would make a core module depend on `legend-engine-xts-service` |
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
 | Flat-data store | `legend-engine-xts-flatdata/legend-engine-xt-flatdata-emit` |

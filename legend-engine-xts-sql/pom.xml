@@ -32,5 +32,6 @@
         <module>legend-engine-xt-sql-http-api</module>
         <module>legend-engine-xt-sql-transformation</module>
         <module>legend-engine-xt-sql-e2e-tests</module>
+        <module>legend-engine-xt-sql-e2e-pure</module>
     </modules>
 </project>

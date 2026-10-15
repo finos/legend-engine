@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::external::query::sql::*;
 import meta::external::query::sql::transformation::utils::*;
@@ -53,10 +54,61 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
         }),
         aggregate('unique_value_only', Any, {args, fc, expCtx, ctx |
             sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
-        })
+        }),
+        aggregate('max_by', Any, {args, fc, expCtx, ctx |
+            let valueType = $args->at(0).genericType.typeArguments->at(0);
+
+            let func = if ($args->size() == 1, | meta::pure::functions::math::maxBy_RowMapper_MANY__T_$0_1$_, | meta::pure::functions::math::maxBy_RowMapper_MANY__Integer_1__T_MANY_);
+
+            let maxByExpr = sfe($func, $valueType, $valueType, $args);
+
+            if ($args->size() == 1, | $maxByExpr, | sfe(meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_, [$maxByExpr]));
+        }, minMaxByPreprocessor_Expression_1__FunctionCall_1__SqlTransformContext_1__AggregateFunctionPreProcessorWrapper_1_),
+        aggregate('min_by', Any, {args, fc, expCtx, ctx |
+            let valueType = $args->at(0).genericType.typeArguments->at(0);
+
+            let func = if ($args->size() == 1, | meta::pure::functions::math::minBy_RowMapper_MANY__T_$0_1$_, | meta::pure::functions::math::minBy_RowMapper_MANY__Integer_1__T_MANY_);
+
+            let minByExpr = sfe($func, $valueType, $valueType, $args);
+
+            if ($args->size() == 1, | $minByExpr, | sfe(meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_, [$minByExpr]));
+        }, minMaxByPreprocessor_Expression_1__FunctionCall_1__SqlTransformContext_1__AggregateFunctionPreProcessorWrapper_1_)
       ]
     )
   )
+}
+
+function meta::external::query::sql::transformation::queryToPure::minMaxByPreprocessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
+{
+  assertRelation($context.relation, 'minBy/maxBy');
+  assert($aggregate.arguments->size() == 2 || $aggregate.arguments->size() == 3, | 'min_by/max_by expects either 2 or 3 args');
+  unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported for min_by/max_by');
+  unsupported($aggregate.filter->isEmpty(), | 'aggregate filter not supported for min_by/max_by');
+  unsupported($aggregate.group->isEmpty(), | 'within group not supported for min_by/max_by');
+
+  let valueVs = processMapFunctionArgument($aggregate.arguments->at(0), $context)->evaluateAndDeactivate();
+  let orderVs = processMapFunctionArgument($aggregate.arguments->at(1), $context)->evaluateAndDeactivate();
+
+  let rowMapperType = ^GenericType(
+    rawType = meta::pure::functions::math::mathUtility::RowMapper,
+    typeArguments = [$valueVs.genericType, $orderVs.genericType]
+  );
+
+  let rowMapperVs = sfe(
+    meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_,
+    $rowMapperType,
+    [$valueVs.genericType, $orderVs.genericType],
+    [$valueVs, $orderVs]
+  );
+
+  let singleArgAggregate = $column->walk([
+    f:FunctionCall[1] | ^$f(arguments = $f.arguments->first()->concatenate(if ($f.arguments->size() == 3, | $f.arguments->last(), | [])))
+  ])->toOne();
+
+  ^AggregateFunctionPreProcessorWrapper(
+    mapValueSpecification = $rowMapperVs,
+    aggregate = $singleArgAggregate->replaceAggregateArguments($context)
+  );
 }
 
 function meta::external::query::sql::mapDuration(durationUnit:String[1]):DurationUnit[1]

@@ -982,6 +982,70 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   );
 }
 
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testExceptProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let q1 = ^QuerySpecification(
+    select = ^Select(selectItems = [^AllColumns(prefix = '"root"')]),
+    from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_a'])), alias = '"root"')
+  );
+
+  let q2 = ^QuerySpecification(
+    select = ^Select(selectItems = [^AllColumns(prefix = '"root"')]),
+    from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_b'])), alias = '"root"')
+  );
+
+  let e1 = ^Except(left = $q1, right = $q2);
+  assertEquals(
+    'SELECT "root".* FROM db.schema.table_a AS "root" ' +
+    'EXCEPT ALL ' +
+    'SELECT "root".* FROM db.schema.table_b AS "root"',
+    $dialect->executeNodeProcessor($e1, $state, $config)
+  );
+
+  assertEquals(
+    'SELECT "root".* FROM db.schema.table_a AS "root" ' +
+    'EXCEPT ' +
+    'SELECT "root".* FROM db.schema.table_b AS "root"',
+    $dialect->executeNodeProcessor(^$e1(distinct = true), $state, $config)
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testIntersectProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let q1 = ^QuerySpecification(
+    select = ^Select(selectItems = [^AllColumns(prefix = '"root"')]),
+    from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_a'])), alias = '"root"')
+  );
+
+  let q2 = ^QuerySpecification(
+    select = ^Select(selectItems = [^AllColumns(prefix = '"root"')]),
+    from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_b'])), alias = '"root"')
+  );
+
+  let i1 = ^Intersect(left = $q1, right = $q2);
+  assertEquals(
+    'SELECT "root".* FROM db.schema.table_a AS "root" ' +
+    'INTERSECT ALL ' +
+    'SELECT "root".* FROM db.schema.table_b AS "root"',
+    $dialect->executeNodeProcessor($i1, $state, $config)
+  );
+
+  assertEquals(
+    'SELECT "root".* FROM db.schema.table_a AS "root" ' +
+    'INTERSECT ' +
+    'SELECT "root".* FROM db.schema.table_b AS "root"',
+    $dialect->executeNodeProcessor(^$i1(distinct = true), $state, $config)
+  );
+}
+
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testQueryProcessing(): Boolean[1]
 {
   let dialect = testDialect();

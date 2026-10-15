@@ -71,3 +71,37 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       }, false
   )
 }
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMaxBy():Boolean[1]
+{
+  test(
+    'SELECT StrictDate, ' +
+    'core_max_by(String, Integer) as MaxBy, ' +
+    'core_max_by(String, Integer, 3) as MaxBy2 ' +
+    'FROM service."/service/service1" group by StrictDate',
+
+    c({| FlatInput.all()
+          ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+          ->groupBy(~[StrictDate], ~[
+            MaxBy : x|meta::pure::functions::math::mathUtility::rowMapper($x.String, $x.Integer) : y|$y->maxBy(),
+            MaxBy2 : x|meta::pure::functions::math::mathUtility::rowMapper($x.String, $x.Integer) : y|$y->maxBy(3)->meta::pure::functions::variant::convert::toVariant()
+          ])}, true, false)
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMinBy():Boolean[1]
+{
+  test(
+    'SELECT StrictDate, ' +
+    'core_min_by(String, Integer) as MinBy, ' +
+    'core_min_by(String, Integer, 3) as MinBy2 ' +
+    'FROM service."/service/service1" group by StrictDate',
+
+    c({| FlatInput.all()
+          ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+          ->groupBy(~[StrictDate], ~[
+            MinBy : x|meta::pure::functions::math::mathUtility::rowMapper($x.String, $x.Integer) : y|$y->minBy(),
+            MinBy2 : x|meta::pure::functions::math::mathUtility::rowMapper($x.String, $x.Integer) : y|$y->minBy(3)->meta::pure::functions::variant::convert::toVariant()
+          ])}, true, false)
+  )
+}

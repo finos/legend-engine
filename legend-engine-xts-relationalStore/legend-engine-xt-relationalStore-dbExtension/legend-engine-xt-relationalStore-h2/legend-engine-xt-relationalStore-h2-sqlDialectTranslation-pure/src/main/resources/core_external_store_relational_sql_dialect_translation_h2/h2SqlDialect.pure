@@ -76,6 +76,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     pair(
+      'SQLStructureTests - ExceptAll',
+      '[unsupported-api] EXCEPT ALL is not supported for Database Type: H2'
+    ),
+    pair(
+      'SQLStructureTests - IntersectAll',
+      '[unsupported-api] INTERSECT ALL is not supported for Database Type: H2'
+    ),
+    pair(
       'FuncTests - average_rank(0/0)',
       'H2 SQL Dialect does not support the function - average_rank'
     ),
@@ -180,7 +188,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
+    tableFunctionProcessor_default(),
     unionProcessor_default(),
+    exceptProcessor_distinctOnly(),
+    intersectProcessor_distinctOnly(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default(),
     joinProcessorForH2(),
@@ -333,6 +344,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Tanh, simpleFunctionProcessor('tanh')),
     pair(Power, simpleFunctionProcessor('power')),
     pair(Sign, simpleFunctionProcessor('sign')),
+    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::GenerateSeries, simpleFunctionProcessor('system_range')),
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
@@ -931,12 +943,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::semiStructuredPathAccessForH2(elementAccess: String[1], property: String[1]): String[1]
 {
-  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2($property->substring(1, $property->length()-1))); // remove double quotes
+  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2('\'' + $property->substring(1, $property->length()-1) + '\'')); // remove double quotes
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::semiStructuredPropertyAccessForH2(elementAccess: String[1], property: String[1]): String[1]
 {
-  format('legend_h2_extension_json_navigate(%s, \'%s\', null)', [$elementAccess, $property]);
+  format('legend_h2_extension_json_navigate(%s, %s, null)', [$elementAccess, $property]);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::semiStructuredArrayElementAccessForH2(elementAccess: String[1], index: String[1]): String[1]
@@ -1003,7 +1015,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
   let elementAccess = $s->match([
     p: SemiStructuredPropertyAccess[1] |
-      let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand, $sqlDialect->executeNodeProcessor($p.property, $state, $config)->removeQuotes($sqlDialect));
+      let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand, $sqlDialect->executeNodeProcessor($p.property, $state, $config));
       if ($p.index->isNotEmpty(),
         | semiStructuredArrayElementAccessForH2($propertyAccess, $sqlDialect->executeNodeProcessor($p.index->toOne(), $state, $config)),
         | $propertyAccess

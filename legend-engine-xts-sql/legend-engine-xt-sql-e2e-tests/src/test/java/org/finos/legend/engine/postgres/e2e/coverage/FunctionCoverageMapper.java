@@ -95,12 +95,12 @@ public class FunctionCoverageMapper
             {
                 return "PARTIAL";
             }
-            // None pass: distinguish ERROR (server exception) from FAIL (result mismatch)
+            // None pass: a result mismatch is a FAIL; all-errors means the function is unsupported
             if (tdsFail > 0)
             {
                 return "FAIL";
             }
-            return "ERROR";
+            return "UNSUPPORTED";
         }
 
         public String relStatus()
@@ -122,12 +122,12 @@ public class FunctionCoverageMapper
             {
                 return "PARTIAL";
             }
-            // None pass: distinguish ERROR (server exception) from FAIL (result mismatch)
+            // None pass: a result mismatch is a FAIL; all-errors means the function is unsupported
             if (relFail > 0)
             {
                 return "FAIL";
             }
-            return "ERROR";
+            return "UNSUPPORTED";
         }
     }
 
@@ -287,7 +287,8 @@ public class FunctionCoverageMapper
                 String args = sig.contains("(") && sig.contains(")")
                         ? sig.substring(sig.indexOf('(') + 1, sig.indexOf(')'))
                         : "";
-                String retType = sig.contains("?") ? sig.substring(sig.indexOf('?') + 2).trim() : "unknown";
+                int arrowIdx = sig.indexOf('\u2192');
+                String retType = arrowIdx >= 0 ? sig.substring(arrowIdx + 1).trim() : "unknown";
                 FunctionCatalogExtractor.PgFunction syntheticFn = new FunctionCatalogExtractor.PgFunction(
                         funcName, sig, args, retType, "f", category);
                 SignatureCoverage cov = entry.getValue();

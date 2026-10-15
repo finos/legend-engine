@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# install-pure-dev - install the pure-dev plugin into the local coding-agent config.
+#
+# Designed to be called non-interactively by workspace provisioning automation (or run by hand). It:
+#   1. runs the plugin preflight (symlinks the CLIs into ~/.local/bin),
+#   2. symlinks the plugin's skills into ~/.claude/skills and wires the auto-sync hook into the
+#      user settings - the mechanism-agnostic path that always works, and
+#   3. additionally registers this repo as a marketplace + enables the pure-dev plugin in
+#      ~/.claude/settings.json, for agents whose native plugin system will accept it.
+#
+# Step 2 is the DEFAULT, not a fallback. A managed/enterprise Claude Code install can refuse a
+# directory marketplace outright (e.g. a `strictKnownMarketplaces` policy allowing only a specific
+# marketplace URL), in which case step 3 is silently discarded and the native plugin path never
+# loads. Gating the skill symlinks behind an opt-in flag therefore left the install doing nothing at
+# all on those machines. Pass --no-link-skills only if you are deliberately consuming pure-dev as a
+# published plugin, so the hook is not registered twice.
+#
+# Idempotent. Safe to re-run any time.
+#
+# Flags:
+#   --no-link-skills  skip the ~/.claude/skills symlinks + settings.json hook (use when pure-dev is
+#                     installed as a real plugin from an allowed marketplace)
+set -euo pipefail
+
+MARKET_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root (this script lives in <root>/.claude-plugin)
+PLUGIN_ROOT="$MARKET_ROOT/plugins/pure-dev"
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+
+# Blanket Bash/Read/Write in permissions.allow is deliberately NOT written. It is a far larger grant
+# than a Pure dev loop needs, and on a managed install it may buy little or nothing if the deployment
+# already classifies/gates shell commands independently of permission rules. Either way an installer
+# should not be silently widening a user's permissions.
+LINK_SKILLS="${PURE_DEV_LINK_SKILLS:-1}"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-link-skills) LINK_SKILLS=0; shift ;;
+    --link-skills) LINK_SKILLS=1; shift ;;   # accepted for backwards compatibility; now the default
+    -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
+    *) echo "[install-pure-dev] unknown argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+echo "[install-pure-dev] marketplace: $MARKET_ROOT"
+echo "[install-pure-dev] plugin:      $PLUGIN_ROOT"
+
+# 1) Preflight: put the CLIs on PATH.
+bash "$PLUGIN_ROOT/bin/pure-dev-preflight"
+
+# 2) Register the marketplace + enable the plugin in settings.json (native plugin system).
+#    We write extraKnownMarketplaces (path) + enabledPlugins so a plugin-aware agent picks it up.
+SETTINGS="$CLAUDE_DIR/settings.json"
+mkdir -p "$CLAUDE_DIR"
+[[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
+python3 - "$SETTINGS" "$MARKET_ROOT" "$LINK_SKILLS" <<'PY'
+import json, os, sys, tempfile
+settings_path, market_root = sys.argv[1], sys.argv[2]
+link_skills = sys.argv[3] == "1"
+try:
+    s = json.load(open(settings_path))
+except Exception:
+    s = {}
+# No permissions.allow writes here - see the note at the top of this script. Anything already in
+# the user's permissions block is left exactly as it is; removing it is the user's call, not the
+# installer's.
+# Register the marketplace by local path (provisioning automation clones this repo to a fixed path).
+mk = s.setdefault("extraKnownMarketplaces", {})
+if isinstance(mk, dict):
+    mk["finos-legend-engine"] = {"source": {"source": "directory", "path": market_root}}
+ep = s.setdefault("enabledPlugins", {})
+if isinstance(ep, dict):
+    ep["pure-dev@finos-legend-engine"] = True
+# The PostToolUse auto-sync hook is ALREADY declared by the plugin itself (plugins/pure-dev/
+# hooks/hooks.json), so a plugin-aware agent loads it from there. Adding a second copy to
+# settings.json - which this script used to do unconditionally - makes the hook fire TWICE per
+# tool call, double-compiling every .pure edit. Only wire it here for agents without the native
+# plugin system (--link-skills); otherwise actively remove a copy an earlier run added, so
+# re-running self-heals a settings.json that is currently double-registered.
+HOOK_CMD = "pure-lsp-sync-hook"
+hooks = s.setdefault("hooks", {})
+if isinstance(hooks, dict):
+    ptu = hooks.setdefault("PostToolUse", [])
+    if isinstance(ptu, list):
+        ours = [e for e in ptu if HOOK_CMD in json.dumps(e)]
+        if link_skills:
+            if not ours:
+                ptu.append({
+                    "matcher": "Write|Edit|MultiEdit|Bash",
+                    "hooks": [{"type": "command", "command": HOOK_CMD}],
+                })
+                print("[install-pure-dev] added PostToolUse auto-sync hook to", settings_path)
+            else:
+                print("[install-pure-dev] PostToolUse auto-sync hook already present (idempotent skip)")
+        elif ours:
+            for e in ours:
+                ptu.remove(e)
+            print("[install-pure-dev] removed the duplicate settings.json copy of the PostToolUse hook "
+                  "(the plugin declares it; two copies made it fire twice per tool call)")
+        if not ptu:
+            hooks.pop("PostToolUse", None)
+
+# Write atomically: json.dump straight onto the real path truncates first, so a crash or a full
+# disk mid-write leaves the user with a destroyed global settings.json.
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(settings_path) or ".", prefix=".settings-", suffix=".json")
+try:
+    with os.fdopen(fd, "w") as f:
+        json.dump(s, f, indent=2)
+    os.replace(tmp, settings_path)
+except Exception:
+    os.path.exists(tmp) and os.unlink(tmp)
+    raise
+print("[install-pure-dev] wrote extraKnownMarketplaces + enabledPlugins to", settings_path)
+PY
+
+# 3) Skill symlinks - the DEFAULT install path (disable with --no-link-skills).
+#
+#    Step 2 registers the plugin, but that only takes effect if the agent's plugin system actually
+#    accepts a directory marketplace. Under a managed install with a restrictive marketplace
+#    allowlist it does not, and the registration is discarded without loading anything - so the
+#    skills must come from ~/.claude/skills or they do not come at all. Linking here is therefore
+#    the default. Turn it off with --no-link-skills when pure-dev IS installed as a real plugin from
+#    an allowed marketplace, otherwise every skill is registered twice and the sync hook fires twice.
+#
+#    Either way, always prune our own stale links first: this loop only ever created links, so a
+#    skill that gets renamed or deleted upstream left a permanently dangling entry behind. We only
+#    touch links that point into THIS plugin's skills dir - never anyone else's skills.
+SKILLS_DST="$CLAUDE_DIR/skills"
+mkdir -p "$SKILLS_DST"
+
+pruned_count=0
+for dest in "$SKILLS_DST"/*; do
+  [[ -L "$dest" ]] || continue
+  target="$(readlink "$dest")"
+  case "$target" in
+    "$PLUGIN_ROOT"/skills/*) ;;
+    *) continue ;;                       # not ours - leave alone
+  esac
+  # Prune if the target is gone, or if we are no longer in link-skills mode at all.
+  if [[ ! -e "$dest" || "$LINK_SKILLS" != "1" ]]; then
+    rm -f "$dest"
+    pruned_count=$((pruned_count + 1))
+  fi
+done
+[[ $pruned_count -gt 0 ]] && echo "[install-pure-dev] pruned $pruned_count stale/duplicate skill symlink(s) from $SKILLS_DST"
+
+if [[ "$LINK_SKILLS" == "1" ]]; then
+  #  Some agents materialize a discovered symlinked skill into a real directory copy on first use
+  #  (to snapshot content for the session) instead of leaving it a symlink. `ln -sfn` only replaces
+  #  an existing SYMLINK at the destination - against a real directory it nests the new symlink
+  #  INSIDE instead, silently leaving the stale copy in place as what's actually read. Detect that
+  #  case and remove the stale copy first so the destination is always a fresh symlink.
+  linked_count=0
+  for skill_dir in "$PLUGIN_ROOT"/skills/*/; do
+    name="$(basename "$skill_dir")"
+    dest="$SKILLS_DST/$name"
+    if [[ -e "$dest" && ! -L "$dest" ]]; then
+      rm -rf "$dest"
+    fi
+    ln -sfn "$skill_dir" "$dest"
+    linked_count=$((linked_count + 1))
+  done
+  echo "[install-pure-dev] linked $linked_count skills into $SKILLS_DST"
+else
+  echo "[install-pure-dev] skills come from the registered plugin (plugin.json); not symlinking into $SKILLS_DST."
+  echo "[install-pure-dev]   pass --link-skills if your agent has no native plugin system."
+fi
+
+echo "[install-pure-dev] done. Restart the agent to pick up the pure-dev plugin/skills."

@@ -135,3 +135,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::dynamic
   let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false,{l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@FunctionDefinition<Any>);
   $transformed->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
 }
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableUsingCTEInsideSqlExpressionOnPlanPath():Boolean[1]
+{
+  let sql = 'with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'';
+  let statement = parseSqlStatement($sql);
+  let sqlLambda = sqlToPure($statement->cast(@Query), getSources(), [], ^Map<String, ValueSpecification>(), false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@LambdaFunction<Any>);
+  let sqlExpression = ^meta::external::query::sql::expression::SQLExpression<Any>(sqlString = $sql, linkedStatement = $statement, pureFunction = $sqlLambda);
+  let evalLambda = ^$sqlLambda(expressionSequence = meta::external::query::sql::expression::extractFunctionFromSQLExpression($sqlExpression));
+
+  let extensions = meta::relational::extension::relationalExtensions();
+  let plan = meta::pure::executionPlan::executionPlan(wrapWithLambdaFrom($evalLambda, [], meta::external::store::relational::tests::testRuntime(meta::external::query::sql::transformation::queryToPure::tests::dynamic::db)), $extensions, noDebug());
+  assertEquals(
+    'with tab as (select "tb_0".n as "n" from tb as "tb_0") select "tab_0"."n" as "n" from tab as "tab_0" where "tab_0"."n" = \'a\'',
+    $plan.rootExecutionNode->meta::pure::executionPlan::allNodes($extensions)->filter(n|$n->instanceOf(meta::relational::mapping::SQLExecutionNode))->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery->toOne()
+  );
+}
+

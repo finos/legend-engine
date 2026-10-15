@@ -246,7 +246,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
         $fromData->concatenate($fromOtherElements);
     },
     {v: ViewSelectSQLQuery[1] | collection(true, [])},
-    {u: Union[1] | collection(true, [])},
+    {u: SetOperationQuery[1] | collection(true, [])},
     {a: TableAlias[1] | collection(true, [])}, // Not recursing on relational element, as it will happen from data
     {a: Alias[1] | $a.relationalElement->extractRelationalElements($recurseSubQueries)},
     {t: Table[1] | collection(true, [])},
@@ -271,6 +271,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
     {s: SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayFlatten[1] | $s.navigation->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayFlattenRelation[1] | $s.navigation->extractRelationalElements($recurseSubQueries)},
+    {g: GenerateSeriesRelation[1] | [$g.start, $g.stop, $g.step]->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->extractRelationalElements($recurseSubQueries)},
     {a: Any[*] | /*println('Encountered unknown element of type: ' +  $el->type()->elementToPath());*/ collection(false, []);}
   ]);
@@ -281,7 +282,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
 {
   let aliasResults = $rn.alias->extractRelationalElements($recurseSubQueries);
   let relElementResults = $rn.alias.relationalElement->match([
-    u: Union[1] | collection(true, $u)->concatenate(if($recurseSubQueries, | $u.queries->extractRelationalElements($recurseSubQueries), | [])),
+    u: SetOperationQuery[1] | collection(true, $u)->concatenate(if($recurseSubQueries, | $u.queries->extractRelationalElements($recurseSubQueries), | [])),
     v: ViewSelectSQLQuery[1] | collection(true, $v)->concatenate(if($recurseSubQueries, | $v.selectSQLQuery->extractRelationalElements($recurseSubQueries), | [])),
     s: SelectSQLQuery[1] | collection(true, $s)->concatenate(if($recurseSubQueries, | $s->extractRelationalElements($recurseSubQueries), | [])),
     t: Table[1] | collection(true, $t),

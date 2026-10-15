@@ -1,0 +1,75 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Business dates on PRODUCT are calendar dates, so its columns are DATE. Every
+// other milestoning column is a TIMESTAMP, which is what a processing dimension
+// records in practice, and what RATING uses for both of its dimensions. A
+// TIMESTAMP holds a wall clock with no zone, so a time zone named on a
+// connection decides which moment each of these columns stands for.
+
+###Relational
+Database demo::dates::store::TradingDB
+(
+  Table PRODUCT
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FROM_Z DATE PRIMARY KEY,
+    THRU_Z DATE NOT NULL
+  )
+
+  Table ACCOUNT
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    STATUS VARCHAR(20) NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL
+  )
+
+  Table RATING
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ISSUER VARCHAR(100) PRIMARY KEY,
+    GRADE VARCHAR(10) NOT NULL,
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP NOT NULL,
+    FROM_Z TIMESTAMP PRIMARY KEY,
+    THRU_Z TIMESTAMP NOT NULL
+  )
+
+  Table TRADE
+  (
+    ID INTEGER PRIMARY KEY,
+    PRODUCT_ID INTEGER NOT NULL,
+    ACCOUNT_ID INTEGER NOT NULL,
+    TRADE_DATE DATE NOT NULL,
+    EXECUTED_AT TIMESTAMP NOT NULL,
+    QUANTITY INTEGER NOT NULL
+  )
+
+  Join Trade_Product(TRADE.PRODUCT_ID = PRODUCT.ID)
+  Join Trade_Account(TRADE.ACCOUNT_ID = ACCOUNT.ID)
+)

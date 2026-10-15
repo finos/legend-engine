@@ -109,9 +109,9 @@ Mapping inheritance::relationFunctionMapping::H2Mapping
   *inheritance::model::Person: Relation 
   {
     ~func inheritance::personFunction():Relation<Any>[1]
-    firstName: $src.FIRSTNAME->toOne(),
-    lastName: $src.LASTNAME->toOne(),
-    firm: Binding inheritance::store::FirmBinding : $src.FIRM_DETAILS->toOne()
+    firstName: $row.FIRSTNAME->toOne(),
+    lastName: $row.LASTNAME->toOne(),
+    firm: Binding inheritance::store::FirmBinding : $row.FIRM_DETAILS->toOne()
   }
 )
 

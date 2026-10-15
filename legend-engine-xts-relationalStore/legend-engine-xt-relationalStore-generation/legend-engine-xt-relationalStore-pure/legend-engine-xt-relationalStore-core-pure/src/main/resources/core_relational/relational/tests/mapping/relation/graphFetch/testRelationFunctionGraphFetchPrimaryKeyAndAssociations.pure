@@ -1,0 +1,881 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::pk::PkDB
+(
+  Table RFGF_PK_FIRM
+  (
+    ID INTEGER PRIMARY KEY,
+    CODE VARCHAR(10) NOT NULL,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_PK_PERSON
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL,
+    FIRMID INTEGER NOT NULL,
+    MANAGERID INTEGER
+  )
+
+  Table RFGF_PK_ACCOUNT
+  (
+    BRANCH VARCHAR(10) NOT NULL,
+    ACCNO INTEGER NOT NULL,
+    FIRMID INTEGER NOT NULL,
+    BALANCE INTEGER NOT NULL
+  )
+
+  Table RFGF_PK_TXN
+  (
+    ID INTEGER PRIMARY KEY,
+    BRANCH VARCHAR(10) NOT NULL,
+    ACCNO INTEGER NOT NULL,
+    AMOUNT INTEGER NOT NULL
+  )
+)
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::pk::PkOtherDB
+(
+  Table RFGF_PK_OTHER
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100) NOT NULL
+  )
+)
+
+###Pure
+import meta::relational::tests::mapping::relation::graphFetch::pk::*;
+
+Class meta::relational::tests::mapping::relation::graphFetch::pk::Firm
+{
+  legalName: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::pk::Person
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::pk::Account
+{
+  branch: String[1];
+  accountNumber: Integer[1];
+  balance: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::pk::Txn
+{
+  amount: Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::pk::Employment
+{
+  firm: Firm[0..1];
+  employees: Person[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::pk::Management
+{
+  manager: Person[0..1];
+  reports: Person[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::pk::AccountTxn
+{
+  account: Account[0..1];
+  transactions: Txn[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::pk::AccountFirm
+{
+  owner: Firm[0..1];
+  accounts: Account[*];
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::pk::PkDB.RFGF_PK_FIRM}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::pk::PkDB.RFGF_PK_PERSON}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::personWithoutIdFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::pk::PkDB.RFGF_PK_PERSON}#->select(~[NAME, FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::accountFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::pk::PkDB.RFGF_PK_ACCOUNT}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::txnFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::pk::PkDB.RFGF_PK_TXN}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::pk::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::PkMapping
+(
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *Person[pk_person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID,
+    +managerId: Integer[0..1]: MANAGERID
+  }
+
+  *Account[pk_account]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::accountFunction__Relation_1_
+    branch: BRANCH,
+    accountNumber: ACCNO,
+    balance: BALANCE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Txn[pk_txn]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::txnFunction__Relation_1_
+    amount: AMOUNT,
+    +branch: String[1]: BRANCH,
+    +accountNumber: Integer[1]: ACCNO
+  }
+
+  Employment: XStore
+  {
+    employees[pk_firm, pk_person]: $this.id == $that.firmId,
+    firm[pk_person, pk_firm]: $this.firmId == $that.id
+  }
+
+  Management: XStore
+  {
+    manager[pk_person, pk_person]: $this.managerId == $that.id,
+    reports[pk_person, pk_person]: $this.id == $that.managerId
+  }
+
+  AccountTxn: XStore
+  {
+    transactions[pk_account, pk_txn]: ($this.branch == $that.branch) && ($this.accountNumber == $that.accountNumber),
+    account[pk_txn, pk_account]: ($this.branch == $that.branch) && ($this.accountNumber == $that.accountNumber)
+  }
+
+  AccountFirm: XStore
+  {
+    owner[pk_account, pk_firm]: $this.firmId == $that.id,
+    accounts[pk_firm, pk_account]: $this.id == $that.firmId
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::PersonWithoutIdMapping
+(
+  *Person[pk_person_no_id]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personWithoutIdFunction__Relation_1_
+    name: NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::ExplicitPrimaryKeyMapping
+(
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    ~primaryKey: CODE
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *Person[pk_person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Account[pk_account]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::accountFunction__Relation_1_
+    ~primaryKey: [BRANCH, ACCNO]
+    branch: BRANCH,
+    accountNumber: ACCNO,
+    balance: BALANCE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Txn[pk_txn]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::txnFunction__Relation_1_
+    amount: AMOUNT,
+    +branch: String[1]: BRANCH,
+    +accountNumber: Integer[1]: ACCNO
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+
+  AccountTxn: ModelJoin
+  {
+    {account: meta::relational::tests::mapping::relation::graphFetch::pk::Account[1], transactions: meta::relational::tests::mapping::relation::graphFetch::pk::Txn[1] | ($account.branch == $transactions.branch) && ($account.accountNumber == $transactions.accountNumber)}
+  }
+
+  AccountFirm: ModelJoin
+  {
+    {owner: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], accounts: meta::relational::tests::mapping::relation::graphFetch::pk::Account[1] | $accounts.firmId == $owner.id}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::PersonWithoutIdExplicitPrimaryKeyMapping
+(
+  *Person[pk_person_no_id]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personWithoutIdFunction__Relation_1_
+    ~primaryKey: NAME
+    name: NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::RelationalFirmRootMapping
+(
+  *Firm[r_firm]: Relational
+  {
+    legalName: [meta::relational::tests::mapping::relation::graphFetch::pk::PkDB]RFGF_PK_FIRM.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::relation::graphFetch::pk::PkDB]RFGF_PK_FIRM.ID
+  }
+
+  *Person[pk_person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::RelationalPersonRootMapping
+(
+  *Person[r_person]: Relational
+  {
+    name: [meta::relational::tests::mapping::relation::graphFetch::pk::PkDB]RFGF_PK_PERSON.NAME,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::relation::graphFetch::pk::PkDB]RFGF_PK_PERSON.FIRMID
+  }
+
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::ModelJoinMapping
+(
+  *Firm[pk_firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *Person[pk_person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  Employment: ModelJoin
+  {
+    {firm: meta::relational::tests::mapping::relation::graphFetch::pk::Firm[1], employees: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $firm.id == $employees.firmId}
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::pk::SelfAssociationTwoSetsMapping
+(
+  *Person[pk_person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +id: Integer[1]: ID,
+    +managerId: Integer[0..1]: MANAGERID
+  }
+
+  Person[pk_manager]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::pk::personFunction__Relation_1_
+    name: NAME,
+    +id: Integer[1]: ID,
+    +managerId: Integer[0..1]: MANAGERID
+  }
+
+  Management: ModelJoin
+  {
+    {manager: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1], reports: meta::relational::tests::mapping::relation::graphFetch::pk::Person[1] | $reports.managerId == $manager.id}
+  }
+)
+
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::relation::graphFetch::pk::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::graphFetch::pk::setUp():Boolean[1]
+{
+  setUpTables();
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::pk::setUpTables():Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(PkDB).connectionByElement(PkDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+  executeInDb('Drop table if exists RFGF_PK_FIRM;', $connection);
+  executeInDb('Create Table RFGF_PK_FIRM(ID INT, CODE VARCHAR(10), LEGALNAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_PK_FIRM (ID, CODE, LEGALNAME) values (1, \'FX\', \'Firm X\');', $connection);
+  executeInDb('insert into RFGF_PK_FIRM (ID, CODE, LEGALNAME) values (2, \'FA\', \'Firm A\');', $connection);
+  executeInDb('insert into RFGF_PK_FIRM (ID, CODE, LEGALNAME) values (3, \'FB\', \'Firm B\');', $connection);
+
+  executeInDb('Drop table if exists RFGF_PK_PERSON;', $connection);
+  executeInDb('Create Table RFGF_PK_PERSON(ID INT, NAME VARCHAR(100), FIRMID INT, MANAGERID INT);', $connection);
+  executeInDb('insert into RFGF_PK_PERSON (ID, NAME, FIRMID, MANAGERID) values (1, \'Alice\', 1, NULL);', $connection);
+  executeInDb('insert into RFGF_PK_PERSON (ID, NAME, FIRMID, MANAGERID) values (2, \'Bob\', 1, 1);', $connection);
+  executeInDb('insert into RFGF_PK_PERSON (ID, NAME, FIRMID, MANAGERID) values (3, \'Carol\', 2, 2);', $connection);
+  executeInDb('insert into RFGF_PK_PERSON (ID, NAME, FIRMID, MANAGERID) values (4, \'Dave\', 99, 2);', $connection);
+  executeInDb('insert into RFGF_PK_PERSON (ID, NAME, FIRMID, MANAGERID) values (5, \'Eve\', 2, 3);', $connection);
+
+  executeInDb('Drop table if exists RFGF_PK_ACCOUNT;', $connection);
+  executeInDb('Create Table RFGF_PK_ACCOUNT(BRANCH VARCHAR(10), ACCNO INT, FIRMID INT, BALANCE INT);', $connection);
+  executeInDb('insert into RFGF_PK_ACCOUNT (BRANCH, ACCNO, FIRMID, BALANCE) values (\'LDN\', 1, 1, 100);', $connection);
+  executeInDb('insert into RFGF_PK_ACCOUNT (BRANCH, ACCNO, FIRMID, BALANCE) values (\'NYC\', 1, 2, 200);', $connection);
+  executeInDb('insert into RFGF_PK_ACCOUNT (BRANCH, ACCNO, FIRMID, BALANCE) values (\'LDN\', 2, 1, 300);', $connection);
+
+  executeInDb('Drop table if exists RFGF_PK_TXN;', $connection);
+  executeInDb('Create Table RFGF_PK_TXN(ID INT, BRANCH VARCHAR(10), ACCNO INT, AMOUNT INT);', $connection);
+  executeInDb('insert into RFGF_PK_TXN (ID, BRANCH, ACCNO, AMOUNT) values (1, \'LDN\', 1, 10);', $connection);
+  executeInDb('insert into RFGF_PK_TXN (ID, BRANCH, ACCNO, AMOUNT) values (2, \'LDN\', 1, 20);', $connection);
+  executeInDb('insert into RFGF_PK_TXN (ID, BRANCH, ACCNO, AMOUNT) values (3, \'NYC\', 1, 30);', $connection);
+  executeInDb('insert into RFGF_PK_TXN (ID, BRANCH, ACCNO, AMOUNT) values (4, \'LDN\', 2, 40);', $connection);
+
+  let otherConnection = meta::external::store::relational::tests::testRuntime(PkOtherDB).connectionByElement(PkOtherDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+  executeInDb('Drop table if exists RFGF_PK_OTHER;', $otherConnection);
+  executeInDb('Create Table RFGF_PK_OTHER(ID INT, NAME VARCHAR(100));', $otherConnection);
+  executeInDb('insert into RFGF_PK_OTHER (ID, NAME) values (1, \'Other\');', $otherConnection);
+
+  true;
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::graphFetch::pk::twoStoreRuntime():Runtime[1]
+{
+  ^Runtime(connectionStores = meta::external::store::relational::tests::testRuntime(PkDB).connectionStores
+                                ->concatenate(meta::external::store::relational::tests::testRuntime(PkOtherDB).connectionStores));
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::graphFetch::pk::planString(query:FunctionDefinition<Any>[1], mapping:Mapping[1]):String[1]
+{
+  meta::pure::executionPlan::executionPlan($query, $mapping, meta::external::store::relational::tests::testRuntime(PkDB), meta::relational::extension::relationalExtensions())
+    ->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testExplicitPrimaryKeyOnNonKeyColumnDrivesToManyChild():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        name
+      }
+    }
+  }#;
+  let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+
+  assert(planString($query, ExplicitPrimaryKeyMapping)->contains('select "root"."CODE" as "pk_0"'));
+
+  let result = execute($query, ExplicitPrimaryKeyMapping, meta::external::store::relational::tests::testRuntime(PkDB), meta::relational::extension::relationalExtensions());
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+    '{"legalName":"Firm A","employees":[{"name":"Carol"},{"name":"Eve"}]},' +
+    '{"legalName":"Firm B","employees":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testExplicitPrimaryKeyWhenRelationFunctionDropsKeyDrivesToOneChild():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    PersonWithoutIdExplicitPrimaryKeyMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Bob","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Carol","firm":{"legalName":"Firm A"}},' +
+    '{"name":"Dave","firm":null},' +
+    '{"name":"Eve","firm":{"legalName":"Firm A"}}]',
+    $result.values
+  );
+}
+
+// ACCNO alone is not unique (LDN/1 and NYC/1), so only the full composite key links each child to the right account.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testExplicitCompositePrimaryKeyDrivesToManyChild():Boolean[1]
+{
+  let tree = #{
+    Account {
+      branch,
+      accountNumber,
+      transactions {
+        amount
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Account.all()->graphFetch($tree)->serialize($tree),
+    ExplicitPrimaryKeyMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"branch":"LDN","accountNumber":1,"transactions":[{"amount":10},{"amount":20}]},' +
+    '{"branch":"NYC","accountNumber":1,"transactions":[{"amount":30}]},' +
+    '{"branch":"LDN","accountNumber":2,"transactions":[{"amount":40}]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testExplicitCompositePrimaryKeyDrivesToOneChild():Boolean[1]
+{
+  let tree = #{
+    Account {
+      branch,
+      accountNumber,
+      balance,
+      owner {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Account.all()->graphFetch($tree)->serialize($tree),
+    ExplicitPrimaryKeyMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"branch":"LDN","accountNumber":1,"balance":100,"owner":{"legalName":"Firm X"}},' +
+    '{"branch":"NYC","accountNumber":1,"balance":200,"owner":{"legalName":"Firm A"}},' +
+    '{"branch":"LDN","accountNumber":2,"balance":300,"owner":{"legalName":"Firm X"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::pk::testMissingPrimaryKeyOnTableWithoutKeyFails():Boolean[1]
+{
+  let tree = #{
+    Account {
+      branch,
+      transactions {
+        amount
+      }
+    }
+  }#;
+
+  assertError(
+    | planString({|Account.all()->graphFetch($tree)->serialize($tree)}, PkMapping),
+    'Primary Key definition is must in graph fetch flow'
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::pk::testMissingPrimaryKeyWhenRelationFunctionDropsKeyFails():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  assertError(
+    | planString({|Person.all()->graphFetch($tree)->serialize($tree)}, PersonWithoutIdMapping),
+    'Primary Key definition is must in graph fetch flow'
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testRelationalRootToRelationFunctionChildToMany():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        name
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->graphFetch($tree)->serialize($tree),
+    RelationalFirmRootMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+    '{"legalName":"Firm A","employees":[{"name":"Carol"},{"name":"Eve"}]},' +
+    '{"legalName":"Firm B","employees":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testRelationalRootToRelationFunctionChildToOne():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    RelationalPersonRootMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Bob","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Carol","firm":{"legalName":"Firm A"}},' +
+    '{"name":"Dave","firm":null},' +
+    '{"name":"Eve","firm":{"legalName":"Firm A"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSameStoreAssociationWithTwoStoreRuntimeToMany():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        name
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    twoStoreRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+    '{"legalName":"Firm A","employees":[{"name":"Carol"},{"name":"Eve"}]},' +
+    '{"legalName":"Firm B","employees":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSameStoreAssociationWithTwoStoreRuntimeToOne():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    twoStoreRuntime(),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Bob","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Carol","firm":{"legalName":"Firm A"}},' +
+    '{"name":"Dave","firm":null},' +
+    '{"name":"Eve","firm":{"legalName":"Firm A"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testToOneAssociationWithoutMatchResolvesToNull():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->filter(p | $p.name->in(['Alice', 'Dave']))->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","firm":{"legalName":"Firm X"}},{"name":"Dave","firm":null}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testEmptyRootResultWithNestedChild():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        name
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->filter(f | $f.legalName == 'No Such Firm')->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual('[]', $result.values);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToOneChain():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      manager {
+        name,
+        manager {
+          name
+        }
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","manager":null},' +
+    '{"name":"Bob","manager":{"name":"Alice","manager":null}},' +
+    '{"name":"Carol","manager":{"name":"Bob","manager":{"name":"Alice"}}},' +
+    '{"name":"Dave","manager":{"name":"Bob","manager":{"name":"Alice"}}},' +
+    '{"name":"Eve","manager":{"name":"Carol","manager":{"name":"Bob"}}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationToMany():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      reports {
+        name
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    PkMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","reports":[{"name":"Bob"}]},' +
+    '{"name":"Bob","reports":[{"name":"Carol"},{"name":"Dave"}]},' +
+    '{"name":"Carol","reports":[{"name":"Eve"}]},' +
+    '{"name":"Dave","reports":[]},' +
+    '{"name":"Eve","reports":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testModelJoinAssociationToOne():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      firm {
+        legalName
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    ModelJoinMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Bob","firm":{"legalName":"Firm X"}},' +
+    '{"name":"Carol","firm":{"legalName":"Firm A"}},' +
+    '{"name":"Dave","firm":null},' +
+    '{"name":"Eve","firm":{"legalName":"Firm A"}}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testModelJoinAssociationToMany():Boolean[1]
+{
+  let tree = #{
+    Firm {
+      legalName,
+      employees {
+        name
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Firm.all()->graphFetch($tree)->serialize($tree),
+    ModelJoinMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+    '{"legalName":"Firm A","employees":[{"name":"Carol"},{"name":"Eve"}]},' +
+    '{"legalName":"Firm B","employees":[]}]',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::pk::testSelfAssociationAcrossTwoSetsOfSameRelationFunctionToOneChain():Boolean[1]
+{
+  let tree = #{
+    Person {
+      name,
+      manager {
+        name,
+        manager {
+          name
+        }
+      }
+    }
+  }#;
+
+  let result = execute(
+    |Person.all()->graphFetch($tree)->serialize($tree),
+    SelfAssociationTwoSetsMapping,
+    meta::external::store::relational::tests::testRuntime(PkDB),
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertJsonStringsEqual(
+    '[{"name":"Alice","manager":null},' +
+    '{"name":"Bob","manager":{"name":"Alice","manager":null}},' +
+    '{"name":"Carol","manager":{"name":"Bob","manager":{"name":"Alice"}}},' +
+    '{"name":"Dave","manager":{"name":"Bob","manager":{"name":"Alice"}}},' +
+    '{"name":"Eve","manager":{"name":"Carol","manager":{"name":"Bob"}}}]',
+    $result.values
+  );
+}

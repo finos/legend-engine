@@ -66,6 +66,26 @@ public class FormatTokenCoverageReport
 
     public void generate(List<TestCaseLoader.TestCase> allTestCases, File parityReportFile, String outputDir) throws IOException
     {
+        Map<String, Map<String, TokenEntry>> byFunction = buildTokenMap(allTestCases, parityReportFile);
+        if (byFunction.isEmpty())
+        {
+            LOGGER.info("No format_token test cases found, skipping format token coverage report");
+            return;
+        }
+
+        new File(outputDir).mkdirs();
+        generateJson(byFunction, outputDir + "/format-token-coverage.json");
+        generateMarkdown(byFunction, outputDir + "/format-token-coverage.md");
+        printConsoleSummary(byFunction);
+    }
+
+    /**
+     * Builds the function -&gt; token -&gt; entry model without writing any output, so
+     * other consumers (e.g. the parity site generator) can reuse the same aggregation
+     * logic instead of re-deriving it from the raw test cases and report file.
+     */
+    public Map<String, Map<String, TokenEntry>> buildTokenMap(List<TestCaseLoader.TestCase> allTestCases, File parityReportFile) throws IOException
+    {
         // function -> token -> entry
         Map<String, Map<String, TokenEntry>> byFunction = new LinkedHashMap<>();
         Map<String, TokenEntry> byTestId = new HashMap<>();
@@ -89,8 +109,7 @@ public class FormatTokenCoverageReport
 
         if (byFunction.isEmpty())
         {
-            LOGGER.info("No format_token test cases found, skipping format token coverage report");
-            return;
+            return byFunction;
         }
 
         if (parityReportFile != null && parityReportFile.exists())
@@ -121,10 +140,7 @@ public class FormatTokenCoverageReport
             }
         }
 
-        new File(outputDir).mkdirs();
-        generateJson(byFunction, outputDir + "/format-token-coverage.json");
-        generateMarkdown(byFunction, outputDir + "/format-token-coverage.md");
-        printConsoleSummary(byFunction);
+        return byFunction;
     }
 
     private void generateJson(Map<String, Map<String, TokenEntry>> byFunction, String path) throws IOException

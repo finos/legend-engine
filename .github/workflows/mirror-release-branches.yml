@@ -1,0 +1,91 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Mirror Release Branches
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-release-branches
+
+jobs:
+  mirror:
+    name: Mirror Release Branches From Upstream
+    # Runs only in the Goldman Sachs mirror, pulling from FINOS, so that no
+    # credential for the mirror ever has to be stored in the FINOS repository.
+    if: github.repository == 'goldmansachs/legend-engine'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      UPSTREAM_URL: https://github.com/finos/legend-engine.git
+      MIRROR_URL: https://github.com/${{ github.repository }}.git
+      BRANCH_PREFIX: release-legend-release-
+      MIN_RELEASE_VERSION: "4.99"
+      # GITHUB_TOKEN cannot push commits that add or change files under
+      # .github/workflows; set MIRROR_PUSH_TOKEN (with workflow scope) if that
+      # rejection is ever hit.
+      PUSH_TOKEN: ${{ secrets.MIRROR_PUSH_TOKEN || github.token }}
+    steps:
+      - name: Push new and updated release branches to the mirror
+        run: |
+          set -euo pipefail
+          git init -q "${RUNNER_TEMP}/repo"
+          cd "${RUNNER_TEMP}/repo"
+          git remote add upstream "${UPSTREAM_URL}"
+          git remote add origin "${MIRROR_URL}"
+          git config "http.${MIRROR_URL}.extraheader" \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "${PUSH_TOKEN}" | base64 -w0)"
+
+          at_least_min_version() {
+            [ "$(printf '%s\n%s\n' "${MIN_RELEASE_VERSION}" "$1" | sort -V | head -n1)" = "${MIN_RELEASE_VERSION}" ]
+          }
+
+          release_heads() {
+            git ls-remote --heads "$1" \
+              | awk -v prefix="refs/heads/${BRANCH_PREFIX}" \
+                  'index($2, prefix) == 1 { sub("refs/heads/", "", $2); print $2, $1 }' \
+              | while read -r branch sha; do
+                  if at_least_min_version "${branch#"${BRANCH_PREFIX}"}"; then
+                    echo "${branch} ${sha}"
+                  fi
+                done \
+              | sort
+          }
+          release_heads upstream > "${RUNNER_TEMP}/upstream-heads"
+          release_heads origin > "${RUNNER_TEMP}/mirror-heads"
+
+          pending=$(comm -23 "${RUNNER_TEMP}/upstream-heads" "${RUNNER_TEMP}/mirror-heads" | cut -d' ' -f1)
+          if [ -z "${pending}" ]; then
+            echo "Mirror release branches are up to date"
+            exit 0
+          fi
+
+          # Having the mirror's default branch locally lets the push send only
+          # the commits the mirror is missing rather than the whole history.
+          git fetch -q --no-tags origin HEAD
+
+          failed=0
+          for branch in ${pending}; do
+            echo "Mirroring ${branch}"
+            git fetch -q --no-tags upstream "refs/heads/${branch}:refs/remotes/upstream/${branch}"
+            if ! git push origin "refs/remotes/upstream/${branch}:refs/heads/${branch}"; then
+              echo "::error::Could not push ${branch} to the mirror (diverged from upstream, or rejected)"
+              failed=1
+            fi
+          done
+          exit "${failed}"

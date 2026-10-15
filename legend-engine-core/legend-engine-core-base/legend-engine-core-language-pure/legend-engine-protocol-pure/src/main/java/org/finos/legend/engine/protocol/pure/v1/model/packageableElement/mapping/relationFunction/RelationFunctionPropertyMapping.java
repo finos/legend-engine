@@ -23,13 +23,13 @@ public class RelationFunctionPropertyMapping extends PropertyMapping
 {
     /**
      * Set when the property RHS is the bare-column form ({@code propName: COL}). The compiler lowers this
-     * to a synthetic lambda {@code { $src.COL}} at SecondPass. Mutually exclusive with {@link #valueFn}.
+     * to a synthetic lambda {@code { $row.COL}} at SecondPass. Mutually exclusive with {@link #valueFn}.
      */
     public String column;
 
     /**
-     * Set when the property RHS is a Pure expression over {@code $src} ({@code propName: $src.COL1 + $src.COL2}).
-     * The lambda body is the user expression; the compiler injects the {@code $src} parameter typed at the
+     * Set when the property RHS is a Pure expression over {@code $row} ({@code propName: $row.COL1 + $row.COL2}).
+     * The lambda body is the user expression; the compiler injects the {@code $row} parameter typed at the
      * relation function's row type at SecondPass. Mutually exclusive with {@link #column}.
      */
     public LambdaFunction valueFn;

@@ -205,11 +205,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
+    tableFunctionProcessor_default(),
     joinProcessor_default(),
     asOfJoinProcessorForDuckDB(),
     querySpecificationProcessor_default(),
     queryWithScopeProcessor_default(),
     unionProcessor_default(),
+    exceptProcessor_default(),
+    intersectProcessor_default(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default(),
     extendedQuerySpecificationProcessor_default()
@@ -454,6 +457,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Tan, simpleFunctionProcessor('tan')),
     pair(Power, simpleFunctionProcessor('power')),
     pair(Sign, simpleFunctionProcessor('sign')),
+    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::GenerateSeries, simpleFunctionProcessor('generate_series')),
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),

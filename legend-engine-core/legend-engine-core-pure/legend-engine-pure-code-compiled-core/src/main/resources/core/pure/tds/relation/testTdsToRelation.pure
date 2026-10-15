@@ -265,7 +265,15 @@ function <<test.Test>> meta::pure::tds::toRelation::testConcatenate():Boolean[1]
 {
   test(
     {| TestClass.all()->project(col(x | $x.string, 'str'))->concatenate(TestClass.all()->project(col(x | $x.float, 'str')))},
-    {| TestClass.all()->project(~[str: x | $x.string])->concatenate(TestClass.all()->project(~[str: x | $x.float]))}
+    {| TestClass.all()->project(~[str: x | $x.string])->unionAll(TestClass.all()->project(~[str: x | $x.float]))}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testUnion():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project(col(x | $x.string, 'str'))->union(TestClass.all()->project(col(x | $x.float, 'str')))},
+    {| TestClass.all()->project(~[str: x | $x.string])->union(TestClass.all()->project(~[str: x | $x.float]))}
   );
 }
 

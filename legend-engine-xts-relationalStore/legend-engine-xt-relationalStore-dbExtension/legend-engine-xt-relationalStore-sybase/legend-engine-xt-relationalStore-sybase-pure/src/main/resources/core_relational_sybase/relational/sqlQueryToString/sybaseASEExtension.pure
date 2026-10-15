@@ -23,6 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
    ^DbExtension(
       nullOrderingSupport = nativeOnlySupport(),
+      setOperationSupport = unionOnlySetOperationSupport(),
       isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,

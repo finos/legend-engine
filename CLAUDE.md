@@ -89,6 +89,25 @@ The IDE's delta compiler is drivable over HTTP (`POST /executeGo`), which turns 
 
 IntelliJ gotcha: **disable** `Clear output directory on rebuild` under `Preferences → Build → Compiler`. It wipes generated Pure-runtime resources the server needs to start, producing `ClassNotFoundException` for generated classes.
 
+### Claude Code dev-loop plugin (`pure-dev`)
+
+This repo ships a Claude Code plugin (`.claude-plugin/marketplace.json` + `plugins/pure-dev/`) that
+wraps the Pure LSP into a warm, incrementally-compiling daemon — the same fast edit-test loop as the
+delta compiler above, but driven through skills instead of hand-built HTTP calls against
+`ideLightConfig.json`'s server. **Not installed by default** — enable it once per machine:
+
+```bash
+bash .claude-plugin/install-pure-dev
+```
+
+Then restart the agent. Once installed, prefer these skills over `mvn clean install` or the raw
+`/executeGo` HTTP calls above when iterating on `.pure` code: `pure-lsp-check` (compile-check a file
+in ~1s), `pure-lsp-go`/`pure-lsp-execute`/`pure-lsp-execute-parallel` (run `go()`, a specific
+function, or whole test scopes), `pure-lsp-launch-engine` (the one-command way to start the daemon
+scoped to this repo, backend engine Server included), and `pure-chain-update` (resyncing a local
+legend-pure + legend-engine checkout). Deep internals and operating rules live in
+`plugins/pure-dev/references/lsp-devloop-internals.md` and `lsp-devloop-usage-rules.md`.
+
 ## Tests
 
 JUnit 5 for new tests (JUnit 4 exists but is legacy — don't add more). Typical patterns:

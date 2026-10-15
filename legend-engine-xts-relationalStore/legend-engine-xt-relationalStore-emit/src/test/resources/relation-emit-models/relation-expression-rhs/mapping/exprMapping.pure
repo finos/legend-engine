@@ -33,11 +33,11 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
-    active: $src.ACTIVE == 1,
+    active: $row.ACTIVE == 1,
     hireDate: HIRE_DATE,
     salary: SALARY,
-    salaryDoubled: $src.SALARY->toOne() * 2.0,
-    fullGreeting: 'Hello, ' + $src.FIRST_NAME + ' ' + $src.LAST_NAME
+    salaryDoubled: $row.SALARY->toOne() * 2.0,
+    fullGreeting: 'Hello, ' + $row.FIRST_NAME + ' ' + $row.LAST_NAME
   }
 
   demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping

@@ -832,6 +832,7 @@ infrastructure rather than the feature under test:
 | `grammar:derived-property` | Derived (computed) property |
 | `grammar:enumeration` | Enumeration type definition |
 | `grammar:function` | Standalone Pure function |
+| `grammar:match-expression` | `match([...])` dispatching on subtype |
 | `grammar:measure` | Measure / unit definition |
 | `grammar:nested-association` | Multi-level association traversal |
 | `grammar:profile` | Profile / stereotype / tag definition |
@@ -845,8 +846,10 @@ infrastructure rather than the feature under test:
 | `mapping:cross-store` | Cross-store mapping (M2M ↔ relational) |
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
 | `mapping:m2m-chained-relational` | M2M mapping whose `~src` class is itself mapped to a relational store, chained through a `ModelChainConnection` |
+| `mapping:m2m-covariant-list-return` | M2M transform helper function whose returned list is statically a strict subtype of the function's declared return list |
 | `mapping:m2m-derived-source-property` | Derived property on M2M source class |
 | `mapping:m2m-local-property` | Local property in M2M mapping |
+| `mapping:m2m-scalar-to-list-widening` | M2M transform helper function declared to return a list whose body ends in a to-one or zero-to-one expression |
 | `mapping:m2m-target-instantiation` | Target class constructed with the `new` operator (`^Target(...)`) inside an M2M transform |
 | `mapping:m2m-transform` | Model-to-model transform expression |
 | `mapping:mapping` | Generic mapping (legacy tag) |
@@ -913,6 +916,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `store:relational-semistructured-explode` | `explodeSemiStructured` fanning a JSON array into rows |
 | `store:relational-semistructured-flatten` | Lateral flatten of a to-many semi-structured property |
 | `store:relational-semistructured-navigation` | Path navigation into a semi-structured document |
+| `store:relational-zoned-timestamp` | Column the database holds as a `TIMESTAMP WITH TIME ZONE` (declared `TIMESTAMP` in the store, which has no zoned type) |
 | `store:service-store` | Service store |
 | `store:flat-data-store` | Flat-data store |
 
@@ -934,11 +938,11 @@ so live in the `mapping:` domain alongside their relational counterparts:
 |---|---|
 | `execution:bigquery-function` | BigQuery function activator |
 | `execution:binding` | External format binding |
-| `execution:connection-time-zone` | Time zone named on a relational connection, settling the zone a TIMESTAMP column's wall clock is read out of |
 | `execution:data-element` | Data element definition |
 | `execution:external-format` | External format specification |
 | `execution:external-format-binding` | External format binding |
 | `execution:file-generation` | File generation specification |
+| `execution:graph-fetch` | Graph fetch query (`graphFetch`/`serialize`) executed in a test |
 | `execution:hosted-service` | Hosted service function activator |
 | `execution:legacy-mapping-test` | Deprecated `MappingTests` block on a Mapping (EMIT Phase 5's legacy `MappingTestRunner`) |
 | `execution:legacy-service-test` | Deprecated `test: Single` / `test: Multi` block on a Service (EMIT Phase 5's legacy `ServiceTestRunner`) |
@@ -949,6 +953,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `execution:schema-set` | Schema set definition |
 | `execution:serialization-date-time-format` | `dateTimeFormat` on the `AlloySerializationConfig` a graph fetch `serialize` writes its date-times with |
 | `execution:service` | Service definition |
+| `execution:service-parameter` | Service whose query takes parameters, with tests that pass them values (`parameters:`) |
 | `execution:service-test` | Service test suite |
 | `execution:shared-test-data` | Shared test data element |
 | `execution:snowflake-app` | Snowflake app function activator |

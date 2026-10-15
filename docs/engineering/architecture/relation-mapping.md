@@ -23,7 +23,7 @@ Contrast with the classic `Relational` mapping:
 | | `Relational` | `Relation` |
 |---|---|---|
 | Source | Physical table + joins (`~mainTable [db]TBL`) | Pure `Relation<Any>` expression |
-| Column binding | `[db]TBL.COL` path | Column name (or lambda over `$src`) |
+| Column binding | `[db]TBL.COL` path | Column name (or lambda over `$row`) |
 | SQL-gen input | Table alias tree | Evaluated sub-select |
 | Type-checked source? | No — schema only | Yes — full Pure typing |
 
@@ -33,12 +33,12 @@ Two properties of the design are worth internalising up front:
    existing named function, or an inline `#>{db.TABLE}#->select(...)`
    expression — goes through the normal Pure compiler and carries a typed
    `RelationType` on its last expression. Everything downstream (row-type
-   extraction, PK resolution, `$src`-lambda typing) reads off that
+   extraction, PK resolution, `$row`-lambda typing) reads off that
    `RelationType`.
 
-2. **Property RHS is either a column name or a lambda over `$src`.** The bare
+2. **Property RHS is either a column name or a lambda over `$row`.** The bare
    `firstName: FIRSTNAME` form is *sugar* — the compiler lowers it to
-   `{$src.FIRSTNAME}` so downstream code deals with a single shape (a
+   `{$row.FIRSTNAME}` so downstream code deals with a single shape (a
    `LambdaFunction` typed at the row type). Anything more expressive — string
    concatenation, arithmetic, semi-structured navigation — is just a longer
    lambda body.
@@ -72,8 +72,8 @@ Where a **source** is one of:
 
 A **property mapping** is one of:
 
-- `propName: COLUMN` — bare column (sugar, lowered to `{$src.COLUMN}`).
-- `propName: $src.COLUMN + '-' + $src.OTHER` — arbitrary Pure expression over `$src`.
+- `propName: COLUMN` — bare column (sugar, lowered to `{$row.COLUMN}`).
+- `propName: $row.COLUMN + '-' + $row.OTHER` — arbitrary Pure expression over `$row`.
 - `propName: EnumerationMapping <id> : COLUMN` — enum-typed property.
 - `propName: Binding <path> : COLUMN` — semi-structured (JSON / binary) property.
 - `propName ( ... )` — normal embedded (child columns from the same relation).
@@ -139,9 +139,9 @@ Omit `~primaryKey` to let the runtime infer it from the function body — see
 ### 2.4 Property RHS as a Pure expression
 
 ```
-firstName:   $src.'FIRST NAME',
-ageInMonths: $src.AGE * 12,
-greeting:    'Hello ' + $src.'FIRST NAME'
+firstName:   $row.'FIRST NAME',
+ageInMonths: $row.AGE * 12,
+greeting:    'Hello ' + $row.'FIRST NAME'
 ```
 
 Compiled the same way as bare columns; only the body of the synthesised lambda
@@ -304,25 +304,25 @@ validation runs.
 |------|------|
 | Prerequisite | Declares the mapped `Class` and (for `~func`) the referenced function as compilation prerequisites, so the function's typed `RelationType` is available before later passes need it. |
 | First | Creates the `RelationFunctionInstanceSetImplementation` node, walks property mappings to build **skeleton** M3 property-mapping objects (no lambdas yet), and folds local properties into a per-mapping synthetic class. |
-| Second | Resolves the source (`~func` by descriptor, `~src` by inline compilation), attaches it as `_relationFunction`, extracts the row `GenericType` from the function's last expression, and builds each property's `_valueFn` lambda typed with `$src` bound to that row type. |
+| Second | Resolves the source (`~func` by descriptor, `~src` by inline compilation), attaches it as `_relationFunction`, extracts the row `GenericType` from the function's last expression, and builds each property's `_valueFn` lambda typed with `$row` bound to that row type. |
 | Third | Resolves `~primaryKey` names against the row type's columns (hard error with an "Available columns: [...]" message on miss). If `~primaryKey` was omitted, leaves it empty for runtime inference. |
 
-### 5.1 Bare-column → `$src.<col>` lowering
+### 5.1 Bare-column → `$row.<col>` lowering
 
 In the Second pass, a property mapping authored as `firstName: FIRSTNAME` gets
-its `_valueFn` synthesised as if the user had written `firstName: $src.FIRSTNAME`.
+its `_valueFn` synthesised as if the user had written `firstName: $row.FIRSTNAME`.
 Every downstream consumer (validator, SQL generator, composer, protocol
 transfer) sees a single shape — a `LambdaFunction` body — regardless of which
 surface syntax was used.
 
 The trade-off: **bare-column authoring is round-trip-lossy**. The composer
-will re-render it as the explicit `$src.<col>` form. Semantics are identical.
+will re-render it as the explicit `$row.<col>` form. Semantics are identical.
 
 ### 5.2 The `asColumnRef` fast-path helper
 
 Consumers that need to recover the original column name (SQL push-down fast
 paths, IDE displays, debug output) use `RelationFunctionPropertyMappingTools.asColumnRef`,
-which pattern-matches a `_valueFn` body of exactly one `$src.<col>` accessor
+which pattern-matches a `_valueFn` body of exactly one `$row.<col>` accessor
 and returns the column name. Deliberately conservative — a complex expression
 that happens to evaluate to a single column at runtime is not matched.
 
@@ -508,7 +508,7 @@ row type. The `owner` field of each placeholder column is intentionally left
 empty; that's the marker that identifies it later.
 
 **2. Evaluate the `valueFn` against the synthetic cursor.** The lambda's
-`$src` parameter (whatever name the user chose) is bound to the synthetic
+`$row` parameter (whatever name the user chose) is bound to the synthetic
 cursor's alias via `updateFunctionParamScope`. Processing the body produces a
 relational operation tree whose leaves are placeholder `TableAliasColumn`s.
 `expressionTouchesVariant` decides whether the body reaches into semi-structured
@@ -570,7 +570,7 @@ interesting bits are the reconciliation points:
 
 **Composer** (`DEPRECATED_PureGrammarComposerCore`) round-trips both source
 forms (`~func` / `~src`) and both property-RHS forms (bare column / lambda
-body). Bare-column authoring re-emits as the explicit `$src.<col>` form
+body). Bare-column authoring re-emits as the explicit `$row.<col>` form
 because the compiler has already lowered it — this is intentional to keep
 the round-trip semantics-preserving and avoid brittle pattern-matching to
 recover the sugar.
@@ -620,7 +620,7 @@ in [`CLAUDE.md`](../../CLAUDE.md).
 | Question | Answer |
 |----------|--------|
 | Difference between `~func` and `~src`? | `~func` references an existing Pure function; `~src` inlines a zero-arg expression. The compiler treats both uniformly after wrapping `~src` in a synthetic lambda. |
-| What property RHS forms are supported? | Bare column identifier (lowered to `{$src.<col>}`) or a full Pure expression over `$src`. |
+| What property RHS forms are supported? | Bare column identifier (lowered to `{$row.<col>}`) or a full Pure expression over `$row`. |
 | When should I omit `~primaryKey`? | When the function body's leaves are recognised by a registered `RelationElementAccessorExtension` and the operator chain preserves PK ([§8.3](#83-platform-relation-operators)). Otherwise declare it explicitly. |
 | Can I map multiple PK columns? | Yes: `~primaryKey: [COL1, COL2]`. |
 | Property types supported? | Primitives, `Enumeration` (with `EnumerationMapping`), `Variant`, and complex `Class` types (with `Binding` for binding-style, or a variant-touching valueFn for lift-style). `[*]` multiplicities are honoured when the valueFn body's multiplicity is subsumed. |
@@ -635,7 +635,7 @@ in [`CLAUDE.md`](../../CLAUDE.md).
 | Cross-store union? | Not supported — enforced during store-contract resolution. |
 | How does semi-structured / variant lift work? | The RFPM transformer evaluates the property's `valueFn` against a *synthetic RF cursor*, detects variant-ness, and picks a downstream shape ([§9.3](#93-property-navigation-and-the-rfpm-lift-path)). |
 | How do local properties differ from class properties? | `+name: Type[mult]` declares a property that exists only within the mapping scope; the canonical Pure class is unchanged. |
-| Will bare-column authoring round-trip verbatim? | Semantics: yes. Syntax: no — the composer re-emits it as `$src.<col>`. |
+| Will bare-column authoring round-trip verbatim? | Semantics: yes. Syntax: no — the composer re-emits it as `$row.<col>`. |
 
 ---
 

@@ -203,9 +203,13 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
          distinct_TabularDataSet_1__TabularDataSet_1_,
          filter_TabularDataSet_1__Function_1__TabularDataSet_1_,
          limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,
+         limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_,
+         paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_,
+         concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_,
          sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_,
          sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_,
          concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+         union_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
          union_T_MANY__T_MANY__T_MANY_,
          meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
          meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
@@ -240,11 +244,6 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne())
                );
             createSchemaState($cols);
-         }),
-         pair(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
-            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
-            let colNamesToRestrict = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOneMany();
-            $tdsSchema.restrict($colNamesToRestrict);
          }),
          pair(extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
@@ -287,17 +286,70 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                | $tdsSchema.rename($renameMapping->toOneMany())
                );
 
+         }),
+         pair(renameColumn_TabularDataSet_1__String_1__String_1__TabularDataSet_1_->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let oldName = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOne();
+            let newName = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String)->toOne();
+            $tdsSchema.rename(pair($oldName, $newName));
+         }),
+         pair(project_T_MANY__Path_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let paths = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@meta::pure::metamodel::path::Path<Nil,Any|*>);
+            let cols = $paths->map(p|
+               ^TDSColumn(name = $p->buildColumnNameOutOfPath(), type = $p.path->last()->cast(@meta::pure::metamodel::path::PropertyPathElement)->toOne().property->functionReturnType().rawType->toOne())
+               );
+            createSchemaState($cols);
+         }),
+         pair(projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let colFuncs = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Function<Any>);
+            let colNames = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String);
+            let requiredCols = $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String);
+
+            let cols = $colFuncs->zip($colNames)->filter(p|$p.second->in($requiredCols))->map(p|
+               ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne())
+               );
+            createSchemaState($cols);
+         }),
+         pair(groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            let groupByColLambdas = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Function<Any>);
+            let aggColLambdas = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::functions::collection::AggregateValue<Any,Any,Any>);
+            let colNames = $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String);
+            let subSelectColNames = $fe.parametersValues->at(4)->reactivate($openVars)->cast(@String);
+            let subAggColNames = $fe.parametersValues->at(5)->reactivate($openVars)->cast(@String);
+
+            let colTypes = $groupByColLambdas->concatenate($aggColLambdas.aggregateFn)->zip($colNames)
+               ->map(p|pair($p.second, $p.first->functionReturnType().rawType->toOne()))
+               ->newMap();
+
+            createSchemaState($subSelectColNames->concatenate($subAggColNames)->map(n|^TDSColumn(name = $n, type = $colTypes->get($n)->toOne())));
          })
       ])
+      ->concatenate([
+         restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_,
+         restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_
+      ]->map(f|
+         pair($f->cast(@Function<Any>), {|
+            let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+            let colNamesToRestrict = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOneMany();
+            $tdsSchema.restrict($colNamesToRestrict);
+         })
+      ))
       ->concatenate($extensions.tdsSchema_resolveSchemaImpl->map(e|$e->eval($fe, $openVars, $extensions)))
       ->concatenate([
          olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
-         olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_
+         olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_,
+         olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_
       ]->map(f|
          pair($f->cast(@Function<Any>), {|
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
 
-            let x = $fe.parametersValues->at(3)->reactivate($openVars);
+            let paramCount = $fe.parametersValues->size();
+            let x = $fe.parametersValues->at($paramCount - 2)->reactivate($openVars);
             let fType = $x->match([
                oo:meta::pure::tds::OlapOperation<Any>[1]|
                   let operation = $x->cast(@meta::pure::tds::OlapOperation<Any>)->toOne();
@@ -310,7 +362,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             ]);
 
             let colType = $fType.rawType->toOne();
-            let colName = $fe.parametersValues->at(4)->reactivate($openVars)->cast(@String)->toOne();
+            let colName = $fe.parametersValues->at($paramCount - 1)->reactivate($openVars)->cast(@String)->toOne();
 
             $tdsSchema.olap(^TDSColumn(name=$colName, type=$colType));
          })

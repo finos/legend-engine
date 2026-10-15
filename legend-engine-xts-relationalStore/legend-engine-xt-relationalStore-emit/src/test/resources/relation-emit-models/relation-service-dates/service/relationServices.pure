@@ -1,0 +1,270 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Queries that return a Relation rather than a TDS.
+
+###Service
+// The question the AccountAsOf services ask, projected with project(~[...])
+// so that the query returns a Relation rather than a TDS. A test suite that
+// gives such a query its data runs it on DuckDB rather than H2, so these are
+// the services in this model whose dates reach DuckDB SQL.
+Service demo::relation::dates::service::AccountAsOfRelationLiteral
+{
+  pattern: '/api/relation/dates/accounts/relation';
+  documentation: 'A relation of accounts as recorded at a processing date-time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Account.all(%2025-07-02T15:00:00+0000)->project(~[Id: a|$a.id, Status: a|$a.status])->sort(ascending(~Id));
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"FROZEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::AccountAsOfRelationParameter
+{
+  pattern: '/api/relation/dates/accounts/relation/{processingDate}';
+  documentation: 'A relation of accounts as recorded at a processing date-time, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1]|demo::relation::dates::Account.all($processingDate)->project(~[Id: a|$a.id, Status: a|$a.status])->sort(ascending(~Id))};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"FROZEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReadTheEarlierStatus:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"OPEN"},{"Id":2,"Status":"PENDING"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The question the TradesExecutedBefore services ask, of the table itself
+// rather than through the mapping. The query names its runtime with from(),
+// so the service names neither mapping nor runtime. A table read this way is
+// not milestoned, which is why only a filter has a direct form here.
+Service demo::relation::dates::service::TradesExecutedBeforeDirectLiteral
+{
+  pattern: '/api/relation/dates/trades/before/direct';
+  documentation: 'Trades read from the table directly, executed before a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |#>{demo::relation::dates::store::TradingDB.TRADE}#->filter(r|$r.EXECUTED_AT < %2025-07-02T15:00:00+0000)->select(~[ID, EXECUTED_AT])->sort(ascending(~ID))->from(demo::relation::dates::runtime::TradingRuntime);
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1,"EXECUTED_AT":"2025-07-01T16:00:00.000000000+0000"},{"ID":2,"EXECUTED_AT":"2025-07-02T09:00:00.000000000+0000"},{"ID":3,"EXECUTED_AT":"2025-07-02T10:45:00.000000000+0000"},{"ID":4,"EXECUTED_AT":"2025-07-02T13:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::TradesExecutedBeforeDirectParameter
+{
+  pattern: '/api/relation/dates/trades/before/direct/{cutoff}';
+  documentation: 'Trades read from the table directly, executed before a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|#>{demo::relation::dates::store::TradingDB.TRADE}#->filter(r|$r.EXECUTED_AT < $cutoff)->select(~[ID, EXECUTED_AT])->sort(ascending(~ID))->from(demo::relation::dates::runtime::TradingRuntime)};
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1,"EXECUTED_AT":"2025-07-01T16:00:00.000000000+0000"},{"ID":2,"EXECUTED_AT":"2025-07-02T09:00:00.000000000+0000"},{"ID":3,"EXECUTED_AT":"2025-07-02T10:45:00.000000000+0000"},{"ID":4,"EXECUTED_AT":"2025-07-02T13:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1,"EXECUTED_AT":"2025-07-01T16:00:00.000000000+0000"},{"ID":2,"EXECUTED_AT":"2025-07-02T09:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

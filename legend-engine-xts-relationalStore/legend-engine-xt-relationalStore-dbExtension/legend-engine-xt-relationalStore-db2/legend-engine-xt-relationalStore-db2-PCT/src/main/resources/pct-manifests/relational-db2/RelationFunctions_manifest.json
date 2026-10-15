@@ -102,6 +102,14 @@
       "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
     },
     {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
       "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
       "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
     },
@@ -500,6 +508,30 @@
     {
       "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
       "expectedError" : "com.ibm.db2.jcc.am.SqlSyntaxErrorException: DB2 SQL Error: SQLCODE=-104, SQLSTATE=42601, SQLERRMC=initial;\nWITH RECURSIVE;<space>, DRIVER=4.33.31"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_FilterExtend_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_NegativeStep_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_SingleValue_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Step_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: DB2"
     }
   ]
 }

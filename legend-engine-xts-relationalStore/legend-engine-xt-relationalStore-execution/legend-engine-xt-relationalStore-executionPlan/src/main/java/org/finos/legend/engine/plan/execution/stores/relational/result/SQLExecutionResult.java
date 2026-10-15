@@ -70,7 +70,7 @@ public class SQLExecutionResult extends SQLResult
         super("success", connection, SQLExecutionNode.connection, activities, databaseType, temporaryTables, requestContext);
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseTimeZone = databaseTimeZone;
-        this.calendar = TimeZones.newCalendar(databaseTimeZone);
+        this.calendar = TimeZones.newCalendarLegacy(databaseTimeZone);
         this.topSpan = topSpan;
         try
         {

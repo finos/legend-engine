@@ -1,0 +1,726 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::features::featuresDB
+(
+  Table RFGF_FT_PERSON
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    AGE INTEGER NOT NULL,
+    FIRMID INTEGER NOT NULL,
+    EMPLOYEE_TYPE VARCHAR(20) NOT NULL,
+    STREET VARCHAR(100) NOT NULL,
+    CITY VARCHAR(100) NOT NULL
+  )
+
+  Table RFGF_FT_FIRM
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+)
+
+###Pure
+Class meta::relational::tests::mapping::relation::graphFetch::features::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  employeeType: meta::relational::tests::mapping::relation::EmployeeType[1];
+  address: meta::relational::tests::mapping::relation::Address[1];
+  greetingWith(prefix: String[1]) {$prefix + ' ' + $this.firstName}: String[1];
+  firmName() {$this.firm.legalName}: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::features::Firm
+{
+  legalName: String[1];
+  employeesOlderThan(minAge: Integer[1]) {$this.employees->filter(e | $e.age > $minAge)}: meta::relational::tests::mapping::relation::graphFetch::features::Person[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::features::Person_Firm
+{
+  employees: meta::relational::tests::mapping::relation::graphFetch::features::Person[*];
+  firm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson
+[
+  under50
+  (
+    ~function: $this.age < 50
+    ~enforcementLevel: Error
+    ~message: 'Age must be below 50'
+  ),
+  notFirmA
+  (
+    ~function: $this.employer.legalName != 'Firm A'
+    ~enforcementLevel: Error
+    ~message: 'Employer must not be Firm A'
+  )
+]
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson_Firm
+{
+  constrainedEmployees: meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson[*];
+  employer: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::features::FirmStats
+{
+  firmId: Integer[1];
+  headcount: Integer[1];
+  totalAge: Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::features::FirmStats_Firm
+{
+  stats: meta::relational::tests::mapping::relation::graphFetch::features::FirmStats[0..1];
+  statsFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::features::FirmRole
+{
+  firmId: Integer[1];
+  role: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::features::FirmRole_Firm
+{
+  roles: meta::relational::tests::mapping::relation::graphFetch::features::FirmRole[*];
+  roleFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson
+{
+  firstName: String[1];
+  ageRankInFirm: Integer[1];
+  upperName: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson_Firm
+{
+  rankedEmployees: meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson[*];
+  rankedFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1];
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::personFn(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_PERSON}#
+    ->select(~[ID, FIRSTNAME, AGE, FIRMID, EMPLOYEE_TYPE, STREET, CITY])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::firmFn(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_FIRM}#
+    ->select(~[ID, LEGALNAME])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::personSrc(): meta::pure::metamodel::relation::Relation<(ID:Integer, FIRSTNAME:String, AGE:Integer, FIRMID:Integer)>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_PERSON}#
+    ->select(~[ID, FIRSTNAME, AGE, FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::firmSrc(): meta::pure::metamodel::relation::Relation<(ID:Integer, LEGALNAME:String)>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_FIRM}#
+    ->select(~[ID, LEGALNAME])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::firmStatsFn(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_PERSON}#
+    ->groupBy(~FIRMID, ~[HEADCOUNT: x | $x.ID : y | $y->count(), TOTAL_AGE: x | $x.AGE : y | $y->sum()])
+    ->sort(~FIRMID->ascending())
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::firmRoleFn(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_PERSON}#
+    ->distinct(~[FIRMID, EMPLOYEE_TYPE])
+    ->sort([~FIRMID->ascending(), ~EMPLOYEE_TYPE->ascending()])
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::rankedPersonFn(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::features::featuresDB.RFGF_FT_PERSON}#
+    ->extend(over(~FIRMID, ~AGE->descending()), ~[AGE_RANK: {p, w, r | $p->rank($w, $r)}])
+    ->extend(~UPPER_NAME: x | $x.FIRSTNAME->toOne()->toUpper())
+    ->sort(~ID->ascending())
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::graphFetch::features::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::FeaturesMapping
+(
+  *meta::relational::tests::mapping::relation::graphFetch::features::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    employeeType: EnumerationMapping employeeTypeMapping: EMPLOYEE_TYPE,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::firmFn():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson[constrainedPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::FirmStats[firmStats]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::firmStatsFn():Relation<Any>[1]
+    firmId: FIRMID,
+    headcount: HEADCOUNT,
+    totalAge: TOTAL_AGE
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::FirmRole[firmRole]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::firmRoleFn():Relation<Any>[1]
+    firmId: FIRMID,
+    role: EMPLOYEE_TYPE
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson[rankedPerson]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::rankedPersonFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    ageRankInFirm: AGE_RANK,
+    upperName: UPPER_NAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  meta::relational::tests::mapping::relation::graphFetch::features::Person_Firm: ModelJoin
+{
+  {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+}
+
+  meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson_Firm: ModelJoin
+{
+  {constrainedEmployees: meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson[1], employer: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1] | $employer.id == $constrainedEmployees.firmId}
+}
+
+  meta::relational::tests::mapping::relation::graphFetch::features::FirmStats_Firm: ModelJoin
+{
+  {stats: meta::relational::tests::mapping::relation::graphFetch::features::FirmStats[1], statsFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1] | $statsFirm.id == $stats.firmId}
+}
+
+  meta::relational::tests::mapping::relation::graphFetch::features::FirmRole_Firm: ModelJoin
+{
+  {roles: meta::relational::tests::mapping::relation::graphFetch::features::FirmRole[1], roleFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1] | $roleFirm.id == $roles.firmId}
+}
+
+  meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson_Firm: ModelJoin
+{
+  {rankedEmployees: meta::relational::tests::mapping::relation::graphFetch::features::RankedPerson[1], rankedFirm: meta::relational::tests::mapping::relation::graphFetch::features::Firm[1] | $rankedFirm.id == $rankedEmployees.firmId}
+}
+
+  meta::relational::tests::mapping::relation::EmployeeType: EnumerationMapping employeeTypeMapping
+  {
+    CONTRACT: 'CONTRACT',
+    FULL_TIME: ['SALARY', 'FULL_TIME']
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::InlineEmbeddedFeaturesMapping
+(
+  *meta::relational::tests::mapping::relation::graphFetch::features::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    address () Inline [addressSet]
+  }
+
+  *meta::relational::tests::mapping::relation::Address[addressSet]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::firmFn():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  meta::relational::tests::mapping::relation::graphFetch::features::Person_Firm: ModelJoin
+{
+  {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+}
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::SrcFeaturesMapping
+(
+  *meta::relational::tests::mapping::relation::graphFetch::features::Person[person]: Relation
+  {
+    ~src meta::relational::tests::mapping::relation::graphFetch::features::personSrc()
+    firstName: $row.FIRSTNAME->toOne(),
+    age: $row.AGE->toOne(),
+    +firmId: Integer[1]: $row.FIRMID->toOne()
+  }
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::Firm[firm]: Relation
+  {
+    ~src meta::relational::tests::mapping::relation::graphFetch::features::firmSrc()
+    legalName: $row.LEGALNAME->toOne(),
+    +id: Integer[1]: $row.ID->toOne()
+  }
+
+  meta::relational::tests::mapping::relation::graphFetch::features::Person_Firm: ModelJoin
+{
+  {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+}
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::NoLocalPropertiesMapping
+(
+  *meta::relational::tests::mapping::relation::graphFetch::features::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    employeeType: EnumerationMapping employeeTypeMapping: EMPLOYEE_TYPE,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+
+  meta::relational::tests::mapping::relation::EmployeeType: EnumerationMapping employeeTypeMapping
+  {
+    CONTRACT: 'CONTRACT',
+    FULL_TIME: ['SALARY', 'FULL_TIME']
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::IncludedPersonMapping
+(
+  *meta::relational::tests::mapping::relation::graphFetch::features::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::personFn():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::features::IncludingFirmMapping
+(
+  include meta::relational::tests::mapping::relation::graphFetch::features::IncludedPersonMapping
+
+  *meta::relational::tests::mapping::relation::graphFetch::features::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::features::firmFn():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  meta::relational::tests::mapping::relation::graphFetch::features::Person_Firm: ModelJoin
+{
+  {employees: meta::relational::tests::mapping::relation::Person[1], firm: meta::relational::tests::mapping::relation::Firm[1] | $firm.id == $employees.firmId}
+}
+)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::relation::graphFetch::features::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::graphFetch::features::setUp():Boolean[1]
+{
+  meta::relational::tests::mapping::relation::graphFetch::features::setUpTables();
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::setUpTables():Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(featuresDB).connectionByElement(featuresDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+  executeInDb('Drop table if exists RFGF_FT_PERSON;', $connection);
+  executeInDb('Create Table RFGF_FT_PERSON(ID INT, FIRSTNAME VARCHAR(100), AGE INT, FIRMID INT, EMPLOYEE_TYPE VARCHAR(20), STREET VARCHAR(100), CITY VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (1, \'Peter\',   23, 1, \'CONTRACT\',  \'Main St\',  \'New York\');', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (2, \'John\',    30, 1, \'FULL_TIME\', \'Oak Ave\',  \'Chicago\');', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (3, \'Jane\',    24, 2, \'SALARY\',    \'Pine Rd\',  \'Boston\');', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (4, \'Fabrice\', 45, 3, \'FULL_TIME\', \'Elm Blvd\', \'Seattle\');', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (5, \'Oliver\',  26, 3, \'CONTRACT\',  \'Lake Dr\',  \'Denver\');', $connection);
+  executeInDb('insert into RFGF_FT_PERSON values (6, \'David\',   52, 3, \'CONTRACT\',  \'Hill St\',  \'Austin\');', $connection);
+  executeInDb('Drop table if exists RFGF_FT_FIRM;', $connection);
+  executeInDb('Create Table RFGF_FT_FIRM(ID INT, LEGALNAME VARCHAR(100));', $connection);
+  executeInDb('insert into RFGF_FT_FIRM values (1, \'Firm X\');', $connection);
+  executeInDb('insert into RFGF_FT_FIRM values (2, \'Firm A\');', $connection);
+  executeInDb('insert into RFGF_FT_FIRM values (3, \'Firm C\');', $connection);
+  true;
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::runFeatures(query: FunctionDefinition<{->Any[*]}>[1], mapping: meta::pure::mapping::Mapping[1]):String[1]
+{
+  execute(
+    $query,
+    $mapping,
+    meta::external::store::relational::tests::testRuntime(featuresDB),
+    meta::relational::extension::relationalExtensions()
+  ).values->toOne()->cast(@String);
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::features::inferredPk(func: FunctionDefinition<Any>[1]):String[*]
+{
+  meta::relational::mapping::inferPrimaryKeyColumnNames($func.expressionSequence->evaluateAndDeactivate()->at(0));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testNestedChildEnumProperty():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName, employeeType}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","employeeType":"CONTRACT"},{"firstName":"John","employeeType":"FULL_TIME"}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane","employeeType":"FULL_TIME"}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","employeeType":"FULL_TIME"},{"firstName":"Oliver","employeeType":"CONTRACT"},{"firstName":"David","employeeType":"CONTRACT"}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testNestedChildEmbeddedProperty():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName, address {city}}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","address":{"city":"New York"}},{"firstName":"John","address":{"city":"Chicago"}}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane","address":{"city":"Boston"}}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","address":{"city":"Seattle"}},{"firstName":"Oliver","address":{"city":"Denver"}},{"firstName":"David","address":{"city":"Austin"}}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testNestedChildInlineEmbeddedProperty():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName, address {street, city}}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","address":{"street":"Main St","city":"New York"}},{"firstName":"John","address":{"street":"Oak Ave","city":"Chicago"}}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane","address":{"street":"Pine Rd","city":"Boston"}}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","address":{"street":"Elm Blvd","city":"Seattle"}},{"firstName":"Oliver","address":{"street":"Lake Dr","city":"Denver"}},{"firstName":"David","address":{"street":"Hill St","city":"Austin"}}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), InlineEmbeddedFeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testBatchSizeOneWithNestedToOne():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Jane","firm":{"legalName":"Firm A"}},{"firstName":"Fabrice","firm":{"legalName":"Firm C"}},' +
+    '{"firstName":"Oliver","firm":{"legalName":"Firm C"}},{"firstName":"David","firm":{"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->graphFetch($tree, 1)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testBatchSizeTwoWithNestedToMany():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane"}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice"},{"firstName":"Oliver"},{"firstName":"David"}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree, 2)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testCheckedWithNestedChildNoDefects():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"firstName":"Peter","firm":{"legalName":"Firm X"}}},' +
+    '{"defects":[],"value":{"firstName":"John","firm":{"legalName":"Firm X"}}},' +
+    '{"defects":[],"value":{"firstName":"Jane","firm":{"legalName":"Firm A"}}},' +
+    '{"defects":[],"value":{"firstName":"Fabrice","firm":{"legalName":"Firm C"}}},' +
+    '{"defects":[],"value":{"firstName":"Oliver","firm":{"legalName":"Firm C"}}},' +
+    '{"defects":[],"value":{"firstName":"David","firm":{"legalName":"Firm C"}}}]',
+    runFeatures(|Person.all()->graphFetchChecked($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testCheckedWithConstraintViolations():Boolean[1]
+{
+  let tree = #{ConstrainedPerson {firstName, age, employer {legalName}}}#;
+  let under50 = '{"id":"under50","externalId":null,"message":"Age must be below 50","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson","path":[]}';
+  let notFirmA = '{"id":"notFirmA","externalId":null,"message":"Employer must not be Firm A","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::relational::tests::mapping::relation::graphFetch::features::ConstrainedPerson","path":[]}';
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"firstName":"Peter","age":23,"employer":{"legalName":"Firm X"}}},' +
+    '{"defects":[],"value":{"firstName":"John","age":30,"employer":{"legalName":"Firm X"}}},' +
+    '{"defects":[' + $notFirmA + '],"value":{"firstName":"Jane","age":24,"employer":{"legalName":"Firm A"}}},' +
+    '{"defects":[],"value":{"firstName":"Fabrice","age":45,"employer":{"legalName":"Firm C"}}},' +
+    '{"defects":[],"value":{"firstName":"Oliver","age":26,"employer":{"legalName":"Firm C"}}},' +
+    '{"defects":[' + $under50 + '],"value":{"firstName":"David","age":52,"employer":{"legalName":"Firm C"}}}]',
+    runFeatures(|ConstrainedPerson.all()->graphFetchChecked($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testCapturedLetVariableInRootFilter():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  let name = 'Oliver';
+  assertJsonStringsEqual(
+    '{"firstName":"Oliver","firm":{"legalName":"Firm C"}}',
+    runFeatures(|Person.all()->filter(p | $p.firstName == $name)->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testQueryParameterInRootFilter():Boolean[1]
+{
+  let query = {minAge: Integer[1] |
+    Person.all()->filter(p | $p.age > $minAge)
+      ->graphFetch(#{Person {firstName, firm {legalName}}}#)
+      ->serialize(#{Person {firstName, firm {legalName}}}#)
+      ->meta::pure::mapping::from(FeaturesMapping, meta::external::store::relational::tests::testRuntime(featuresDB))
+  };
+  let result = meta::legend::executeLegendQuery($query, [pair('minAge', '40')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '{"builder":{"_type":"json"},"values":[{"firstName":"Fabrice","firm":{"legalName":"Firm C"}},{"firstName":"David","firm":{"legalName":"Firm C"}}]}',
+    $result
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testRootFilterOnToOneAssociation():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Fabrice","firm":{"legalName":"Firm C"}},{"firstName":"Oliver","firm":{"legalName":"Firm C"}},{"firstName":"David","firm":{"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->filter(p | $p.firm.legalName == 'Firm C')->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testRootFilterOnToManyAssociationExists():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName, age}}}#;
+  assertJsonStringsEqual(
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","age":45},{"firstName":"Oliver","age":26},{"firstName":"David","age":52}]}',
+    runFeatures(|Firm.all()->filter(f | $f.employees->exists(e | $e.age > 50))->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testQualifierWithParameter():Boolean[1]
+{
+  let tree = #{Person {firstName, greetingWith('Hi')}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","greetingWith(\'Hi\')":"Hi Peter"},{"firstName":"John","greetingWith(\'Hi\')":"Hi John"},' +
+    '{"firstName":"Jane","greetingWith(\'Hi\')":"Hi Jane"},{"firstName":"Fabrice","greetingWith(\'Hi\')":"Hi Fabrice"},' +
+    '{"firstName":"Oliver","greetingWith(\'Hi\')":"Hi Oliver"},{"firstName":"David","greetingWith(\'Hi\')":"Hi David"}]',
+    runFeatures(|Person.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testQualifierNavigatingAssociation():Boolean[1]
+{
+  let tree = #{Person {firstName, firmName}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","firmName()":"Firm X"},{"firstName":"John","firmName()":"Firm X"},' +
+    '{"firstName":"Jane","firmName()":"Firm A"},{"firstName":"Fabrice","firmName()":"Firm C"},' +
+    '{"firstName":"Oliver","firmName()":"Firm C"},{"firstName":"David","firmName()":"Firm C"}]',
+    runFeatures(|Person.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testQualifierWithParameterReturningAssociatedClass():Boolean[1]
+{
+  let tree = #{Firm {legalName, employeesOlderThan(40) {firstName}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employeesOlderThan(40)":[]},' +
+    '{"legalName":"Firm A","employeesOlderThan(40)":[]},' +
+    '{"legalName":"Firm C","employeesOlderThan(40)":[{"firstName":"Fabrice"},{"firstName":"David"}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::features::testInferredPkOfGroupByDistinctAndWindowExtendFunctions():Boolean[1]
+{
+  assertEquals(['FIRMID'], inferredPk(firmStatsFn__Relation_1_));
+  assertSameElements(['FIRMID', 'EMPLOYEE_TYPE'], inferredPk(firmRoleFn__Relation_1_));
+  assertEquals(['ID'], inferredPk(rankedPersonFn__Relation_1_));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testGroupByRelationFunctionRootWithNestedFirm():Boolean[1]
+{
+  let tree = #{FirmStats {firmId, headcount, totalAge, statsFirm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firmId":1,"headcount":2,"totalAge":53,"statsFirm":{"legalName":"Firm X"}},' +
+    '{"firmId":2,"headcount":1,"totalAge":24,"statsFirm":{"legalName":"Firm A"}},' +
+    '{"firmId":3,"headcount":3,"totalAge":123,"statsFirm":{"legalName":"Firm C"}}]',
+    runFeatures(|FirmStats.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testGroupByRelationFunctionAsNestedChild():Boolean[1]
+{
+  let tree = #{Firm {legalName, stats {headcount, totalAge}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","stats":{"headcount":2,"totalAge":53}},' +
+    '{"legalName":"Firm A","stats":{"headcount":1,"totalAge":24}},' +
+    '{"legalName":"Firm C","stats":{"headcount":3,"totalAge":123}}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testDistinctRelationFunctionRootWithNestedFirm():Boolean[1]
+{
+  let tree = #{FirmRole {firmId, role, roleFirm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firmId":1,"role":"CONTRACT","roleFirm":{"legalName":"Firm X"}},' +
+    '{"firmId":1,"role":"FULL_TIME","roleFirm":{"legalName":"Firm X"}},' +
+    '{"firmId":2,"role":"SALARY","roleFirm":{"legalName":"Firm A"}},' +
+    '{"firmId":3,"role":"CONTRACT","roleFirm":{"legalName":"Firm C"}},' +
+    '{"firmId":3,"role":"FULL_TIME","roleFirm":{"legalName":"Firm C"}}]',
+    runFeatures(|FirmRole.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testDistinctRelationFunctionAsNestedChild():Boolean[1]
+{
+  let tree = #{Firm {legalName, roles {role}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","roles":[{"role":"CONTRACT"},{"role":"FULL_TIME"}]},' +
+    '{"legalName":"Firm A","roles":[{"role":"SALARY"}]},' +
+    '{"legalName":"Firm C","roles":[{"role":"CONTRACT"},{"role":"FULL_TIME"}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testWindowExtendRelationFunctionWithNestedFirm():Boolean[1]
+{
+  let tree = #{RankedPerson {firstName, ageRankInFirm, upperName, rankedFirm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","ageRankInFirm":2,"upperName":"PETER","rankedFirm":{"legalName":"Firm X"}},' +
+    '{"firstName":"John","ageRankInFirm":1,"upperName":"JOHN","rankedFirm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Jane","ageRankInFirm":1,"upperName":"JANE","rankedFirm":{"legalName":"Firm A"}},' +
+    '{"firstName":"Fabrice","ageRankInFirm":2,"upperName":"FABRICE","rankedFirm":{"legalName":"Firm C"}},' +
+    '{"firstName":"Oliver","ageRankInFirm":3,"upperName":"OLIVER","rankedFirm":{"legalName":"Firm C"}},' +
+    '{"firstName":"David","ageRankInFirm":1,"upperName":"DAVID","rankedFirm":{"legalName":"Firm C"}}]',
+    runFeatures(|RankedPerson.all()->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testSrcFormWithNestedToMany():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName, age}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter","age":23},{"firstName":"John","age":30}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane","age":24}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice","age":45},{"firstName":"Oliver","age":26},{"firstName":"David","age":52}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), SrcFeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testIncludedMappingRootWithNestedChildAcrossInclude():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Jane","firm":{"legalName":"Firm A"}},{"firstName":"Fabrice","firm":{"legalName":"Firm C"}},' +
+    '{"firstName":"Oliver","firm":{"legalName":"Firm C"}},{"firstName":"David","firm":{"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->graphFetch($tree)->serialize($tree), IncludingFirmMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testNestedChildFromIncludedMapping():Boolean[1]
+{
+  let tree = #{Firm {legalName, employees {firstName}}}#;
+  assertJsonStringsEqual(
+    '[{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]},' +
+    '{"legalName":"Firm A","employees":[{"firstName":"Jane"}]},' +
+    '{"legalName":"Firm C","employees":[{"firstName":"Fabrice"},{"firstName":"Oliver"},{"firstName":"David"}]}]',
+    runFeatures(|Firm.all()->graphFetch($tree)->serialize($tree), IncludingFirmMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testAlloySerializationConfig():Boolean[1]
+{
+  let tree = #{Person {firstName, employeeType, address {city}}}#;
+  let config = alloyConfig(true, true, false, false);
+  let personType = '"@type":"meta::relational::tests::mapping::relation::graphFetch::features::Person"';
+  let addressType = '"@type":"meta::relational::tests::mapping::relation::Address"';
+  let enumPrefix = 'meta::relational::tests::mapping::relation::EmployeeType.';
+  assertJsonStringsEqual(
+    '[{' + $personType + ',"firstName":"Peter","employeeType":"' + $enumPrefix + 'CONTRACT","address":{' + $addressType + ',"city":"New York"}},' +
+    '{' + $personType + ',"firstName":"John","employeeType":"' + $enumPrefix + 'FULL_TIME","address":{' + $addressType + ',"city":"Chicago"}},' +
+    '{' + $personType + ',"firstName":"Jane","employeeType":"' + $enumPrefix + 'FULL_TIME","address":{' + $addressType + ',"city":"Boston"}},' +
+    '{' + $personType + ',"firstName":"Fabrice","employeeType":"' + $enumPrefix + 'FULL_TIME","address":{' + $addressType + ',"city":"Seattle"}},' +
+    '{' + $personType + ',"firstName":"Oliver","employeeType":"' + $enumPrefix + 'CONTRACT","address":{' + $addressType + ',"city":"Denver"}},' +
+    '{' + $personType + ',"firstName":"David","employeeType":"' + $enumPrefix + 'CONTRACT","address":{' + $addressType + ',"city":"Austin"}}]',
+    runFeatures(|Person.all()->graphFetch($tree)->serialize($tree, $config), NoLocalPropertiesMapping)
+  );
+}
+
+// ToFix: @type is emitted as the synthesized mapping class (e.g. Person_FeaturesMapping_person) because the sets declare local
+// mapping properties (+firmId/+id); plain Relational mappings with local properties behave the same way.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::features::testAlloySerializationConfigWithNestedChild():Boolean[1]
+{
+  let tree = #{Person {firstName, employeeType, firm {legalName}}}#;
+  let config = alloyConfig(true, true, false, false);
+  let personType = '"@type":"meta::relational::tests::mapping::relation::graphFetch::features::Person"';
+  let firmType = '"@type":"meta::relational::tests::mapping::relation::graphFetch::features::Firm"';
+  let enumPrefix = 'meta::relational::tests::mapping::relation::EmployeeType.';
+  assertJsonStringsEqual(
+    '[{' + $personType + ',"firstName":"Peter","employeeType":"' + $enumPrefix + 'CONTRACT","firm":{' + $firmType + ',"legalName":"Firm X"}},' +
+    '{' + $personType + ',"firstName":"John","employeeType":"' + $enumPrefix + 'FULL_TIME","firm":{' + $firmType + ',"legalName":"Firm X"}},' +
+    '{' + $personType + ',"firstName":"Jane","employeeType":"' + $enumPrefix + 'FULL_TIME","firm":{' + $firmType + ',"legalName":"Firm A"}},' +
+    '{' + $personType + ',"firstName":"Fabrice","employeeType":"' + $enumPrefix + 'FULL_TIME","firm":{' + $firmType + ',"legalName":"Firm C"}},' +
+    '{' + $personType + ',"firstName":"Oliver","employeeType":"' + $enumPrefix + 'CONTRACT","firm":{' + $firmType + ',"legalName":"Firm C"}},' +
+    '{' + $personType + ',"firstName":"David","employeeType":"' + $enumPrefix + 'CONTRACT","firm":{' + $firmType + ',"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->graphFetch($tree)->serialize($tree, $config), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testSortByAndTakeBeforeGraphFetch():Boolean[1]
+{
+  let tree = #{Person {firstName, age, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","age":23,"firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Jane","age":24,"firm":{"legalName":"Firm A"}},' +
+    '{"firstName":"Oliver","age":26,"firm":{"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->sortBy(p | $p.age)->take(3)->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::features::testSortByAssociationBeforeGraphFetch():Boolean[1]
+{
+  let tree = #{Person {firstName, firm {legalName}}}#;
+  assertJsonStringsEqual(
+    '[{"firstName":"Jane","firm":{"legalName":"Firm A"}},' +
+    '{"firstName":"David","firm":{"legalName":"Firm C"}}]',
+    runFeatures(|Person.all()->filter(p | $p.age > 50 || $p.firm.legalName == 'Firm A')->sortBy(p | $p.firm.legalName)->graphFetch($tree)->serialize($tree), FeaturesMapping)
+  );
+}

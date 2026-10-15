@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "marketplace-schema.json",
+  "title": "Claude Code Plugin Marketplace",
+  "description": "Schema for .claude-plugin/marketplace.json — the catalog file that lists the plugins a marketplace distributes.",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema file."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Marketplace identifier in kebab-case (no spaces)."
+    },
+    "owner": {
+      "type": "object",
+      "description": "Marketplace maintainer information.",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "additionalProperties": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief marketplace description."
+    },
+    "version": {
+      "type": "string",
+      "description": "Marketplace manifest version."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Marketplace metadata. description/version are also accepted here for backward compatibility.",
+      "properties": {
+        "pluginRoot": {
+          "type": "string",
+          "description": "Base directory prepended to relative plugin source paths."
+        },
+        "description": { "type": "string" },
+        "version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "allowCrossMarketplaceDependenciesOn": {
+      "type": "array",
+      "description": "Other marketplaces that plugins in this marketplace may depend on.",
+      "items": { "type": "string" }
+    },
+    "renames": {
+      "type": "object",
+      "description": "Map from a former plugin name to its current name, or null if removed.",
+      "additionalProperties": {
+        "oneOf": [{ "type": "string" }, { "type": "null" }]
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "description": "List of available plugins.",
+      "items": { "$ref": "#/definitions/pluginEntry" }
+    }
+  },
+  "definitions": {
+    "pluginEntry": {
+      "type": "object",
+      "required": ["name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Plugin identifier in kebab-case (no spaces)."
+        },
+        "source": {
+          "$ref": "#/definitions/pluginSource",
+          "description": "Where to fetch the plugin from."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name shown in UI surfaces. Falls back to name when omitted."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief plugin description."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+",
+          "description": "Plugin version. If also set in plugin.json, plugin.json wins."
+        },
+        "author": {
+          "type": "object",
+          "description": "Author information.",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "url": { "type": "string", "format": "uri" }
+          },
+          "additionalProperties": false
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Plugin homepage or documentation URL."
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Source code repository URL."
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX license identifier (e.g. \"MIT\", \"Apache-2.0\")."
+        },
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags for plugin discovery and categorization."
+        },
+        "category": {
+          "type": "string",
+          "description": "Plugin category for organization."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags for searchability."
+        },
+        "strict": {
+          "type": "boolean",
+          "description": "Whether plugin.json is the authority for component definitions. Defaults to true."
+        },
+        "defaultEnabled": {
+          "type": "boolean",
+          "description": "Whether the plugin starts enabled when the user has not set a preference. Defaults to true. Takes precedence over the same field in plugin.json."
+        },
+        "relevance": {
+          "type": "object",
+          "description": "Signals that tell Claude Code when to suggest this plugin to users."
+        },
+        "skills": {
+          "$ref": "#/definitions/stringOrStringArray",
+          "description": "Custom paths to skill directories containing <name>/SKILL.md."
+        },
+        "commands": {
+          "$ref": "#/definitions/stringOrStringArray",
+          "description": "Custom paths to flat .md skill files or directories."
+        },
+        "agents": {
+          "$ref": "#/definitions/stringOrStringArray",
+          "description": "Custom paths to agent files."
+        },
+        "hooks": {
+          "$ref": "#/definitions/stringOrStringArrayOrObject",
+          "description": "Custom hooks configuration or path to hooks file."
+        },
+        "mcpServers": {
+          "$ref": "#/definitions/stringOrStringArrayOrObject",
+          "description": "MCP server configurations or path to MCP config."
+        },
+        "lspServers": {
+          "$ref": "#/definitions/stringOrStringArrayOrObject",
+          "description": "LSP server configurations or path to LSP config."
+        }
+      }
+    },
+    "pluginSource": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./",
+          "description": "Local directory within the marketplace repo, relative to the marketplace root."
+        },
+        {
+          "type": "object",
+          "required": ["source", "repo"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "const": "github" },
+            "repo": { "type": "string", "description": "GitHub repository in owner/repo format." },
+            "ref": { "type": "string" },
+            "sha": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["source", "url"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "const": "url" },
+            "url": { "type": "string" },
+            "ref": { "type": "string" },
+            "sha": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["source", "url", "path"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "const": "git-subdir" },
+            "url": { "type": "string" },
+            "path": { "type": "string" },
+            "ref": { "type": "string" },
+            "sha": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["source", "package"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "const": "npm" },
+            "package": { "type": "string" },
+            "version": { "type": "string" },
+            "registry": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "stringOrStringArray": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      ]
+    },
+    "stringOrStringArrayOrObject": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        { "type": "object" }
+      ]
+    }
+  }
+}

@@ -24,6 +24,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,

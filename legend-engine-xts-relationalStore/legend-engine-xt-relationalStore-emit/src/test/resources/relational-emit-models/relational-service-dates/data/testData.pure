@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The rows every service in this model reads, given to each test suite as
+// test data. The wall clocks are read as UTC.
+
+###Data
+Data demo::dates::data::TradingData
+{
+  Relational
+  #{
+    default.PRODUCT:
+      'ID,NAME,FROM_Z,THRU_Z\n' +
+      '1,Widget,2025-01-01,2025-07-02\n' +
+      '1,Widget Mk2,2025-07-02,9999-12-31\n' +
+      '2,Gadget,2025-01-01,9999-12-31\n';
+    default.ACCOUNT:
+      'ID,STATUS,IN_Z,OUT_Z\n' +
+      '1,OPEN,2025-01-01 00:00:00,2025-07-02 12:00:00\n' +
+      '1,FROZEN,2025-07-02 12:00:00,9999-12-31 23:59:59\n' +
+      '2,PENDING,2025-01-01 00:00:00,2025-07-02 10:30:00\n' +
+      '2,OPEN,2025-07-02 10:30:00,9999-12-31 23:59:59\n';
+    default.RATING:
+      'ISSUER,GRADE,IN_Z,OUT_Z,FROM_Z,THRU_Z\n' +
+      'Acme,A,2025-01-01 00:00:00,2025-07-02 12:00:00,2025-01-01 00:00:00,2025-07-01 12:00:00\n' +
+      'Acme,AA,2025-07-02 12:00:00,9999-12-31 23:59:59,2025-01-01 00:00:00,2025-07-01 12:00:00\n' +
+      'Acme,A-,2025-01-01 00:00:00,2025-07-02 12:00:00,2025-07-01 12:00:00,9999-12-31 23:59:59\n' +
+      'Acme,BBB,2025-07-02 12:00:00,9999-12-31 23:59:59,2025-07-01 12:00:00,9999-12-31 23:59:59\n';
+    default.TRADE:
+      'ID,PRODUCT_ID,ACCOUNT_ID,TRADE_DATE,EXECUTED_AT,QUANTITY\n' +
+      '1,1,1,2025-07-01,2025-07-01 16:00:00,100\n' +
+      '2,1,2,2025-07-02,2025-07-02 09:00:00,200\n' +
+      '3,2,1,2025-07-02,2025-07-02 10:45:00,300\n' +
+      '4,2,2,2025-07-02,2025-07-02 13:00:00,400\n' +
+      '5,1,1,2025-07-03,2025-07-03 09:30:00,500\n';
+  }#
+}

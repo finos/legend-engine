@@ -29,7 +29,7 @@ Mapping demo::relation::mapping::BaseIncludeMapping
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
-    active: $src.ACTIVE == 1,
+    active: $row.ACTIVE == 1,
     hireDate: HIRE_DATE,
     salary: SALARY
   }

@@ -31,6 +31,20 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
       assert($relation.genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation), | 'var table expression must be a relation');
 
       $relation->evaluateAndDeactivate();
+    }),
+
+    misc('generate_series', Relation, {args, fc, expCtx, ctx |
+      assertRelation($ctx.relation, 'generate_series');
+      assert($args->size() == 2 || $args->size() == 3, | 'generate_series requires 2 or 3 arguments');
+      assert($args->forAll(a | $a.genericType.rawType->toOne()->subTypeOf(Integer)), | 'generate_series is only supported for integer arguments');
+
+      let columnName = $ctx.aliasColumns->first()->orElse('generate_series');
+      let relationType = buildRelationType(newRelationColumn($columnName, Integer, PureOne));
+      let func = if($args->size() == 3,
+        | meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_,
+        | meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_);
+
+      sfe($func, $relationType, $relationType.typeArguments, $args->concatenate(iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $columnName))));
     })
   ]
 }
@@ -813,6 +827,10 @@ function meta::external::query::sql::transformation::queryToPure::window(name:St
 Class meta::external::query::sql::transformation::queryToPure::AggregateFunctionPreProcessorWrapper
 {
   map:meta::external::query::sql::metamodel::Expression[0..1];
+  // A fully-built Pure map expression (for example rowMapper(a, b)) for aggregates whose map cannot be
+  // expressed as a single SQL metamodel Expression. When set, it is used verbatim instead of processing
+  // `map` through processMapFunctionArgument; only one of `map` / `mapValueSpecification` is populated.
+  mapValueSpecification:ValueSpecification[0..1];
   aggregate:meta::external::query::sql::metamodel::Expression[1];
   sortItems:meta::external::query::sql::metamodel::SortItem[*];
   filter:meta::external::query::sql::metamodel::Expression[0..1];

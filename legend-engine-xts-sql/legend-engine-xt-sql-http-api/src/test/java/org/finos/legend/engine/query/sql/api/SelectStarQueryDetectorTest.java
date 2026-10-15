@@ -200,6 +200,26 @@ public class SelectStarQueryDetectorTest
     }
 
     @Test
+    public void testAliasedRelationWithColumnAliases()
+    {
+        assertIsNotSelectStar("SELECT * FROM service('/myService') AS t(a)");
+        assertIsNotSelectStar("SELECT * FROM service('/myService') AS t(a, b, c)");
+        assertIsNotSelectStar("SELECT * FROM service('/myService', businessDate => '2015-01-01') AS t(a, b)");
+        assertIsNotSelectStar("SELECT * FROM (SELECT * FROM service('/myService')) AS t(a, b)");
+        assertIsNotSelectStar("SELECT * FROM (SELECT * FROM service('/myService') AS inner_t(x, y)) AS outer_t");
+        assertIsNotSelectStar("SELECT * FROM (SELECT * FROM service('/myService') AS inner_t) AS outer_t(a, b)");
+    }
+
+    @Test
+    public void testAliasedRelationWithoutColumnAliasesIsStillSelectStar()
+    {
+        assertIsSelectStar("SELECT * FROM service('/myService') AS t");
+        assertIsSelectStar("SELECT * FROM service('/myService') t");
+        assertIsSelectStar("SELECT * FROM service('/myService', businessDate => '2015-01-01') AS t");
+        assertIsSelectStar("SELECT * FROM (SELECT * FROM service('/myService') AS inner_t) AS outer_t");
+    }
+
+    @Test
     public void testNullQuery()
     {
         assertFalse(SelectStarQueryDetector.isSelectStar(null));

@@ -51,6 +51,11 @@ function meta::relational::tests::mapping::enumeration::createTablesAndFillDb():
     executeInDb('insert into employeeTable (id, name, firmId, doh, type, active,skills) values (2, \'Bob\',    0, \'2003-07-19\', \'FTE\', 0,\',1,2,\')', $connection);
     executeInDb('insert into employeeTable (id, name, firmId, doh, type, active,skills) values (3, \'Curtis\', 0, \'2012-08-25\', \'FTO\', null, \',3,2,\')', $connection);
 
+    dropAndCreateTableInDb(myDB, 'employeeTable2', $connection);
+
+    executeInDb('insert into employeeTable2 (id, name, firmId, doh, type, active,skills) values (4, \'Dan\',  0, \'1990-01-10\', \'FTE\', 1,null)', $connection);
+    executeInDb('insert into employeeTable2 (id, name, firmId, doh, type, active,skills) values (5, \'Erin\', 0, \'1995-05-20\', \'FTC\', 0,null)', $connection);
+
     dropAndCreateTableInDb(tradeDB, 'eqTradeTable', $connection);
     executeInDb('insert into eqTradeTable (id, product, type, qty) values (1, \'Firm D\',  \'BUY\',  10)', $connection);
     executeInDb('insert into eqTradeTable (id, product, type, qty) values (2, \'MSFT\', \'BUY\',  20)', $connection);
@@ -591,4 +596,22 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testEnu
   assertSameElements($result.values.rows.getEnum('Type If'), $result.values.rows.getEnum('Type'));
   let tds = $result.values->at(0);
   assertSize($tds.rows, 3);
+}
+
+// Ledger-shaped union: two branches map 'type' through differently-named-but-identical EnumerationMappings,
+// and the enum IN runs on the class property before project (as the GL service does) - it must resolve to a
+// single source-value IN list across the UNION rather than fail as "multiple mappings".
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnUnionOfIdenticalEnumMappings():Boolean[1]
+{
+  let result = execute(|Employee.all()->filter(
+                    e | $e.type->toOne()->in([EmployeeType.CONTRACT])
+                  )->project(
+                    [x|$x.type],
+                    ['Type']
+                  ), employeeUnionDistinctEnumMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertEquals(['CONTRACT'], $tds->columnValues('Type')->map(e|$e->cast(@Enum)->id())->removeDuplicates());
 }

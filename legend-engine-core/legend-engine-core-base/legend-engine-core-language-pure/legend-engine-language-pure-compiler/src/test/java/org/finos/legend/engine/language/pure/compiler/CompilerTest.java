@@ -24,6 +24,8 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
+import org.finos.legend.pure.m4.tools.time.TimeZoneResolution;
+import org.finos.legend.pure.runtime.java.shared.time.TimeZoneResolutionOption;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,5 +59,11 @@ public class CompilerTest
         SourceInformation sourceInformationForLambda = HelperValueSpecificationBuilder.buildLambda(lambda, PureModel.getCorePureModel().getContext()).getSourceInformation();
         Assert.assertNotNull(sourceInformationForLambda);
         Assert.assertEquals(SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), sourceInformationForLambda);
+    }
+
+    @Test
+    public void pureModelAsksForTheLegacyTimeZoneResolution()
+    {
+        Assert.assertSame(TimeZoneResolution.LEGACY, TimeZoneResolutionOption.getTimeZoneResolution(PureModel.getCorePureModel().getExecutionSupport().getRuntimeOptions()));
     }
 }

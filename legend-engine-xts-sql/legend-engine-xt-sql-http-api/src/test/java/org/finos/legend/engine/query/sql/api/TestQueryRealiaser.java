@@ -98,6 +98,13 @@ public class TestQueryRealiaser
     }
 
     @Test
+    public void testCorrelatedReferenceIntoNestedDerivedTable()
+    {
+        test("select abt.nm from (select name as nm, dept_id as dk from persons as p) as abt where exists (select hist.b from (select d.id as b from departments as d inner join persons as q on (q.dept_id = d.id) where d.id = abt.dk) as hist)",
+                "select abt.nm from (select name as nm, dept_id as dk from persons as p_1) as abt where exists (select hist_4.b from (select d_2.id as b from departments as d_2 inner join persons as q_3 on (q_3.dept_id = d_2.id) where d_2.id = abt.dk) as hist_4)");
+    }
+
+    @Test
     public void testNonExistingReferencedAlias()
     {
         String error = "no named relation found for 't1', ensure you have aliased the correct table/subquery";

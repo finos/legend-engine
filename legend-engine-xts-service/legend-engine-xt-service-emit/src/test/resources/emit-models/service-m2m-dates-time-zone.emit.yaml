@@ -1,0 +1,49 @@
+name: service-m2m-dates-time-zone
+title: "Dates in Model-to-Model Service Queries with a Time Zone"
+description: |
+  Services over a model-to-model mapping that put a date in the query, written
+  in or given as a parameter, and name a time zone somewhere a model-to-model
+  service can: in the dateTimeFormat a graph fetch writes its date-times with,
+  in the mapping that builds the result, where convertTimeZone and a format
+  string each write a time in a named zone, and in the query itself, where two
+  moments are compared by their New York calendar dates.
+
+  The zones are chosen so that a wrong reading shows. PST stands for a region
+  on daylight saving time in July and EST for a fixed offset, so the two are
+  two hours apart rather than three. Kolkata is five and a half hours ahead of
+  UTC, so an hours-only conversion would be half an hour out. And one trade was
+  executed at 01:30 UTC, which is the evening before in New York, so comparing
+  UTC dates would put it on the wrong day.
+
+modelSources:
+  model:
+    root: service-m2m-dates-time-zone
+    files:
+      - mapping/reportMapping.pure
+      - service/services.pure
+  dependencies:
+    - source: service-m2m-shared-dates.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:serialization-date-time-format
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - execution:test-data
+  - mapping:m2m-transform
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-connection
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - graph-fetch
+  - service-test
+  - parameters
+  - time-zone
+  - date-format
+  - date-time

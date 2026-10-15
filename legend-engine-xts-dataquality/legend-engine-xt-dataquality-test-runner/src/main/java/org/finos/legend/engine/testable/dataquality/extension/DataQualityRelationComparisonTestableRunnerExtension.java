@@ -55,6 +55,13 @@ public class DataQualityRelationComparisonTestableRunnerExtension implements Tes
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        DataQualityRelationComparison comparison = (DataQualityRelationComparison) element;
+        return comparison.testSuites == null ? 0 : comparison.testSuites.size();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_external_dataquality_DataQualityRelationComparison)

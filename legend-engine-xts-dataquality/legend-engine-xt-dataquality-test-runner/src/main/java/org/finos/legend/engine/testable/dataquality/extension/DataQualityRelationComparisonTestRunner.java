@@ -361,7 +361,8 @@ public class DataQualityRelationComparisonTestRunner implements TestRunner
                             element._additionalColumnsToPersist(),
                             this.pureModel.getExecutionSupport()
                     );
-            return DataQualityReconLambdaGenerator.generateLambda(this.pureModel, reconInput);
+            return DataQualityReconLambdaGenerator.generateLambda(this.pureModel, reconInput,
+                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport())));
         }
     }
 

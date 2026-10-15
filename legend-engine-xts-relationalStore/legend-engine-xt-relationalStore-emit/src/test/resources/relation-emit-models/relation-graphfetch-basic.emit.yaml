@@ -1,0 +1,54 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+name: relation-graphfetch-basic
+title: "Relation Function Mapping — Graph Fetch of Root Primitives, Enum, Embedded and Inline Embedded"
+description: |
+  Graph fetch (graphFetch/serialize) over Relation (~func) class mappings without any
+  association: a root ->filter pushed onto the relation-function source with a qualifier
+  (fullName(), a derived property) in the tree; an enumeration-mapped property; and an
+  Address reached through an embedded mapping and, separately, through an inline embedded
+  mapping (address () Inline [setId]). Verifies the graph-fetch root query is generated
+  against the relation-function sub-select and that embedded / inline embedded sub-trees
+  are filled from the same row rather than through a cross-set fetch.
+
+modelSources:
+  model:
+    root: relation-graphfetch-basic
+    files:
+      - mapping/basicGraphFetchMapping.pure   # three ###Mapping elements (basic, embedded, inline embedded) with graph-fetch testSuites
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:graph-fetch
+  - execution:test-data
+  - grammar:derived-property
+  - mapping:enumeration-mapping
+  - mapping:relation-embedded
+  - mapping:relation-inline-embedded
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - graph-fetch
+  - embedded

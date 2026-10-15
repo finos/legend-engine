@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.dsl.service.generation.extension.Se
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.plan.platform.java.JavaSourceHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
@@ -44,6 +45,10 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_legendJava_NodesAndTypeInfos;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_typeInfo_TypeInfoSet;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
@@ -80,6 +85,340 @@ public class ServicePlanGenerator
     public static ExecutionPlan generateServiceExecutionPlan(Service service, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
     {
         return generateExecutionPlan(service.getPath(), service.execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
+    }
+
+    // [A] routed-but-unbound plans + what is needed to rebuild single vs composite protocol plans
+    private static final class RoutedService
+    {
+        final MutableList<Root_meta_pure_executionPlan_ExecutionPlan> purePlans = Lists.mutable.empty();
+        final MutableList<String> planIds = Lists.mutable.empty();
+        final MutableList<String> keys = Lists.mutable.empty();
+        String execKey = null;
+        boolean multi = false;
+    }
+
+    // [B] leaf result: protocol plan, node-only Java, this service's TypeInfoSet, representative Pure plan
+    public static final class ServicePlanAndAst
+    {
+        public final ExecutionPlan plan;
+        public final Root_meta_external_language_java_metamodel_project_Project project;
+        public final Root_meta_pure_executionPlan_platformBinding_typeInfo_TypeInfoSet typeInfos;
+        public final Root_meta_pure_executionPlan_ExecutionPlan representativePurePlan;
+
+        ServicePlanAndAst(ExecutionPlan plan, Root_meta_external_language_java_metamodel_project_Project project, Root_meta_pure_executionPlan_platformBinding_typeInfo_TypeInfoSet typeInfos, Root_meta_pure_executionPlan_ExecutionPlan representativePurePlan)
+        {
+            this.plan = plan;
+            this.project = project;
+            this.typeInfos = typeInfos;
+            this.representativePurePlan = representativePurePlan;
+        }
+    }
+
+    // [B] leaf entry point used by the SDLC build: binds node code only; shared layer is built at the root
+    public static ServicePlanAndAst generateServiceExecutionPlanAndAst(Service service, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        long tRoute0 = System.nanoTime();
+        RoutedService routed = routeService(service.execution, planId, context, pureModel, extensions);
+        long tRoute = System.nanoTime() - tRoute0;
+
+        long tNode0 = System.nanoTime();
+        Root_meta_pure_executionPlan_platformBinding_legendJava_NodesAndTypeInfos nt = platform.bindPlansToNodeAst(routed.purePlans, routed.planIds, pureModel, extensions);
+        long tNode = System.nanoTime() - tNode0;
+
+        MutableList<Root_meta_pure_executionPlan_ExecutionPlan> bound = Lists.mutable.withAll(nt._plans());
+
+        long tSer0 = System.nanoTime();
+        MutableList<SingleExecutionPlan> serialized = bound.collect(p -> PlanGenerator.stringToPlan(PlanGenerator.serializeToJSON(p, clientVersion, pureModel, extensions, transformers)));
+        long tSer = System.nanoTime() - tSer0;
+
+        if (LOGGER.isInfoEnabled())
+        {
+            LOGGER.info("[timing] LEAF {} ({} plan(s)): routing={}s nodeJavaGen={}s planSerialize={}s",
+                    service.getPath(), routed.purePlans.size(), secs(tRoute), secs(tNode), secs(tSer));
+        }
+
+        ExecutionPlan protocolPlan;
+        if (routed.multi)
+        {
+            MutableMap<String, SingleExecutionPlan> planMap = Maps.mutable.ofInitialCapacity(serialized.size());
+            for (int i = 0; i < serialized.size(); i++)
+            {
+                planMap.put(routed.keys.get(i), serialized.get(i));
+            }
+            protocolPlan = new CompositeExecutionPlan(planMap, routed.execKey, routed.keys);
+        }
+        else
+        {
+            protocolPlan = serialized.get(0);
+        }
+        Root_meta_pure_executionPlan_ExecutionPlan representative = bound.isEmpty() ? null : bound.get(0);
+        return new ServicePlanAndAst(protocolPlan, nt._project(), nt._typeInfos(), representative);
+    }
+
+    // [C] BATCH: process all services in a PMCD in one call.
+    //   LEAF  - each service is bound to node code only + its TypeInfoSet (via generateServiceExecutionPlanAndAst).
+    //   JOIN  - node ASTs and TypeInfoSets are merged as fork-join tasks join.
+    //   ROOT  - the shared type layer is generated exactly ONCE from the union of TypeInfoSets, merged with
+    //           the node ASTs, dependencies are resolved once, and the merged AST is attached to a
+    //           representative pure plan and serialized once. The result is a single ExecutionPlan whose
+    //           implementation Java classes carry the full merged output for JavaSourceHelper.writeJavaSourceFiles.
+    //
+    // Returns per-service (node-only, ready-to-write) plans aligned with the input service order plus the
+    // merged-Java ExecutionPlan. mergedJavaPlan is null when no services produce any Java (e.g. all services
+    // are Pure single-execution with empty TypeInfoSets).
+    public static final class ServicePlanBatchResult
+    {
+        public final MutableList<ExecutionPlan> perServicePlans;
+        public final ExecutionPlan mergedJavaPlan;
+
+        ServicePlanBatchResult(MutableList<ExecutionPlan> perServicePlans, ExecutionPlan mergedJavaPlan)
+        {
+            this.perServicePlans = perServicePlans;
+            this.mergedJavaPlan = mergedJavaPlan;
+        }
+    }
+
+    public static ServicePlanBatchResult generateServiceExecutionPlanBatch(List<Service> services, PureModel pureModel, String clientVersion, PlanPlatform platform, String packagePrefix, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, int parallelism)
+    {
+        if (services == null || services.isEmpty())
+        {
+            return new ServicePlanBatchResult(Lists.mutable.empty(), null);
+        }
+
+        // Inherit the caller's context ClassLoader on every worker. In a Maven plugin execution the caller
+        // thread's context CL is the plugin ClassRealm, which is the only CL that can see the Pure generated
+        // classes (e.g. Root_meta_pure_metamodel_function_Function). ForkJoinWorkerThread's default context CL
+        // is the system class loader, which under Maven cannot see plugin dependencies and produces
+        // ClassNotFoundException from CompiledProcessorSupport / ClassCache on first parallel resolution.
+        ClassLoader callerContextCL = Thread.currentThread().getContextClassLoader();
+        ForkJoinPool pool = (parallelism > 1) ? new ForkJoinPool(parallelism, p ->
+        {
+            java.util.concurrent.ForkJoinWorkerThread t = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
+            t.setContextClassLoader(callerContextCL);
+            return t;
+        }, null, false) : null;
+        try
+        {
+            BatchAcc acc;
+            if (pool == null)
+            {
+                acc = null;
+                for (Service service : services)
+                {
+                    acc = mergeBatchAcc(acc, bindServiceLeaf(service, pureModel, clientVersion, platform, packagePrefix, extensions, transformers), pureModel);
+                }
+            }
+            else
+            {
+                acc = pool.invoke(new BatchBindTask(services, pureModel, clientVersion, platform, packagePrefix, extensions, transformers));
+            }
+
+            ExecutionPlan mergedJavaPlan = null;
+            if (acc != null && acc.representative != null && !acc.typeInfos.isEmpty())
+            {
+                long tUnion0 = System.nanoTime();
+                Root_meta_pure_executionPlan_platformBinding_typeInfo_TypeInfoSet union = PlanPlatform.JAVA.unionTypeInfos(acc.typeInfos, pureModel);
+                LOGGER.info("[timing] ROOT global union of {} per-service type-sets = {}s", acc.typeInfos.size(), secs(System.nanoTime() - tUnion0));
+
+                long tTypes0 = System.nanoTime();
+                Root_meta_external_language_java_metamodel_project_Project sharedTypes = PlanPlatform.JAVA.generateSharedTypes(union, pureModel, extensions);
+                LOGGER.info("[timing] ROOT shared interface/enum Java generation = {}s", secs(System.nanoTime() - tTypes0));
+
+                long tMerge0 = System.nanoTime();
+                Root_meta_external_language_java_metamodel_project_Project prelim = (acc.project == null) ? sharedTypes : PlanPlatform.JAVA.mergeAsts(sharedTypes, acc.project, pureModel);
+                LOGGER.info("[timing] ROOT merge shared types + node ASTs = {}s", secs(System.nanoTime() - tMerge0));
+
+                long tDeps0 = System.nanoTime();
+                Root_meta_external_language_java_metamodel_project_Project depProject = PlanPlatform.JAVA.resolveProjectDependencies(prelim, pureModel);
+                LOGGER.info("[timing] ROOT dependency resolution (from assembled project) = {}s", secs(System.nanoTime() - tDeps0));
+
+                Root_meta_external_language_java_metamodel_project_Project fullProject = (depProject == null) ? prelim : PlanPlatform.JAVA.mergeAsts(prelim, depProject, pureModel);
+
+                long tSer0 = System.nanoTime();
+                RichIterable<? extends Root_meta_pure_executionPlan_ExecutionPlan> withImpl = PlanPlatform.JAVA.attachMergedImplementationParallel(Lists.mutable.with(acc.representative), fullProject, pureModel, pool);
+                mergedJavaPlan = PlanGenerator.stringToPlan(PlanGenerator.serializeToJSON(withImpl.getFirst(), clientVersion, pureModel, extensions, transformers));
+                LOGGER.info("[timing] ROOT serialization of merged AST to protocol = {}s (across {} services)", secs(System.nanoTime() - tSer0), services.size());
+            }
+            return new ServicePlanBatchResult(acc == null ? Lists.mutable.empty() : acc.perServicePlans, mergedJavaPlan);
+        }
+        finally
+        {
+            if (pool != null)
+            {
+                pool.shutdown();
+            }
+        }
+    }
+
+    // sdlc-style planId derivation kept in engine so callers don't need to reimplement it.
+    // Prepends a dot-to-underscore packagePrefix, converts :: to _, and sanitizes to a valid Java identifier.
+    static String buildPlanId(String packagePrefix, String servicePath)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (packagePrefix != null && !packagePrefix.isEmpty())
+        {
+            builder.append(packagePrefix.replace('.', '_')).append('_');
+        }
+        builder.append(servicePath.replace("::", "_"));
+        return JavaSourceHelper.toValidJavaIdentifier(builder.toString(), '$', true);
+    }
+
+    private static BatchAcc bindServiceLeaf(Service service, PureModel pureModel, String clientVersion, PlanPlatform platform, String packagePrefix, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        String planId = buildPlanId(packagePrefix, service.getPath());
+        ServicePlanAndAst bound = generateServiceExecutionPlanAndAst(service, null, pureModel, clientVersion, platform, planId, extensions, transformers);
+        BatchAcc acc = new BatchAcc();
+        acc.perServicePlans.add(bound.plan);
+        acc.project = bound.project;
+        acc.typeInfos.add(bound.typeInfos);
+        acc.representative = bound.representativePurePlan;
+        return acc;
+    }
+
+    private static BatchAcc mergeBatchAcc(BatchAcc left, BatchAcc right, PureModel pureModel)
+    {
+        if (left == null)
+        {
+            return right;
+        }
+        if (right == null)
+        {
+            return left;
+        }
+        BatchAcc merged = new BatchAcc();
+        merged.perServicePlans.addAll(left.perServicePlans);
+        merged.perServicePlans.addAll(right.perServicePlans);
+        merged.project = (left.project == null) ? right.project : ((right.project == null) ? left.project : PlanPlatform.JAVA.mergeAsts(left.project, right.project, pureModel));
+        merged.typeInfos.addAll(left.typeInfos);
+        merged.typeInfos.addAll(right.typeInfos);
+        merged.representative = (left.representative != null) ? left.representative : right.representative;
+        return merged;
+    }
+
+    // Internal accumulator carried up the fork-join JOIN tree. Per-service plans are concatenated in
+    // left-then-right order at each JOIN so the final list stays aligned with the input service order.
+    private static final class BatchAcc
+    {
+        final MutableList<ExecutionPlan> perServicePlans = Lists.mutable.empty();
+        Root_meta_external_language_java_metamodel_project_Project project;
+        final MutableList<Root_meta_pure_executionPlan_platformBinding_typeInfo_TypeInfoSet> typeInfos = Lists.mutable.empty();
+        Root_meta_pure_executionPlan_ExecutionPlan representative;
+    }
+
+    private static final class BatchBindTask extends RecursiveTask<BatchAcc>
+    {
+        private static final long serialVersionUID = 1L;
+
+        private final List<Service> services;
+        private final PureModel pureModel;
+        private final String clientVersion;
+        private final PlanPlatform platform;
+        private final String packagePrefix;
+        private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
+        private final Iterable<? extends PlanTransformer> transformers;
+        private final int start;
+        private final int end;
+
+        BatchBindTask(List<Service> services, PureModel pureModel, String clientVersion, PlanPlatform platform, String packagePrefix, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+        {
+            this(services, pureModel, clientVersion, platform, packagePrefix, extensions, transformers, 0, services.size());
+        }
+
+        private BatchBindTask(List<Service> services, PureModel pureModel, String clientVersion, PlanPlatform platform, String packagePrefix, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, int start, int end)
+        {
+            this.services = services;
+            this.pureModel = pureModel;
+            this.clientVersion = clientVersion;
+            this.platform = platform;
+            this.packagePrefix = packagePrefix;
+            this.extensions = extensions;
+            this.transformers = transformers;
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        protected BatchAcc compute()
+        {
+            int length = this.end - this.start;
+            if (length < 1)
+            {
+                return null;
+            }
+            if (length == 1)
+            {
+                return bindServiceLeaf(this.services.get(this.start), this.pureModel, this.clientVersion, this.platform, this.packagePrefix, this.extensions, this.transformers);
+            }
+            int split = this.start + (length / 2);
+            BatchBindTask left = new BatchBindTask(this.services, this.pureModel, this.clientVersion, this.platform, this.packagePrefix, this.extensions, this.transformers, this.start, split);
+            BatchBindTask right = new BatchBindTask(this.services, this.pureModel, this.clientVersion, this.platform, this.packagePrefix, this.extensions, this.transformers, split, this.end);
+            invokeAll(left, right);
+            return mergeBatchAcc(left.getRawResult(), right.getRawResult(), this.pureModel);
+        }
+    }
+
+    // [G] timing log helper
+    private static String secs(long nanos)
+    {
+        return String.format("%.3f", nanos / 1_000_000_000.0);
+    }
+
+    // [A] route without binding
+    private static RoutedService routeService(Execution execution, String planId, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
+    {
+        RoutedService routed = new RoutedService();
+        if (execution instanceof PureSingleExecution)
+        {
+            PureSingleExecution se = (PureSingleExecution) execution;
+            Mapping mapping = se.mapping != null ? pureModel.getMapping(se.mapping) : null;
+            Root_meta_core_runtime_Runtime runtime = se.runtime != null ? HelperRuntimeBuilder.buildPureRuntime(se.runtime, pureModel.getContext()) : null;
+            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(se.func.body, se.func.parameters, pureModel.getContext());
+            Root_meta_pure_runtime_ExecutionContext ctx = (se.executionOptions == null) ? context : getExecutionOptionContext(se.executionOptions, pureModel);
+            routed.purePlans.add(PlanGenerator.generateExecutionPlanAsPure(lambda, mapping, runtime, ctx, pureModel, null, null, extensions));
+            routed.planIds.add(planId);
+        }
+        else if (execution instanceof PureMultiExecution)
+        {
+            routed.multi = true;
+            PureMultiExecution multi = (PureMultiExecution) execution;
+            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(multi.func.body, multi.func.parameters, pureModel.getContext());
+            if (multi.executionParameters != null && !multi.executionParameters.isEmpty())
+            {
+                routed.execKey = multi.executionKey;
+                int i = 0;
+                for (KeyedExecutionParameter ep : multi.executionParameters)
+                {
+                    Mapping mapping = pureModel.getMapping(ep.mapping);
+                    Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(ep.runtime, pureModel.getContext());
+                    Root_meta_pure_runtime_ExecutionContext ctx = (ep.executionOptions == null) ? context : getExecutionOptionContext(ep.executionOptions, pureModel);
+                    routed.purePlans.add(PlanGenerator.generateExecutionPlanAsPure(lambda, mapping, runtime, ctx, pureModel, null, null, extensions));
+                    routed.planIds.add(planId != null ? planId + "_" + i : null);
+                    routed.keys.add(getExecutionKey(ep));
+                    i++;
+                }
+            }
+            else
+            {
+                Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = core_service_service_helperFunctions.Root_meta_legend_service_getExecutionEnvironmentFromFunctionDefinition_FunctionDefinition_1__ExecutionEnvironmentInstance_1_(lambda, pureModel.getExecutionSupport());
+                MutableList<Root_meta_legend_service_metamodel_ExecutionParameters> execParams = Lists.mutable.withAll(pureExecEnv._executionParameters());
+                routed.execKey = core_service_service_helperFunctions.Root_meta_legend_service_getKeyFromFunctionDefinition_FunctionDefinition_1__String_1_(lambda, pureModel.getExecutionSupport());
+                int i = 0;
+                for (Root_meta_legend_service_metamodel_ExecutionParameters ep : execParams)
+                {
+                    String key = getExecutionKey(ep);
+                    LambdaFunction<?> keyLambda = (LambdaFunction<?>) core_service_service_helperFunctions.Root_meta_legend_service_assignValueInFunctionDefinitionForKey_FunctionDefinition_1__String_1__FunctionDefinition_1_(lambda, key, pureModel.getExecutionSupport());
+                    routed.purePlans.add(PlanGenerator.generateExecutionPlanAsPure(keyLambda, null, null, context, pureModel, null, null, extensions));
+                    routed.planIds.add(planId != null ? planId + "_" + i : null);
+                    routed.keys.add(key);
+                    i++;
+                }
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported execution type for AST merge: " + execution.getClass().getSimpleName());
+        }
+        return routed;
     }
 
     public static ExecutionPlan generateExecutionPlan(Execution execution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
@@ -514,6 +853,8 @@ public class ServicePlanGenerator
     {
         SingleExecutionPlan generate(P executionParameter, String key, int index);
     }
+
+
 
     private static String formatNanoDurationForLogging(long startNanos, long endNanos)
     {

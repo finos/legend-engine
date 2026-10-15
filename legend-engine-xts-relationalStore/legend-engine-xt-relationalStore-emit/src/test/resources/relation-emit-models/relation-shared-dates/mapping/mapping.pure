@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::relation::dates::TradingMapping
+(
+  *demo::relation::dates::Product: Relation
+  {
+    ~func demo::relation::dates::func::products():Relation<Any>[1]
+    id: ID,
+    name: NAME
+  }
+
+  *demo::relation::dates::Account: Relation
+  {
+    ~func demo::relation::dates::func::accounts():Relation<Any>[1]
+    id: ID,
+    status: STATUS
+  }
+
+  *demo::relation::dates::Rating: Relation
+  {
+    ~func demo::relation::dates::func::ratings():Relation<Any>[1]
+    issuer: ISSUER,
+    grade: GRADE
+  }
+
+  *demo::relation::dates::Trade: Relation
+  {
+    ~func demo::relation::dates::func::trades():Relation<Any>[1]
+    id: ID,
+    productId: PRODUCT_ID,
+    accountId: ACCOUNT_ID,
+    tradeDate: TRADE_DATE,
+    executedAt: EXECUTED_AT,
+    quantity: QUANTITY
+  }
+
+  demo::relation::dates::TradeProduct: ModelJoin
+  {
+    {productTrades: demo::relation::dates::Trade[1], product: demo::relation::dates::Product[1] | $productTrades.productId == $product.id}
+  }
+
+  demo::relation::dates::TradeAccount: ModelJoin
+  {
+    {accountTrades: demo::relation::dates::Trade[1], account: demo::relation::dates::Account[1] | $accountTrades.accountId == $account.id}
+  }
+)

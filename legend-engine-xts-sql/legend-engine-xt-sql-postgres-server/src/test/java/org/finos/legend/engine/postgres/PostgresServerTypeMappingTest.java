@@ -290,6 +290,149 @@ public class PostgresServerTypeMappingTest
     }
 
     @Test
+    public void testTinyInt() throws Exception
+    {
+        validate(LegendDataType.TINY_INT, "5", "int4", 5);
+        validate(LegendDataType.TINY_INT, "0", "int4", 0);
+        validate(LegendDataType.TINY_INT, "-128", "int4", -128);
+        validate(LegendDataType.TINY_INT, "127", "int4", 127);
+        validate(LegendDataType.TINY_INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testUTinyInt() throws Exception
+    {
+        validate(LegendDataType.U_TINY_INT, "5", "int4", 5);
+        validate(LegendDataType.U_TINY_INT, "0", "int4", 0);
+        validate(LegendDataType.U_TINY_INT, "255", "int4", 255);
+        validate(LegendDataType.U_TINY_INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testSmallInt() throws Exception
+    {
+        validate(LegendDataType.SMALL_INT, "5", "int4", 5);
+        validate(LegendDataType.SMALL_INT, "0", "int4", 0);
+        validate(LegendDataType.SMALL_INT, "-32768", "int4", -32768);
+        validate(LegendDataType.SMALL_INT, "32767", "int4", 32767);
+        validate(LegendDataType.SMALL_INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testUSmallInt() throws Exception
+    {
+        validate(LegendDataType.U_SMALL_INT, "5", "int4", 5);
+        validate(LegendDataType.U_SMALL_INT, "0", "int4", 0);
+        validate(LegendDataType.U_SMALL_INT, "65535", "int4", 65535);
+        validate(LegendDataType.U_SMALL_INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testInt() throws Exception
+    {
+        validate(LegendDataType.INT, "5", "int4", 5);
+        validate(LegendDataType.INT, "0", "int4", 0);
+        validate(LegendDataType.INT, "-2147483648", "int4", Integer.MIN_VALUE);
+        validate(LegendDataType.INT, "2147483647", "int4", Integer.MAX_VALUE);
+        validate(LegendDataType.INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testUInt() throws Exception
+    {
+        validate(LegendDataType.U_INT, "5", "int4", 5);
+        validate(LegendDataType.U_INT, "0", "int4", 0);
+        validate(LegendDataType.U_INT, "2147483647", "int4", Integer.MAX_VALUE);
+        validate(LegendDataType.U_INT, "null", "int4", null);
+    }
+
+    @Test
+    public void testBigInt() throws Exception
+    {
+        validate(LegendDataType.BIG_INT, "2645198855588", "int8", 2645198855588L);
+        validate(LegendDataType.BIG_INT, "0", "int8", 0L);
+        validate(LegendDataType.BIG_INT, "-2645198855588", "int8", -2645198855588L);
+        validate(LegendDataType.BIG_INT, "-9223372036854775808", "int8", Long.MIN_VALUE);
+        validate(LegendDataType.BIG_INT, "9223372036854775807", "int8", Long.MAX_VALUE);
+        validate(LegendDataType.BIG_INT, "null", "int8", null);
+    }
+
+    @Test
+    public void testUBigInt() throws Exception
+    {
+        validate(LegendDataType.U_BIG_INT, "2645198855588", "int8", 2645198855588L);
+        validate(LegendDataType.U_BIG_INT, "0", "int8", 0L);
+        validate(LegendDataType.U_BIG_INT, "9223372036854775807", "int8", Long.MAX_VALUE);
+        validate(LegendDataType.U_BIG_INT, "null", "int8", null);
+    }
+
+    @Test
+    public void testVarchar() throws Exception
+    {
+        validate(LegendDataType.VARCHAR, "\"foo\"", "varchar", "foo");
+        validate(LegendDataType.VARCHAR, "null", "varchar", null);
+        validate(LegendDataType.VARCHAR, "\"\"", "varchar", "");
+        validate(LegendDataType.VARCHAR, "\" \\t\\n\"", "varchar", " \t\n");
+        validate(LegendDataType.VARCHAR, "\"\\u00e9\\u00f1\\u4e2d\"", "varchar", "\u00e9\u00f1\u4e2d");
+        validate(LegendDataType.VARCHAR, "\"line1\\nline2\\\"quoted\\\"\"", "varchar", "line1\nline2\"quoted\"");
+    }
+
+    @Test
+    public void testTimestamp() throws Exception
+    {
+        String timeStamp = "2020-06-07T04:15:27.000000000+0000";
+        Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
+        Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
+
+        validate(LegendDataType.TIMESTAMP, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(LegendDataType.TIMESTAMP, "null", "timestamp", null);
+
+        String timeStampWithFraction = "2020-06-07T04:15:27.123456789+0000";
+        Timestamp expectedFraction = new Timestamp(TIMESTAMP_FORMATTER.parse(timeStampWithFraction, Instant::from).toEpochMilli());
+        validate(LegendDataType.TIMESTAMP, "\"" + timeStampWithFraction + "\"", "timestamp", expectedFraction);
+
+        String timeStampWithOffset = "2020-06-07T04:15:27.000000000+0530";
+        Timestamp expectedOffset = new Timestamp(TIMESTAMP_FORMATTER.parse(timeStampWithOffset, Instant::from).toEpochMilli());
+        validate(LegendDataType.TIMESTAMP, "\"" + timeStampWithOffset + "\"", "timestamp", expectedOffset);
+
+        validate(LegendDataType.TIMESTAMP, "\"1970-01-01T00:00:00.000000000+0000\"", "timestamp", new Timestamp(0L));
+    }
+
+    @Test
+    public void testFloat4() throws Exception
+    {
+        validate(LegendDataType.FLOAT4, "5.5", "float4", 5.5F);
+        validate(LegendDataType.FLOAT4, "0", "float4", 0.0F);
+        validate(LegendDataType.FLOAT4, "-5.5", "float4", -5.5F);
+        validate(LegendDataType.FLOAT4, "3.4028235E38", "float4", Float.MAX_VALUE);
+        validate(LegendDataType.FLOAT4, "1.4E-45", "float4", Float.MIN_VALUE);
+        validate(LegendDataType.FLOAT4, "null", "float4", null);
+    }
+
+    @Test
+    public void testDouble() throws Exception
+    {
+        validate(LegendDataType.DOUBLE, "5.5", "float8", 5.5D);
+        validate(LegendDataType.DOUBLE, "null", "float8", null);
+        validate(LegendDataType.DOUBLE, "0", "float8", 0.0D);
+        validate(LegendDataType.DOUBLE, "-5.5", "float8", -5.5D);
+        validate(LegendDataType.DOUBLE, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+        validate(LegendDataType.DOUBLE, "1.7976931348623157E308", "float8", Double.MAX_VALUE);
+        validate(LegendDataType.DOUBLE, "4.9E-324", "float8", Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testNumeric() throws Exception
+    {
+        validate(LegendDataType.NUMERIC, "5.5", "float8", 5.5D);
+        validate(LegendDataType.NUMERIC, "null", "float8", null);
+        validate(LegendDataType.NUMERIC, "0", "float8", 0.0D);
+        validate(LegendDataType.NUMERIC, "-5.5", "float8", -5.5D);
+        validate(LegendDataType.NUMERIC, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+        validate(LegendDataType.NUMERIC, "-2645198855588.533433343434", "float8", -2645198855588.533433343434D);
+    }
+
+    @Test
     public void testJSON() throws Exception
     {
         validate(LegendDataType.VARIANT, "\"hello\"", "json", pgJson("\"hello\""));

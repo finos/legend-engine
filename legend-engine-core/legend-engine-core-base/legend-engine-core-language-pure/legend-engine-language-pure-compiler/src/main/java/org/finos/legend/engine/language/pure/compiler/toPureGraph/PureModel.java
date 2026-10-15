@@ -33,6 +33,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
@@ -97,6 +98,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.MutableRuntimeOptions;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.tools.ConcurrentHashSet;
@@ -109,6 +111,7 @@ import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLo
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
+import org.finos.legend.pure.runtime.java.shared.time.TimeZoneResolutionOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,7 +205,12 @@ public class PureModel implements IPureModel
         try
         {
             ConsoleCompiled console = new ConsoleCompiled();
-            console.disable();
+            // Opt-in Pure console: setting -Dlegend.pure.console.enabled=true keeps println(...) output
+            // from Pure code visible on stdout (useful for ad-hoc diagnostics in Java-generation code).
+            if (!Boolean.getBoolean("legend.pure.console.enabled"))
+            {
+                console.disable();
+            }
             this.executionSupport = new CompiledExecutionSupport(
                     new JavaCompilerState(null, classLoader),
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
@@ -215,8 +223,15 @@ public class PureModel implements IPureModel
                     null,
                     console,
                     null,
+                    null,
+                    null,
                     Sets.mutable.empty(),
-                    compiledExtensions
+                    compiledExtensions,
+                    // The Pure this model runs, plan generation included, resolves time zone names the legacy way,
+                    // through TimeZone.getTimeZone, as the engine did before it adopted strict resolution. This is
+                    // temporary: the legacy way reads a name it does not know as GMT, which is wrong, and is kept
+                    // only to ease the transition.
+                    TimeZoneResolutionOption.setLegacyTimeZoneResolution(MutableRuntimeOptions.fromSystemProperties())
             );
 
             ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();
@@ -525,6 +540,30 @@ public class PureModel implements IPureModel
     public MutableList<? extends Defect> getDefects()
     {
         return this.defects;
+    }
+
+    public synchronized void checkNoErrorDefect()
+    {
+        MutableList<Defect> errors = this.defects.select(d -> d.defectSeverityLevel == DefectSeverityLevel.ERROR);
+        if (errors.isEmpty())
+        {
+            return;
+        }
+        if (errors.size() == 1)
+        {
+            throw new EngineException(errors.getFirst().message, errors.getFirst().sourceInformation, EngineErrorType.COMPILATION);
+        }
+        throw new EngineException(
+                "Found " + errors.size() + " compilation errors:\n" + errors.collect(PureModel::describeDefect).makeString("\n"),
+                errors.getFirst().sourceInformation,
+                EngineErrorType.COMPILATION);
+    }
+
+    private static String describeDefect(Defect defect)
+    {
+        SourceInformation sourceInformation = defect.sourceInformation;
+        boolean hasLocation = sourceInformation != null && sourceInformation.sourceId != null && sourceInformation != SourceInformation.getUnknownSourceInformation();
+        return "- " + (hasLocation ? sourceInformation.getMessage() + ": " : "") + defect.message;
     }
     // ------------------------------------------ INITIALIZATION -----------------------------------------
 

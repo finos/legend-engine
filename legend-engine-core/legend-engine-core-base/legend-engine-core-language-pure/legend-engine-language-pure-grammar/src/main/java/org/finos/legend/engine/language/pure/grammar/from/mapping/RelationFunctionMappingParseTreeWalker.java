@@ -62,7 +62,7 @@ public class RelationFunctionMappingParseTreeWalker
         else
         {
             // ~src <combinedExpression> — wrap the inline expression in a zero-arg lambda so the
-            // downstream compiler can resolve the relation function's row type and bind $src
+            // downstream compiler can resolve the relation function's row type and bind $row
             // for property mappings uniformly with the ~func path.
             relationFunctionClassMapping.sourceLambda = visitInlineExpressionAsLambda(sourceCtx.combinedExpression());
         }
@@ -136,7 +136,7 @@ public class RelationFunctionMappingParseTreeWalker
     private void visitRelationFunctionPropertyMapping(RelationFunctionMappingParserGrammar.RelationFunctionPropertyMappingContext ctx, RelationFunctionPropertyMapping propertyMapping)
     {
         // Bare-column form (single identifier token) — preferred fast path.
-        // Otherwise, fall through to combinedExpression (any Pure expression over $src).
+        // Otherwise, fall through to combinedExpression (any Pure expression over $row).
         if (ctx.identifier() != null)
         {
             propertyMapping.column = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
@@ -208,7 +208,7 @@ public class RelationFunctionMappingParseTreeWalker
     /**
      * Parse a {@code combinedExpression} as a zero-parameter {@code LambdaFunction}.  Used both for the
      * {@code ~src <expr>} class-mapping source and for the per-property expression RHS.  The compiler
-     * later injects the {@code $src} parameter into the lambda's function type once the relation
+     * later injects the {@code $row} parameter into the lambda's function type once the relation
      * function's row type is known.
      */
     private LambdaFunction visitInlineExpressionAsLambda(RelationFunctionMappingParserGrammar.CombinedExpressionContext ctx)
@@ -223,7 +223,7 @@ public class RelationFunctionMappingParseTreeWalker
         LambdaFunction lambda = new LambdaFunction();
         lambda.body = Lists.mutable.empty();
         lambda.body.add(valueSpecification);
-        // parameters are intentionally empty — the compiler will inject `$src` typed at the
+        // parameters are intentionally empty — the compiler will inject `$row` typed at the
         // relation function's row type.  Keeping it empty here lets the M3 parser treat the
         // body as a free expression rather than a typed-lambda literal.
         lambda.parameters = Lists.mutable.empty();

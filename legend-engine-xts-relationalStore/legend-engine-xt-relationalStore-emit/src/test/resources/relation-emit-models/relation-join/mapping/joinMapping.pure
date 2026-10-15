@@ -24,7 +24,7 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
-    active: $src.ACTIVE == 1,
+    active: $row.ACTIVE == 1,
     hireDate: HIRE_DATE,
     salary: SALARY,
     +firmId: Integer[1]: FIRM_ID

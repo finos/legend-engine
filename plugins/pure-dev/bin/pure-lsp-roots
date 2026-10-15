@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# pure-lsp-roots - print the dependency-ordered --repo-root args for a target Pure project.
+#
+#   pure-lsp-roots [project]              # DEFAULT: --repo-root for the full transitive dep chain
+#   pure-lsp-roots [project] --source X   # EXACT custom set instead (repeatable; target always
+#                                          # included) - everything else resolves from the classpath
+#   pure-lsp-roots [project] --all-source # no-op alias for the default (kept for explicitness)
+#   pure-lsp-roots [project] --json       # print root paths as a JSON array
+#   pure-lsp-roots --list                 # list known projects
+#
+# 'project' is a layer in config/projects.json; defaults to $PURE_DEV_PROJECT or the project inferred
+# from the current dir. Use with pure-lsp-classpath to launch the LSP for any pure-bearing repo:
+#   pure-lsp-server $(pure-lsp-roots) --classpath-file "$(pure-lsp-classpath)" --port 8992 ...
+set -euo pipefail
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"; DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+export PYTHONPATH="$DIR/src"
+if [[ "${1:-}" == "--list" ]]; then
+  exec python3 -m pure_lsp_bridge.project_cli list
+fi
+exec python3 -m pure_lsp_bridge.project_cli roots "$@"

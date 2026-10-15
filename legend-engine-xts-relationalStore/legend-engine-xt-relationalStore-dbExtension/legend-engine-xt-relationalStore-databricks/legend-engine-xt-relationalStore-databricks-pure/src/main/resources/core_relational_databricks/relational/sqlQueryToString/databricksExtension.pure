@@ -49,6 +49,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchForDatabricks($sgc, $baseDynaFuncDispatch)};
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       nullOrderingSupport = nullsLowWithClauseSupport(),
       isBooleanLiteralSupported = true,
       commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::databricks::processCommonTableExpressionsForDatabricks_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
@@ -57,6 +58,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::databricks::processGenerateSeriesForDatabricks_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       windowColumnProcessor = processWindowColumnForDatabricks_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDatabricks_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
@@ -64,7 +66,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
-      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForDatabricks_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -809,6 +811,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    );
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinStringsOperationForDatabricks(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc,
+      {col, sep| 'array_join(collect_list(' + $col + '), ' + $sep + ')'},
+      {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |', ' + $sep + ', '), ')')});
+}
+
 // The shared default processFrameValue hard-fails on FrameIntervalValue ('Window function with
 // range frame using interval is not supported for this database type'). Databricks/Spark SQL does
 // support RANGE BETWEEN INTERVAL n unit PRECEDING/FOLLOWING window frames, so this overrides just
@@ -1269,10 +1278,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         // try_cast only tags the array itself as ARRAY<VARIANT>, not its elements), so the next hop
         // still needs the colon reset, exactly like the very first hop off a column. Only an actual
         // preceding property hop is "nested" and should continue with '.'.
-        let isNestedNavigation = $s.operand->instanceOf(SemiStructuredPropertyAccess);
+        let isNestedNavigation = $s.operand->match([
+           p: SemiStructuredPropertyAccess[1] | $p.property->instanceOf(Literal),
+           o: RelationalOperationElement[1]   | false
+        ]);
 
         let elementAccess = $s->match([
-           p: SemiStructuredPropertyAccess[1]     | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+           p: SemiStructuredPropertyAccess[1]     | $p.property->match([
+                                                       l: Literal[1]                    | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $l.value->cast(@String) + '`',
+                                                       k: RelationalOperationElement[1] | 'try_element_at(try_cast(' + $processedOperand + ' as map<string, variant>), ' + $k->processOperation($sgc) + ')'
+                                                    ]) + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),           
            // A bare VARIANT (e.g. straight out of parse_json(...)) is still generically VARIANT
            // until cast to a concrete complex type - Databricks requires a concrete STRUCT/ARRAY/MAP
            // before subscripting with '[index]' (bracket-indexing a bare VARIANT raises
@@ -1314,8 +1329,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    // processSemiStructuredArrayFlattenOutputForDatabricks) resolve.
    //
    // See processSemiStructuredArrayFlattenForDatabricks for the try_cast rationale.
-   let processedNavigation = $s.navigation->processOperation($sgc);
-   '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $processedNavigation + ' as array<variant>))))';
+   $s.navigation->match([
+      c: ColumnName[1] | $c->flattenTableFunctionParameterForDatabricks(),
+      n: RelationalOperationElement[1] | '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $n->processOperation($sgc) + ' as array<variant>))))'
+   ]);
+}
+
+// Function activation lowers a collection parameter to a flatten over the parameter name. Databricks does
+// not resolve a function parameter referenced inside a nested subquery, so it is read through the
+// func_param_table CTE that createFunction emits. The parameter is already a typed ARRAY, so it is exploded
+// without the variant cast, which would otherwise make the surrounding comparison fail on type mismatch.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::flattenTableFunctionParameterForDatabricks(c:ColumnName[1]): String[1]
+{
+   '(select `col` as `VALUE` from (select explode_outer(param_' + $c.name + ') from func_param_table))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenOutputForDatabricks(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
@@ -1477,7 +1503,10 @@ function meta::relational::functions::sqlQueryToString::databricks::tabularFunct
 
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionCallProcessorForDatabricks(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
 {
-   let renderedArgs = $args->map(a | $a.value->processOperation($sgc))->joinStrings(', ');
+   let renderedArgs = $args.value->map(v | $v->match([
+      ll:LiteralList[1] | 'array(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
+      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+   ]))->joinStrings(', ');
    let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
    $qualified + '(' + $renderedArgs + ')';
 }
@@ -1618,4 +1647,9 @@ function meta::relational::functions::sqlQueryToString::databricks::processCommo
    // coerced back to the columns the anchor declares.
    $ctes->meta::relational::functions::sqlQueryToString::default::coerceRecursiveBranchToAnchorTypes()
         ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, 'RECURSIVE ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processGenerateSeriesForDatabricks(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select id as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from range(' + [$g.start, $g->meta::relational::functions::pureToSqlQuery::metamodel::exclusiveStop(), $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + '))';
 }

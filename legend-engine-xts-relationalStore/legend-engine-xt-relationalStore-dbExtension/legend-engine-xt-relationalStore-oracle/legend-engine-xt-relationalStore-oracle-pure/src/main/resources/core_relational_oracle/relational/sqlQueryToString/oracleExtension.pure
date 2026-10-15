@@ -24,6 +24,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = ^SetOperationSupport(union = 'UNION', unionAll = 'UNION ALL', except = 'MINUS', intersect = 'INTERSECT'),
       isBooleanLiteralSupported = false,
       commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::oracle::processCommonTableExpressionsForOracle_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},

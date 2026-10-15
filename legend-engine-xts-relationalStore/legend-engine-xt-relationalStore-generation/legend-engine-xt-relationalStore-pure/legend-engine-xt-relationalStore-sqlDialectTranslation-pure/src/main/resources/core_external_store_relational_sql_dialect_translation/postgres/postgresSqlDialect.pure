@@ -236,10 +236,13 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
+    tableFunctionProcessor_default(),
     joinProcessor_default(),
     queryWithScopeProcessor_default(),
     querySpecificationProcessor_default(),
     unionProcessor_default(),
+    exceptProcessor_default(),
+    intersectProcessor_default(),
     asOfJoinProcessorForPostgres(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default()
@@ -497,6 +500,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Tan->nativeFunctionMapEntry(),
     Power->nativeFunctionMapEntry(),
     pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::GenerateSeries, simpleFunctionProcessor('generate_series')),
     Mod->nativeFunctionMapEntry(),
     Round->nativeFunctionMapEntry(),
     Floor->nativeFunctionMapEntry(),

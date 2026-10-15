@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "plugin-schema.json",
+  "title": "Claude Code Plugin Manifest",
+  "description": "Schema for .claude-plugin/plugin.json — the manifest file that defines a Claude Code plugin's metadata and component configuration.",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema file."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Unique plugin identifier in kebab-case (no spaces)."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable name shown in UI surfaces. Falls back to name when omitted."
+    },
+    "defaultEnabled": {
+      "type": "boolean",
+      "description": "Whether the plugin starts enabled when the user has not set a preference. Defaults to true."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+",
+      "description": "Semantic version (MAJOR.MINOR.PATCH). If omitted, the git commit SHA is used instead."
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief explanation of the plugin's purpose."
+    },
+    "author": {
+      "type": "object",
+      "description": "Author information.",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": false
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Documentation URL."
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri",
+      "description": "Source code URL."
+    },
+    "license": {
+      "type": "string",
+      "description": "License identifier (e.g. \"MIT\", \"Apache-2.0\")."
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Discovery tags."
+    },
+    "skills": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Skill directories containing <name>/SKILL.md (replaces default skills/)."
+    },
+    "commands": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Flat .md skill files or directories (replaces default commands/)."
+    },
+    "agents": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Agent markdown files or directories (replaces default agents/)."
+    },
+    "hooks": {
+      "$ref": "#/definitions/stringOrStringArrayOrObject",
+      "description": "Hook config paths or inline hook configuration."
+    },
+    "mcpServers": {
+      "$ref": "#/definitions/stringOrStringArrayOrObject",
+      "description": "MCP server config paths or inline MCP server configuration."
+    },
+    "lspServers": {
+      "$ref": "#/definitions/stringOrStringArrayOrObject",
+      "description": "LSP server config paths or inline LSP server configuration."
+    },
+    "outputStyles": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Output style files or directories (replaces default output-styles/)."
+    },
+    "themes": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Color theme files or directories (replaces default themes/)."
+    },
+    "monitors": {
+      "$ref": "#/definitions/stringOrStringArray",
+      "description": "Background monitor config paths (replaces default monitors/monitors.json). Deprecated in favour of experimental.monitors."
+    },
+    "experimental": {
+      "type": "object",
+      "description": "Components whose schema may change between releases.",
+      "properties": {
+        "themes": {
+          "$ref": "#/definitions/stringOrStringArray",
+          "description": "Color theme files or directories (replaces default themes/)."
+        },
+        "monitors": {
+          "$ref": "#/definitions/stringOrStringArray",
+          "description": "Background monitor config paths (replaces default monitors/monitors.json)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "userConfig": {
+      "type": "object",
+      "description": "User-configurable values prompted at enable time.",
+      "additionalProperties": {
+        "$ref": "#/definitions/userConfigField"
+      }
+    },
+    "channels": {
+      "type": "array",
+      "description": "Channel declarations for message injection.",
+      "items": {
+        "type": "object",
+        "required": ["server"],
+        "properties": {
+          "server": {
+            "type": "string",
+            "description": "Must match a key in the plugin's mcpServers."
+          },
+          "userConfig": {
+            "type": "object",
+            "description": "Per-channel user-configurable values.",
+            "additionalProperties": {
+              "$ref": "#/definitions/userConfigField"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Other plugins this plugin requires, optionally with semver version constraints.",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "version": {
+                "type": "string",
+                "description": "Semver version constraint (e.g. \"~2.1.0\")."
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "stringOrStringArray": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      ]
+    },
+    "stringOrStringArrayOrObject": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        { "type": "object" }
+      ]
+    },
+    "userConfigField": {
+      "type": "object",
+      "required": ["type", "title", "description"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "directory", "file"],
+          "description": "The value type."
+        },
+        "title": {
+          "type": "string",
+          "description": "Label shown in the configuration dialog."
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text shown beneath the field."
+        },
+        "sensitive": {
+          "type": "boolean",
+          "description": "If true, masks input and stores in secure storage."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "If true, validation fails when the field is empty."
+        },
+        "default": {
+          "description": "Value used when the user provides nothing."
+        },
+        "multiple": {
+          "type": "boolean",
+          "description": "For string type, allow an array of strings."
+        },
+        "min": {
+          "type": "number",
+          "description": "Lower bound for number type."
+        },
+        "max": {
+          "type": "number",
+          "description": "Upper bound for number type."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

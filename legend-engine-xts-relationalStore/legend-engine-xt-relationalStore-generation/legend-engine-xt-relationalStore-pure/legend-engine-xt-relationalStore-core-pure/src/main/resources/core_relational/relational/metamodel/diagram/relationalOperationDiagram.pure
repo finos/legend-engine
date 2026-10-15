@@ -52,6 +52,18 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_30(
+        type=meta::relational::metamodel::relation::SetOperationQuery,
+        position=(951.08211, 160.19385),
+        width=241.87451,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     TypeView cview_13(
         type=meta::relational::metamodel::relation::Union,
         position=(951.08211, 244.19385),
@@ -526,8 +538,17 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
 
     GeneralizationView gview_8(
         source=cview_13,
+        target=cview_30,
+        points=[(1072.01937,402.16737),(1072.01937,190.19385)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_33(
+        source=cview_30,
         target=cview_3,
-        points=[(1072.01937,402.16737),(1072.95249,74.18408)],
+        points=[(1072.01937,190.19385),(1072.95249,74.18408)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -778,8 +799,8 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_2(
-        property=meta::relational::metamodel::relation::Union.queries,
-        source=cview_13,
+        property=meta::relational::metamodel::relation::SetOperationQuery.queries,
+        source=cview_30,
         target=cview_4,
         points=[(957.49468,534.72532),(291.03478,534.05763)],
         label='',

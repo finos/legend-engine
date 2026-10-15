@@ -203,6 +203,9 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::greatest(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::least(),
 
+    // Set Returning
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::setReturning::generateSeries(),
+
     // Extension Functions
     // Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::cosh(),

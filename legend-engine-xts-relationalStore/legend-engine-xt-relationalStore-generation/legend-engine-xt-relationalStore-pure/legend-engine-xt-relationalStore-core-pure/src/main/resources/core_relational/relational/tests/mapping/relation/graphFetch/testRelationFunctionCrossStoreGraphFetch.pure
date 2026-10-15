@@ -1,0 +1,592 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::Firm
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::Employee
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::Address
+{
+  city: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::Country
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::Trade
+{
+  tradeId: Integer[1];
+  quantity: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::S_Trade
+{
+  s_tradeId: Integer[1];
+  s_details: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::crossStore::Firm_Employee
+{
+  firm: Firm[0..1];
+  employees: Employee[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::crossStore::Employee_Address
+{
+  address: Address[0..1];
+  residents: Employee[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::crossStore::Employee_Country
+{
+  country: Country[0..1];
+  countryEmployees: Employee[*];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::crossStore::Trade_Firm
+{
+  tradedFirm: Firm[0..1];
+  trades: Trade[*];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::FirmTrade
+{
+  tradeId: Integer[1];
+  firmId: Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::graphFetch::crossStore::Firm_FirmTrade
+{
+  owningFirm: Firm[0..1];
+  firmTrades: FirmTrade[*];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::T_Employee
+{
+  fullName: String[1];
+  cityName: String[0..1];
+  address: T_Address[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::graphFetch::crossStore::T_Address
+{
+  cityName: String[1];
+  residentCount: Integer[1];
+  residents: T_Employee[*];
+}
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB1
+(
+  Table RFGF_XS_FIRM(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL)
+  Table RFGF_XS_COUNTRY(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL)
+)
+
+###Relational
+Database meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB2
+(
+  Table RFGF_XS_EMPLOYEE(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL, FIRM_ID INT NOT NULL, ADDRESS_ID INT NOT NULL, COUNTRY_ID INT NOT NULL)
+  Table RFGF_XS_ADDRESS(ID INT PRIMARY KEY, CITY VARCHAR(100) NOT NULL)
+)
+
+###Pure
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::firmFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB1.RFGF_XS_FIRM}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::countryFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB1.RFGF_XS_COUNTRY}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::employeeFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB2.RFGF_XS_EMPLOYEE}#
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::addressFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::graphFetch::crossStore::XsDB2.RFGF_XS_ADDRESS}#
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::crossStore::RfFirmRelationalEmployeeMapping
+(
+  Firm: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::firmFunction__Relation_1_
+    +id: Integer[1]: ID,
+    name: NAME
+  }
+
+  Employee: Relational
+  {
+    +firmId: Integer[1]: [XsDB2]RFGF_XS_EMPLOYEE.FIRM_ID,
+    name: [XsDB2]RFGF_XS_EMPLOYEE.NAME
+  }
+
+  Firm_Employee: XStore
+  {
+    employees: $this.id == $that.firmId,
+    firm: $this.firmId == $that.id
+  }
+)
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::crossStore::RelationalFirmRfEmployeeMapping
+(
+  Firm: Relational
+  {
+    +id: Integer[1]: [XsDB1]RFGF_XS_FIRM.ID,
+    name: [XsDB1]RFGF_XS_FIRM.NAME
+  }
+
+  Employee: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::employeeFunction__Relation_1_
+    +firmId: Integer[1]: FIRM_ID,
+    name: NAME
+  }
+
+  Firm_Employee: XStore
+  {
+    employees: $this.id == $that.firmId,
+    firm: $this.firmId == $that.id
+  }
+)
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::crossStore::AllRfMapping
+(
+  Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::firmFunction__Relation_1_
+    +id: Integer[1]: ID,
+    name: NAME
+  }
+
+  Country[country]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::countryFunction__Relation_1_
+    +id: Integer[1]: ID,
+    name: NAME
+  }
+
+  Employee[employee]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::employeeFunction__Relation_1_
+    +firmId: Integer[1]: FIRM_ID,
+    +addressId: Integer[1]: ADDRESS_ID,
+    +countryId: Integer[1]: COUNTRY_ID,
+    name: NAME
+  }
+
+  Address[address]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::addressFunction__Relation_1_
+    +id: Integer[1]: ID,
+    city: CITY
+  }
+
+  Firm_Employee: XStore
+  {
+    employees[firm, employee]: $this.id == $that.firmId,
+    firm[employee, firm]: $this.firmId == $that.id
+  }
+
+  Employee_Address: ModelJoin
+  {
+    {address: meta::relational::tests::mapping::relation::graphFetch::crossStore::Address[1], residents: meta::relational::tests::mapping::relation::graphFetch::crossStore::Employee[1] | $residents.addressId == $address.id}
+  }
+
+  Employee_Country: XStore
+  {
+    country[employee, country]: $this.countryId == $that.id,
+    countryEmployees[country, employee]: $this.id == $that.countryId
+  }
+)
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::crossStore::ChainM2MMapping
+(
+  T_Employee: Pure
+  {
+    ~src Employee
+    fullName: $src.name->toUpper(),
+    cityName: $src.address.city,
+    address: $src.address
+  }
+
+  T_Address: Pure
+  {
+    ~src Address
+    cityName: $src.city,
+    residentCount: $src.residents->count(),
+    residents: $src.residents
+  }
+)
+
+###Mapping
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+Mapping meta::relational::tests::mapping::relation::graphFetch::crossStore::JsonTradeRfFirmMapping
+(
+  Trade[trade]: Pure
+  {
+    ~src S_Trade
+    tradeId: $src.s_tradeId,
+    quantity: $src.s_details->split(':')->at(1)->parseInteger(),
+    +firmId: Integer[1]: $src.s_details->split(':')->at(0)->parseInteger()
+  }
+
+  Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::firmFunction__Relation_1_
+    +id: Integer[1]: ID,
+    name: NAME
+  }
+
+  Employee[employee]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::graphFetch::crossStore::employeeFunction__Relation_1_
+    +firmId: Integer[1]: FIRM_ID,
+    name: NAME
+  }
+
+  FirmTrade[firmTrade]: Pure
+  {
+    ~src S_Trade
+    tradeId: $src.s_tradeId,
+    firmId: $src.s_details->split(':')->at(0)->parseInteger()
+  }
+
+  Trade_Firm: XStore
+  {
+    tradedFirm[trade, firm]: $this.firmId == $that.id,
+    trades[firm, trade]: $this.id == $that.firmId
+  }
+
+  Firm_FirmTrade: XStore
+  {
+    firmTrades[firm, firmTrade]: $this.id == $that.firmId
+  }
+
+  Firm_Employee: XStore
+  {
+    employees[firm, employee]: $this.id == $that.firmId,
+    firm[employee, firm]: $this.firmId == $that.id
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::mapping::relation::graphFetch::crossStore::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::relation::graphFetch::crossStore::setUpTables():Boolean[1]
+{
+  let connection1 = meta::external::store::relational::tests::testRuntime(XsDB1).connectionStores.connection->toOne()->cast(@DatabaseConnection);
+  executeInDb('Drop table if exists RFGF_XS_FIRM;', $connection1);
+  executeInDb('Create Table RFGF_XS_FIRM(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL);', $connection1);
+  executeInDb('Insert into RFGF_XS_FIRM values (1, \'Acme\');', $connection1);
+  executeInDb('Insert into RFGF_XS_FIRM values (2, \'Globex\');', $connection1);
+  executeInDb('Insert into RFGF_XS_FIRM values (3, \'Initech\');', $connection1);
+  executeInDb('Drop table if exists RFGF_XS_COUNTRY;', $connection1);
+  executeInDb('Create Table RFGF_XS_COUNTRY(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL);', $connection1);
+  executeInDb('Insert into RFGF_XS_COUNTRY values (1, \'UK\');', $connection1);
+  executeInDb('Insert into RFGF_XS_COUNTRY values (2, \'US\');', $connection1);
+  executeInDb('Insert into RFGF_XS_COUNTRY values (3, \'France\');', $connection1);
+
+  let connection2 = meta::external::store::relational::tests::testRuntime(XsDB2).connectionStores.connection->toOne()->cast(@DatabaseConnection);
+  executeInDb('Drop table if exists RFGF_XS_EMPLOYEE;', $connection2);
+  executeInDb('Create Table RFGF_XS_EMPLOYEE(ID INT PRIMARY KEY, NAME VARCHAR(100) NOT NULL, FIRM_ID INT NOT NULL, ADDRESS_ID INT NOT NULL, COUNTRY_ID INT NOT NULL);', $connection2);
+  executeInDb('Insert into RFGF_XS_EMPLOYEE values (1, \'Alice\', 1, 1, 1);', $connection2);
+  executeInDb('Insert into RFGF_XS_EMPLOYEE values (2, \'Bob\', 1, 2, 2);', $connection2);
+  executeInDb('Insert into RFGF_XS_EMPLOYEE values (3, \'Carol\', 2, 1, 1);', $connection2);
+  executeInDb('Insert into RFGF_XS_EMPLOYEE values (4, \'Dave\', 2, 3, 2);', $connection2);
+  executeInDb('Drop table if exists RFGF_XS_ADDRESS;', $connection2);
+  executeInDb('Create Table RFGF_XS_ADDRESS(ID INT PRIMARY KEY, CITY VARCHAR(100) NOT NULL);', $connection2);
+  executeInDb('Insert into RFGF_XS_ADDRESS values (1, \'London\');', $connection2);
+  executeInDb('Insert into RFGF_XS_ADDRESS values (2, \'NYC\');', $connection2);
+  executeInDb('Insert into RFGF_XS_ADDRESS values (3, \'Boston\');', $connection2);
+  executeInDb('Insert into RFGF_XS_ADDRESS values (4, \'Paris\');', $connection2);
+  true;
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::crossDbRuntime():Runtime[1]
+{
+  ^Runtime(connectionStores = meta::external::store::relational::tests::testRuntime(XsDB1).connectionStores
+    ->concatenate(meta::external::store::relational::tests::testRuntime(XsDB2).connectionStores))
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::chainRuntime():Runtime[1]
+{
+  ^Runtime(connectionStores = meta::external::store::relational::tests::testRuntime(XsDB2).connectionStores
+    ->concatenate(^ConnectionStore(
+      element = ^meta::external::store::model::ModelStore(),
+      connection = ^meta::external::store::model::ModelChainConnection(mappings = [AllRfMapping])
+    )))
+}
+
+function meta::relational::tests::mapping::relation::graphFetch::crossStore::jsonTradeRuntime():Runtime[1]
+{
+  let jsonConnection = ^meta::external::store::model::JsonModelConnection(
+    class = S_Trade,
+    url = 'data:application/json,' +
+          '{"s_tradeId": 1, "s_details": "1:100"}' +
+          '{"s_tradeId": 2, "s_details": "2:200"}' +
+          '{"s_tradeId": 3, "s_details": "1:300"}'
+  );
+  ^Runtime(connectionStores = crossDbRuntime().connectionStores
+    ->concatenate(^ConnectionStore(element = ^meta::external::store::model::ModelStore(), connection = $jsonConnection)));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRfRootToRelationalChildToMany():Boolean[1]
+{
+  let tree = #{Firm {name, employees {name}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), RfFirmRelationalEmployeeMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+      '{"name":"Globex","employees":[{"name":"Carol"},{"name":"Dave"}]},' +
+      '{"name":"Initech","employees":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRelationalRootToRfChildToOne():Boolean[1]
+{
+  let tree = #{Employee {name, firm {name}}}#;
+  let result = execute(|Employee.all()->graphFetch($tree)->serialize($tree), RfFirmRelationalEmployeeMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Alice","firm":{"name":"Acme"}},' +
+      '{"name":"Bob","firm":{"name":"Acme"}},' +
+      '{"name":"Carol","firm":{"name":"Globex"}},' +
+      '{"name":"Dave","firm":{"name":"Globex"}}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRelationalRootToRfChildToMany():Boolean[1]
+{
+  let tree = #{Firm {name, employees {name}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), RelationalFirmRfEmployeeMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","employees":[{"name":"Alice"},{"name":"Bob"}]},' +
+      '{"name":"Globex","employees":[{"name":"Carol"},{"name":"Dave"}]},' +
+      '{"name":"Initech","employees":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRfRootToRelationalChildToOne():Boolean[1]
+{
+  let tree = #{Employee {name, firm {name}}}#;
+  let result = execute(|Employee.all()->graphFetch($tree)->serialize($tree), RelationalFirmRfEmployeeMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Alice","firm":{"name":"Acme"}},' +
+      '{"name":"Bob","firm":{"name":"Acme"}},' +
+      '{"name":"Carol","firm":{"name":"Globex"}},' +
+      '{"name":"Dave","firm":{"name":"Globex"}}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRfChildWithLocalChild():Boolean[1]
+{
+  let tree = #{Firm {name, employees {name, address {city}}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), AllRfMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","employees":[{"name":"Alice","address":{"city":"London"}},{"name":"Bob","address":{"city":"NYC"}}]},' +
+      '{"name":"Globex","employees":[{"name":"Carol","address":{"city":"London"}},{"name":"Dave","address":{"city":"Boston"}}]},' +
+      '{"name":"Initech","employees":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRfChildOfCrossChild():Boolean[1]
+{
+  let tree = #{Firm {name, employees {name, country {name}}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), AllRfMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","employees":[{"name":"Alice","country":{"name":"UK"}},{"name":"Bob","country":{"name":"US"}}]},' +
+      '{"name":"Globex","employees":[{"name":"Carol","country":{"name":"UK"}},{"name":"Dave","country":{"name":"US"}}]},' +
+      '{"name":"Initech","employees":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossDbRfTreeWithRootFilter():Boolean[1]
+{
+  let tree = #{Firm {name, employees {name, address {city}, country {name}}}}#;
+  let result = execute(|Firm.all()->filter(f | $f.name == 'Globex')->graphFetch($tree)->serialize($tree), AllRfMapping, crossDbRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '{"name":"Globex","employees":[' +
+      '{"name":"Carol","address":{"city":"London"},"country":{"name":"UK"}},' +
+      '{"name":"Dave","address":{"city":"Boston"},"country":{"name":"US"}}' +
+    ']}',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testM2MChainOverRfFlat():Boolean[1]
+{
+  let tree = #{T_Address {cityName, residentCount}}#;
+  let result = execute(|T_Address.all()->graphFetch($tree)->serialize($tree), ChainM2MMapping, chainRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"cityName":"London","residentCount":2},' +
+      '{"cityName":"NYC","residentCount":1},' +
+      '{"cityName":"Boston","residentCount":1},' +
+      '{"cityName":"Paris","residentCount":0}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testM2MChainOverRfNestedToMany():Boolean[1]
+{
+  let tree = #{T_Address {cityName, residents {fullName}}}#;
+  let result = execute(|T_Address.all()->graphFetch($tree)->serialize($tree), ChainM2MMapping, chainRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"cityName":"London","residents":[{"fullName":"ALICE"},{"fullName":"CAROL"}]},' +
+      '{"cityName":"NYC","residents":[{"fullName":"BOB"}]},' +
+      '{"cityName":"Boston","residents":[{"fullName":"DAVE"}]},' +
+      '{"cityName":"Paris","residents":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testM2MChainOverRfNestedToOne():Boolean[1]
+{
+  let tree = #{T_Employee {fullName, address {cityName}}}#;
+  let result = execute(|T_Employee.all()->graphFetch($tree)->serialize($tree), ChainM2MMapping, chainRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"fullName":"ALICE","address":{"cityName":"London"}},' +
+      '{"fullName":"BOB","address":{"cityName":"NYC"}},' +
+      '{"fullName":"CAROL","address":{"cityName":"London"}},' +
+      '{"fullName":"DAVE","address":{"cityName":"Boston"}}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testM2MChainOverRfWithFilter():Boolean[1]
+{
+  let tree = #{T_Employee {fullName, cityName}}#;
+  let result = execute(|T_Employee.all()->filter(e | $e.cityName == 'London')->graphFetch($tree)->serialize($tree), ChainM2MMapping, chainRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"fullName":"ALICE","cityName":"London"},' +
+      '{"fullName":"CAROL","cityName":"London"}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossStoreJsonM2MRootToRfChild():Boolean[1]
+{
+  let tree = #{Trade {tradeId, quantity, tradedFirm {name}}}#;
+  let result = execute(|Trade.all()->graphFetch($tree)->serialize($tree), JsonTradeRfFirmMapping, jsonTradeRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"tradeId":1,"quantity":100,"tradedFirm":{"name":"Acme"}},' +
+      '{"tradeId":2,"quantity":200,"tradedFirm":{"name":"Globex"}},' +
+      '{"tradeId":3,"quantity":300,"tradedFirm":{"name":"Acme"}}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossStoreJsonM2MRootToRfChildWithCrossDbGrandchild():Boolean[1]
+{
+  let tree = #{Trade {tradeId, tradedFirm {name, employees {name}}}}#;
+  let result = execute(|Trade.all()->graphFetch($tree)->serialize($tree), JsonTradeRfFirmMapping, jsonTradeRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"tradeId":1,"tradedFirm":{"name":"Acme","employees":[{"name":"Alice"},{"name":"Bob"}]}},' +
+      '{"tradeId":2,"tradedFirm":{"name":"Globex","employees":[{"name":"Carol"},{"name":"Dave"}]}},' +
+      '{"tradeId":3,"tradedFirm":{"name":"Acme","employees":[{"name":"Alice"},{"name":"Bob"}]}}' +
+    ']',
+    $result.values
+  );
+}
+
+// The in-memory cross-store node ignores the XStore condition when the child key is a local (+) property:
+// graphFetchInMemory.pure addInMemoryCrossStoreMethods makes attemptAddingChildToParent return true, so every
+// trade is attached to every firm. Same result with a plain Relational Firm, so this is not RF-specific.
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossStoreRfRootToJsonM2MChildJoinedOnLocalProperty():Boolean[1]
+{
+  let tree = #{Firm {name, trades {tradeId}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), JsonTradeRfFirmMapping, jsonTradeRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","trades":[{"tradeId":1},{"tradeId":3}]},' +
+      '{"name":"Globex","trades":[{"tradeId":2}]},' +
+      '{"name":"Initech","trades":[]}' +
+    ']',
+    $result.values
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::graphFetch::crossStore::testCrossStoreRfRootToJsonM2MChildJoinedOnMappedProperty():Boolean[1]
+{
+  let tree = #{Firm {name, firmTrades {tradeId}}}#;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), JsonTradeRfFirmMapping, jsonTradeRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[' +
+      '{"name":"Acme","firmTrades":[{"tradeId":1},{"tradeId":3}]},' +
+      '{"name":"Globex","firmTrades":[{"tradeId":2}]},' +
+      '{"name":"Initech","firmTrades":[]}' +
+    ']',
+    $result.values
+  );
+}

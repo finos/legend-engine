@@ -665,7 +665,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(RelationFunctionPropertyMapping propertyMapping)
     {
         // RHS form: bare column (legacy, `column` set) | inline expression
-        // (`valueFn` set, lambda body is the user expression over $src).
+        // (`valueFn` set, lambda body is the user expression over $row).
         String rhs;
         if (propertyMapping.valueFn != null)
         {

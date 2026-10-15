@@ -30,7 +30,7 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
  * bare-column fast path on a relation property mapping's {@code _valueFn} lambda.
  * <p>
  * The bare-column source form ({@code firstName: FIRSTNAME}) is lowered at SecondPass
- * to the lambda {@code { $src.FIRSTNAME}}.  Downstream consumers (SQL push-down,
+ * to the lambda {@code { $row.FIRSTNAME}}.  Downstream consumers (SQL push-down,
  * IDE display, debug) often need to recognise that fast path; this class encapsulates
  * the pattern match so each consumer doesn't have to reimplement it.
  * <p>
@@ -46,8 +46,8 @@ public final class RelationFunctionPropertyMappingTools
 
     /**
      * If the lambda body of the given mapping is exactly a single column accessor on
-     * {@code $src} (i.e. it was authored as the bare-column form or as the equivalent
-     * {@code $src.<col>} expression), returns the column name.  Returns
+     * {@code $row} (i.e. it was authored as the bare-column form or as the equivalent
+     * {@code $row.<col>} expression), returns the column name.  Returns
      * {@link Optional#empty()} for anything else (arithmetic, function calls,
      * conditionals, multi-step expressions, missing {@code _valueFn}).
      */
@@ -69,10 +69,10 @@ public final class RelationFunctionPropertyMappingTools
             return Optional.empty();
         }
         SimpleFunctionExpression sfe = (SimpleFunctionExpression) only;
-        // Post-processed `$src.<col>` shape:
+        // Post-processed `$row.<col>` shape:
         //   SimpleFunctionExpression {
         //     propertyName: InstanceValue("<col>"),
-        //     parametersValues: [VariableExpression("src")],
+        //     parametersValues: [VariableExpression("row")],
         //     func: Column            // resolved column accessor
         //   }
         MutableList<? extends ValueSpecification> args = Lists.mutable.withAll(sfe._parametersValues());
@@ -80,8 +80,8 @@ public final class RelationFunctionPropertyMappingTools
         {
             return Optional.empty();
         }
-        VariableExpression srcRef = (VariableExpression) args.get(0);
-        if (!"src".equals(srcRef._name()))
+        VariableExpression rowRef = (VariableExpression) args.get(0);
+        if (!"row".equals(rowRef._name()))
         {
             return Optional.empty();
         }

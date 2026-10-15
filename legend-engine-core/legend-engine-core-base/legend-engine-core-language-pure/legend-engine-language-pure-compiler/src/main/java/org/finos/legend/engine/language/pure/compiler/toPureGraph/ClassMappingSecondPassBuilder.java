@@ -180,16 +180,16 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
 
         // Extract the row type from the source's last expression. Deeper structural
         // checks (e.g. column existence per property) happen in the mapping validation
-        // stage; here we just need enough type information to bind `$src` in property
+        // stage; here we just need enough type information to bind `$row` in property
         // value lambdas.
         GenericType lastExprType = relationFunction._expressionSequence().toList().getLast()._genericType();
         MutableList<? extends GenericType> typeArgs = Lists.mutable.withAll(lastExprType._typeArguments());
-        GenericType srcType = typeArgs.isEmpty() ? null : typeArgs.getFirst();
+        GenericType rowType = typeArgs.isEmpty() ? null : typeArgs.getFirst();
 
         // Attach a value function to each property mapping. Embedded property mappings
         // inherit the parent's source relation and row type, since an embedded set shares
         // the parent's row shape.
-        buildValueFunctionsForPropertyMappings(classMapping.propertyMappings, setImpl, relationFunction, srcType);
+        buildValueFunctionsForPropertyMappings(classMapping.propertyMappings, setImpl, relationFunction, rowType);
 
         return setImpl;
     }
@@ -203,7 +203,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
      * <p>Pairing by index is safe here because the first-pass builder emits compiled
      * property mappings in the same order as the protocol input.</p>
      */
-    private void buildValueFunctionsForPropertyMappings(java.util.List<PropertyMapping> protocolPropertyMappings, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation parent, FunctionDefinition<?> relationFunction, GenericType srcType)
+    private void buildValueFunctionsForPropertyMappings(java.util.List<PropertyMapping> protocolPropertyMappings, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation parent, FunctionDefinition<?> relationFunction, GenericType rowType)
     {
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> m3PropertyMappings = Lists.mutable.withAll(parent._propertyMappings());
         for (int i = 0; i < protocolPropertyMappings.size(); i++)
@@ -214,7 +214,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
             {
                 RelationFunctionPropertyMapping pPm = (RelationFunctionPropertyMapping) protocolPm;
                 org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping mPm = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping) m3Pm;
-                LambdaFunction<?> valueFn = buildPropertyValueFn(pPm, srcType, parent._id());
+                LambdaFunction<?> valueFn = buildPropertyValueFn(pPm, rowType, parent._id());
                 if (valueFn != null)
                 {
                     mPm._valueFn(valueFn);
@@ -228,7 +228,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
                 // Can be null for Inline embedded
                 if (pEmb.propertyMappings != null && !pEmb.propertyMappings.isEmpty())
                 {
-                    buildValueFunctionsForPropertyMappings(pEmb.propertyMappings, mEmb, relationFunction, srcType);
+                    buildValueFunctionsForPropertyMappings(pEmb.propertyMappings, mEmb, relationFunction, rowType);
                 }
             }
         }
@@ -239,17 +239,17 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
      * shapes are supported:
      * <ul>
      *   <li>Bare column ({@code propName: COL}) — normalised to a property access on
-     *       {@code $src} so downstream consumers see a single, uniform shape.</li>
-     *   <li>Inline expression ({@code propName: $src.A + $src.B}) — compiled with
-     *       {@code src} typed at the source's row type.</li>
+     *       {@code $row} so downstream consumers see a single, uniform shape.</li>
+     *   <li>Inline expression ({@code propName: $row.A + $row.B}) — compiled with
+     *       {@code row} typed at the source's row type.</li>
      * </ul>
      * Returns {@code null} when neither shape is set; the missing definition is reported
      * later by the mapping validation stage rather than aborting compilation here.
      */
-    private LambdaFunction<?> buildPropertyValueFn(RelationFunctionPropertyMapping pm, GenericType srcType, String parentId)
+    private LambdaFunction<?> buildPropertyValueFn(RelationFunctionPropertyMapping pm, GenericType rowType, String parentId)
     {
         // Choose the body to compile: the bare-column form is normalised to a property
-        // access on `$src`; the inline-expression form is used verbatim.
+        // access on `$row`; the inline-expression form is used verbatim.
         java.util.List<ValueSpecification> body;
         if (pm.valueFn != null && pm.valueFn.body != null && !pm.valueFn.body.isEmpty())
         {
@@ -257,12 +257,12 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         }
         else if (pm.column != null && !pm.column.isEmpty())
         {
-            Variable srcRef = new Variable();
-            srcRef.name = "src";
-            srcRef.sourceInformation = pm.sourceInformation;
+            Variable rowRef = new Variable();
+            rowRef.name = "row";
+            rowRef.sourceInformation = pm.sourceInformation;
             AppliedProperty colAccess = new AppliedProperty();
             colAccess.property = pm.column;
-            colAccess.parameters = Collections.singletonList(srcRef);
+            colAccess.parameters = Collections.singletonList(rowRef);
             colAccess.sourceInformation = pm.sourceInformation;
             body = Collections.singletonList(colAccess);
         }
@@ -270,38 +270,38 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         {
             return null;
         }
-        return compileRelationPropertyLambda(body, srcType, parentId + "." + (pm.property == null ? "" : pm.property.property), pm.sourceInformation);
+        return compileRelationPropertyLambda(body, rowType, parentId + "." + (pm.property == null ? "" : pm.property.property), pm.sourceInformation);
     }
 
     /**
      * Compiles a body of expressions as a single-arg lambda whose only parameter is
-     * {@code src}, bound to the given row type. Follows the same shape used elsewhere
+     * {@code row}, bound to the given row type. Follows the same shape used elsewhere
      * for model-to-model transform lambdas.
      */
-    private LambdaFunction<?> compileRelationPropertyLambda(java.util.List<ValueSpecification> body, GenericType srcType, String lambdaId, SourceInformation sourceInformation)
+    private LambdaFunction<?> compileRelationPropertyLambda(java.util.List<ValueSpecification> body, GenericType rowType, String lambdaId, SourceInformation sourceInformation)
     {
-        VariableExpression srcVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
-                ._name("src")
+        VariableExpression rowVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass(M3Paths.VariableExpression))
+                ._name("row")
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
-                ._genericType(srcType == null
+                ._genericType(rowType == null
                         // Fallback when the row type can't be inferred (e.g. the source doesn't
                         // actually return a relation). A separate validator surfaces that as
                         // its own error; degrading gracefully here lets compilation continue
                         // and report all problems together.
                         ? context.newGenericType(context.pureModel.getType(M3Paths.Any))
-                        : (GenericType) org.finos.legend.pure.m3.navigation.generictype.GenericType.copyGenericType(srcType, context.pureModel.getExecutionSupport().getProcessorSupport()));
+                        : (GenericType) org.finos.legend.pure.m3.navigation.generictype.GenericType.copyGenericType(rowType, context.pureModel.getExecutionSupport().getProcessorSupport()));
 
-        MutableList<VariableExpression> pureParameters = Lists.mutable.with(srcVar);
+        MutableList<VariableExpression> pureParameters = Lists.mutable.with(rowVar);
         ProcessingContext ctx = new ProcessingContext("Building relation property valueFn for '" + lambdaId + "'");
         ctx.addVariableLevel();
-        ctx.addInferredVariables("src", srcVar);
+        ctx.addInferredVariables("row", rowVar);
         MutableList<String> openVariables = Lists.mutable.empty();
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications =
                 ListIterate.collect(body, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(VariableExpression::_name));
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
-        ctx.flushVariable("src");
+        ctx.flushVariable("row");
         ctx.removeLastVariableLevel();
 
         return new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId, SourceInformationHelper.toM3SourceInformation(sourceInformation), null)

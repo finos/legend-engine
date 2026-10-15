@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A trade feed, and the trades read from it. A product is business temporal
+// on both sides, so a trade reaches it through a milestoned property, and each
+// version of a product in the feed carries the business date it was recorded
+// for.
+
+###Pure
+Class <<temporal.businesstemporal>> demo::m2m::dates::source::S_Product
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Class demo::m2m::dates::source::S_Trade
+{
+  id: Integer[1];
+  tradeDate: StrictDate[1];
+  executedAt: DateTime[1];
+  quantity: Integer[1];
+  product: demo::m2m::dates::source::S_Product[0..1];
+}
+
+Class <<temporal.businesstemporal>> demo::m2m::dates::Product
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Class demo::m2m::dates::Trade
+{
+  id: Integer[1];
+  tradeDate: StrictDate[1];
+  executedAt: DateTime[1];
+  quantity: Integer[1];
+  product: demo::m2m::dates::Product[0..1];
+}

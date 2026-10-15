@@ -71,10 +71,17 @@ public class Compile
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Compile.class);
     private final ModelManager modelManager;
+    private final boolean failOnErrorDefects;
 
     public Compile(ModelManager modelManager)
     {
+        this(modelManager, false);
+    }
+
+    public Compile(ModelManager modelManager, boolean failOnErrorDefects)
+    {
         this.modelManager = modelManager;
+        this.failOnErrorDefects = failOnErrorDefects;
         MetricsHandler.createMetrics(this.getClass());
     }
 
@@ -95,6 +102,10 @@ public class Compile
                     ? clientVersion
                     : (model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null);
             Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, effectiveClientVersion, identity, null);
+            if (this.failOnErrorDefects)
+            {
+                res.getTwo().checkNoErrorDefect();
+            }
             long end = System.currentTimeMillis();
             MetricsHandler.observe("compile model", start, end);
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);

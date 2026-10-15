@@ -408,7 +408,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::com
          )
    );
 
-   generatedCode(mergeProjects($project->concatenate($getterBody->dependencies()->resolveAndGetProjects())->toOneMany()), $execClass);
+   // [B] $getterBody's deps stay attached to its method in $execClass; root resolves once.
+   generatedCode($project, $execClass);
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::getPrimitiveObjectSize(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): Code[1]

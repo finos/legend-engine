@@ -39,10 +39,12 @@ function meta::relational::functions::sqlQueryToString::postgres::createDbExtens
      getDynaFunctionToSqlForPostgres()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       nullOrderingSupport = nullsHighWithClauseSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::postgres::processGenerateSeriesForPostgres_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_,
       aggregateFunctionCallProcessor = processAggregateFunctionCallForPostgres_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
@@ -751,4 +753,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processAggregateFunctionCallForPostgres(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
 {
    meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAnsi($a, $sgc, AggregateOrderingStyle.IN_PAREN);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processGenerateSeriesForPostgres(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select gs as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from generate_series(' + [$g.start, $g.stop, $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + ') as gs)';
 }

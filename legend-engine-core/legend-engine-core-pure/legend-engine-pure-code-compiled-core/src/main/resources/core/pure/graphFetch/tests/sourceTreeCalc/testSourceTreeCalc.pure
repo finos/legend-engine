@@ -2312,8 +2312,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
       _A {
         b {
             d {
-                val1,
-                val2
+                val1
             }
         
         }, 
@@ -2347,8 +2346,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
       _A {
         b {
             d {
-                val1,
-                val2
+                val1
             }
         
         }, 

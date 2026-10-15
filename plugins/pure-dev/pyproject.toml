@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pure-lsp-bridge"
+version = "1.0.0"
+description = "pure-dev: warm Legend Pure LSP daemon over HTTP + CLIs (bridge/client) powering the Pure AI dev loop"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.scripts]
+pure-lsp-server = "pure_lsp_bridge.server_cli:main"
+pure-lsp = "pure_lsp_bridge.client_cli:main"
+pure-sql-e2e = "pure_lsp_bridge.sql_e2e_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+test = ["pytest>=7", "pytest-cov"]

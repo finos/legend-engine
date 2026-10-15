@@ -1,0 +1,40 @@
+{
+  "$schema": "../marketplace-schema.json",
+  "name": "legend-engine",
+  "owner": {
+    "name": "FINOS Legend"
+  },
+  "description": "FINOS Legend Engine - Claude Code plugins for Legend/Pure development. Ships pure-dev, a fast AI dev loop built on a warm Pure LSP daemon.",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "pure-dev",
+      "version": "1.0.0",
+      "source": "./plugins/pure-dev",
+      "description": "Fast AI dev loop for Legend Pure: warm LSP daemon over HTTP + skills to compile-check, run functions/tests (single or parallel), toggle runtime options, route execution through a backend engine Server, and auto-sync edits - no full Maven rebuild.",
+      "author": {
+        "name": "FINOS Legend"
+      },
+      "homepage": "https://github.com/finos/legend-engine",
+      "repository": "https://github.com/finos/legend-engine",
+      "license": "Apache-2.0",
+      "skills": [
+        "./plugins/pure-dev/skills/pure-lsp-connect",
+        "./plugins/pure-dev/skills/pure-lsp-status",
+        "./plugins/pure-dev/skills/pure-lsp-check",
+        "./plugins/pure-dev/skills/pure-lsp-go",
+        "./plugins/pure-dev/skills/pure-lsp-execute",
+        "./plugins/pure-dev/skills/pure-lsp-set-option",
+        "./plugins/pure-dev/skills/pure-lsp-classpath",
+        "./plugins/pure-dev/skills/pure-lsp-execute-parallel",
+        "./plugins/pure-dev/skills/pure-lsp-sync-hook",
+        "./plugins/pure-dev/skills/pure-backend-start",
+        "./plugins/pure-dev/skills/pure-lsp-launch-engine",
+        "./plugins/pure-dev/skills/pure-chain-update",
+        "./plugins/pure-dev/skills/pure-lsp-sql-e2e",
+        "./plugins/pure-dev/skills/trim-comments",
+        "./plugins/pure-dev/skills/pure-code-style"
+      ]
+    }
+  ]
+}

@@ -1,23 +1,20 @@
 {
-  "services": [],
-  "mappings": [
-    {
-      "path": "model::MyMapping",
-      "type": "Mapping",
-      "hasTestSuites": true,
-      "hasLegacyTests": false,
-      "testSuiteCount": 1
-    }
-  ],
-  "serviceCoverage": {
-    "totalElements": 0,
-    "elementsWithTests": 0,
-    "coveragePercentage": 0.0
+  "elementsByType": {
+    "Mapping": [
+      {
+        "path": "model::MyMapping",
+        "type": "Mapping",
+        "hasTestSuites": true,
+        "hasLegacyTests": false,
+        "testSuiteCount": 1
+      }
+    ]
   },
-  "mappingCoverage": {
-    "totalElements": 1,
-    "elementsWithTests": 1,
-    "coveragePercentage": 1.0
+  "coverageByType": {
+    "Mapping": {
+      "totalElements": 1,
+      "elementsWithTests": 1,
+      "coveragePercentage": 1.0
+    }
   }
 }
-

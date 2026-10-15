@@ -1,0 +1,559 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Each question is asked twice, once with its dates written into the query
+// and once with them given as parameters, since a literal is written into the
+// SQL when the plan is generated and a parameter only when the plan runs.
+
+###Service
+// A business date selects the version of each product valid on it.
+// Widget was renamed on 2025-07-02, so the date that names the day of
+// the change reads the new name and the day before reads the old one.
+Service demo::relation::dates::service::ProductAsOfLiteral
+{
+  pattern: '/api/relation/dates/products';
+  documentation: 'Products as of a business date, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Product.all(%2025-07-02)->sortBy(p|$p.id)->project([p|$p.id, p|$p.name], ['Id', 'Name']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    productSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        onTheDayOfTheRename:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheNewName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget Mk2"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::ProductAsOfParameter
+{
+  pattern: '/api/relation/dates/products/{businessDate}';
+  documentation: 'Products as of a business date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::relation::dates::Product.all($businessDate)->sortBy(p|$p.id)->project([p|$p.id, p|$p.name], ['Id', 'Name'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    productSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        onTheDayOfTheRename:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReadTheNewName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget Mk2"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        },
+        theDayBefore:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldReadTheOldName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A processing date-time selects the status each account was recorded
+// with at that moment. With no zone named, the IN_Z/OUT_Z wall clocks
+// are read as UTC, so 15:00 UTC falls after both changes of status.
+Service demo::relation::dates::service::AccountAsOfLiteral
+{
+  pattern: '/api/relation/dates/accounts';
+  documentation: 'Accounts as recorded at a processing date-time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Account.all(%2025-07-02T15:00:00+0000)->sortBy(a|$a.id)->project([a|$a.id, a|$a.status], ['Id', 'Status']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"FROZEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::AccountAsOfParameter
+{
+  pattern: '/api/relation/dates/accounts/{processingDate}';
+  documentation: 'Accounts as recorded at a processing date-time, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1]|demo::relation::dates::Account.all($processingDate)->sortBy(a|$a.id)->project([a|$a.id, a|$a.status], ['Id', 'Status'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"FROZEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReadTheEarlierStatus:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"OPEN"},{"Id":2,"Status":"PENDING"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A bitemporal query takes the processing date first and the business
+// date second. The four rows of RATING split at noon on 2025-07-02 in
+// processing time and at noon on 2025-07-01 in business time, so each
+// side of each split reads a different grade, and swapping the two dates
+// reads a different grade again.
+Service demo::relation::dates::service::RatingAsOfLiteral
+{
+  pattern: '/api/relation/dates/ratings';
+  documentation: 'Ratings as recorded at a processing date-time for a business date-time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Rating.all(%2025-07-02T15:00:00+0000, %2025-07-01T14:00:00+0000)->project([r|$r.issuer, r|$r.grade], ['Issuer', 'Grade']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    ratingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheGradeAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"BBB"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::RatingAsOfParameter
+{
+  pattern: '/api/relation/dates/ratings/{processingDate}/{businessDate}';
+  documentation: 'Ratings as recorded at a processing date-time for a business date-time, given as parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1], businessDate: DateTime[1]|demo::relation::dates::Rating.all($processingDate, $businessDate)->project([r|$r.issuer, r|$r.grade], ['Issuer', 'Grade'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    ratingSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T15:00:00+0000,
+            businessDate = %2025-07-01T14:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheGradeAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"BBB"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterProcessingEarlierBusiness:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-03T00:00:00+0000,
+            businessDate = %2025-06-30T12:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheRestatedEarlierGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"AA"}]';
+                  }#;
+              }#
+          ]
+        },
+        datesSwapped:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-01T14:00:00+0000,
+            businessDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadADifferentGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"A-"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// Trade is not milestoned, so the dates reach Product and Account only
+// through the milestoned properties the query navigates, each with a date
+// of its own kind: a business date for the product and a processing
+// date-time for the account.
+Service demo::relation::dates::service::TradeMilestonedPropertiesLiteral
+{
+  pattern: '/api/relation/dates/trades/as-of';
+  documentation: 'Trades with their product and account as of a date for each, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Trade.all()->sortBy(t|$t.id)->project([t|$t.id, t|$t.product(%2025-07-02).name, t|$t.account(%2025-07-02T15:00:00+0000).status], ['Id', 'Product', 'Account Status']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldNavigateAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget Mk2","Account Status":"FROZEN"},{"Id":2,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":3,"Product":"Gadget","Account Status":"FROZEN"},{"Id":4,"Product":"Gadget","Account Status":"OPEN"},{"Id":5,"Product":"Widget Mk2","Account Status":"FROZEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::service::TradeMilestonedPropertiesParameter
+{
+  pattern: '/api/relation/dates/trades/as-of/{businessDate}/{processingDate}';
+  documentation: 'Trades with their product and account as of a date for each, given as parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], processingDate: DateTime[1]|demo::relation::dates::Trade.all()->sortBy(t|$t.id)->project([t|$t.id, t|$t.product($businessDate).name, t|$t.account($processingDate).status], ['Id', 'Product', 'Account Status'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              demo::relation::dates::data::TradingData
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-02,
+            processingDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldNavigateAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget Mk2","Account Status":"FROZEN"},{"Id":2,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":3,"Product":"Gadget","Account Status":"FROZEN"},{"Id":4,"Product":"Gadget","Account Status":"OPEN"},{"Id":5,"Product":"Widget Mk2","Account Status":"FROZEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierDates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-01,
+            processingDate = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldNavigateToEarlierVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget","Account Status":"OPEN"},{"Id":2,"Product":"Widget","Account Status":"PENDING"},{"Id":3,"Product":"Gadget","Account Status":"OPEN"},{"Id":4,"Product":"Gadget","Account Status":"PENDING"},{"Id":5,"Product":"Widget","Account Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

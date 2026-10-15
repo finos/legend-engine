@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# pure-dev-preflight - make the Pure dev-loop CLIs available on PATH.
+#
+# The plugin's tools (pure-lsp, pure-lsp-server, pure-lsp-sync-hook) are self-locating
+# bash wrappers that set PYTHONPATH to the bundled src/ - so they run correctly from wherever the
+# plugin lives, with no pip install. This preflight just symlinks them into ~/.local/bin so skills can
+# invoke them by bare name (pure-lsp ...) rather than an absolute path. Idempotent; safe to re-run.
+#
+# Run once after installing the plugin:
+#     bash <plugin-root>/bin/pure-dev-preflight
+# (the skills print this exact command with the resolved path when the CLI isn't found on PATH.)
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_DIR="${PURE_DEV_BIN_DIR:-$HOME/.local/bin}"
+mkdir -p "$TARGET_DIR"
+
+# pure-lsp-common is deliberately NOT in this list: it is a sourced library, not a command, and
+# the scripts that source it resolve it via their own realpath'd bin dir, so it works through
+# these symlinks without needing one of its own.
+for tool in pure-lsp pure-lsp-server pure-lsp-sync-hook pure-lsp-classpath pure-lsp-roots \
+            pure-lsp-launch pure-lsp-launch-engine pure-backend-start \
+            pure-lsp-connect pure-lsp-restart pure-lsp-option pure-sql-e2e; do
+  ln -sf "$BIN_DIR/$tool" "$TARGET_DIR/$tool"
+  echo "[pure-dev-preflight] linked $tool -> $TARGET_DIR/$tool"
+done
+
+# Record the plugin bin dir so hooks/skills can resolve bundled assets (e.g. the sync hook, the
+# engine-scale classpath file) without hardcoding a path.
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/pure-dev"
+mkdir -p "$CONFIG_DIR"
+echo "$BIN_DIR" > "$CONFIG_DIR/bin-dir"
+echo "[pure-dev-preflight] recorded plugin bin dir at $CONFIG_DIR/bin-dir"
+
+case ":$PATH:" in
+  *":$TARGET_DIR:"*) : ;;
+  *) echo "[pure-dev-preflight] NOTE: $TARGET_DIR is not on PATH. Add it to your shell profile:"
+     echo "    export PATH=\"$TARGET_DIR:\$PATH\"" ;;
+esac
+
+echo "[pure-dev-preflight] done. Try: pure-lsp status"
+echo "[pure-dev-preflight]   (no --port needed: pure-lsp finds a running bridge via its sidecar,"
+echo "[pure-dev-preflight]    honours \$PURE_LSP_PORT, and falls back to 8991.)"

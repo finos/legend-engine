@@ -24,6 +24,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
    ^DbExtension(
       nullOrderingSupport = nativeOnlySupport(),
+      setOperationSupport = unionOnlySetOperationSupport(),
       isBooleanLiteralSupported = false,
       collectionThresholdLimit = 250000,
       aliasLimit = 255,

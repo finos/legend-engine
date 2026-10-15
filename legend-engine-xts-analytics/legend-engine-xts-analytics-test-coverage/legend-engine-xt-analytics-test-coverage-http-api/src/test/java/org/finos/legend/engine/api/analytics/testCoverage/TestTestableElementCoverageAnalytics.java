@@ -14,20 +14,23 @@
 
 package org.finos.legend.engine.api.analytics.testCoverage;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.api.analytics.testCoverage.model.TestableElementCoverageResult;
 import org.finos.legend.engine.api.analytics.testCoverage.model.TestableElementInfo;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.testable.api.TestableElementCoverageAnalyzer;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class TestTestableElementCoverageAnalytics
 {
@@ -39,13 +42,13 @@ public class TestTestableElementCoverageAnalytics
         service._package = "model";
         service.testSuites = Collections.singletonList(new ServiceTestSuite());
 
-        List<TestableElementInfo> result = Collections.singletonList(analyzeService(service));
+        TestableElementInfo info = analyzeSingle(service, "Service");
 
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals("model::MyService", result.get(0).path);
-        Assert.assertTrue(result.get(0).hasTestSuites);
-        Assert.assertFalse(result.get(0).hasLegacyTests);
-        Assert.assertEquals(1, result.get(0).testSuiteCount);
+        Assert.assertEquals("model::MyService", info.path);
+        Assert.assertEquals("Service", info.type);
+        Assert.assertTrue(info.hasTestSuites);
+        Assert.assertFalse(info.hasLegacyTests);
+        Assert.assertEquals(1, info.testSuiteCount);
     }
 
     @Test
@@ -57,7 +60,7 @@ public class TestTestableElementCoverageAnalytics
         service.testSuites = null;
         service.test = null;
 
-        TestableElementInfo info = analyzeService(service);
+        TestableElementInfo info = analyzeSingle(service, "Service");
 
         Assert.assertFalse(info.hasTestSuites);
         Assert.assertFalse(info.hasLegacyTests);
@@ -72,7 +75,7 @@ public class TestTestableElementCoverageAnalytics
         mapping._package = "model";
         mapping.testSuites = Collections.singletonList(new MappingTestSuite());
 
-        TestableElementInfo info = analyzeMapping(mapping);
+        TestableElementInfo info = analyzeSingle(mapping, "Mapping");
 
         Assert.assertTrue(info.hasTestSuites);
         Assert.assertEquals(1, info.testSuiteCount);
@@ -88,7 +91,7 @@ public class TestTestableElementCoverageAnalytics
         mapping.testSuites = null;
         mapping.tests = Collections.emptyList();
 
-        TestableElementInfo info = analyzeMapping(mapping);
+        TestableElementInfo info = analyzeSingle(mapping, "Mapping");
 
         Assert.assertFalse(info.hasTestSuites);
         Assert.assertFalse(info.hasLegacyTests);
@@ -101,33 +104,25 @@ public class TestTestableElementCoverageAnalytics
         TestableElementInfo withTests = new TestableElementInfo("model::A", "Service", true, false, 1);
         TestableElementInfo withoutTests = new TestableElementInfo("model::B", "Service", false, false, 0);
 
-        TestableElementCoverageResult result = new TestableElementCoverageResult(
-                Arrays.asList(withTests, withoutTests),
-                Collections.emptyList()
-        );
+        Map<String, List<TestableElementInfo>> elementsByType = new LinkedHashMap<>();
+        elementsByType.put("Service", Arrays.asList(withTests, withoutTests));
 
-        Assert.assertEquals(2, result.serviceCoverage.totalElements);
-        Assert.assertEquals(1, result.serviceCoverage.elementsWithTests);
-        Assert.assertEquals(0.5, result.serviceCoverage.coveragePercentage, 0.001);
-        Assert.assertEquals(0, result.mappingCoverage.totalElements);
-        Assert.assertEquals(0.0, result.mappingCoverage.coveragePercentage, 0.001);
+        TestableElementCoverageResult result = new TestableElementCoverageResult(elementsByType);
+
+        Assert.assertEquals(2, result.coverageByType.get("Service").totalElements);
+        Assert.assertEquals(1, result.coverageByType.get("Service").elementsWithTests);
+        Assert.assertEquals(0.5, result.coverageByType.get("Service").coveragePercentage, 0.001);
     }
 
-    // Mirror the private static methods from the API class for unit testing
-    private static TestableElementInfo analyzeService(Service service)
+    private static TestableElementInfo analyzeSingle(PackageableElement element, String expectedType)
     {
-        boolean hasTestSuites = service.testSuites != null && !service.testSuites.isEmpty();
-        boolean hasLegacyTests = service.test != null;
-        int testSuiteCount = hasTestSuites ? service.testSuites.size() : 0;
-        return new TestableElementInfo(service.getPath(), "Service", hasTestSuites, hasLegacyTests, testSuiteCount);
-    }
-
-    private static TestableElementInfo analyzeMapping(Mapping mapping)
-    {
-        boolean hasTestSuites = mapping.testSuites != null && !mapping.testSuites.isEmpty();
-        boolean hasLegacyTests = mapping.tests != null && !mapping.tests.isEmpty();
-        int testSuiteCount = hasTestSuites ? mapping.testSuites.size() : 0;
-        return new TestableElementInfo(mapping.getPath(), "Mapping", hasTestSuites, hasLegacyTests, testSuiteCount);
+        org.finos.legend.engine.testable.api.model.TestableElementCoverageResult analyzed =
+                TestableElementCoverageAnalyzer.analyze(PureModelContextData.newPureModelContextData(null, null, Arrays.asList(element)));
+        TestableElementCoverageResult result = TestableElementCoverageAnalytics.toLocalResult(analyzed);
+        List<TestableElementInfo> elements = result.elementsByType.get(expectedType);
+        Assert.assertNotNull("Expected a '" + expectedType + "' bucket in the coverage result", elements);
+        Assert.assertEquals(1, elements.size());
+        return elements.get(0);
     }
 }
 

@@ -62,6 +62,18 @@ function meta::external::function::activator::snowflakeApp::tests::relationalFun
     ->from(meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping, meta::external::function::activator::snowflakeApp::tests::RelationalTypesRuntime)
 }
 
+function meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithAnyRelation():meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[*]
+{
+  meta::external::function::activator::snowflakeApp::tests::RelationalTypes.all()->project(
+    ~[
+      MyString: x|$x.myString,
+      MyDecimal: x|$x.myDecimal,
+      MyInteger: x|$x.myInteger,
+      MyFloat: x|$x.myFloat,
+      MyDate: x|$x.myDate
+    ])
+  ->from(meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping, meta::external::function::activator::snowflakeApp::tests::RelationalTypesRuntime)
+}
 
 ###Mapping
 Mapping meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping

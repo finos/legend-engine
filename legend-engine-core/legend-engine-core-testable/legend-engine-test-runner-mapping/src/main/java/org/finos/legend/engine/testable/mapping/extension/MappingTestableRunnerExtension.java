@@ -55,8 +55,34 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
     @Override
     public Boolean isTestableEmpty(PackageableElement element)
     {
+        if (!(element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping))
+        {
+            return true;
+        }
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
         return (mapping.testSuites == null || mapping.testSuites.isEmpty()) && (mapping.tests == null || mapping.tests.isEmpty());
+    }
+
+    @Override
+    public int getTestCount(PackageableElement element)
+    {
+        if (!(element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping))
+        {
+            return 0;
+        }
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
+        return mapping.testSuites == null ? 0 : mapping.testSuites.size();
+    }
+
+    @Override
+    public boolean hasLegacyTests(PackageableElement element)
+    {
+        if (!(element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping))
+        {
+            return false;
+        }
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
+        return mapping.tests != null && !mapping.tests.isEmpty();
     }
 
     @Override

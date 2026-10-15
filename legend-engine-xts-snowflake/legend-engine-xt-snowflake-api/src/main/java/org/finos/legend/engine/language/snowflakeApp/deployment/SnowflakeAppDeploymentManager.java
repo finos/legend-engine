@@ -64,7 +64,45 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
 
     private String enrichDeploymentLocation(String deploymentLocation, String appName)
     {
+        if (deploymentLocation == null || deploymentLocation.isEmpty())
+        {
+            return deploymentLocation;
+        }
         return deploymentLocation + String.format(deployStub, appName);
+    }
+
+    /**
+     * Generation-time can't compute a deployed-location URL for a non-native datasource spec (e.g. a
+     * Lakehouse-backed Snowflake connection, which has no literal account/region). Read account/region
+     * off authenticated connection to actual Snowflake account.
+     */
+    private String resolveDeployedLocation(Connection jdbcConnection, String generatedDeployedLocation)
+    {
+        if (generatedDeployedLocation != null && !generatedDeployedLocation.isEmpty())
+        {
+            return generatedDeployedLocation;
+        }
+        try
+        {
+            String account = queryScalar(jdbcConnection, "SELECT CURRENT_ACCOUNT()");
+            String region = queryScalar(jdbcConnection, "SELECT CURRENT_REGION()");
+            String databaseName = jdbcConnection.getCatalog();
+            return String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", region, region, account, databaseName);
+        }
+        catch (SQLException e)
+        {
+            LOGGER.warn("Unable to resolve deployed-location metadata from the live connection after deployment", e);
+            return generatedDeployedLocation;
+        }
+    }
+
+    private static String queryScalar(Connection jdbcConnection, String sql) throws SQLException
+    {
+        try (Statement statement = jdbcConnection.createStatement(); ResultSet resultSet = statement.executeQuery(sql))
+        {
+            resultSet.next();
+            return resultSet.getString(1);
+        }
     }
 
     public SnowflakeAppDeploymentManager()
@@ -115,7 +153,8 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
-            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(artifact.deployedLocation, appName));
+            String deployedLocation = resolveDeployedLocation(jdbcConnection, artifact.deployedLocation);
+            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(deployedLocation, appName));
         }
         catch (Exception e)
         {

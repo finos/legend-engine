@@ -181,7 +181,7 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                       v:ViewSelectSQLQuery[1] | let transformedSql = $v.selectSQLQuery->transform($f, $transformed);
                                                 pair(^$v(selectSQLQuery=$transformedSql.first->cast(@SelectSQLQuery)), $transformedSql.second);,
 
-                      u:Union[1] | let transformedSqls = $u.queries->fold({q, agg |
+                      u:SetOperationQuery[1] | let transformedSqls = $u.queries->fold({q, agg |
                                       let sqlTransform = $q->transform($f, $agg.second);
                                       pair(list($agg.first.values->add($sqlTransform.first->cast(@SelectSQLQuery))), $sqlTransform.second);
                                    }, pair(^List<SelectSQLQuery>(), $transformed));
@@ -254,6 +254,15 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                                                                 let transformedIndex = transform($s.index, $f, $transformedOperand.second);
                                                                 pair(^$s(operand = $transformedOperand.first, index = $transformedIndex.first), $transformedIndex.second);,
 
+                      ac:AggregateFunctionCall[1] | let transformedFunc = $ac.func->transform($f, $transformed);
+                                                    let transformedSortBy = $ac.sortBy->fold({s, agg |
+                                                        let sortTransform = $s.sortByElement->transform($f, $agg.second);
+                                                        pair(list($agg.first.values->add(^$s(sortByElement=$sortTransform.first))), $sortTransform.second);
+                                                    }, pair(^List<SortByInfo>(), $transformedFunc.second));
+                                                    let transformedFilter = $ac.filter->map(fi | $fi->transform($f, $transformedSortBy.second));
+                                                    pair(^$ac(func=$transformedFunc.first, sortBy=$transformedSortBy.first.values, filter=$transformedFilter.first),
+                                                         if($transformedFilter->isEmpty(), | $transformedSortBy.second, | $transformedFilter.second->toOne()));,
+
                       rel:RelationalOperationElement[1] | pair($rel, $transformed)
                     ]);
          pair($toReturn.first, $toReturn.second->put($r, $toReturn.first));
@@ -312,7 +321,7 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
 
                       v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->transformNonCached($f)->cast(@SelectSQLQuery)),
 
-                      u:Union[1] | ^$u(queries=$u.queries->map(q|$q->transformNonCached($f)->cast(@SelectSQLQuery))),
+                      u:SetOperationQuery[1] | ^$u(queries=$u.queries->map(q|$q->transformNonCached($f)->cast(@SelectSQLQuery))),
 
                       a:Alias[1] | ^$a(relationalElement=$a.relationalElement->transformNonCached($f)),
 
@@ -323,6 +332,10 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
                       va:VariableArityOperation[1] | ^$va(args=$va.args->map(a|$a->transformNonCached($f))),
 
                       d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->transformNonCached($f))),
+
+                      ac:AggregateFunctionCall[1] | ^$ac(func=$ac.func->transformNonCached($f),
+                                                     sortBy=$ac.sortBy->map(s|^$s(sortByElement=$s.sortByElement->transformNonCached($f))),
+                                                     filter=$ac.filter->map(fi|$fi->transformNonCached($f))),
 
                       j:JoinStrings[1] |
                         ^$j(
@@ -347,7 +360,7 @@ function meta::relational::postProcessor::replaceTables(selectSQLQuery:SelectSQL
 function meta::relational::postProcessor::fixTables(relationalOperationElement:RelationalOperationElement[1], oldToNewPairs:Pair<Table,Table>[*]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
-                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->fixTables($oldToNewPairs))->cast(@SelectSQLQuery)),
+                    u:SetOperationQuery[1] | ^$u(queries = $u.queries->map(q|$q->fixTables($oldToNewPairs))->cast(@SelectSQLQuery)),
                     c:CommonTableExpressionReference[1] | $c,
                     c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->fixTables($oldToNewPairs)->cast(@SelectSQLQuery)),
                     s:SelectSQLQuery[1] | let newS = ^$s(
@@ -380,6 +393,9 @@ function meta::relational::postProcessor::fixTables(relationalOperationElement:R
                     ll : LiteralList[1] | $ll,
                     s: SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), property = $s.property->fixTables($oldToNewPairs), index = $s.index->map(i | $i->fixTables($oldToNewPairs))),
                     s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->fixTables($oldToNewPairs), index = $s.index->fixTables($oldToNewPairs)),
+                    ac : AggregateFunctionCall[1] | ^$ac(func=$ac.func->fixTables($oldToNewPairs),
+                                                         sortBy=$ac.sortBy->map(s | ^$s(sortByElement=$s.sortByElement->fixTables($oldToNewPairs))),
+                                                         filter=$ac.filter->map(fi | $fi->fixTables($oldToNewPairs))),
                     rel: RelationalOperationElement[1] | $rel
                   ]);
 }

@@ -25,6 +25,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
 
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       aliasLimit = 256,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
@@ -267,9 +268,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
-    // iso_week, not week: H2's week counts from Sunday, so 2020-12-27 is week 1 of 2021 there and
-    // week 52 of 2020 under ISO 8601, which is what weekOfYear means.
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='iso_week(%s)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()})),
     dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()}))
@@ -363,12 +362,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::semiStructuredPathAccessForH2(elementAccess: String[1], property: String[1]): String[1]
 {
-  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2($property->substring(1, $property->length()-1))); // remove double quotes
+  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2('\'' + $property->substring(1, $property->length()-1) + '\''))
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::semiStructuredPropertyAccessForH2(elementAccess: String[1], property: String[1]): String[1]
 {
-  format('legend_h2_extension_json_navigate(%s, \'%s\', null)', [$elementAccess, $property]);
+  format('legend_h2_extension_json_navigate(%s, %s, null)', [$elementAccess, $property]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::semiStructuredArrayElementAccessForH2(elementAccess: String[1], index: String[1]): String[1]
@@ -452,7 +451,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
    let elementAccess = $s->match([
       p: SemiStructuredPropertyAccess[1] |
-         let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand,  $p.property->cast(@Literal).value->cast(@String));
+         let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand, $p.property->processOperation($sgc));
          if ($p.index->isNotEmpty(),
              | semiStructuredArrayElementAccessForH2($propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()),
              | $propertyAccess

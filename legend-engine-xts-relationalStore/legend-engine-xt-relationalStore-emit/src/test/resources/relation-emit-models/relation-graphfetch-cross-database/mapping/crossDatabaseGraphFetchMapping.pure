@@ -1,0 +1,130 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Mapping
+Mapping demo::relation::mapping::EmployeeFirmCrossDatabaseMapping
+(
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::registeredFirms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  testSuites:
+  [
+    crossDatabaseToOneSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->graphFetch(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#)
+                  ->serialize(#{demo::relation::domain::Employee{firstName, employer{legalName}}}#);
+      tests:
+      [
+        employeesAndRegisteredFirms:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#,
+            demo::relation::db::FirmRegistryDB:
+              Reference
+              #{
+                demo::relation::data::FirmRegistryData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchEmployerFromOtherDatabase:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","employer":{"legalName":"Acme Holdings"}},{"firstName":"Bob","employer":{"legalName":"Beta Partners"}},{"firstName":"Carol","employer":{"legalName":"Acme Holdings"}}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    crossDatabaseToManySuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->graphFetch(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#)
+                  ->serialize(#{demo::relation::domain::Firm{legalName, employees{firstName}}}#);
+      tests:
+      [
+        registeredFirmsAndEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#,
+            demo::relation::db::FirmRegistryDB:
+              Reference
+              #{
+                demo::relation::data::FirmRegistryData
+              }#
+          ];
+          asserts:
+          [
+            shouldFetchEmployeesFromOtherDatabase:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Acme Holdings","employees":[{"firstName":"Alice"},{"firstName":"Carol"}]},{"legalName":"Beta Partners","employees":[{"firstName":"Bob"}]},{"legalName":"Gamma Group","employees":[]}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -415,7 +415,6 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType)->filter(t| $t->instanceOf(Class))->cast(@Class<Any>)
    ]);
 
-   $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->removeDuplicates();
    $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->concatenate($tree.subTypeTrees->map(st| $st->classesInTree()))->removeDuplicates();
 }
 

@@ -134,6 +134,26 @@ public class StructuralParityReport
      */
     public void generate(List<TestCaseLoader.TestCase> allTestCases, File reportFile, String outputDir) throws IOException
     {
+        Map<String, Map<String, FeatureCoverage>> categories = buildCategories(allTestCases, reportFile);
+        if (categories.isEmpty())
+        {
+            return; // no structural tests
+        }
+
+        Map<String, FailureInfo> failureMap = loadFailures(reportFile);
+        new File(outputDir).mkdirs();
+        generateJson(categories, outputDir + "/structural-parity.json");
+        generateMarkdown(categories, outputDir + "/structural-parity.md", failureMap);
+        printConsoleSummary(categories);
+    }
+
+    /**
+     * Builds the category -&gt; feature -&gt; coverage model without writing any output, so
+     * other consumers (e.g. the parity site generator) can reuse the same aggregation
+     * logic instead of re-deriving it from the raw test cases and report file.
+     */
+    public Map<String, Map<String, FeatureCoverage>> buildCategories(List<TestCaseLoader.TestCase> allTestCases, File reportFile) throws IOException
+    {
         // Step 1: Collect tests with feature+category, group by feature
         Map<String, TestEntry> testEntryMap = new HashMap<>();
         // category -> feature -> FeatureCoverage
@@ -164,7 +184,7 @@ public class StructuralParityReport
 
         if (categories.isEmpty())
         {
-            return; // no structural tests
+            return categories; // no structural tests
         }
 
         // Step 2: Read results from parity-report.json
@@ -240,12 +260,7 @@ public class StructuralParityReport
             }
         }
 
-        // Step 4: Generate outputs
-        Map<String, FailureInfo> failureMap = loadFailures(reportFile);
-        new File(outputDir).mkdirs();
-        generateJson(categories, outputDir + "/structural-parity.json");
-        generateMarkdown(categories, outputDir + "/structural-parity.md", failureMap);
-        printConsoleSummary(categories);
+        return categories;
     }
 
     private static Map<String, FailureInfo> loadFailures(File reportFile)
@@ -255,6 +270,7 @@ public class StructuralParityReport
         {
             return map;
         }
+
         try
         {
             JsonNode report = MAPPER.readTree(reportFile);

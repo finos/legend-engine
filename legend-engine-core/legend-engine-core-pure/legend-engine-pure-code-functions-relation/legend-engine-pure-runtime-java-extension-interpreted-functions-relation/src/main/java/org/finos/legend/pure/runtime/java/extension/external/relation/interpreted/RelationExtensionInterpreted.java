@@ -35,11 +35,15 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.DenseRank;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Distinct;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Drop;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Except;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.ExceptAll;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Filter;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.First;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Flatten;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Intersect;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.IntersectAll;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Join;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.LateralJoin;
@@ -59,6 +63,8 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Size;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Slice;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Union;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.UnionAll;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.WrapPrimitiveInTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Write;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
@@ -76,6 +82,12 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
     public RelationExtensionInterpreted()
     {
         super(Tuples.pair("concatenate_Relation_1__Relation_1__Relation_1_", Concatenate::new),
+                Tuples.pair("union_Relation_1__Relation_1__Relation_1_", Union::new),
+                Tuples.pair("unionAll_Relation_1__Relation_1__Relation_1_", UnionAll::new),
+                Tuples.pair("except_Relation_1__Relation_1__Relation_1_", Except::new),
+                Tuples.pair("exceptAll_Relation_1__Relation_1__Relation_1_", ExceptAll::new),
+                Tuples.pair("intersect_Relation_1__Relation_1__Relation_1_", Intersect::new),
+                Tuples.pair("intersectAll_Relation_1__Relation_1__Relation_1_", IntersectAll::new),
                 Tuples.pair("drop_Relation_1__Integer_1__Relation_1_", Drop::new),
                 Tuples.pair("extend_Relation_1__FuncColSpec_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1__FuncColSpecArray_1__Relation_1_", Extend::new),
