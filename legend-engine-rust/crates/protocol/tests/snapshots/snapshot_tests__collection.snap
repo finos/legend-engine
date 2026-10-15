@@ -1,0 +1,26 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 781
+expression: json
+---
+{
+  "_type": "collection",
+  "multiplicity": {
+    "lowerBound": 3,
+    "upperBound": 3
+  },
+  "values": [
+    {
+      "_type": "integer",
+      "value": 1
+    },
+    {
+      "_type": "integer",
+      "value": 2
+    },
+    {
+      "_type": "integer",
+      "value": 3
+    }
+  ]
+}

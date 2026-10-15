@@ -1,0 +1,54 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "profile",
+      "name": "doc",
+      "package": "meta::pure::profiles",
+      "sourceInformation": "profile.pure:17:1-21:1",
+      "stereotypes": [
+        {
+          "sourceInformation": "profile.pure:19:19-28",
+          "value": "deprecated"
+        },
+        {
+          "sourceInformation": "profile.pure:19:31-42",
+          "value": "experimental"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": "profile.pure:20:12-22",
+          "value": "description"
+        },
+        {
+          "sourceInformation": "profile.pure:20:25-28",
+          "value": "todo"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::pure::profiles::doc"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "profile.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "profile.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

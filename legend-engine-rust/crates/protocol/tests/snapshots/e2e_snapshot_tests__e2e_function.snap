@@ -1,0 +1,92 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": "function.pure:19:14-20",
+              "values": [
+                {
+                  "_type": "string",
+                  "sourceInformation": "function.pure:19:5-12",
+                  "value": "Hello "
+                },
+                {
+                  "_type": "var",
+                  "name": "name",
+                  "sourceInformation": "function.pure:19:16-20"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": "function.pure:19:14-20"
+        }
+      ],
+      "name": "greet_String_1__String_1_",
+      "package": "my",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "function.pure:17:26-31"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "sourceInformation": "function.pure:17:20-34"
+        }
+      ],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String",
+          "sourceInformation": "function.pure:17:38-43"
+        }
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "sourceInformation": "function.pure:17:1-20:1"
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "my::greet_String_1__String_1_"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "function.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "function.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -1,0 +1,89 @@
+---
+source: crates/parser/tests/test_measure.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Measure(
+                    MeasureDef {
+                        package: Some(
+                            Package {
+                                name: "pkg",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 9,
+                                    end_line: 2,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "NonConvertible",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 14,
+                                end_line: 2,
+                                end_column: 27,
+                            },
+                        },
+                        canonical_unit: None,
+                        non_canonical_units: [
+                            UnitDef {
+                                name: "UnitOne",
+                                conversion_param: None,
+                                conversion_body: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 5,
+                                    end_line: 4,
+                                    end_column: 12,
+                                },
+                            },
+                            UnitDef {
+                                name: "UnitTwo",
+                                conversion_param: None,
+                                conversion_body: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 5,
+                                    end_line: 5,
+                                    end_column: 12,
+                                },
+                            },
+                        ],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 6,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

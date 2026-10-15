@@ -1,0 +1,112 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[workspace]
+resolver = "2"
+members = [
+    "crates/ast",
+    "crates/ast-derive",
+    "crates/lexer",
+    "crates/parser",
+    "crates/protocol",
+    "crates/api",
+    "crates/dsl-connection",
+    "crates/dsl-data",
+    "crates/dsl-graph",
+    "crates/dsl-mapping",
+    "crates/dsl-runtime",
+    "crates/dsl-store",
+    "crates/dsl-sql",
+    "crates/dsl-tds",
+    "crates/jni",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+# The oldest Rust that builds the workspace with Cargo.lock's dependencies (checked with 1.89.0).
+rust-version = "1.89"
+license = "Apache-2.0"
+repository = "https://github.com/finos/legend-engine"
+
+[workspace.dependencies]
+# The workspace's own crates. A path for building here, the version for crates.io: keep it
+# [workspace.package]'s version (docs/publishing.md).
+legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0" }
+legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
+legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
+legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
+legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }
+legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
+legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }
+legend-pure-dsl-tds = { path = "crates/dsl-tds", version = "0.1.0" }
+legend-pure-parser-api = { path = "crates/api", version = "0.1.0" }
+legend-pure-parser-ast = { path = "crates/ast", version = "0.1.0" }
+legend-pure-parser-ast-derive = { path = "crates/ast-derive", version = "0.1.0" }
+legend-pure-parser-lexer = { path = "crates/lexer", version = "0.1.0" }
+legend-pure-parser-parser = { path = "crates/parser", version = "0.1.0" }
+legend-pure-parser-protocol = { path = "crates/protocol", version = "0.1.0" }
+
+# Core
+smol_str = "0.3"
+thiserror = "2"
+
+# Tracing
+tracing = "0.1"
+
+# Parallelism (multi-file parsing)
+rayon = "1"
+
+# Serialization (protocol + island protocol modules)
+itoa = "1"
+memchr = "2"
+serde = { version = "1", features = ["derive"] }
+# `arbitrary_precision`: numbers keep their text (decimals their scale, as the
+# engine's `BigDecimal`) through `serde_json::Value`.
+serde_json = { version = "1", features = ["arbitrary_precision", "raw_value"] }
+
+# Plugins (island / section parser registration)
+linkme = "0.3"
+
+# JNI bridge
+jni = "0.21"
+
+# Testing
+insta = { version = "1", features = ["json"] }
+
+# Proc-macro (ast-derive)
+syn = "2"
+quote = "1"
+proc-macro2 = "1"
+
+[profile.dev]
+# macOS: keep .dSYM out of the linker hot path (cuts incremental link time).
+split-debuginfo = "unpacked"
+# Line-table-only debug info — backtraces still work, ~50% smaller artifacts.
+debug = "line-tables-only"
+
+[profile.test]
+inherits = "dev"
+
+# Heavy frontend deps that every crate transitively waits on. Compiling
+# them unoptimized stretches the proc-macro expansion and serialization
+# critical path; opt-3 once, reuse everywhere.
+[profile.dev.package.syn]
+opt-level = 3
+[profile.dev.package.serde_derive]
+opt-level = 3
+[profile.dev.package.proc-macro2]
+opt-level = 3
+[profile.dev.package.quote]
+opt-level = 3
