@@ -319,7 +319,10 @@ function <<access.private>> meta::pure::router::preeval::describeInstanceValueEl
     e:Enum[1]                 | $indent + 'enum ' + $e->type()->describeTypePath() + '.' + $e->toString(),
     t:TDS<Any>[1]             | $indent + 'tds ' + $t->genericType()->describeGenericType() + ' ' + $t.csv,
     ra:RelationElementAccessor<Any>[1] | $ra->describeInstance($indent, $ancestors),
-    r:Relation<Any>[1]        | $indent + 'relation ' + $r->genericType()->describeGenericType() + ' rows ' + $r->meta::pure::functions::relation::size()->toString(),
+    r:Relation<Any>[1]        | if($r->type() == Relation || $r->type() == TDS,
+                                  | $indent + 'relation ' + $r->genericType()->describeGenericType() + ' rows ' + $r->meta::pure::functions::relation::size()->toString(),
+                                  | $r->describeInstance($indent, $ancestors)
+                                ),
     p:Path<Nil,Any|*>[1]      | $p->describePath($indent, $ancestors),
     f:Function<Any>[1]        | $indent + 'function ' + $f->describeFunctionIdentity($f->type()->describeTypePath()),
     pe:PackageableElement[1]  | $indent + 'element ' + $pe->elementToPath(),

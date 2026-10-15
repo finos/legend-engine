@@ -449,3 +449,22 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
 {
   assertShadowRejects(runtimeRelation(1), runtimeRelation(2));
 }
+
+Class meta::pure::router::preeval::tests::implementationSwitch::ShadowRelation<T> extends meta::pure::metamodel::relation::Relation<T>
+{
+  name : String[1];
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualModelledRelations():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = heldValue(^ShadowRelation<Any>(name = 'a')), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = heldValue(^ShadowRelation<Any>(name = 'a')), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsModelledRelationsWithDifferentProperties():Boolean[1]
+{
+  assertShadowRejects(^ShadowRelation<Any>(name = 'a'), ^ShadowRelation<Any>(name = 'b'));
+}
