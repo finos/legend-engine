@@ -25,6 +25,7 @@ entry, and removes its grammars' `unlinked:` entries from the accepted list.
 | `###Relational`, `Relational` mapping elements and test input, `Relational #{…}#` test data, `RelationalDatabaseConnection` with its specifications, `###QueryPostProcessor`; Snowflake's datasource specification and authentication strategy | `dsl-relational`, `dsl-relational-snowflake` | relationalStore |
 | `###Service` | `dsl-service` | service |
 | `###ServiceStore` (with its mapping elements, connection and test data), `###MongoDB` (with its mappings and connection), `###Elasticsearch` (with its connection), and connections' authentication specifications | `dsl-service-store`, `dsl-mongodb`, `dsl-elasticsearch`, `dsl-authentication` | serviceStore, mongodb, elasticsearch, authentication |
+| Function activators: `###Snowflake`, `###MemSql`, `###BigQuery`, `###FunctionJar`, `###HostedService`; `###Deephaven` (with its connection) | `dsl-function-activator`, `dsl-snowflake`, `dsl-memsql-function`, `dsl-bigquery-function`, `dsl-function-jar`, `dsl-hosted-service`, `dsl-deephaven` | snowflake, memsqlFunction, bigqueryFunction, functionJar, hostedService, deephaven |
 | Whole models (`parseModel`): the engine's section split and section index, parsed in Rust in `on` mode, with no ANTLR parsing in Java | `api` | core |
 
 A mapping element, legacy test input, connection or embedded data type that
@@ -35,7 +36,6 @@ store's change lands.
 
 | Grammar | Crates | Engine owner |
 |---|---|---|
-| Function activators: `###Snowflake`, `###MemSql`, `###BigQuery`, `###FunctionJar`, `###HostedService`; `###Deephaven` (with its connection) | `dsl-function-activator`, `dsl-snowflake`, `dsl-memsql-function`, `dsl-bigquery-function`, `dsl-function-jar`, `dsl-hosted-service`, `dsl-deephaven` | snowflake, memsqlFunction, bigqueryFunction, functionJar, hostedService, deephaven |
 | `###Persistence`, with its relational target and cloud platform | `dsl-persistence`, `dsl-persistence-relational`, `dsl-persistence-cloud` | persistence |
 | `###DataSpace`, `###DataQualityValidation`, `###Diagram`, `###ExternalFormat`, `###FileGeneration` and `###GenerationSpecification`, `###Text` | `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`, `dsl-external-format`, `dsl-generation`, `dsl-text` | data-space, dataquality, diagram, external format, generation, text |
 

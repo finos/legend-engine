@@ -18,17 +18,23 @@
 //! ways.
 
 use legend_pure_dsl_authentication as _;
+use legend_pure_dsl_bigquery_function as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
+use legend_pure_dsl_deephaven as _;
 use legend_pure_dsl_elasticsearch as _;
+use legend_pure_dsl_function_jar as _;
 use legend_pure_dsl_graph as _;
+use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_service as _;
 use legend_pure_dsl_service_store as _;
+use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
@@ -48,6 +54,12 @@ const LINKED: &[&str] = &[
     "###ServiceStore\nServiceStore a::SS\n(\n  Service s\n  (\n    path : '/s';\n    method : GET;\n    response : a::Person <- a::B;\n    security : [];\n  )\n)\n",
     "###MongoDB\nDatabase a::Mdb\n(\n  Collection c ( validationLevel: moderate; jsonSchema: { \"bsonType\": \"object\" }; )\n)\n\n###Connection\nMongoDBConnection a::MC\n{\n  store: a::Mdb;\n  database: legend-db;\n  serverURLs: [localhost:1];\n  authentication: # UserPassword {\n    username: 'u';\n    password: SystemPropertiesSecret\n    {\n      systemPropertyName: 'p';\n    };\n  }#;\n}\n",
     "###Elasticsearch\nElasticsearch7Cluster a::E\n{\n  indices: [\n    people: {\n      properties: [\n        name: Keyword {}\n      ];\n    }\n  ];\n}\n",
+    "###Snowflake\nSnowflakeApp a::A\n{\n  applicationName: 'app';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
+    "###MemSql\nMemSqlFunction a::MF\n{\n  functionName: 'f';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
+    "###BigQuery\nBigQueryFunction a::BF\n{\n  functionName: 'f';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
+    "###FunctionJar\nFunctionJar a::J\n{\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
+    "###HostedService\nHostedService a::HS\n{\n  pattern: '/p';\n  function: a::f():String[1];\n  ownership: Deployment { identifier: 'o' };\n}\n",
+    "###Deephaven\nDeephaven a::DS\n(\n  Table trades ( id: INT, at: TIMESTAMP )\n)\n",
 ];
 
 fn request(code: &str) -> ModelRequest<'_> {

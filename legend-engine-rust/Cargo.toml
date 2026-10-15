@@ -22,17 +22,24 @@ members = [
     "crates/protocol",
     "crates/api",
     "crates/dsl-authentication",
+    "crates/dsl-bigquery-function",
     "crates/dsl-connection",
     "crates/dsl-data",
+    "crates/dsl-deephaven",
     "crates/dsl-elasticsearch",
+    "crates/dsl-function-activator",
+    "crates/dsl-function-jar",
     "crates/dsl-graph",
+    "crates/dsl-hosted-service",
     "crates/dsl-mapping",
+    "crates/dsl-memsql-function",
     "crates/dsl-mongodb",
     "crates/dsl-relational",
     "crates/dsl-relational-snowflake",
     "crates/dsl-runtime",
     "crates/dsl-service",
     "crates/dsl-service-store",
+    "crates/dsl-snowflake",
     "crates/dsl-store",
     "crates/dsl-sql",
     "crates/dsl-tds",
@@ -51,17 +58,24 @@ repository = "https://github.com/finos/legend-engine"
 # The workspace's own crates. A path for building here, the version for crates.io: keep it
 # [workspace.package]'s version (docs/publishing.md).
 legend-pure-dsl-authentication = { path = "crates/dsl-authentication", version = "0.1.0" }
+legend-pure-dsl-bigquery-function = { path = "crates/dsl-bigquery-function", version = "0.1.0" }
 legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0" }
 legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
+legend-pure-dsl-deephaven = { path = "crates/dsl-deephaven", version = "0.1.0" }
 legend-pure-dsl-elasticsearch = { path = "crates/dsl-elasticsearch", version = "0.1.0" }
+legend-pure-dsl-function-activator = { path = "crates/dsl-function-activator", version = "0.1.0" }
+legend-pure-dsl-function-jar = { path = "crates/dsl-function-jar", version = "0.1.0" }
 legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
+legend-pure-dsl-hosted-service = { path = "crates/dsl-hosted-service", version = "0.1.0" }
 legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
+legend-pure-dsl-memsql-function = { path = "crates/dsl-memsql-function", version = "0.1.0" }
 legend-pure-dsl-mongodb = { path = "crates/dsl-mongodb", version = "0.1.0" }
 legend-pure-dsl-relational = { path = "crates/dsl-relational", version = "0.1.0" }
 legend-pure-dsl-relational-snowflake = { path = "crates/dsl-relational-snowflake", version = "0.1.0" }
 legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }
 legend-pure-dsl-service = { path = "crates/dsl-service", version = "0.1.0" }
 legend-pure-dsl-service-store = { path = "crates/dsl-service-store", version = "0.1.0" }
+legend-pure-dsl-snowflake = { path = "crates/dsl-snowflake", version = "0.1.0" }
 legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
 legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }
 legend-pure-dsl-tds = { path = "crates/dsl-tds", version = "0.1.0" }

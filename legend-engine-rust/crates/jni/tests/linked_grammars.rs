@@ -22,16 +22,22 @@ fn library_links_the_section_and_island_grammars() {
         caps.sections,
         [
             "Pure",
+            "BigQuery",
             "Connection",
             "Data",
+            "Deephaven",
             "Elasticsearch",
+            "FunctionJar",
+            "HostedService",
             "Mapping",
+            "MemSql",
             "MongoDB",
             "QueryPostProcessor",
             "Relational",
             "Runtime",
             "Service",
-            "ServiceStore"
+            "ServiceStore",
+            "Snowflake"
         ]
     );
     assert!(

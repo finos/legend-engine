@@ -57,17 +57,23 @@ use legend_pure_parser_api::{
 
 // Link the grammar plug-ins so their self-registrations are in this library.
 use legend_pure_dsl_authentication as _;
+use legend_pure_dsl_bigquery_function as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
+use legend_pure_dsl_deephaven as _;
 use legend_pure_dsl_elasticsearch as _;
+use legend_pure_dsl_function_jar as _;
 use legend_pure_dsl_graph as _;
+use legend_pure_dsl_hosted_service as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_service as _;
 use legend_pure_dsl_service_store as _;
+use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
