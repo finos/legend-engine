@@ -848,44 +848,6 @@ function meta::external::query::sql::transformation::queryToPure::percentilePreP
   );
 }
 
-function meta::external::query::sql::transformation::queryToPure::rowMapperPreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
-{
-  // min_by/max_by take two SQL arguments (the value column and the ordering column) that must become a
-  // single rowMapper(value, order) Pure call -- there is no SQL metamodel node for that, so the map is
-  // built directly as a ValueSpecification. The ordering argument must not survive into the reduce
-  // lambda: rebuilding the aggregate as a single-argument call lets replaceAggregateArguments collapse
-  // it to the group placeholder, so the reduce becomes $y | $y->maxBy() over the RowMapper collection.
-  assertEquals(2, $aggregate.arguments->size(), | 'min_by/max_by expects exactly 2 arguments');
-  unsupported($context.relation->isTrue(), | 'min_by/max_by are only supported in the relation flow');
-  unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported for min_by/max_by');
-  unsupported($aggregate.filter->isEmpty(), | 'aggregate filter not supported for min_by/max_by');
-  unsupported($aggregate.group->isEmpty(), | 'within group not supported for min_by/max_by');
-
-  let valueVs = processMapFunctionArgument($aggregate.arguments->at(0), $context)->evaluateAndDeactivate();
-  let orderVs = processMapFunctionArgument($aggregate.arguments->at(1), $context)->evaluateAndDeactivate();
-
-  let rowMapperType = ^GenericType(
-    rawType = meta::pure::functions::math::mathUtility::RowMapper,
-    typeArguments = [$valueVs.genericType, $orderVs.genericType]
-  );
-
-  let rowMapperVs = sfe(
-    meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_,
-    $rowMapperType,
-    [$valueVs.genericType, $orderVs.genericType],
-    [$valueVs, $orderVs]
-  );
-
-  let singleArgAggregate = $column->walk([
-    f:FunctionCall[1] | ^$f(arguments = $f.arguments->first())
-  ])->toOne();
-
-  ^AggregateFunctionPreProcessorWrapper(
-    mapValueSpecification = $rowMapperVs,
-    aggregate = $singleArgAggregate->replaceAggregateArguments($context)
-  );
-}
-
 function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   // WITHIN GROUP (ORDER BY ...) carries a single key; the in-paren form carries any number.
