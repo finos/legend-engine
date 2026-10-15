@@ -143,3 +143,45 @@ For #1, the fix describes each kind differently:
 Two runtime relations with the same type and row count but different rows therefore compare equal. This is an accepted blind spot of the same kind as other native-backed values.
 
 No JAVA-BUG or PURE-QUIRK was found.
+
+## Cutover (Task 6, 2026-10-15)
+
+`PreevalImplementation.parse` now returns `JAVA` when the property is unset or blank, and `-Dlegend.engine.preeval.implementation=PURE` remains as the rollback path. `Test_Pure_Preeval_Java` and `Test_Pure_Relational_Preeval_Java` now also run `PURE`, so the rollback stays tested in compiled mode. The interpreted runners already cover all three implementations.
+
+Before the cutover, the branch was merged with `master`, which was 52 commits ahead. Upstream had changed `preeval.pure` in #5367, adding the `generateSeries` overloads to the `stopPreeval` stop list, and had added them to the router's `shouldStopFunctions`. The Java implementation reads both through its Pure hooks (`stopPreeval`, `shouldInline`), so it needed no change.
+
+Verification after a full rebuild of the merged branch:
+- **Preeval modules:** `TestPreevalImplementation` 7/7; native tests 32/32 in each mode.
+- **compiled-core:** `Test_Pure_Preeval` 133 (now under the JAVA default); `Test_Pure_Preeval_Java` 399 (PURE, JAVA and SHADOW); `Test_Interpreted_Preeval` 402; `Test_Pure_Core` 1242.
+- **Relational:** `Test_Pure_Relational_Preeval_Java` 3, `Test_Interpreted_Relational_Preeval` 3.
+
+### Estate under the new default against `PURE` (local)
+
+| Suite | Ran | Failing (default / PURE) | Differences |
+|---|---|---|---|
+| SQL | 262 | 2 / 2 | 0 |
+| LIN | 591 | 0 / 0 | 0 |
+| RC | 2904 | 3 / 3 | 0 |
+| H2 | 1633 | 1 / 1 | 0 |
+| DUCK | 1633 | 0 / 0 | 0 |
+
+The remaining failures are the six date- and timezone-dependent tests already in the P4 manifest: SQL `to_char`, RC day-of-week, and H2 `DATEDIFF` weeks. They fail on this machine only; CI runs them green.
+
+### Default benchmark suite under JAVA (this machine, reference only)
+
+The baseline has no entry for this machine, so nothing is compared. The CI runner entries need a rebase through the Performance Baseline workflow on the P5 PR.
+
+| Workload | planPure warm median ms |
+|---|---|
+| `simple@scale100/H2` | 29 |
+| `simple@scale1000/H2` | 23 |
+| `join8@scale30/H2` | 69 |
+| `join16@scale30/H2` | 116 |
+| `join2@scale30/H2` | 16 |
+| `join10@scale30/H2` | 56 |
+| `join2@scale10+union10/H2` | 106 |
+| `join2@scale10+union40/H2` | 2488 |
+| `simple@scale50+relfunc/H2` | 17 |
+| `simple@scale200+relfunc/H2` | 16 |
+| `graph1@scale30/H2` | 32 |
+| `graph4@scale30/H2` | 77 |

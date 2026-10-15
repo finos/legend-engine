@@ -36,6 +36,7 @@ public class Test_Pure_Relational_Preeval_Java
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
+        suite.addTest(withImplementation("PURE", targets(executionSupport)));
         suite.addTest(withImplementation("JAVA", targets(executionSupport)));
         suite.addTest(withImplementation("SHADOW", targets(executionSupport)));
         return suite;

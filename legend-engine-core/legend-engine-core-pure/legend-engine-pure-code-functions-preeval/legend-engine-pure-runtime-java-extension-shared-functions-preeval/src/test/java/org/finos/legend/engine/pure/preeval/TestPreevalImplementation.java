@@ -20,15 +20,15 @@ import org.junit.jupiter.api.Test;
 public class TestPreevalImplementation
 {
     @Test
-    public void testUnsetDefaultsToPure()
+    public void testUnsetDefaultsToJava()
     {
-        Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.parse(null));
+        Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.parse(null));
     }
 
     @Test
-    public void testBlankDefaultsToPure()
+    public void testBlankDefaultsToJava()
     {
-        Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.parse("  "));
+        Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.parse("  "));
     }
 
     @Test
@@ -36,6 +36,13 @@ public class TestPreevalImplementation
     {
         Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.parse("java"));
         Assertions.assertEquals(PreevalImplementation.SHADOW, PreevalImplementation.parse(" Shadow "));
+    }
+
+    @Test
+    public void testExplicitPureIsStillSelectable()
+    {
+        Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.parse("PURE"));
+        withProperty("pure", () -> Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.current()));
     }
 
     @Test
@@ -49,7 +56,7 @@ public class TestPreevalImplementation
     public void testCurrentFollowsSystemProperty()
     {
         withProperty("java", () -> Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.current()));
-        withProperty(null, () -> Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.current()));
+        withProperty(null, () -> Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.current()));
         withProperty("SHADOW", () -> Assertions.assertEquals(PreevalImplementation.SHADOW, PreevalImplementation.current()));
     }
 

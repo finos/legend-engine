@@ -27,7 +27,7 @@ public enum PreevalImplementation
 
     public static final String SYSTEM_PROPERTY = "legend.engine.preeval.implementation";
 
-    private static volatile Resolved resolved = new Resolved(null, PURE);
+    private static volatile Resolved resolved = new Resolved(null, JAVA);
 
     public static PreevalImplementation current()
     {
@@ -45,7 +45,7 @@ public enum PreevalImplementation
     {
         if (value == null || value.trim().isEmpty())
         {
-            return PURE;
+            return JAVA;
         }
         try
         {

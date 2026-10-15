@@ -36,6 +36,7 @@ public class Test_Pure_Preeval_Java
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
+        suite.addTest(PreevalImplementationTests.withImplementation("PURE", targets(executionSupport)));
         suite.addTest(PreevalImplementationTests.withImplementation("JAVA", targets(executionSupport)));
         suite.addTest(PreevalImplementationTests.withImplementation("SHADOW", targets(executionSupport)));
         return suite;
