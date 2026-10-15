@@ -227,7 +227,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** (relational: `testPrerouting42`, the file's only `<<test.Test>>`; its two `<<test.ToFix>>` tests, `testPrerouting41` and `testPrerouting_Store`, are excluded) |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode — **done** (336/336 under `PURE`, `JAVA` and `SHADOW`) |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences — **done** (five suites, zero `SHADOW`-only failures; see [the manifest](../plans/2026-09-29-preeval-p4-shadow-estate-manifest.md)) |
-| P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
+| P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain — **done** (`JAVA` is the default; preeval ×1.24–1.30 on fresh models and ×2–3 on reused ones; zero `SHADOW` differences on the full default-profile CI estate; see [the P5 results](../plans/2026-09-30-preeval-p5-results.md)) |
 | P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
 
 ### P1 status (2026-09-28)
@@ -516,23 +516,73 @@ The protocol could not describe values preeval legitimately evaluates: `_Window`
 - Qualified properties and string escaping are not part of the description. In theory, a string value could mimic another description line.
 - `assertSamePrevalResult` keeps its `inScopeVars` and `extensions` parameters, which are now unused; drop them in P6 with the switch.
 - **Unexercised crash paths.** The estate ran in compiled mode only, so none of the following has been run:
-  - The instance walk reads every property. A computed relation (a compiled `TDSContainer`) has no `csv` accessor, so describing one could throw in compiled mode. It is reached only if preeval ever folds a relation function into a computed relation, which the estate never did.
+  - The instance walk reads every property. A computed relation (a compiled `TDSContainer`) has no `csv` accessor, so describing one could throw in compiled mode. It is reached only if preeval ever folds a relation function into a computed relation, which the estate never did. **Reached and fixed in P5** (see P5 status, finding #1).
   - In interpreted mode, `ValueSpecification`s read through `$p->eval($instance)` and path parameters are not passed through `evaluateAndDeactivate`. That is the failure class fixed in `describeParameters`. `Test_Interpreted_Preeval` covers the test values but no estate value.
   - Pure's hand-built, let-bound `InstanceValue`s can print `<no genericType>` in interpreted mode while Java's typed copies print a type, which would be a false-positive mismatch. It has not been observed, since no test drives such a value to the top level.
 
-  P5's interpreted CI job should run at least one estate suite under `SHADOW`.
+  P5's interpreted CI job should run at least one estate suite under `SHADOW`. **P5 ruling:** no estate suite can run interpreted, because the PCT and relational adapters are compiled-only. Interpreted coverage stays with `Test_Interpreted_Preeval` and `Test_Interpreted_Relational_Preeval`, which run all three implementations.
 - **Comparator blind spots, accepted:**
   - `KeyExpression.add` is not compared, so `p += v` and `p = v` describe the same.
   - Nested instances print only their raw type: the classifier's type arguments are dropped with the `Any` properties.
   - `Column` values held as values print only their name.
   - Overloaded qualified properties share one identity line; the parameter lines usually differ.
-- **Cost:** the estate's wall-clock time under `SHADOW` was not measured separately. The paired runs of all five suites took about 13 minutes on the development machine, both modes included. P5 should measure `SHADOW` overhead as part of its benchmark.
+- **Cost:** the estate's wall-clock time under `SHADOW` was not measured separately. The paired runs of all five suites took about 13 minutes on the development machine, both modes included. P5 should measure `SHADOW` overhead as part of its benchmark. **P5:** `SHADOW` overhead was not benchmarked, since `SHADOW` is a diagnostic mode that never runs in production. The CI estate under `SHADOW` ran as fast as the `PURE` control at job level.
+
+### P5 status (2026-10-15)
+
+`JAVA` is the default. `-Dlegend.engine.preeval.implementation=PURE` restores the Pure implementation for one release as a rollback path. Evidence is in `docs/superpowers/plans/2026-09-30-preeval-p5-results.md`. The work is on draft PR finos/legend-engine#5305.
+
+**Statistics.** `PreevalStatistics` is opt-in, through `-Dlegend.engine.preeval.statistics=true`. It records how often each rule fires, plus calls and time for each Pure hook. Rule time is not recorded, because rules recurse into each other and would double-count.
+
+**Benchmark.** `PipelineBench --preeval` runs each workload under `PURE` and `JAVA` alternately in one JVM. It times every `traceSpan('preval')` with its own OpenTracing tracer, `SpanTimer`, then runs a statistics pass under `JAVA`.
+- **Plan generation alone does no preeval for these queries.** A class-based query planned with an external mapping and runtime never calls `preval`. The router calls it only for `NormalizeRequiredFunction` functions and for function-expression arguments of `from`, `with` and `getAll`.
+- **So the workloads use two paths.** Class-based workloads pre-evaluate the query lambda directly (`--direct-preval`, overload A, the SQL, lineage, OpenAPI and `SQLExecutor` path), which also covers the spec's SQL-over-Legend case. `relsort` covers the router path.
+- **First baseline.** JAVA was about 15% slower in total. The cause was per-model work on a fresh `PureModel`, not callbacks into Pure: hooks were 7–43% of JAVA's preval time.
+- **Two fixes:**
+  - read function types directly, as Pure's `functionType()` does, instead of through processor support's per-model cache;
+  - cache element lookups per model instead of per call.
+- **After the fixes:** ×1.24–1.30 in total on fresh models, and ×2.0–3.0 at steady state on a reused model.
+- **Remaining gap:** the two smallest queries (`graph4`, `m2mview`) are about 0.15 ms slower on a fresh model's first call. That is below the benchmark's noise floor, and they are ×2.3 faster on a reused model. This closes the §8 per-hook risk: hook callbacks are not the dominant cost.
+
+**Full CI estate under `SHADOW`.** Fork CI cannot run `build.yml`, because its jobs are gated on `finos/legend-engine`. So PR #5305's CI ran the control at `PURE`, then a temporary commit switched the test JVMs to `SHADOW`; the commit was reverted afterwards. The final `SHADOW` run (36754872271) was compared test by test with the control: about 47,500 tests with zero `SHADOW`-only failures, and `relationalStore` at 3,064 tests with 0 failures. It found two problems, both fixed:
+- `Test_Interpreted_Relational_Preeval` ran out of heap in CI's shared Surefire JVM. RC now runs each test class in its own JVM.
+- The `SHADOW` comparator crashed on runtime relations. It now describes each kind differently:
+  - `#TDS` literals by `csv` content;
+  - relation accessors by the structural walk;
+  - other relations by generic type and row count.
+
+**Cutover.** The default is now `JAVA`. The compiled runners now cover `PURE`, `JAVA` and `SHADOW`. Verification ran on the branch merged with `master`, after a full rebuild:
+- **Preeval modules:** `TestPreevalImplementation` 7/7; native tests 32/32 per mode.
+- **compiled-core:** a full `mvn clean install` with tests ran 2216 tests in committed classes: 0 failures, 1 skipped (`TestCoreCompiledStateIntegrity` 34, `TestIdBuilderCore` 3, `TestPreevalImplementationTests` 3, `Test_Pure_Core` 1242, `Test_Pure_Preeval` 133, `Test_Pure_Preeval_Java` 399, `Test_Interpreted_Preeval` 402).
+- **Relational:** both preeval runners 3/3.
+- **Estate:** the five P4 estate suites show no differences between the new default and `PURE`.
+- **Lint:** Checkstyle is clean on every module P5 touched.
+
+**Upstream drift absorbed.** `master` #5367 added `generateSeries` to `preeval.pure`'s stop list and to the router's `shouldStopFunctions`. The Java implementation reads both through its Pure hooks, so it needed no change. That confirms the hook design keeps the stop lists in one place.
+
+**Known gaps (carried forward):**
+- Runtime relations with the same generic type and row count but different rows compare equal under `SHADOW`.
+- Tiny queries on a fresh model are about 0.15 ms slower under `JAVA`. Removing the remaining `package_getByUserPath` walks needs `instanceof` checks or metadata-index lookups instead of paths.
+- The P4 comparator blind spots are unchanged.
+
+**User actions:**
+- run the Performance Baseline workflow on PR #5305, since `planPure` moves under `JAVA`;
+- take the PR out of draft.
+
+**P6 inputs (after one release):**
+- delete `prevalInternal`, the switch (`prevalWithImplementation`, `preevalImplementation`), the `SHADOW` comparator (`describePrevalResult` and its helpers) and `assertSamePrevalResult`;
+- delete the `PURE` wrappers in the runners;
+- rewrite `docs/engineering/architecture/preeval.md`;
+- keep `PreevalStatistics`, which costs one property read per rule application when off;
+- publish the "Pure feature → Java native" template guide.
 
 ## 6. Cutover criteria
 
 - zero `SHADOW` differences across default-profile CI suites;
 - the interpreted runner is green;
 - the benchmark shows no regression.
+
+Met on 2026-10-15; see P5 status.
 
 After cutover the default becomes `JAVA`. `PURE` remains selectable for one release as a rollback
 path.
