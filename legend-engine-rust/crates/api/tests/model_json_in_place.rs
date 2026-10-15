@@ -17,14 +17,18 @@
 //! model, and a model of each linked grammar, must give the same JSON both
 //! ways.
 
+use legend_pure_dsl_authentication as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
+use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_mongodb as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_service as _;
+use legend_pure_dsl_service_store as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
@@ -41,6 +45,9 @@ const LINKED: &[&str] = &[
     "###Runtime\nRuntime a::R\n{\n  mappings: [a::M];\n  connections:\n  [\n    ModelStore: [c: a::C]\n  ];\n}\n",
     "###Relational\nDatabase a::Db\n(\n  Table people (id INTEGER PRIMARY KEY, name VARCHAR(200))\n)\n\n###Mapping\nMapping a::RM\n(\n  a::Person: Relational\n  {\n    name: [a::Db]people.name\n  }\n)\n\n###Connection\nRelationalDatabaseConnection a::RC\n{\n  store: a::Db;\n  type: H2;\n  specification: LocalH2 {};\n  auth: DefaultH2;\n}\n",
     "###Service\nService a::S\n{\n  pattern: '/people';\n  documentation: '';\n  autoActivateUpdates: true;\n  execution: Single\n  {\n    query: |a::Person.all()->graphFetch(#{ a::Person { name } }#)->serialize(#{ a::Person { name } }#);\n    mapping: a::M;\n    runtime: a::R;\n  }\n}\n",
+    "###ServiceStore\nServiceStore a::SS\n(\n  Service s\n  (\n    path : '/s';\n    method : GET;\n    response : a::Person <- a::B;\n    security : [];\n  )\n)\n",
+    "###MongoDB\nDatabase a::Mdb\n(\n  Collection c ( validationLevel: moderate; jsonSchema: { \"bsonType\": \"object\" }; )\n)\n\n###Connection\nMongoDBConnection a::MC\n{\n  store: a::Mdb;\n  database: legend-db;\n  serverURLs: [localhost:1];\n  authentication: # UserPassword {\n    username: 'u';\n    password: SystemPropertiesSecret\n    {\n      systemPropertyName: 'p';\n    };\n  }#;\n}\n",
+    "###Elasticsearch\nElasticsearch7Cluster a::E\n{\n  indices: [\n    people: {\n      properties: [\n        name: Keyword {}\n      ];\n    }\n  ];\n}\n",
 ];
 
 fn request(code: &str) -> ModelRequest<'_> {

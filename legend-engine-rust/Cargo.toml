@@ -21,14 +21,18 @@ members = [
     "crates/parser",
     "crates/protocol",
     "crates/api",
+    "crates/dsl-authentication",
     "crates/dsl-connection",
     "crates/dsl-data",
+    "crates/dsl-elasticsearch",
     "crates/dsl-graph",
     "crates/dsl-mapping",
+    "crates/dsl-mongodb",
     "crates/dsl-relational",
     "crates/dsl-relational-snowflake",
     "crates/dsl-runtime",
     "crates/dsl-service",
+    "crates/dsl-service-store",
     "crates/dsl-store",
     "crates/dsl-sql",
     "crates/dsl-tds",
@@ -46,14 +50,18 @@ repository = "https://github.com/finos/legend-engine"
 [workspace.dependencies]
 # The workspace's own crates. A path for building here, the version for crates.io: keep it
 # [workspace.package]'s version (docs/publishing.md).
+legend-pure-dsl-authentication = { path = "crates/dsl-authentication", version = "0.1.0" }
 legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0" }
 legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
+legend-pure-dsl-elasticsearch = { path = "crates/dsl-elasticsearch", version = "0.1.0" }
 legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
 legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
+legend-pure-dsl-mongodb = { path = "crates/dsl-mongodb", version = "0.1.0" }
 legend-pure-dsl-relational = { path = "crates/dsl-relational", version = "0.1.0" }
 legend-pure-dsl-relational-snowflake = { path = "crates/dsl-relational-snowflake", version = "0.1.0" }
 legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }
 legend-pure-dsl-service = { path = "crates/dsl-service", version = "0.1.0" }
+legend-pure-dsl-service-store = { path = "crates/dsl-service-store", version = "0.1.0" }
 legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
 legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }
 legend-pure-dsl-tds = { path = "crates/dsl-tds", version = "0.1.0" }

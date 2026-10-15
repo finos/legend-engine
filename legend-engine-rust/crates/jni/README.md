@@ -32,13 +32,29 @@ the JVM cannot allocate the result array.
 The library links the island grammars `dsl-graph` (`#{…}#`), `dsl-store`
 (`#>{…}#`), `dsl-sql` (`#SQL{…}#`) and `dsl-tds` (`#TDS{…}#`); the section
 grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
-`dsl-mapping` (`###Mapping`), `dsl-relational` (`###Relational` and
-`###QueryPostProcessor`), `dsl-runtime` (`###Runtime`) and `dsl-service`
-(`###Service`); the stores' mapping, connection and test data grammars in
-`dsl-relational` and `dsl-relational-snowflake`. They self-register. To add
-grammars (e.g. Legend Engine's own), build an aggregator `cdylib` that depends
-on this crate and the grammar crates, and force-links them:
+`dsl-elasticsearch` (`###Elasticsearch`), `dsl-mapping` (`###Mapping`),
+`dsl-mongodb` (`###MongoDB`), `dsl-relational` (`###Relational` and
+`###QueryPostProcessor`), `dsl-runtime` (`###Runtime`), `dsl-service`
+(`###Service`) and `dsl-service-store` (`###ServiceStore`); the stores'
+mapping, connection and test data grammars in `dsl-relational`,
+`dsl-relational-snowflake`, `dsl-service-store`, `dsl-mongodb` and
+`dsl-elasticsearch`; and the connections' authentication grammar
+`dsl-authentication`. They self-register. To add grammars (e.g. Legend
+Engine's own), build an aggregator `cdylib` that depends on this crate and the
+grammar crates, and force-links them:
 >>>>>>> 508c681b75b (feat(rust-parser): the ###Service grammar)
+=======
+`dsl-elasticsearch` (`###Elasticsearch`), `dsl-mapping` (`###Mapping`),
+`dsl-mongodb` (`###MongoDB`), `dsl-relational` (`###Relational` and
+`###QueryPostProcessor`), `dsl-runtime` (`###Runtime`), `dsl-service`
+(`###Service`) and `dsl-service-store` (`###ServiceStore`); the stores'
+mapping, connection and test data grammars in `dsl-relational`,
+`dsl-relational-snowflake`, `dsl-service-store`, `dsl-mongodb` and
+`dsl-elasticsearch`; and the connections' authentication grammar
+`dsl-authentication`. They self-register. To add grammars (e.g. Legend
+Engine's own), build an aggregator `cdylib` that depends on this crate and the
+grammar crates, and force-links them:
+>>>>>>> Stashed changes
 
 ```rust
 use legend_pure_rust_parser as _;

@@ -187,7 +187,11 @@
         "legend-engine-xt-relationalStore-snowflake-grammar",
         "legend-engine-xt-relationalStore-emit",
         "legend-engine-language-pure-dsl-service",
-        "legend-engine-xt-service-emit"
+        "legend-engine-xt-service-emit",
+        "legend-engine-xt-authentication-grammar",
+        "legend-engine-xt-serviceStore-grammar",
+        "legend-engine-xt-nonrelationalStore-mongodb-grammar-integration",
+        "legend-engine-xt-elasticsearch-V7-grammar"
       ]
     }
   ]

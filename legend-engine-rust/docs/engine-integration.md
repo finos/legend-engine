@@ -90,6 +90,7 @@ The design mirrors Java's `PureGrammarParserExtension` and ServiceLoader:
 | `getExtraMappingTestInputDataParsers` (legacy mapping test inputs) | `dsl-mapping`'s `TestInputGrammar`, keyed by the input's type; the core `Object` is built in |
 | `getExtraTestAssertionParsers` (test assertions) | Core grammar in `parser` (`ParserContext::parse_test_assertion`): `EqualTo`, `EqualToJson`, and `Relation` as mapping and service tests read it; another type is unsupported |
 | `IRelationalGrammarParserExtension` (a relational connection's specifications) | `dsl-relational`'s `SpecificationGrammar` (`SPECIFICATION_GRAMMARS`), keyed by what it specifies (datasource specification, authentication strategy, post-processor, query generation config) and its type, and `LocalModeGrammar` (`LOCAL_MODE_GRAMMARS`) by database type; the relational store's own are built in |
+| `IAuthenticationGrammarParserExtension` (a connection's authentication, `# Type { … }#`) | `dsl-authentication`'s `AuthenticationGrammar` (`AUTHENTICATION_GRAMMARS`), keyed by the island's type; the authentication module's own are built in, their secrets a fixed grammar |
 | `getExtraConnectionParsers` (connection values) | `dsl-connection`'s `ConnectionValueGrammar`, keyed by the connection's type; the core's model connections are built in. A runtime's own connections, `#{ Type { … } }#`, are read by the same grammars (`dsl-connection`'s `parse_embedded_connection`) |
 
 ### Registration

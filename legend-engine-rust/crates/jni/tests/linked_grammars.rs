@@ -24,11 +24,14 @@ fn library_links_the_section_and_island_grammars() {
             "Pure",
             "Connection",
             "Data",
+            "Elasticsearch",
             "Mapping",
+            "MongoDB",
             "QueryPostProcessor",
             "Relational",
             "Runtime",
-            "Service"
+            "Service",
+            "ServiceStore"
         ]
     );
     assert!(

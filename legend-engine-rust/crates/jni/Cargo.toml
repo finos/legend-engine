@@ -34,15 +34,19 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 legend-pure-parser-api = { workspace = true }
 # Grammar plug-ins linked into this library (they self-register).
+legend-pure-dsl-authentication = { workspace = true }
 legend-pure-dsl-connection = { workspace = true }
 legend-pure-dsl-data = { workspace = true }
+legend-pure-dsl-elasticsearch = { workspace = true }
 legend-pure-dsl-graph = { workspace = true }
 legend-pure-dsl-mapping = { workspace = true }
+legend-pure-dsl-mongodb = { workspace = true }
 legend-pure-dsl-store = { workspace = true }
 legend-pure-dsl-relational = { workspace = true }
 legend-pure-dsl-relational-snowflake = { workspace = true }
 legend-pure-dsl-runtime = { workspace = true }
 legend-pure-dsl-service = { workspace = true }
+legend-pure-dsl-service-store = { workspace = true }
 legend-pure-dsl-sql = { workspace = true }
 legend-pure-dsl-tds = { workspace = true }
 jni = { workspace = true }

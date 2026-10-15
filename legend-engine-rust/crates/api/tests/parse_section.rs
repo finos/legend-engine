@@ -15,14 +15,18 @@
 //! The engine section contract, with the island grammars linked the way
 //! the JNI library links them.
 
+use legend_pure_dsl_authentication as _;
 use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
+use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_mongodb as _;
 use legend_pure_dsl_relational as _;
 use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_service as _;
+use legend_pure_dsl_service_store as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
@@ -53,11 +57,14 @@ fn capabilities_report_linked_grammars() {
             "Pure",
             "Connection",
             "Data",
+            "Elasticsearch",
             "Mapping",
+            "MongoDB",
             "QueryPostProcessor",
             "Relational",
             "Runtime",
-            "Service"
+            "Service",
+            "ServiceStore"
         ]
     );
     assert!(

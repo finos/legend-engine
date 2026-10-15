@@ -32,14 +32,18 @@ serde_json = { workspace = true }
 [dev-dependencies]
 # The island grammars register themselves when linked; api tests link them
 # the way a production aggregator (the JNI cdylib) does.
+legend-pure-dsl-authentication = { path = "../dsl-authentication" }
 legend-pure-dsl-connection = { path = "../dsl-connection" }
 legend-pure-dsl-data = { path = "../dsl-data" }
+legend-pure-dsl-elasticsearch = { path = "../dsl-elasticsearch" }
 legend-pure-dsl-graph = { path = "../dsl-graph" }
 legend-pure-dsl-mapping = { path = "../dsl-mapping" }
+legend-pure-dsl-mongodb = { path = "../dsl-mongodb" }
 legend-pure-dsl-store = { path = "../dsl-store" }
 legend-pure-dsl-relational = { path = "../dsl-relational" }
 legend-pure-dsl-relational-snowflake = { path = "../dsl-relational-snowflake" }
 legend-pure-dsl-runtime = { path = "../dsl-runtime" }
 legend-pure-dsl-service = { path = "../dsl-service" }
+legend-pure-dsl-service-store = { path = "../dsl-service-store" }
 legend-pure-dsl-sql = { path = "../dsl-sql" }
 legend-pure-dsl-tds = { path = "../dsl-tds" }
