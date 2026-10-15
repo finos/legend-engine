@@ -51,6 +51,9 @@ public class TestRustGrammarParity
         // Numbers by value: the same number written two ways.
         Assert.assertEquals(RustGrammarParity.canonical(tree("{\"n\":10.50,\"m\":1.0E1,\"z\":0.0}")), RustGrammarParity.canonical(tree("{\"n\":10.5,\"m\":10,\"z\":0}")));
         Assert.assertNotEquals(RustGrammarParity.canonical(tree("{\"n\":1}")), RustGrammarParity.canonical(tree("{\"n\":\"1\"}")));
+        // Bytes as the engine writes them, base64 text.
+        JsonNode bytes = RustSectionResult.MAPPER.createObjectNode().put("b", "street".getBytes(StandardCharsets.UTF_8));
+        Assert.assertEquals(RustGrammarParity.canonical(tree("{\"b\":\"c3RyZWV0\"}")), RustGrammarParity.canonical(bytes));
     }
 
     @Test

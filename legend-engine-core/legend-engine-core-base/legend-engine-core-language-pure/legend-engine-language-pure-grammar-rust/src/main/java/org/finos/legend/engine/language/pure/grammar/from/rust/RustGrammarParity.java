@@ -535,9 +535,9 @@ public final class RustGrammarParity
     }
 
     /**
-     * {@code node} without nulls and empty arrays, which the engine reads back as absent, and with every number as
-     * its value alone: the engine's mapper and the Rust parser may write the same number differently, and a decimal's
-     * scale is compared with the protocol objects.
+     * {@code node} without nulls and empty arrays, which the engine reads back as absent, with every number as its
+     * value alone (the engine's mapper and the Rust parser may write the same number differently, and a decimal's
+     * scale is compared with the protocol objects), and with binary values as the base64 text the engine writes.
      */
     static JsonNode canonical(JsonNode node)
     {
@@ -559,6 +559,10 @@ public final class RustGrammarParity
             ArrayNode result = RustSectionResult.MAPPER.createArrayNode();
             node.forEach(item -> result.add(canonical(item)));
             return result;
+        }
+        if (node.isBinary())
+        {
+            return RustSectionResult.MAPPER.getNodeFactory().textNode(node.asText());
         }
         if (node.isNumber() && !(node.isDouble() && (Double.isNaN(node.doubleValue()) || Double.isInfinite(node.doubleValue()))))
         {
