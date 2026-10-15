@@ -50,6 +50,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       aliasLimit = 255,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::snowflake::processGenerateSeriesForSnowflake_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       windowColumnProcessor = processWindowColumnForSnowflake_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -954,4 +955,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(0).type),
       $lambda.body->processOperation($sgc)
    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processGenerateSeriesForSnowflake(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select value::bigint as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from table(flatten(input => array_generate_range(' + [$g.start, $g->meta::relational::functions::pureToSqlQuery::metamodel::exclusiveStop(), $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + '))))';
 }

@@ -705,7 +705,8 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                               s:SemiStructuredArrayFlatten[1] | let tac = $s->extractTableAliasColumns();
                                                                 if($tac->isEmpty(), | [], | $tac->toOne()->extractSourceColumn($tac.alias.relation->toOne(), $relationIdentifiers, $sourceTree));,
                               s:SemiStructuredArrayFlattenRelation[1] | let tac = $s->extractTableAliasColumns();
-                                                                if($tac->isEmpty(), | [], | $tac->toOne()->extractSourceColumn($tac.alias.relation->toOne(), $relationIdentifiers, $sourceTree));
+                                                                if($tac->isEmpty(), | [], | $tac->toOne()->extractSourceColumn($tac.alias.relation->toOne(), $relationIdentifiers, $sourceTree));,
+                              g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1] | []
                            ]);
 }
 

@@ -5,7 +5,7 @@ tests:
     feature: "CROSS JOIN LATERAL"
     category: "lateral_joins"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: lateral_cross_subquery
     sql: "SELECT p.name, sub.colleague FROM persons p CROSS JOIN LATERAL (SELECT p2.name AS colleague FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.id != p.id) sub WHERE p.id <= 3 ORDER BY 1, 2"
@@ -50,7 +50,7 @@ tests:
     feature: "function in FROM with cross join"
     category: "lateral_joins"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LATERAL with aggregation
   - id: lateral_aggregate

@@ -959,8 +959,11 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : meta::pure::graphFetch::execution::AlloySerializationConfig[1]| true,
             p : meta::external::format::shared::ExternalFormatExternalizeConfig[1] | true,
             p : meta::external::format::shared::ExternalFormatInternalizeConfig[1] | true,
+            // generateSeries over constant bounds must reach the store as a table function, not be materialised in memory
             f : FunctionExpression[1]| $f.func->in([
-              letFunction_String_1__T_m__T_m_
+              letFunction_String_1__T_m__T_m_,
+              meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_,
+              meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_
             ]->concatenate(fromFunctionsToStop())),
             a : meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>[1] | true,
             f : meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1] | true,

@@ -90,6 +90,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.semiStructuredElementProcessor->toOne()->eval($s, $sgc);
    }: String[1];
 
+   generateSeriesProcessor(g:GenerateSeriesRelation[1], sgc:SqlGenerationContext[1])
+   {
+     assert($this.dbExtension.generateSeriesProcessor->isNotEmpty(), '[unsupported-api] generateSeries is not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.generateSeriesProcessor->toOne()->eval($g, $sgc);
+   }: String[1];
+
    variableDeclarationProcessor(r:VariableDeclaration[1], sgc:SqlGenerationContext[1])
    {
     assert($this.dbExtension.variableDeclarationProcessor->isNotEmpty(), '[unsupported-api] variable dleclaration param processing not supported for Database Type: ' + $this.dbType->toString());
@@ -325,6 +331,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    tabularFunctionProcessor: meta::pure::metamodel::function::Function<{String[1], String[1] , FunctionParameter[*]-> String[1]}>[0..1];
    tabularFunctionCallProcessor: meta::pure::metamodel::function::Function<{String[1], String[1], TabularFunctionCallArgument[*], SqlGenerationContext[1] -> String[1]}>[0..1];
    semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   generateSeriesProcessor: meta::pure::metamodel::function::Function<{GenerateSeriesRelation[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    tableFunctionParamProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    variableDeclarationProcessor: meta::pure::metamodel::function::Function<{VariableDeclaration[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
@@ -730,6 +737,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlattenRelation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          g:GenerateSeriesRelation[1]|$dbConfig.generateSeriesProcessor($g, $sgc),
                                           s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           t:TableFunctionParamPlaceHolder[1] | $dbConfig.tableFunctionParamProcessor($t, $sgc),
                                           d:DataTypeInfo[1] | $dbConfig.dataTypeToSqlText($d.dataType),

@@ -100,7 +100,7 @@ tests:
     function: generate_series
     signature: generate_series(integer, integer) → SETOF integer
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # generate_subscripts — array literal in FROM so we exercise the actual
   # overloads. The fixture tables have no array columns, so an inline ARRAY[...]

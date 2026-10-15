@@ -657,6 +657,18 @@ public class Handlers
         return Lists.mutable.with(toFlatten, parameters.get(1).accept(valueSpecificationBuilder));
     };
 
+    public static final ParametersInference GenerateSeriesColInference = (parameters, valueSpecificationBuilder) ->
+    {
+        MutableList<ValueSpecification> bounds = ListIterate.collect(parameters.subList(0, parameters.size() - 1), p -> p.accept(valueSpecificationBuilder));
+
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification colSpecParameter = parameters.get(parameters.size() - 1);
+        ColSpec colSpec = (ColSpec) ((ClassInstance) colSpecParameter).value;
+        colSpec.genericType = CompileContext.convertGenericType(valueSpecificationBuilder.getContext().pureModel.getGenericType(M3Paths.Integer));
+        colSpec.multiplicity = CompileContext.convertMultiplicity(valueSpecificationBuilder.getContext().pureModel.getMultiplicity("one"));
+
+        return bounds.with(colSpecParameter.accept(valueSpecificationBuilder));
+    };
+
     public static final ParametersInference RenameColInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
@@ -2432,6 +2444,11 @@ public class Handlers
                     h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", "flatten", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
                 )
         );
+
+        register(grp(GenerateSeriesColInference,
+                h("meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_", "generateSeries", false, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(2)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(2)._genericType()._typeArguments().getOnly()), ps -> ps.size() == 3),
+                h("meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_", "generateSeries", false, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(3)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(3)._genericType()._typeArguments().getOnly()), ps -> ps.size() == 4)
+        ));
 
         register(grp(EvalInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_", "eval", false, ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroOne"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_ColSpec")))));
 

@@ -5736,6 +5736,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                             ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v->mainTable().schema);,
                s:SemiStructuredArrayFlatten[1] | $s,
                s:SemiStructuredArrayFlattenRelation[1] | $s,
+               g:GenerateSeriesRelation[1] | $g,
                t:RelationFunction[1] | $t.owner->processRelationFunctionClassMapping(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $state, $milestoningContext, $joinType, $nodeId, $context, $extensions).select
              ]);
 }
@@ -9110,6 +9111,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $extensions)+'])',
          ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
          ssfr:SemiStructuredArrayFlattenRelation[1]|'ss_flatten_relation('+$ssfr.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         g:GenerateSeriesRelation[1]|'generate_series('+[$g.start, $g.stop, $g.step]->map(e|$e->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(',')+')',
          ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $extensions)+')',
          t:TableFunctionParamPlaceHolder[1] | 'tablefunc_param_holder_(' + $t.var.name + ')',
          p:ProcedureVariablePlaceHolder[1] | 'procedure_variable_param_holder_(' + $p.var.name + ')',
@@ -9749,7 +9751,7 @@ function meta::relational::functions::pureToSqlQuery::extractValue(src:Relationa
 function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(source:RelationalTreeNode[1], target:JoinTreeNode[1], list:OldAliasToNewAlias[*], nodeId:String[1]):Pair<JoinTreeNode, List<OldAliasToNewAlias>>[1]
 {
    let oldTargetAlias = $target.alias;
-   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
+   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), g:GenerateSeriesRelation[1] | ^$g(start = $g.start->reprocessAliases($list), stop = $g.stop->reprocessAliases($list), step = $g.step->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
    let newAliasMapping = ^OldAliasToNewAlias(first=$oldTargetAlias.name, second=$newTargetAlias);
    let val = $list->concatenate($newAliasMapping);
 
@@ -10506,6 +10508,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                         s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
+                        g:GenerateSeriesRelation[1] | ^$g(start = $g.start->reprocessAliases($map, $oldColumnToNewColumn), stop = $g.stop->reprocessAliases($map, $oldColumnToNewColumn), step = $g.step->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->reprocessAliases($map, $oldColumnToNewColumn)->cast(@TableAliasColumn)),
                         rlp:RelationalLambdaParameter[1] | ^$rlp(value = $rlp.value->reprocessAliases($map, $oldColumnToNewColumn)),
                         l:RelationalLambda[1] | ^$l(body = $l.body->reprocessAliases($map, $oldColumnToNewColumn), parameters = $l.parameters->map(p | $p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalLambdaParameter)),
@@ -10654,6 +10657,7 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),
                               s:SemiStructuredArrayFlattenRelation[1]|$s.navigation->extractTableAliasColumns(),
+                              g:GenerateSeriesRelation[1]|[$g.start, $g.stop, $g.step]->map(e|$e->extractTableAliasColumns()),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns(),
                               a:Any[*]|[]
                           ]
@@ -11817,6 +11821,8 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
 
         // variant
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processFlattenOrVariantTempTable_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processGenerateSeries_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processGenerateSeries_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_, second = meta::relational::functions::pureToSqlQuery::processFromJson_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::toJson_Variant_1__String_1_, second = meta::relational::functions::pureToSqlQuery::processToJson_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_, second = meta::relational::functions::pureToSqlQuery::processToVariant_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
@@ -11857,6 +11863,23 @@ function meta::relational::functions::pureToSqlQuery::processFlattenOrVariantTem
       | processWriteToVariantTempTable($fe, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
       | processVariantFlatten($fe, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
    );
+}
+
+function meta::relational::functions::pureToSqlQuery::processGenerateSeries(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let params = $expression.parametersValues->evaluateAndDeactivate();
+   let bounds = $params->init()->map(p | $p->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, buildNodeId($nodeId, '_gs' + $params->indexOf($p)->toString()), $aggFromMap, $context, $extensions)
+                                          ->cast(@SelectWithCursor).select.columns->toOne()
+                                          ->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]));
+   let step = if($bounds->size() == 3, | $bounds->at(2), | ^Literal(value = 1));
+   assert(!$step->match([l:Literal[1] | $l.value == 0, r:RelationalOperationElement[1] | false]), | 'generateSeries step must not be 0');
+   let columnName = $expression->instanceValuesAtParameter($params->size() - 1, $vars, $state.inScopeVars)->toOne()->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name;
+
+   let column = ^Column(name = generateSeriesColumnName(), type = ^meta::relational::metamodel::datatype::BigInt());
+   let seriesAlias = ^TableAlias(relationalElement = ^GenerateSeriesRelation(start = $bounds->at(0), stop = $bounds->at(1), step = $step), name = 'generateSeries_' + $nodeId);
+   let output = ^Alias(name = $columnName->addQuotesIfNecessary(), relationalElement = ^TableAliasColumn(alias = $seriesAlias, column = $column));
+
+   ^$operation(select = ^TdsSelectSqlQuery(data = ^RootJoinTreeNode(alias = $seriesAlias), columns = $output));
 }
 
 function meta::relational::functions::pureToSqlQuery::processWriteToVariantTempTable(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

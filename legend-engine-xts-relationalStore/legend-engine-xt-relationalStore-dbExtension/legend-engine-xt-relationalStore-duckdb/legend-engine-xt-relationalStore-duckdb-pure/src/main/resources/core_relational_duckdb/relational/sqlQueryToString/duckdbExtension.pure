@@ -34,6 +34,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       joinStringsProcessor = processJoinStringsOperationForDuckDB_JoinStrings_1__SqlGenerationContext_1__String_1_,
       aggregateFunctionCallProcessor = processAggregateFunctionCallForDuckDB_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
+      generateSeriesProcessor = meta::relational::functions::sqlQueryToString::duckDB::processGenerateSeriesForDuckDB_GenerateSeriesRelation_1__SqlGenerationContext_1__String_1_,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -892,4 +893,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processAggregateFunctionCallForDuckDB(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
 {
    meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAnsi($a, $sgc, AggregateOrderingStyle.IN_PAREN);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processGenerateSeriesForDuckDB(g:meta::relational::functions::pureToSqlQuery::metamodel::GenerateSeriesRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '(select generate_series as ' + processColumnName(meta::relational::functions::pureToSqlQuery::metamodel::generateSeriesColumnName(), $sgc.dbConfig) + ' from generate_series(' + [$g.start, $g.stop, $g.step]->map(e | $e->processOperation($sgc))->joinStrings(', ') + '))';
 }

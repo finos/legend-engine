@@ -58,6 +58,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                                    |$childPairs);,
                                      ss: SemiStructuredArrayFlatten[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
                                      ss: SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $alias.name)->concatenate($ss.navigation->traverse());,
+                                     g: GenerateSeriesRelation[1] | pair('generate_series', $alias.name);,
                                      any:Any[1]               | []
                                      ])
                           ->concatenate($a.childrenData->cast(@RelationalTreeNode)->traverse());
@@ -89,7 +90,8 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                                     r:VarSetPlaceHolder[1]      | pair($r.varName,$name),
                                                                     r:VarCrossSetPlaceHolder[1] | pair($r.varName,$name),
                                                                     ss:SemiStructuredArrayFlatten[1] | pair('ss_flatten', $name)->concatenate($ss.navigation->traverse()),
-                                                                    ss:SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $name)->concatenate($ss.navigation->traverse())
+                                                                    ss:SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $name)->concatenate($ss.navigation->traverse()),
+                                                                    g:GenerateSeriesRelation[1] | pair('generate_series', $name)
                                                                ]);,
                      union:SetOperationQuery[1]  | $union.queries->traverse(),
                      u:UnaryOperation[1]    | $u.nested->traverse(),
@@ -239,6 +241,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                 s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->transformAliasName($m), index = $s.index->transformAliasName($m)),
                 s: SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->transformAliasName($m)),
                 s: SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->transformAliasName($m)),
+                g: GenerateSeriesRelation[1] | ^$g(start = $g.start->transformAliasName($m), stop = $g.stop->transformAliasName($m), step = $g.step->transformAliasName($m)),
                 s: SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->transformAliasName($m)->cast(@TableAliasColumn)),
 
                 l: RelationalLambda[1] | ^$l(body = $l.body->transformAliasName($m), parameters = $l.parameters->map(p | $p->transformAliasName($m))->cast(@RelationalLambdaParameter)),

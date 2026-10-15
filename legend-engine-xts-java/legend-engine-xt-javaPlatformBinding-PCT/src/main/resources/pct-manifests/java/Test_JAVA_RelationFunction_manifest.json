@@ -2308,6 +2308,34 @@
     {
       "test": "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_FilterExtend_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Function_1__Boolean_1_",
+      "expectedError": "\"generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_NegativeStep_Function_1__Boolean_1_",
+      "expectedError": "\"generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_SingleValue_Function_1__Boolean_1_",
+      "expectedError": "\"generateSeries_Integer_1__Integer_1__ColSpec_1__Relation_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Step_Function_1__Boolean_1_",
+      "expectedError": "\"generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_ZeroStep_Function_1__Boolean_1_",
+      "expectedError": "\"generateSeries_Integer_1__Integer_1__Integer_1__ColSpec_1__Relation_1_ is prohibited!\""
     }
   ]
 }

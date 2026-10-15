@@ -682,8 +682,21 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ali
   nodeProcessor(
     AliasedRelation,
     {sqlDialect, a, state, config |
-      $sqlDialect->executeNodeProcessor($a.relation, $state, $config) + ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' 
+      $sqlDialect->executeNodeProcessor($a.relation, $state, $config) + ' ' + $sqlDialect->keyword('as', $state, $config) + ' '
       + $sqlDialect->executeIdentifierProcessor($a.alias, $config.dbConfig.quoteIdentifiers, $state, $config)
+      + if($a.columnNames->isEmpty(),
+          | '',
+          | $a.columnNames->map(c | $sqlDialect->executeIdentifierProcessor($c, $config.dbConfig.quoteIdentifiers, $state, $config))->joinStrings('(', ', ', ')'))
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::tableFunctionProcessor_default(): NodeProcessor<TableFunction>[1]
+{
+  nodeProcessor(
+    TableFunction,
+    {sqlDialect, t, state, config |
+      $sqlDialect->executeNodeProcessor($t.functionCall, $state, $config)
     }
   )
 }

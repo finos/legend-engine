@@ -150,6 +150,30 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
     }
 
     @Test
+    public void testGenerateSeries()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   generateSeries(1, 10, ~val)->filter(x|$x.val > 2)->concatenate(generateSeries(10, 1, -2, ~val))\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testGenerateSeriesUnknownColumnError()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   generateSeries(1, 10, 2, ~val)->filter(x|$x.value > 2)\n" +
+                        "}", "COMPILATION error at [4:48-52]: The column 'value' can't be found in the relation (val:Integer[1])"
+        );
+    }
+
+    @Test
     public void testTypeVariableInRelationError()
     {
         test(
