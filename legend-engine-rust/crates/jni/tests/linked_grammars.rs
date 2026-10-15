@@ -20,7 +20,15 @@ fn library_links_the_section_and_island_grammars() {
     let caps = legend_pure_rust_parser::linked_capabilities();
     assert_eq!(
         caps.sections,
-        ["Pure", "Connection", "Data", "Mapping", "Runtime"]
+        [
+            "Pure",
+            "Connection",
+            "Data",
+            "Mapping",
+            "QueryPostProcessor",
+            "Relational",
+            "Runtime"
+        ]
     );
     assert!(
         caps.islands.contains(&String::new()),

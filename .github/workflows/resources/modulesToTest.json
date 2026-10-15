@@ -182,7 +182,10 @@
         "legend-engine-xt-sql-expression-grammar",
         "legend-engine-xt-sql-expression-compiler",
         "legend-engine-xt-tds-grammar",
-        "legend-engine-xt-tds-compiler"
+        "legend-engine-xt-tds-compiler",
+        "legend-engine-xt-relationalStore-grammar",
+        "legend-engine-xt-relationalStore-snowflake-grammar",
+        "legend-engine-xt-relationalStore-emit"
       ]
     }
   ]

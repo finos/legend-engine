@@ -37,6 +37,8 @@ legend-pure-dsl-data = { path = "../dsl-data" }
 legend-pure-dsl-graph = { path = "../dsl-graph" }
 legend-pure-dsl-mapping = { path = "../dsl-mapping" }
 legend-pure-dsl-store = { path = "../dsl-store" }
+legend-pure-dsl-relational = { path = "../dsl-relational" }
+legend-pure-dsl-relational-snowflake = { path = "../dsl-relational-snowflake" }
 legend-pure-dsl-runtime = { path = "../dsl-runtime" }
 legend-pure-dsl-sql = { path = "../dsl-sql" }
 legend-pure-dsl-tds = { path = "../dsl-tds" }

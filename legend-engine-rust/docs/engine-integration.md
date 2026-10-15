@@ -89,6 +89,7 @@ The design mirrors Java's `PureGrammarParserExtension` and ServiceLoader:
 | `getExtraMappingIncludeParsers` (mapping includes) | Read by `dsl-mapping` itself: `include mapping` and the data space extension's `include dataspace` (`ast::IncludeKind`); another type is unsupported |
 | `getExtraMappingTestInputDataParsers` (legacy mapping test inputs) | `dsl-mapping`'s `TestInputGrammar`, keyed by the input's type; the core `Object` is built in |
 | `getExtraTestAssertionParsers` (test assertions) | Core grammar in `parser` (`ParserContext::parse_test_assertion`): `EqualTo`, `EqualToJson`, and `Relation` as mapping and service tests read it; another type is unsupported |
+| `IRelationalGrammarParserExtension` (a relational connection's specifications) | `dsl-relational`'s `SpecificationGrammar` (`SPECIFICATION_GRAMMARS`), keyed by what it specifies (datasource specification, authentication strategy, post-processor, query generation config) and its type, and `LocalModeGrammar` (`LOCAL_MODE_GRAMMARS`) by database type; the relational store's own are built in |
 | `getExtraConnectionParsers` (connection values) | `dsl-connection`'s `ConnectionValueGrammar`, keyed by the connection's type; the core's model connections are built in. A runtime's own connections, `#{ Type { … } }#`, are read by the same grammars (`dsl-connection`'s `parse_embedded_connection`) |
 
 ### Registration
@@ -133,7 +134,8 @@ legend-pure takes its own back:
   text (in the engine, both are xts extensions), the engine core's embedded
   data types and `###Data` section (`dsl-data`), and the `###Mapping` section
   (`dsl-mapping`, with the engine core's mapping element grammars; see
-  `porting-status.md`). The relational store's grammars join them.
+  `porting-status.md`), and the relational store's `###Relational` section
+  and its mapping, connection and test data grammars (`dsl-relational`).
 - **legend-engine:** Connection and Runtime (`dsl-connection`,
   `dsl-runtime`), then a `dsl-*` crate per engine module for its section
   types, its stores' mapping elements, connections and test data, and its

@@ -25,6 +25,8 @@ members = [
     "crates/dsl-data",
     "crates/dsl-graph",
     "crates/dsl-mapping",
+    "crates/dsl-relational",
+    "crates/dsl-relational-snowflake",
     "crates/dsl-runtime",
     "crates/dsl-store",
     "crates/dsl-sql",
@@ -47,6 +49,8 @@ legend-pure-dsl-connection = { path = "crates/dsl-connection", version = "0.1.0"
 legend-pure-dsl-data = { path = "crates/dsl-data", version = "0.1.0" }
 legend-pure-dsl-graph = { path = "crates/dsl-graph", version = "0.1.0" }
 legend-pure-dsl-mapping = { path = "crates/dsl-mapping", version = "0.1.0" }
+legend-pure-dsl-relational = { path = "crates/dsl-relational", version = "0.1.0" }
+legend-pure-dsl-relational-snowflake = { path = "crates/dsl-relational-snowflake", version = "0.1.0" }
 legend-pure-dsl-runtime = { path = "crates/dsl-runtime", version = "0.1.0" }
 legend-pure-dsl-sql = { path = "crates/dsl-sql", version = "0.1.0" }
 legend-pure-dsl-store = { path = "crates/dsl-store", version = "0.1.0" }

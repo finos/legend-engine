@@ -19,6 +19,8 @@ use legend_pure_dsl_connection as _;
 use legend_pure_dsl_data as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_relational as _;
+use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
@@ -46,7 +48,15 @@ fn capabilities_report_linked_grammars() {
     let caps = capabilities();
     assert_eq!(
         caps.sections,
-        ["Pure", "Connection", "Data", "Mapping", "Runtime"]
+        [
+            "Pure",
+            "Connection",
+            "Data",
+            "Mapping",
+            "QueryPostProcessor",
+            "Relational",
+            "Runtime"
+        ]
     );
     assert!(
         caps.islands.contains(&String::new()),

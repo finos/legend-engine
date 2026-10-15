@@ -22,17 +22,17 @@ entry, and removes its grammars' `unlinked:` entries from the accepted list.
 | Core embedded data (`ExternalFormat`, `ModelStore`, `Reference`, `Relation`) and test assertions (`EqualTo`, `EqualToJson`, `Relation`); `###Data` | `parser`, `protocol`, `dsl-data` | core |
 | `###Mapping`: the section (includes, element headers, `testSuites`, legacy `MappingTests` with `Object` input), `include dataspace`, and the core's mapping elements: `EnumerationMapping`, `Pure`, `Relation`, `XStore`, `ModelJoin`, `Operation`, `AggregationAware` | `dsl-mapping` | core |
 | `###Connection` and `###Runtime`: the sections (`Runtime`, `SingleConnectionRuntime`, embedded connections, connection stores) and the core's model connections (`JsonModelConnection`, `XmlModelConnection`, `ModelChainConnection`) | `dsl-connection`, `dsl-runtime` | core |
+| `###Relational`, `Relational` mapping elements and test input, `Relational #{…}#` test data, `RelationalDatabaseConnection` with its specifications, `###QueryPostProcessor`; Snowflake's datasource specification and authentication strategy | `dsl-relational`, `dsl-relational-snowflake` | relationalStore |
 | Whole models (`parseModel`): the engine's section split and section index, parsed in Rust in `on` mode, with no ANTLR parsing in Java | `api` | core |
 
 A mapping element, legacy test input, connection or embedded data type that
-only a store's grammar reads makes its section `unsupported` until that
+only another store's grammar reads makes its section `unsupported` until that
 store's change lands.
 
 ## To come
 
 | Grammar | Crates | Engine owner |
 |---|---|---|
-| `###Relational`, `Relational` mapping elements and test input, `Relational #{…}#` test data, `RelationalDatabaseConnection` with its specifications, `###QueryPostProcessor`; Snowflake's datasource specification and authentication strategy | `dsl-relational`, `dsl-relational-snowflake` | relationalStore |
 | `###Service` | `dsl-service` | service |
 | `###ServiceStore` (with its mapping elements, connection and test data), `###MongoDB` (with its mappings and connection), `###Elasticsearch` (with its connection), and connections' authentication specifications | `dsl-service-store`, `dsl-mongodb`, `dsl-elasticsearch`, `dsl-authentication` | serviceStore, mongodb, elasticsearch, authentication |
 | Function activators: `###Snowflake`, `###MemSql`, `###BigQuery`, `###FunctionJar`, `###HostedService`; `###Deephaven` (with its connection) | `dsl-function-activator`, `dsl-snowflake`, `dsl-memsql-function`, `dsl-bigquery-function`, `dsl-function-jar`, `dsl-hosted-service`, `dsl-deephaven` | snowflake, memsqlFunction, bigqueryFunction, functionJar, hostedService, deephaven |
