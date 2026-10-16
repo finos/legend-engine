@@ -1,0 +1,784 @@
+---
+source: crates/parser/tests/test_expression.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 10,
+                                    end_line: 2,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "a",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 14,
+                                end_line: 2,
+                                end_column: 14,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "xs",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "String",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 20,
+                                                end_line: 2,
+                                                end_column: 25,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 16,
+                                    end_line: 2,
+                                    end_column: 28,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 32,
+                                    end_line: 2,
+                                    end_column: 37,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: Variable(
+                                        Variable {
+                                            name: "xs",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 47,
+                                                end_line: 2,
+                                                end_column: 49,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "toMultiplicity",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 2,
+                                            start_column: 52,
+                                            end_line: 2,
+                                            end_column: 65,
+                                        },
+                                    },
+                                    arguments: [
+                                        MultiplicityReferenceExpr(
+                                            MultiplicityReferenceExpr {
+                                                multiplicity: Concrete(
+                                                    PureOne,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 69,
+                                                        end_line: 2,
+                                                        end_column: 69,
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 2,
+                                                    start_column: 67,
+                                                    end_line: 2,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 2,
+                                        start_column: 47,
+                                        end_line: 2,
+                                        end_column: 71,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 2,
+                            end_column: 73,
+                        },
+                    },
+                ),
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 10,
+                                    end_line: 3,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "b",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 3,
+                                start_column: 14,
+                                end_line: 3,
+                                end_column: 14,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "xs",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "String",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 3,
+                                                start_column: 20,
+                                                end_line: 3,
+                                                end_column: 25,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 16,
+                                    end_line: 3,
+                                    end_column: 28,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 32,
+                                    end_line: 3,
+                                    end_column: 37,
+                                },
+                            },
+                        ),
+                        return_multiplicity: ZeroOrOne,
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: Variable(
+                                        Variable {
+                                            name: "xs",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 3,
+                                                start_column: 47,
+                                                end_line: 3,
+                                                end_column: 49,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "toMultiplicity",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 3,
+                                            start_column: 52,
+                                            end_line: 3,
+                                            end_column: 65,
+                                        },
+                                    },
+                                    arguments: [
+                                        MultiplicityReferenceExpr(
+                                            MultiplicityReferenceExpr {
+                                                multiplicity: Concrete(
+                                                    ZeroOrOne,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 3,
+                                                        start_column: 69,
+                                                        end_line: 3,
+                                                        end_column: 69,
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 3,
+                                                    start_column: 67,
+                                                    end_line: 3,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 3,
+                                        start_column: 47,
+                                        end_line: 3,
+                                        end_column: 74,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 3,
+                            start_column: 1,
+                            end_line: 3,
+                            end_column: 76,
+                        },
+                    },
+                ),
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 10,
+                                    end_line: 4,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "c",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 4,
+                                start_column: 14,
+                                end_line: 4,
+                                end_column: 14,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "xs",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "String",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 20,
+                                                end_line: 4,
+                                                end_column: 25,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 16,
+                                    end_line: 4,
+                                    end_column: 28,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 32,
+                                    end_line: 4,
+                                    end_column: 37,
+                                },
+                            },
+                        ),
+                        return_multiplicity: OneOrMany,
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: Variable(
+                                        Variable {
+                                            name: "xs",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 47,
+                                                end_line: 4,
+                                                end_column: 49,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "toMultiplicity",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 52,
+                                            end_line: 4,
+                                            end_column: 65,
+                                        },
+                                    },
+                                    arguments: [
+                                        MultiplicityReferenceExpr(
+                                            MultiplicityReferenceExpr {
+                                                multiplicity: Concrete(
+                                                    OneOrMany,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 4,
+                                                        start_column: 69,
+                                                        end_line: 4,
+                                                        end_column: 69,
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 4,
+                                                    start_column: 67,
+                                                    end_line: 4,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 4,
+                                        start_column: 47,
+                                        end_line: 4,
+                                        end_column: 74,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 4,
+                            start_column: 1,
+                            end_line: 4,
+                            end_column: 76,
+                        },
+                    },
+                ),
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 10,
+                                    end_line: 5,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "d",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 5,
+                                start_column: 14,
+                                end_line: 5,
+                                end_column: 14,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "xs",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "String",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 5,
+                                                start_column: 20,
+                                                end_line: 5,
+                                                end_column: 25,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 16,
+                                    end_line: 5,
+                                    end_column: 28,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 32,
+                                    end_line: 5,
+                                    end_column: 37,
+                                },
+                            },
+                        ),
+                        return_multiplicity: ZeroOrMany,
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: Variable(
+                                        Variable {
+                                            name: "xs",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 5,
+                                                start_column: 47,
+                                                end_line: 5,
+                                                end_column: 49,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "toMultiplicity",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 5,
+                                            start_column: 52,
+                                            end_line: 5,
+                                            end_column: 65,
+                                        },
+                                    },
+                                    arguments: [
+                                        MultiplicityReferenceExpr(
+                                            MultiplicityReferenceExpr {
+                                                multiplicity: Concrete(
+                                                    ZeroOrMany,
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 5,
+                                                        start_column: 69,
+                                                        end_line: 5,
+                                                        end_column: 69,
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 5,
+                                                    start_column: 67,
+                                                    end_line: 5,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 5,
+                                        start_column: 47,
+                                        end_line: 5,
+                                        end_column: 71,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 5,
+                            start_column: 1,
+                            end_line: 5,
+                            end_column: 73,
+                        },
+                    },
+                ),
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 10,
+                                    end_line: 6,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "e",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 6,
+                                start_column: 14,
+                                end_line: 6,
+                                end_column: 14,
+                            },
+                        },
+                        type_and_multiplicity_parameters: Some(
+                            TypeAndMultiplicityParameters {
+                                type_parameters: [],
+                                multiplicity_parameters: [
+                                    "o",
+                                ],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 15,
+                                    end_line: 6,
+                                    end_column: 18,
+                                },
+                            },
+                        ),
+                        parameters: [
+                            Parameter {
+                                name: "xs",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "String",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 6,
+                                                start_column: 24,
+                                                end_line: 6,
+                                                end_column: 29,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    ZeroOrMany,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 20,
+                                    end_line: 6,
+                                    end_column: 32,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 36,
+                                    end_line: 6,
+                                    end_column: 41,
+                                },
+                            },
+                        ),
+                        return_multiplicity: Variable(
+                            "o",
+                        ),
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: Variable(
+                                        Variable {
+                                            name: "xs",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 6,
+                                                start_column: 48,
+                                                end_line: 6,
+                                                end_column: 50,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "toMultiplicity",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 6,
+                                            start_column: 53,
+                                            end_line: 6,
+                                            end_column: 66,
+                                        },
+                                    },
+                                    arguments: [
+                                        MultiplicityReferenceExpr(
+                                            MultiplicityReferenceExpr {
+                                                multiplicity: Identifier(
+                                                    "o",
+                                                    SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 6,
+                                                        start_column: 70,
+                                                        end_line: 6,
+                                                        end_column: 70,
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 6,
+                                                    start_column: 68,
+                                                    end_line: 6,
+                                                    end_column: 68,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 6,
+                                        start_column: 48,
+                                        end_line: 6,
+                                        end_column: 72,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 6,
+                            start_column: 1,
+                            end_line: 6,
+                            end_column: 74,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

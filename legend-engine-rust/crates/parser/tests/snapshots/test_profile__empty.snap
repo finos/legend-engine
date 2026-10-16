@@ -1,0 +1,66 @@
+---
+source: crates/parser/tests/test_profile.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Profile(
+                    ProfileDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 9,
+                                    end_line: 2,
+                                    end_column: 10,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "EmptyProfile",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 13,
+                                end_line: 2,
+                                end_column: 24,
+                            },
+                        },
+                        stereotype_names: [],
+                        tag_names: [],
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 4,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

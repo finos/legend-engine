@@ -1,0 +1,51 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "class",
+  "constraints": [
+    {
+      "enforcementLevel": "Error",
+      "externalId": "RULE-001",
+      "functionDefinition": {
+        "_type": "func",
+        "function": "isNotEmpty",
+        "parameters": [
+          {
+            "_type": "property",
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "this"
+              }
+            ],
+            "property": "name"
+          }
+        ]
+      },
+      "messageFunction": {
+        "_type": "string",
+        "value": "Name must not be empty"
+      },
+      "name": "nameNotEmpty"
+    }
+  ],
+  "name": "ConstrainedClass",
+  "package": "my",
+  "properties": [
+    {
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "name": "name"
+    }
+  ]
+}

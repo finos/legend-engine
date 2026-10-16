@@ -1,0 +1,102 @@
+---
+source: crates/parser/tests/test_enumeration.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Enumeration(
+                    EnumDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 6,
+                                    end_line: 2,
+                                    end_column: 7,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "DayCountConvention",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 10,
+                                end_line: 2,
+                                end_column: 27,
+                            },
+                        },
+                        values: [
+                            EnumValue {
+                                name: "30_360",
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 5,
+                                    end_line: 4,
+                                    end_column: 12,
+                                },
+                            },
+                            EnumValue {
+                                name: "30_ACT",
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 5,
+                                    end_line: 5,
+                                    end_column: 12,
+                                },
+                            },
+                            EnumValue {
+                                name: "ACT_365",
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 5,
+                                    end_line: 6,
+                                    end_column: 11,
+                                },
+                            },
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 7,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}
