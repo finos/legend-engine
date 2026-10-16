@@ -477,7 +477,51 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}");
     }
 
-    
+    @Test
+    public void testRelationComparison_multiStatementQueries()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "   source: {|let excludedName = 'John'; #>{meta::dataquality::db.personTable}#->filter(r | $r.FIRSTNAME != $excludedName)->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);};\n" +
+                "   target: {|let janes = #>{meta::dataquality::db.personTable}#->filter(r | $r.FIRSTNAME == 'Jane')->select(~[FIRSTNAME, LASTNAME, AGE]); $janes->from(meta::dataquality::DataQualityRuntime);};\n" +
+                "   keys: [FIRSTNAME, LASTNAME];\n" +
+                "   columnsToCompare: [AGE];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}");
+    }
+
+    @Test
+    public void testRelationComparison_multiStatementQueryViolationReportedAtSourceStatement()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "   source: {|let prefix = 'x'; 'unused'->toUpper(); #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE]);};\n" +
+                "   target: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE]);\n" +
+                "   keys: [FIRSTNAME, LASTNAME];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}",
+                "COMPILATION error at [106:42-48]: Only let statements are supported before the final expression of a multi-statement source query");
+    }
+
+    @Test
+    public void testRelationComparison_multiStatementQueryViolationReportedAtTargetStatement()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "   source: {|let people = #>{meta::dataquality::db.personTable}#->filter(r | $r.FIRSTNAME == 'John')->select(~[FIRSTNAME, LASTNAME, AGE]); $people;};\n" +
+                "   target: {|let minAge = 18; let people = #>{meta::dataquality::db.personTable}#->filter(r | $r.FIRSTNAME == 'Jane')->select(~[FIRSTNAME, LASTNAME, AGE]); $people;};\n" +
+                "   keys: [FIRSTNAME, LASTNAME];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}",
+                "COMPILATION error at [107:31-154]: Let variable 'people' is declared in both source and target queries (names compared case-insensitively) and would become common table expressions with clashing names; use distinct names on each side");
+    }
+
     @Test
     public void testRelationComparison_invalidKey_notInSource()
     {
