@@ -283,12 +283,14 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     Root_meta_external_dataquality_DataQualityRelationComparison_Impl metamodel = (Root_meta_external_dataquality_DataQualityRelationComparison_Impl) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(relationComparison._package, relationComparison.name));
 
                     // Compile source lambda
-                    LambdaFunction<?> sourceLambda = buildRelationLambda(relationComparison.source, compileContext);
+                    LambdaFunction<?> sourceLambda = buildRelationReturningLambda(relationComparison.source, compileContext);
                     metamodel._source(sourceLambda);
 
                     // Compile target lambda
-                    LambdaFunction<?> targetLambda = buildRelationLambda(relationComparison.target, compileContext);
+                    LambdaFunction<?> targetLambda = buildRelationReturningLambda(relationComparison.target, compileContext);
                     metamodel._target(targetLambda);
+
+                    DataQualityValidationUtils.validateReconQueries(relationComparison, sourceLambda, targetLambda, compileContext.getExecutionSupport());
 
                     // Validate keys, columnsToCompare, and hash columns against actual relation columns
                     DataQualityValidationUtils.runAllRelationComparisonChecks(
@@ -395,6 +397,11 @@ public class DataQualityCompilerExtension implements CompilerExtension
         {
             throw new EngineException("Multiline lambda is not supported.", lambda.sourceInformation, EngineErrorType.COMPILATION);
         }
+        return buildRelationReturningLambda(lambda, compileContext);
+    }
+
+    private LambdaFunction<?> buildRelationReturningLambda(org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction lambda, CompileContext compileContext)
+    {
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(lambda, compileContext);
         String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
         if (!(relationQuery._expressionSequence().getLast() instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !compileContext.pureModel.taxonomyTypes("cov_relation_Relation").contains(relationQueryReturnType))
