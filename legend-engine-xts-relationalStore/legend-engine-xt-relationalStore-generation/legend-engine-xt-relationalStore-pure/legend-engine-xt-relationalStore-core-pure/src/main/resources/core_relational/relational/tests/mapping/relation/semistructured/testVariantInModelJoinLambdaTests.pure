@@ -324,7 +324,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (D4, NULL) → no
 //   Carol (D5, D6) → no Firm
 //   Dave  (NULL, NULL) → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedFilterWithPredicateOnOptional(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedFilterWithPredicateOnOptional(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T3_3_Mapping,
     |Person.all()->project(~[
@@ -366,7 +366,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Alice filter(BUY).first.customer.tier=gold → F28 (CODE=gold)
 //   Carol filter(BUY).first.customer.tier=silver → F29 (CODE=silver)
 //   Bob/Dave: empty orders → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenPostCollapseChain(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenPostCollapseChain(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T3_5_Mapping,
     |Person.all()->project(~[
@@ -657,7 +657,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Q1 — model-level ->filter() using a variant collapse operator
 //   Filter: $p.firmInfo.address.lines->size() > 2
 //   Alice (3 lines) ✓; Bob (2), Carol (2), Dave (0) all fail
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterByVariantSize(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterByVariantSize(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()

@@ -176,28 +176,152 @@ function meta::relational::functions::pureToSqlQuery::isSemiStructuredArrayInput
   );
 }
 
+// Walks back from a property access in a Pure expression like
+//   $p.firmInfo.address.lines->first()  OR  $p.firmInfo.countries->first().someToManyProp->first()
+// to locate the *entry-point* property mapping — the one sitting at the boundary between the
+// relational source (StoreMappingRouted seed) and whatever comes after it.
+//
+// The walker threads a `candidate` property through the recursion: each property FE overwrites
+// `candidate` with its own property and descends into the receiver; each non-property FE
+// (first/filter/map/cast/...) RESETS `candidate` to `[]` and descends into its first parameter
+// (Pure's ->fn pipeline desugaring) — the entry property must be directly connected to the source
+// with no intervening non-property hop, or it isn't at the boundary. When the walk terminates at a
+// StoreMappingRouted, `candidate` (if any) is by construction the property closest to the source;
+// its property mappings are resolved against `$s.sets` in place.
+//
+// NoSetRouted, FunctionRouted and (non-mapping) ExtendedRouted wrappers are stripped without
+// disturbing `candidate`. The seed SMR (wrapping the class InstanceValue or a lambda
+// VariableExpression) never has `.propertyMapping` populated by routing, so resolution goes
+// through `$s.sets` and a property-name lookup instead.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::findSourceRelationalPropertyMapping(receiver: ValueSpecification[1], candidate: AbstractProperty<Any>[0..1], state: State[1]):PropertyMapping[*]
+{
+  $receiver->evaluateAndDeactivate()->match([
+    n: NoSetRoutedValueSpecification[1]        | $n.value->findSourceRelationalPropertyMapping($candidate, $state),
+    f: FunctionRoutedValueSpecification[1]     | $f.value->findSourceRelationalPropertyMapping($candidate, $state),
+    s: StoreMappingRoutedValueSpecification[1] |
+      // An empty candidate means the receiver was the source itself (no upstream property access)
+      // — nothing to look up.
+      if ($candidate->isEmpty(),
+        | [],
+        | $s.sets->filter(x | $x->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
+              ->candidatePropertyMappings($candidate->toOne());
+      );,
+    r: ExtendedRoutedValueSpecification[1]     | $r.value->findSourceRelationalPropertyMapping($candidate, $state),
+    // Inside a qualified property body `$this` is an unrouted variable, so there is no
+    // StoreMappingRouted seed to terminate on; the qualifier base recorded in the state stands in.
+    v: VariableExpression[1] |
+      if ($v.name != 'this' || $state.qualifierBase->isEmpty(),
+        | [],
+        | let basePms = $state.qualifierBase->toOne().currentPropertyMapping;
+          if ($candidate->isEmpty() || $basePms->exists(pm | $pm->isSemiStructuredPropertyMapping()),
+            | $basePms,
+            | $state.mapping->map(m | $m->_classMappingByClass($v.genericType.rawType->toOne()->cast(@Class<Any>)))
+                ->filter(x | $x->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
+                ->candidatePropertyMappings($candidate->toOne())
+          );
+      );,
+    fe: FunctionExpression[1] |
+      $fe.func->match([
+        prop: AbstractProperty<Any>[1] |
+          // Property hop — this property becomes the new candidate. Deeper recursion decides
+          // whether it survives (bottoms out at StoreMappingRouted) or gets superseded.
+          $fe.parametersValues->evaluateAndDeactivate()->at(0)->findSourceRelationalPropertyMapping($prop, $state);,
+        a: Any[1] |
+          // Intermediate non-property call (first/filter/map/cast/...). Step over by descending
+          // into the first parameter, resetting candidate — see block comment above.
+          let firstParam = $fe.parametersValues->evaluateAndDeactivate()->first();
+          if ($firstParam->isEmpty(),
+            | [],
+            | $firstParam->toOne()->findSourceRelationalPropertyMapping([], $state);
+          );
+      ]);,
+    a: Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::findSourceRelationalPropertyMapping(receiver: ValueSpecification[1], state: State[1]):PropertyMapping[*]
+{
+  $receiver->findSourceRelationalPropertyMapping([], $state);
+}
+
+// The walker runs as a dispatch predicate for every filter/exists/isEmpty/..., so an unmapped
+// candidate must yield no mappings rather than fail. propertyMappingsByPropertyName fails on a
+// plain or inline embedded set that does not map the property, which is always the case for a
+// qualified property such as `$e.dept.label()`.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::candidatePropertyMappings(sets: InstanceSetImplementation[*], candidate: AbstractProperty<Any>[1]):PropertyMapping[*]
+{
+  let name = $candidate.name->toOne();
+  $sets->map(s | if ($s->instanceOf(EmbeddedSetImplementation) && !$s->instanceOf(OtherwiseEmbeddedSetImplementation),
+                   | $s->_propertyMappingsByPropertyName($name),
+                   | $s->propertyMappingsByPropertyName($name)));
+}
+
+// True iff the entry PM is one of the SS-eligible PM kinds: SemiStructuredRelationalPropertyMapping
+// (modern path), a RelationFunctionPropertyMapping with a class target (Variant / user Class), or
+// one with a BindingTransformer (legacy SS path). Mirrors the conditions that drive NoSet emission
+// in routing.pure (`isAutoMappedRelationFunctionPropertyMapping`).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isSemiStructuredPropertyMapping(pm: PropertyMapping[1]):Boolean[1]
+{
+  $pm->match([
+    sspm: SemiStructuredRelationalPropertyMapping[1] | true,
+    rfpm: RelationFunctionPropertyMapping[1]         |
+      $rfpm.property->isClassTargetedRelationFunctionProperty()
+      || ($rfpm.transformer->isNotEmpty() && $rfpm.transformer->toOne()->instanceOf(BindingTransformer))
+      || (!$rfpm.property.multiplicity->hasToOneUpperBound() && $rfpm.valueFn.expressionSequence->evaluateAndDeactivate()->exists(e | $e->hasVariantTypedSubExpression())),
+    a: PropertyMapping[1]                            | false
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::hasVariantTypedSubExpression(v: ValueSpecification[1]):Boolean[1]
+{
+  $v->match([
+    fe: FunctionExpression[1] | ($fe.genericType.rawType->isNotEmpty() && $fe.genericType.rawType->toOne() == Variant)
+                                  || $fe.parametersValues->evaluateAndDeactivate()->exists(p | $p->hasVariantTypedSubExpression()),
+    a: Any[1]                 | false
+  ]);
+}
+
+// Cheap, intentionally over-inclusive early-out: skips the walker entirely for a mapping that
+// cannot possibly contain a semi-structured-eligible property mapping, so a classic relational
+// query never pays for (or risks) the recursive walk above. Does not need to recurse into embedded
+// sets below the top level — Mapping.classMappings() already lists every InstanceSetImplementation,
+// embedded ones included.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::mappingMayHaveSemiStructuredPropertyMapping(state: State[1]):Boolean[1]
+{
+  $state.mapping->isNotEmpty() &&
+    $state.mapping->toOne()->classMappings()
+      ->filter(cm | $cm->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
+      ->exists(cm | $cm.propertyMappings->exists(pm | $pm->isSemiStructuredPropertyMapping()));
+}
+
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isSemiStructuredArrayExpression(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
 {
   $v->match([
     fe: FunctionExpression[1] |
       $fe.func->match([
         prop: AbstractProperty<Any>[1] |
+          // A property access qualifies as a semi-structured array iff:
+          //   1. it is to-many (cardinality > 1),
+          //   2. walking its receiver back to the chain source yields an entry PM whose type
+          //      indicates an auto-mapped semi-structured chain (SemiStructured PM, class-target
+          //      RFPM, or BindingTransformer RFPM), and
+          //   3. that entry PM does NOT cross a JOIN (the disableAutoFlatten strategy does not
+          //      support array operations across joins, e.g. `location: Binding ... : @Join | ...`).
           let isToMany = !$prop.multiplicity->hasToOneUpperBound();
-          let returnType = $fe.genericType.rawType;
-          let isClassType = $returnType->isNotEmpty() && $returnType->toOne()->instanceOf(Class) && $returnType->toOne() != Variant;
-          // Check if the property's owner class is accessed through a direct (non-join) semi-structured binding.
-          // Exclude join-based bindings (e.g. location: Binding ... : @Join | ...) because the disableAutoFlatten
-          // strategy does not support array operations across joins.
-          let ownerClass = $prop.owner->toOne();
-          let isSemiStructuredMapping = $isClassType && $state.mapping->isNotEmpty() &&
-            $state.mapping->toOne()->classMappings()
-              ->filter(cm | $cm->instanceOf(RelationalInstanceSetImplementation))
-              ->cast(@RelationalInstanceSetImplementation)
-              .propertyMappings
-              ->exists(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)
-                            && $pm.property.genericType.rawType->toOne() == $ownerClass
-                            && !$pm->cast(@SemiStructuredRelationalPropertyMapping).relationalOperationElement->instanceOf(RelationalOperationElementWithJoin));
-          $isToMany && $isClassType && $isSemiStructuredMapping;,
+          if (!$isToMany || !$state->mappingMayHaveSemiStructuredPropertyMapping(),
+            | false,
+            | let receiver  = $fe.parametersValues->evaluateAndDeactivate()->at(0);
+              let receiverPm = $receiver->findSourceRelationalPropertyMapping($state);
+              // A receiver that is the source itself has no property of its own: the array
+              // property is the entry.
+              let entryPm = if($receiverPm->isEmpty(), | $fe->findSourceRelationalPropertyMapping($state), | $receiverPm);
+              let isEntrySS = $entryPm->exists(pm | $pm->isSemiStructuredPropertyMapping());
+              let notAcrossJoin = !$entryPm->exists(pm |
+                                      $pm->instanceOf(SemiStructuredRelationalPropertyMapping)
+                                      && $pm->cast(@SemiStructuredRelationalPropertyMapping).relationalOperationElement->instanceOf(RelationalOperationElementWithJoin)
+                                   );
+              $isEntrySS && $notAcrossJoin;
+          );,
         a: Any[1] |
           if ($fe.parametersValues->evaluateAndDeactivate()->isNotEmpty(),
             | $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->isSemiStructuredArrayExpression($vars, $state),
