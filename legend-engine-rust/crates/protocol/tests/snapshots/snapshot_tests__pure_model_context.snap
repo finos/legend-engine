@@ -1,0 +1,60 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name"
+        }
+      ]
+    },
+    {
+      "_type": "Enumeration",
+      "name": "Status",
+      "package": "model",
+      "values": [
+        {
+          "value": "ACTIVE"
+        },
+        {
+          "value": "INACTIVE"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "test.pure",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "default",
+          "elements": [
+            "model::Person",
+            "model::Status"
+          ],
+          "parserName": "Pure"
+        }
+      ]
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

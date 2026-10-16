@@ -68,6 +68,9 @@ jobs:
       - name: Check Java version
         run: java -version
 
+      - name: Set up Rust
+        uses: ./.github/workflows/actions/setup-rust
+
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 

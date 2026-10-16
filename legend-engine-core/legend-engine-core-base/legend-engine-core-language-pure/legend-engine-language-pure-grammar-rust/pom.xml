@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2026 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-core-language-pure</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-language-pure-grammar-rust</artifactId>
+    <name>Legend Engine - Language Pure - Grammar - Rust</name>
+    <description>
+        Parses grammar with the Rust grammar parser (legend-engine-rust, via JNI): the sections and expressions its
+        native library reads. Mode is chosen per parse with -Dlegend.grammar.rust.mode=off|shadow|on (default off: the
+        Java parser). The build makes the native library with cargo and puts it in the jar, under META-INF/native in
+        a directory per platform; -Dlegend.pure.rust.parser.lib=/abs/path/to/library overrides it, and without either,
+        java.library.path is tried, then the Java parser is used. -P skip-rust builds without cargo: the jar has no
+        library, and the engine parses with its Java parsers.
+    </description>
+
+    <properties>
+        <!-- Parity-test defaults; override on the command line. A comparison neither matching nor named by the
+             accepted list (src/main/resources/legend-grammar-rust/parity-accepted.txt) fails the core grammar
+             suites (TestRustParityCoreGrammar); reports go to the report directory. Pass
+             -Dlegend.grammar.rust.failOnMismatch=true to fail the test that parsed a mismatch instead. -->
+        <legend.grammar.rust.mode>shadow</legend.grammar.rust.mode>
+        <legend.grammar.rust.failOnMismatch>false</legend.grammar.rust.failOnMismatch>
+        <legend.grammar.rust.reportDir>${project.build.directory}/rust-parity</legend.grammar.rust.reportDir>
+        <!-- The Cargo workspace whose JNI crate is the native library. Cargo builds in its own target directory, so
+             an unchanged workspace builds in seconds, and mvn clean leaves it. -->
+        <rust.workspace>${project.basedir}/../../../../legend-engine-rust</rust.workspace>
+        <!-- The skip-rust profile sets these. -->
+        <rust.skip>false</rust.skip>
+        <rust.native.required>true</rust.native.required>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>require-rust-toolchain</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${rust.skip}</skip>
+                            <target>
+                                <condition property="cargo.found">
+                                    <or>
+                                        <available file="cargo" filepath="${env.PATH}"/>
+                                        <available file="cargo.exe" filepath="${env.PATH}"/>
+                                    </or>
+                                </condition>
+                                <fail unless="cargo.found" message="${project.artifactId} builds the Rust grammar parser's native library with cargo, which is not on the PATH. Install the Rust toolchain (https://rustup.rs), or build with -P skip-rust: the jar then has no library, and the engine parses with its Java parsers."/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>require-native-platform</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${rust.skip}</skip>
+                            <rules>
+                                <requireProperty>
+                                    <property>rust.native.platform</property>
+                                    <message>No native library platform for ${os.name} ${os.arch}: add a native-* profile for it (and NativeGrammarParser.platform knows it), or build with -P skip-rust.</message>
+                                </requireProperty>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>cargo-build-native-library</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${rust.skip}</skip>
+                            <executable>cargo</executable>
+                            <workingDirectory>${rust.workspace}</workingDirectory>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>--release</argument>
+                                <argument>--locked</argument>
+                                <argument>-p</argument>
+                                <argument>legend-pure-parser-jni</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-native-library</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${rust.skip}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/native/${rust.native.platform}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${rust.workspace}/target/release</directory>
+                                    <includes>
+                                        <include>${rust.native.library}</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <legend.grammar.rust.mode>${legend.grammar.rust.mode}</legend.grammar.rust.mode>
+                        <legend.grammar.rust.failOnMismatch>${legend.grammar.rust.failOnMismatch}</legend.grammar.rust.failOnMismatch>
+                        <legend.grammar.rust.reportDir>${legend.grammar.rust.reportDir}</legend.grammar.rust.reportDir>
+                        <!-- The build made the library: tests needing it fail, rather than skip, when it doesn't load. -->
+                        <legend.pure.rust.parser.required>${rust.native.required}</legend.pure.rust.parser.required>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- The platform directory and file name of the library cargo builds here, one profile per platform it is built
+         for. NativeGrammarParser.platform maps a JVM's os.name and os.arch to the same directory names
+         (TestNativeLibraryPlatforms checks they agree). -->
+    <profiles>
+        <!-- Builds without cargo: no native library in the jar, so the engine parses with its Java parsers, and the
+             tests that need the library are skipped. (-Dlegend.grammar.rust.mode=on still refuses to parse without it.) -->
+        <profile>
+            <id>skip-rust</id>
+            <properties>
+                <rust.skip>true</rust.skip>
+                <rust.native.required>false</rust.native.required>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-linux-x86_64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <rust.native.platform>linux-x86_64</rust.native.platform>
+                <rust.native.library>liblegend_pure_rust_parser.so</rust.native.library>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-linux-aarch64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <rust.native.platform>linux-aarch64</rust.native.platform>
+                <rust.native.library>liblegend_pure_rust_parser.so</rust.native.library>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-osx-aarch64</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <rust.native.platform>osx-aarch64</rust.native.platform>
+                <rust.native.library>liblegend_pure_rust_parser.dylib</rust.native.library>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-osx-x86_64</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <rust.native.platform>osx-x86_64</rust.native.platform>
+                <rust.native.library>liblegend_pure_rust_parser.dylib</rust.native.library>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-windows-x86_64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <rust.native.platform>windows-x86_64</rust.native.platform>
+                <rust.native.library>legend_pure_rust_parser.dll</rust.native.library>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- Engine -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <!-- Engine -->
+
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Captures the fallback's warnings (TestRustModelParser) -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used by the grammar test-jar's GrammarParseTestUtils -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+    </dependencies>
+</project>

@@ -84,6 +84,9 @@ jobs:
           java-version: 17
           distribution: 'zulu'
 
+      - name: Set up Rust
+        uses: ./.github/workflows/actions/setup-rust
+
       - name: Purge stale legend-engine artifacts from local Maven repo
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 

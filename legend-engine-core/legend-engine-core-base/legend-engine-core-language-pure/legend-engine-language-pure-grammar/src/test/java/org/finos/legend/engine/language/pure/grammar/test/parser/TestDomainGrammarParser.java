@@ -117,6 +117,18 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
     }
 
     @Test
+    public void testFunctionTestWithoutSourceInformation()
+    {
+        testWithoutSourceInformation("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "}\n");
+    }
+
+    @Test
     public void testProfile()
     {
         PureModelContextData pureModelContextData = test("Profile test::A\n" +
