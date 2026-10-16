@@ -1,0 +1,48 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "Enumeration",
+      "name": "Color",
+      "package": "model",
+      "sourceInformation": "enumeration.pure:17:1-22:1",
+      "values": [
+        {
+          "sourceInformation": "enumeration.pure:19:5-7",
+          "value": "RED"
+        },
+        {
+          "sourceInformation": "enumeration.pure:20:5-9",
+          "value": "GREEN"
+        },
+        {
+          "sourceInformation": "enumeration.pure:21:5-8",
+          "value": "BLUE"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::Color"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "enumeration.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "enumeration.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -1,0 +1,28 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 219
+expression: json
+---
+{
+  "_type": "Enumeration",
+  "name": "Color",
+  "package": "model",
+  "sourceInformation": "test.pure:1:1-5:1",
+  "values": [
+    {
+      "value": "RED"
+    },
+    {
+      "value": "GREEN"
+    },
+    {
+      "stereotypes": [
+        {
+          "profile": "doc",
+          "value": "deprecated"
+        }
+      ],
+      "value": "BLUE"
+    }
+  ]
+}

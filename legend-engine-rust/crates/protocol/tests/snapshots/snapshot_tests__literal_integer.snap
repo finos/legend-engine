@@ -1,0 +1,9 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 750
+expression: json
+---
+{
+  "_type": "integer",
+  "value": 42
+}

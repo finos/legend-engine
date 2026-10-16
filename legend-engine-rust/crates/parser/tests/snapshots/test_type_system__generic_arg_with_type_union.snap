@@ -1,0 +1,214 @@
+---
+source: crates/parser/tests/test_type_system.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                NativeFunction(
+                    NativeFunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 17,
+                                    end_line: 2,
+                                    end_column: 18,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "asOfJoin",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 21,
+                                end_line: 2,
+                                end_column: 28,
+                            },
+                        },
+                        type_and_multiplicity_parameters: Some(
+                            TypeAndMultiplicityParameters {
+                                type_parameters: [
+                                    "T",
+                                    "V",
+                                ],
+                                multiplicity_parameters: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 29,
+                                    end_line: 2,
+                                    end_column: 33,
+                                },
+                            },
+                        ),
+                        parameters: [
+                            Parameter {
+                                name: "rel",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: None,
+                                            name: "Relation",
+                                            type_arguments: [
+                                                TypeArgument {
+                                                    type_spec: Type(
+                                                        TypeReference {
+                                                            package: None,
+                                                            name: "T",
+                                                            type_arguments: [],
+                                                            multiplicity_arguments: [],
+                                                            type_variable_values: [],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 2,
+                                                                start_column: 48,
+                                                                end_line: 2,
+                                                                end_column: 48,
+                                                            },
+                                                        },
+                                                    ),
+                                                    equal_binding: None,
+                                                    algebra_ops: [
+                                                        AlgebraOp {
+                                                            kind: Union,
+                                                            operand: Type(
+                                                                TypeReference {
+                                                                    package: None,
+                                                                    name: "V",
+                                                                    type_arguments: [],
+                                                                    multiplicity_arguments: [],
+                                                                    type_variable_values: [],
+                                                                    source_info: SourceInfo {
+                                                                        source: "test.pure",
+                                                                        start_line: 2,
+                                                                        start_column: 50,
+                                                                        end_line: 2,
+                                                                        end_column: 50,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                    ],
+                                                    subset_bound: None,
+                                                },
+                                            ],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 39,
+                                                end_line: 2,
+                                                end_column: 51,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    PureOne,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 35,
+                                    end_line: 2,
+                                    end_column: 54,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "Relation",
+                                type_arguments: [
+                                    TypeArgument {
+                                        type_spec: Type(
+                                            TypeReference {
+                                                package: None,
+                                                name: "T",
+                                                type_arguments: [],
+                                                multiplicity_arguments: [],
+                                                type_variable_values: [],
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 2,
+                                                    start_column: 67,
+                                                    end_line: 2,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                        equal_binding: None,
+                                        algebra_ops: [
+                                            AlgebraOp {
+                                                kind: Union,
+                                                operand: Type(
+                                                    TypeReference {
+                                                        package: None,
+                                                        name: "V",
+                                                        type_arguments: [],
+                                                        multiplicity_arguments: [],
+                                                        type_variable_values: [],
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 2,
+                                                            start_column: 69,
+                                                            end_line: 2,
+                                                            end_column: 69,
+                                                        },
+                                                    },
+                                                ),
+                                            },
+                                        ],
+                                        subset_bound: None,
+                                    },
+                                ],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 58,
+                                    end_line: 2,
+                                    end_column: 70,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 2,
+                            end_column: 74,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

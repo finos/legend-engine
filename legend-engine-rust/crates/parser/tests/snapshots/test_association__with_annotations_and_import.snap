@@ -1,0 +1,212 @@
+---
+source: crates/parser/tests/test_association.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [
+                ImportStatement {
+                    path: Package {
+                        name: "model",
+                        parent: None,
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 8,
+                            end_line: 2,
+                            end_column: 12,
+                        },
+                    },
+                    source_info: SourceInfo {
+                        source: "test.pure",
+                        start_line: 2,
+                        start_column: 1,
+                        end_line: 2,
+                        end_column: 6,
+                    },
+                },
+            ],
+            elements: [
+                Association(
+                    AssociationDef {
+                        package: Some(
+                            Package {
+                                name: "model",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 61,
+                                    end_line: 3,
+                                    end_column: 65,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "OldAssoc",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 3,
+                                start_column: 68,
+                                end_line: 3,
+                                end_column: 75,
+                            },
+                        },
+                        properties: [
+                            Property {
+                                name: "left",
+                                type_ref: Type(
+                                    TypeReference {
+                                        package: None,
+                                        name: "A",
+                                        type_arguments: [],
+                                        multiplicity_arguments: [],
+                                        type_variable_values: [],
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 5,
+                                            start_column: 11,
+                                            end_line: 5,
+                                            end_column: 11,
+                                        },
+                                    },
+                                ),
+                                multiplicity: PureOne,
+                                aggregation: None,
+                                default_value: None,
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 5,
+                                    end_line: 5,
+                                    end_column: 15,
+                                },
+                            },
+                            Property {
+                                name: "right",
+                                type_ref: Type(
+                                    TypeReference {
+                                        package: None,
+                                        name: "B",
+                                        type_arguments: [],
+                                        multiplicity_arguments: [],
+                                        type_variable_values: [],
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 6,
+                                            start_column: 12,
+                                            end_line: 6,
+                                            end_column: 12,
+                                        },
+                                    },
+                                ),
+                                multiplicity: PureOne,
+                                aggregation: None,
+                                default_value: None,
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 5,
+                                    end_line: 6,
+                                    end_column: 16,
+                                },
+                            },
+                        ],
+                        qualified_properties: [],
+                        stereotypes: [
+                            StereotypePtr {
+                                profile: PackageableElementPtr {
+                                    package: None,
+                                    name: "doc",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 3,
+                                        start_column: 15,
+                                        end_line: 3,
+                                        end_column: 17,
+                                    },
+                                },
+                                value: "deprecated",
+                                value_source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 19,
+                                    end_line: 3,
+                                    end_column: 28,
+                                },
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 15,
+                                    end_line: 3,
+                                    end_column: 28,
+                                },
+                            },
+                        ],
+                        tagged_values: [
+                            TaggedValue {
+                                tag: TagPtr {
+                                    profile: PackageableElementPtr {
+                                        package: None,
+                                        name: "doc",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 3,
+                                            start_column: 33,
+                                            end_line: 3,
+                                            end_column: 35,
+                                        },
+                                    },
+                                    value: "description",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 3,
+                                        start_column: 37,
+                                        end_line: 3,
+                                        end_column: 47,
+                                    },
+                                },
+                                value: "Legacy",
+                                multi_line: false,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 33,
+                                    end_line: 3,
+                                    end_column: 58,
+                                },
+                            },
+                        ],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 3,
+                            start_column: 1,
+                            end_line: 7,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}
