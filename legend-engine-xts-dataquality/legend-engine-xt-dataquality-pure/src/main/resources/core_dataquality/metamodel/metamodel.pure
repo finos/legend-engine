@@ -88,6 +88,13 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   additionalColumnsToPersist: String[*]; //extra columns to persist in the recon output with _SOURCE/_TARGET suffixes; not part of the hash / keys / join
 }
 
+Class meta::external::dataquality::datarecon::DataQualityReconQueryViolation
+{
+  side: String[1]; //'source' or 'target'
+  statementIndex: Integer[1]; //index into that side's expressionSequence
+  message: String[1];
+}
+
 Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement, meta::pure::metamodel::testable::Testable
 [
   sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),

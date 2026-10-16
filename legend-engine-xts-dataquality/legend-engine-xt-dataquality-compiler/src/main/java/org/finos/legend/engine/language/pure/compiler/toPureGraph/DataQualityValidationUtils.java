@@ -25,10 +25,13 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_datarecon_DataQualityReconQueryViolation;
+import org.finos.legend.pure.generated.core_dataquality_generation_datarecon;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 
 import java.util.List;
@@ -312,6 +315,29 @@ public class DataQualityValidationUtils
     {
         Type rawType = columnRawType(column);
         return rawType != null && isFloatingPointType(rawType, floatType, processorSupport);
+    }
+
+    /**
+     * Reports the first violation returned by meta::external::dataquality::datarecon::validateReconQueries.
+     */
+    public static void validateReconQueries(
+            DataQualityRelationComparison comparison,
+            LambdaFunction<?> compiledSource,
+            LambdaFunction<?> compiledTarget,
+            ExecutionSupport executionSupport)
+    {
+        RichIterable<? extends Root_meta_external_dataquality_datarecon_DataQualityReconQueryViolation> violations =
+                core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_validateReconQueries_LambdaFunction_1__LambdaFunction_1__DataQualityReconQueryViolation_MANY_(compiledSource, compiledTarget, executionSupport);
+        if (violations.notEmpty())
+        {
+            Root_meta_external_dataquality_datarecon_DataQualityReconQueryViolation violation = violations.getFirst();
+            org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction query = "source".equals(violation._side()) ? comparison.source : comparison.target;
+            long statementIndex = violation._statementIndex();
+            SourceInformation sourceInformation = query.body != null && statementIndex >= 0 && statementIndex < query.body.size()
+                    ? query.body.get((int) statementIndex).sourceInformation
+                    : query.sourceInformation;
+            throw new EngineException(violation._message(), sourceInformation, EngineErrorType.COMPILATION);
+        }
     }
 
     private static RelationType<?> extractRelationTypeFromLambda(LambdaFunction<?> compiledLambda)
