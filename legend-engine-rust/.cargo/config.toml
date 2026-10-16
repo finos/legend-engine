@@ -1,0 +1,65 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Cargo aliases for quality gates.
+# Clippy lint groups live on the aliases (not in [build] rustflags), so plain
+# `cargo build` / `cargo test` don't get clippy lints emitted as unknown-lints
+# by base rustc.
+# Usage:
+#   cargo lint-lib    — strict lint (library code only: no unwrap/expect, no json!)
+#   cargo lint        — standard lint (all targets, general clippy + pedantic)
+#   cargo audit       — full quality check (lint + copyright + build)
+#
+# The `cargo lint` alias enables `clippy::pedantic` but allows a curated
+# set of style preferences the project has consciously decided not to
+# adopt — see https://rust-lang.github.io/rust-clippy/ for each lint:
+#
+#   doc_markdown                  — backticking every technical term
+#                                   (JNI, M3, Pure, …) is noise here
+#   cast_*_truncation, _sign_loss,
+#   _precision_loss, _possible_wrap — deliberate `as` casts in arithmetic
+#   needless_pass_by_value        — many helpers prefer by-value for
+#                                   call-site clarity
+#   too_many_lines                — function size is a judgement call
+#   must_use_candidate            — opt-in; not gating
+#   missing_errors_doc            — encouraged via review, not lint
+#   module_name_repetitions       — common with re-exports
+#   unused_self                   — methods sometimes kept for API
+#                                   parity with sibling impls
+#   implicit_hasher               — rarely a real bug for our HashMaps
+#   trivially_copy_pass_by_ref    — micro-opt; readability wins
+#   disallowed_macros             — `serde_json::json!` (clippy.toml) is
+#                                   denied in library code by `lint-lib`;
+#                                   tests keep it for the JSON they expect
+#
+# Anything else under pedantic stays a warning. Real bugs should fall
+# under `clippy::all` (warn) or the strict `lint-lib` gate (deny).
+[alias]
+lint-lib = "clippy --lib --all -- -D clippy::unwrap_used -D clippy::expect_used -D clippy::disallowed_macros"
+lint     = """clippy --all-targets -- -W clippy::all -W clippy::pedantic \
+              -A clippy::doc_markdown \
+              -A clippy::cast_possible_truncation \
+              -A clippy::cast_sign_loss \
+              -A clippy::cast_precision_loss \
+              -A clippy::cast_possible_wrap \
+              -A clippy::needless_pass_by_value \
+              -A clippy::too_many_lines \
+              -A clippy::must_use_candidate \
+              -A clippy::missing_errors_doc \
+              -A clippy::module_name_repetitions \
+              -A clippy::unused_self \
+              -A clippy::implicit_hasher \
+              -A clippy::trivially_copy_pass_by_ref \
+              -A clippy::disallowed_macros"""
+audit    = ["lint-lib", "lint", "test --all"]

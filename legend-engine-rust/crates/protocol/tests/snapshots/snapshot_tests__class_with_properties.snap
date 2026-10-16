@@ -1,0 +1,72 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "class",
+  "name": "Person",
+  "package": "model::domain",
+  "properties": [
+    {
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "name": "name"
+    },
+    {
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Integer"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 0,
+        "upperBound": 1
+      },
+      "name": "age"
+    },
+    {
+      "aggregation": "COMPOSITE",
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "model::domain::Address"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 0
+      },
+      "name": "address"
+    }
+  ],
+  "sourceInformation": "test.pure:2:1-8:1",
+  "stereotypes": [
+    {
+      "profile": "temporal",
+      "value": "businesstemporal"
+    }
+  ],
+  "superTypes": [
+    {
+      "path": "model::domain::LegalEntity",
+      "type": "CLASS"
+    }
+  ],
+  "taggedValues": [
+    {
+      "tag": {
+        "profile": "doc",
+        "value": "description"
+      },
+      "value": "A person entity"
+    }
+  ]
+}

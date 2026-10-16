@@ -1,0 +1,28 @@
+# What the Rust grammar parser is allowed to differ on, in shadow-mode parity
+# (RustGrammarParity). One entry per line: a key, then its category and reason.
+#
+# Keys:
+#   <hash>                    a section or standalone expression
+#   model-<hash>              a whole model
+#   unlinked:<kind>:<type>    a grammar this library doesn't link
+#
+# Categories:
+#   accepted:   a Java-only quirk the Rust parser, meant to replace it, doesn't reproduce
+#   pending:    a grammar a later change ports (name it)
+#   java-only:  a grammar with no Rust port planned
+#   test:       a fixture of this module's own tests
+#
+# CI's parity gate fails on an entry no comparison used: remove it once it matches.
+
+unlinked:connection:TestJavaOnlyConnection  test: TestRustSectionTakeover's Java-only connection type
+285d7cf695f54ad2  accepted: a quoted type name keeps its quotes in the engine's type path (`processGenericType` takes the raw text, so it can't resolve); Rust unquotes it
+model-ba7fd4c2c5d667d7  accepted: the model holding 285d7cf695f54ad2
+unlinked:mapping-element:Unknown  accepted: the engine rejects a mapping element of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+unlinked:mapping-test-input:Objected  accepted: the engine rejects a legacy test input of type `Objected`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+88cf7500ed300bc6  accepted: an element left open at the end of input; ANTLR recovers by inserting the missing `}`, and the engine's error listener, correcting the EOF token's end-before-start span, moves the error one column left onto the last character; Rust reports it at the end of input
+model-fe6e65a949eb3b6f  accepted: the model holding 88cf7500ed300bc6
+9a8a59921140adf0  accepted: an element left open at the end of input, as 88cf7500ed300bc6
+model-d7753c8945376cf2  accepted: the model holding 9a8a59921140adf0
+unlinked:relational-query-generation-config:UnknownConfig  accepted: the engine rejects a query generation config of type `UnknownConfig`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+unlinked:embedded-data:Unknown  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+unlinked:test-assertion:Unknown  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
