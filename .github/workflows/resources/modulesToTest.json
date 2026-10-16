@@ -34,7 +34,6 @@
     {
       "name": "sql",
       "modules": [
-        "legend-engine-xt-sql-expression-grammar",
         "legend-engine-xt-sql-pure",
         "legend-engine-xt-sql-http-api",
         "legend-engine-xt-sql-reversePCT",  
@@ -170,6 +169,39 @@
         "legend-engine-xt-python-reversePCT-legendQL",
         "legend-engine-xt-python-reversePCT-pandasAPI",
         "legend-engine-xt-python-reversePCT-shared"
+      ]
+    },
+    {
+      "name": "rustParserParity",
+      "modules": [
+        "legend-engine-language-pure-grammar-rust",
+        "legend-engine-language-pure-compiler",
+        "legend-engine-language-pure-grammar-http-api",
+        "legend-engine-language-pure-compiler-http-api",
+        "legend-engine-core-emit-tests",
+        "legend-engine-xt-sql-expression-grammar",
+        "legend-engine-xt-sql-expression-compiler",
+        "legend-engine-xt-tds-grammar",
+        "legend-engine-xt-tds-compiler",
+        "legend-engine-xt-relationalStore-grammar",
+        "legend-engine-xt-relationalStore-snowflake-grammar",
+        "legend-engine-xt-relationalStore-emit",
+        "legend-engine-language-pure-dsl-service",
+        "legend-engine-xt-service-emit",
+        "legend-engine-xt-authentication-grammar",
+        "legend-engine-xt-serviceStore-grammar",
+        "legend-engine-xt-nonrelationalStore-mongodb-grammar-integration",
+        "legend-engine-xt-elasticsearch-V7-grammar",
+        "legend-engine-xt-snowflake-grammar",
+        "legend-engine-xt-memsqlFunction-grammar",
+        "legend-engine-xt-bigqueryFunction-grammar",
+        "legend-engine-xt-functionJar-grammar",
+        "legend-engine-xt-deephaven-grammar",
+        "legend-engine-xt-hostedService-grammar",
+        "legend-engine-xt-persistence-grammar",
+        "legend-engine-xt-persistence-cloud-grammar",
+        "legend-engine-xt-persistence-target-relational-grammar",
+        "legend-engine-xt-persistence-emit"
       ]
     }
   ]

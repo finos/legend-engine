@@ -1,0 +1,35 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "lambda",
+  "body": [
+    {
+      "_type": "func",
+      "function": "toUpperCase",
+      "parameters": [
+        {
+          "_type": "var",
+          "name": "x"
+        }
+      ]
+    }
+  ],
+  "parameters": [
+    {
+      "_type": "var",
+      "genericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String"
+        }
+      },
+      "multiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "name": "x"
+    }
+  ]
+}

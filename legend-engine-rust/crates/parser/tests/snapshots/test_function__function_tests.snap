@@ -1,0 +1,167 @@
+---
+source: crates/parser/tests/test_function.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 17,
+                                    start_column: 10,
+                                    end_line: 17,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "SimpleFunction",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 17,
+                                start_column: 14,
+                                end_line: 17,
+                                end_column: 27,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 17,
+                                    start_column: 32,
+                                    end_line: 17,
+                                    end_column: 37,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        constraints: [],
+                        body: [
+                            Literal(
+                                String(
+                                    StringLiteral {
+                                        value: "Hello World!",
+                                        multi_line: false,
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 19,
+                                            start_column: 5,
+                                            end_line: 19,
+                                            end_column: 18,
+                                        },
+                                    },
+                                ),
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [
+                            FunctionTest {
+                                name: None,
+                                data: [],
+                                assertions: [
+                                    FunctionTestAssertion {
+                                        name: "myTest",
+                                        doc: None,
+                                        invocation: FunctionApplication(
+                                            FunctionApplication {
+                                                function: PackageableElementPtr {
+                                                    package: None,
+                                                    name: "SimpleFunction",
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 22,
+                                                        start_column: 14,
+                                                        end_line: 22,
+                                                        end_column: 27,
+                                                    },
+                                                },
+                                                arguments: [],
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 22,
+                                                    start_column: 14,
+                                                    end_line: 22,
+                                                    end_column: 27,
+                                                },
+                                            },
+                                        ),
+                                        expected: Value(
+                                            Literal(
+                                                String(
+                                                    StringLiteral {
+                                                        value: "Hello World!",
+                                                        multi_line: false,
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 22,
+                                                            start_column: 34,
+                                                            end_line: 22,
+                                                            end_column: 47,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 22,
+                                            start_column: 5,
+                                            end_line: 22,
+                                            end_column: 48,
+                                        },
+                                    },
+                                ],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 21,
+                                    start_column: 1,
+                                    end_line: 23,
+                                    end_column: 1,
+                                },
+                            },
+                        ],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 17,
+                            start_column: 1,
+                            end_line: 23,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 16,
+                start_column: 1,
+                end_line: 16,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 16,
+        start_column: 1,
+        end_line: 16,
+        end_column: 7,
+    },
+}

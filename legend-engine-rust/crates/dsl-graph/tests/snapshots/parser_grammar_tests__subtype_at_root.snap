@@ -1,0 +1,278 @@
+---
+source: crates/dsl-graph/tests/parser_grammar_tests.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 10,
+                                    end_line: 2,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "test",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 14,
+                                end_line: 2,
+                                end_column: 17,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "Any",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 22,
+                                    end_line: 2,
+                                    end_column: 24,
+                                },
+                            },
+                        ),
+                        return_multiplicity: ZeroOrMany,
+                        constraints: [],
+                        body: [
+                            ArrowFunction(
+                                ArrowFunction {
+                                    target: AllInstances(
+                                        AllInstancesExpr {
+                                            class: PackageableElementPtr {
+                                                package: Some(
+                                                    Package {
+                                                        name: "my",
+                                                        parent: None,
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 5,
+                                                            end_line: 4,
+                                                            end_column: 6,
+                                                        },
+                                                    },
+                                                ),
+                                                name: "Firm",
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 4,
+                                                    start_column: 5,
+                                                    end_line: 4,
+                                                    end_column: 12,
+                                                },
+                                            },
+                                            kind: All,
+                                            arguments: [],
+                                            call_source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 13,
+                                                end_line: 4,
+                                                end_column: 18,
+                                            },
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 5,
+                                                end_line: 4,
+                                                end_column: 18,
+                                            },
+                                        },
+                                    ),
+                                    function: PackageableElementPtr {
+                                        package: None,
+                                        name: "graphFetch",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 21,
+                                            end_line: 4,
+                                            end_column: 30,
+                                        },
+                                    },
+                                    arguments: [
+                                        Island(
+                                            IslandExpression {
+                                                tag: "",
+                                                content: RootGraphFetchTree {
+                                                    class: PackageableElementPtr {
+                                                        package: Some(
+                                                            Package {
+                                                                name: "my",
+                                                                parent: None,
+                                                                source_info: SourceInfo {
+                                                                    source: "test.pure",
+                                                                    start_line: 6,
+                                                                    start_column: 13,
+                                                                    end_line: 6,
+                                                                    end_column: 14,
+                                                                },
+                                                            },
+                                                        ),
+                                                        name: "Firm",
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 6,
+                                                            start_column: 13,
+                                                            end_line: 6,
+                                                            end_column: 20,
+                                                        },
+                                                    },
+                                                    sub_trees: [
+                                                        PropertyGraphFetchTree {
+                                                            property: "name",
+                                                            property_source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 7,
+                                                                start_column: 17,
+                                                                end_line: 7,
+                                                                end_column: 20,
+                                                            },
+                                                            parameters: [],
+                                                            alias: None,
+                                                            sub_type: None,
+                                                            sub_trees: [],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 7,
+                                                                start_column: 17,
+                                                                end_line: 7,
+                                                                end_column: 20,
+                                                            },
+                                                        },
+                                                    ],
+                                                    sub_type_trees: [
+                                                        SubTypeGraphFetchTree {
+                                                            sub_type_class: PackageableElementPtr {
+                                                                package: Some(
+                                                                    Package {
+                                                                        name: "my",
+                                                                        parent: None,
+                                                                        source_info: SourceInfo {
+                                                                            source: "test.pure",
+                                                                            start_line: 8,
+                                                                            start_column: 28,
+                                                                            end_line: 8,
+                                                                            end_column: 29,
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                name: "FirmSubType",
+                                                                source_info: SourceInfo {
+                                                                    source: "test.pure",
+                                                                    start_line: 8,
+                                                                    start_column: 28,
+                                                                    end_line: 8,
+                                                                    end_column: 42,
+                                                                },
+                                                            },
+                                                            sub_trees: [
+                                                                PropertyGraphFetchTree {
+                                                                    property: "SubTypeName",
+                                                                    property_source_info: SourceInfo {
+                                                                        source: "test.pure",
+                                                                        start_line: 9,
+                                                                        start_column: 21,
+                                                                        end_line: 9,
+                                                                        end_column: 31,
+                                                                    },
+                                                                    parameters: [],
+                                                                    alias: None,
+                                                                    sub_type: None,
+                                                                    sub_trees: [],
+                                                                    source_info: SourceInfo {
+                                                                        source: "test.pure",
+                                                                        start_line: 9,
+                                                                        start_column: 21,
+                                                                        end_line: 9,
+                                                                        end_column: 31,
+                                                                    },
+                                                                },
+                                                            ],
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 8,
+                                                                start_column: 17,
+                                                                end_line: 10,
+                                                                end_column: 17,
+                                                            },
+                                                        },
+                                                    ],
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 6,
+                                                        start_column: 13,
+                                                        end_line: 11,
+                                                        end_column: 13,
+                                                    },
+                                                },
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 5,
+                                                    start_column: 9,
+                                                    end_line: 12,
+                                                    end_column: 10,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 4,
+                                        start_column: 5,
+                                        end_line: 13,
+                                        end_column: 5,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 14,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

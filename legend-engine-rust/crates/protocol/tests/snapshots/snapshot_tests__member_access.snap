@@ -1,0 +1,15 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 491
+expression: json
+---
+{
+  "_type": "property",
+  "parameters": [
+    {
+      "_type": "var",
+      "name": "this"
+    }
+  ],
+  "property": "name"
+}

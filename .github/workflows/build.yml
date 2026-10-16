@@ -142,6 +142,9 @@ jobs:
       - name: Check Java version
         run: java -version
 
+      - name: Set up Rust
+        uses: ./.github/workflows/actions/setup-rust
+
       - name: Configure git
         run: |
           git config --global committer.email "infra@finos.org"
@@ -206,6 +209,7 @@ jobs:
           path: |
             ~/**/target/
             !~/**/target/*.jar
+            !~/**/legend-engine-rust/target/
           retention-days: 1
           overwrite: true
           include-hidden-files: true
@@ -310,6 +314,14 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
+      - name: Rust Parser Parity Arguments
+        # The modules' own tests, with the Rust grammar module (its classes and native library) on their classpath
+        # and the Rust parser in shadow mode: each parse is compared with the Java parser's, and the gate below
+        # fails on any comparison the accepted list doesn't name.
+        if: ${{ matrix.name == 'rustParserParity' }}
+        run: |
+          echo "RUST_PARITY_ARGS=-Dmaven.test.additionalClasspath=${GITHUB_WORKSPACE}/legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust/target/classes -Dlegend.grammar.rust.mode=shadow -Dlegend.grammar.rust.reportDir=${GITHUB_WORKSPACE}/rust-parity -Dlegend.pure.rust.parser.required=true" >> $GITHUB_ENV
+
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
@@ -317,13 +329,25 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
-          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate ${RUST_PARITY_ARGS}
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+      - name: Rust Parser Parity Gate
+        if: ${{ !cancelled() && matrix.name == 'rustParserParity' }}
+        run: .github/scripts/rust-parser-parity-gate.sh ${GITHUB_WORKSPACE}/rust-parity legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-grammar-rust/src/main/resources/legend-grammar-rust/parity-accepted.txt
+
+      - name: Upload Rust Parser Parity Reports
+        if: ${{ always() && matrix.name == 'rustParserParity' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: rust-parser-parity
+          path: ${{ github.workspace }}/rust-parity
+          if-no-files-found: ignore
 
       - name: Stage SQL Documentation
         if: ${{ matrix.name == 'sql' }}

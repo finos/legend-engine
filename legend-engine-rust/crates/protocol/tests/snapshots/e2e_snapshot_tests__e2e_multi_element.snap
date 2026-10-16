@@ -1,0 +1,140 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "multi_element.pure:19:11-16"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "sourceInformation": "multi_element.pure:19:5-20"
+        }
+      ],
+      "sourceInformation": "multi_element.pure:17:1-20:1"
+    },
+    {
+      "_type": "Enumeration",
+      "name": "Status",
+      "package": "model",
+      "sourceInformation": "multi_element.pure:22:1-26:1",
+      "values": [
+        {
+          "sourceInformation": "multi_element.pure:24:5-10",
+          "value": "ACTIVE"
+        },
+        {
+          "sourceInformation": "multi_element.pure:25:5-12",
+          "value": "INACTIVE"
+        }
+      ]
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": "multi_element.pure:30:14-22",
+              "values": [
+                {
+                  "_type": "string",
+                  "sourceInformation": "multi_element.pure:30:5-12",
+                  "value": "Hello "
+                },
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "p",
+                      "sourceInformation": "multi_element.pure:30:16-17"
+                    }
+                  ],
+                  "property": "name",
+                  "sourceInformation": "multi_element.pure:30:19-22"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": "multi_element.pure:30:14-22"
+        }
+      ],
+      "name": "greetPerson_Person_1__String_1_",
+      "package": "model",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Person",
+              "sourceInformation": "multi_element.pure:28:32-44"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "p",
+          "sourceInformation": "multi_element.pure:28:29-47"
+        }
+      ],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String",
+          "sourceInformation": "multi_element.pure:28:51-56"
+        }
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "sourceInformation": "multi_element.pure:28:1-31:1"
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::Person",
+            "model::Status",
+            "model::greetPerson_Person_1__String_1_"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "multi_element.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "multi_element.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

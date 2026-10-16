@@ -1,0 +1,40 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Set up Rust
+
+description: >-
+  The Rust toolchain a Maven build needs: legend-engine-language-pure-grammar-rust builds the Rust grammar parser's
+  native library with cargo and puts it in its jar. Cargo's downloads and its release build are cached, keyed on
+  Cargo.lock, so an unchanged Rust workspace builds in seconds.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up the Rust toolchain
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: stable
+
+    - name: Cache Cargo downloads and the release build
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          legend-engine-rust/target/release/
+        key: ${{ runner.os }}-cargo-release-${{ hashFiles('legend-engine-rust/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-release-
