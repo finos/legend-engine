@@ -1,0 +1,100 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "measure",
+      "canonicalUnit": {
+        "conversionFunction": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "var",
+              "name": "x",
+              "sourceInformation": "measure.pure:19:18-19"
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "x"
+            }
+          ]
+        },
+        "measure": "pkg::Distance",
+        "name": "Meter",
+        "sourceInformation": "measure.pure:19:6-20"
+      },
+      "name": "Distance",
+      "nonCanonicalUnits": [
+        {
+          "conversionFunction": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "times",
+                "parameters": [
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "sourceInformation": "measure.pure:20:24-29",
+                    "values": [
+                      {
+                        "_type": "var",
+                        "name": "x",
+                        "sourceInformation": "measure.pure:20:21-22"
+                      },
+                      {
+                        "_type": "integer",
+                        "sourceInformation": "measure.pure:20:26-29",
+                        "value": 1000
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": "measure.pure:20:24-29"
+              }
+            ],
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "x"
+              }
+            ]
+          },
+          "measure": "pkg::Distance",
+          "name": "Kilometer",
+          "sourceInformation": "measure.pure:20:5-30"
+        }
+      ],
+      "package": "pkg",
+      "sourceInformation": "measure.pure:17:1-21:1"
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "pkg::Distance"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "measure.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "measure.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

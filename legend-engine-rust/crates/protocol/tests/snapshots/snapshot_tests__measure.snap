@@ -1,0 +1,45 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+expression: json
+---
+{
+  "_type": "measure",
+  "canonicalUnit": {
+    "measure": "pkg::Distance",
+    "name": "Meter"
+  },
+  "name": "Distance",
+  "nonCanonicalUnits": [
+    {
+      "conversionFunction": {
+        "_type": "lambda",
+        "body": [
+          {
+            "_type": "func",
+            "function": "times",
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "x"
+              },
+              {
+                "_type": "integer",
+                "value": 1000
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "_type": "var",
+            "name": "x"
+          }
+        ]
+      },
+      "measure": "pkg::Distance",
+      "name": "Kilometer"
+    }
+  ],
+  "package": "pkg",
+  "sourceInformation": "test.pure:1:1-5:1"
+}

@@ -1,0 +1,286 @@
+---
+source: crates/parser/tests/test_expression.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 10,
+                                    end_line: 2,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "validate",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 14,
+                                end_line: 2,
+                                end_column: 21,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [
+                            Parameter {
+                                name: "this",
+                                type_ref: Some(
+                                    Type(
+                                        TypeReference {
+                                            package: Some(
+                                                Package {
+                                                    name: "my",
+                                                    parent: None,
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 29,
+                                                        end_line: 2,
+                                                        end_column: 30,
+                                                    },
+                                                },
+                                            ),
+                                            name: "Validated",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 29,
+                                                end_line: 2,
+                                                end_column: 41,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                multiplicity: Some(
+                                    PureOne,
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 23,
+                                    end_line: 2,
+                                    end_column: 44,
+                                },
+                            },
+                        ],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "Boolean",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 48,
+                                    end_line: 2,
+                                    end_column: 54,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        constraints: [],
+                        body: [
+                            Logical(
+                                LogicalExpr {
+                                    left: ArrowFunction(
+                                        ArrowFunction {
+                                            target: MemberAccess(
+                                                Simple(
+                                                    SimpleMemberAccess {
+                                                        target: Variable(
+                                                            Variable {
+                                                                name: "this",
+                                                                source_info: SourceInfo {
+                                                                    source: "test.pure",
+                                                                    start_line: 4,
+                                                                    start_column: 5,
+                                                                    end_line: 4,
+                                                                    end_column: 9,
+                                                                },
+                                                            },
+                                                        ),
+                                                        member: "id",
+                                                        member_source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 11,
+                                                            end_line: 4,
+                                                            end_column: 12,
+                                                        },
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 10,
+                                                            end_line: 4,
+                                                            end_column: 10,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            function: PackageableElementPtr {
+                                                package: None,
+                                                name: "isEmpty",
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 4,
+                                                    start_column: 15,
+                                                    end_line: 4,
+                                                    end_column: 21,
+                                                },
+                                            },
+                                            arguments: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 10,
+                                                end_line: 4,
+                                                end_column: 23,
+                                            },
+                                        },
+                                    ),
+                                    op: Or,
+                                    right: Comparison(
+                                        ComparisonExpr {
+                                            left: MemberAccess(
+                                                Simple(
+                                                    SimpleMemberAccess {
+                                                        target: Variable(
+                                                            Variable {
+                                                                name: "this",
+                                                                source_info: SourceInfo {
+                                                                    source: "test.pure",
+                                                                    start_line: 4,
+                                                                    start_column: 28,
+                                                                    end_line: 4,
+                                                                    end_column: 32,
+                                                                },
+                                                            },
+                                                        ),
+                                                        member: "id",
+                                                        member_source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 34,
+                                                            end_line: 4,
+                                                            end_column: 35,
+                                                        },
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 33,
+                                                            end_line: 4,
+                                                            end_column: 33,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            op: GreaterThanOrEqual,
+                                            right: Literal(
+                                                Integer(
+                                                    IntegerLiteral {
+                                                        value: 0,
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 4,
+                                                            start_column: 40,
+                                                            end_line: 4,
+                                                            end_column: 40,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            left_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 28,
+                                                end_line: 4,
+                                                end_column: 35,
+                                            },
+                                            right_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 40,
+                                                end_line: 4,
+                                                end_column: 40,
+                                            },
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 37,
+                                                end_line: 4,
+                                                end_column: 38,
+                                            },
+                                        },
+                                    ),
+                                    left_span: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 4,
+                                        start_column: 5,
+                                        end_line: 4,
+                                        end_column: 23,
+                                    },
+                                    right_span: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 4,
+                                        start_column: 28,
+                                        end_line: 4,
+                                        end_column: 40,
+                                    },
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 4,
+                                        start_column: 25,
+                                        end_line: 4,
+                                        end_column: 26,
+                                    },
+                                },
+                            ),
+                        ],
+                        stereotypes: [],
+                        tagged_values: [],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 5,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

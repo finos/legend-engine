@@ -1,0 +1,185 @@
+---
+source: crates/parser/tests/test_function.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [
+                ImportStatement {
+                    path: Package {
+                        name: "model",
+                        parent: None,
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 8,
+                            end_line: 2,
+                            end_column: 12,
+                        },
+                    },
+                    source_info: SourceInfo {
+                        source: "test.pure",
+                        start_line: 2,
+                        start_column: 1,
+                        end_line: 2,
+                        end_column: 6,
+                    },
+                },
+            ],
+            elements: [
+                Function(
+                    FunctionDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 60,
+                                    end_line: 3,
+                                    end_column: 61,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "oldFunc",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 3,
+                                start_column: 64,
+                                end_line: 3,
+                                end_column: 70,
+                            },
+                        },
+                        type_and_multiplicity_parameters: None,
+                        parameters: [],
+                        return_type: Type(
+                            TypeReference {
+                                package: None,
+                                name: "String",
+                                type_arguments: [],
+                                multiplicity_arguments: [],
+                                type_variable_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 75,
+                                    end_line: 3,
+                                    end_column: 80,
+                                },
+                            },
+                        ),
+                        return_multiplicity: PureOne,
+                        constraints: [],
+                        body: [
+                            Literal(
+                                String(
+                                    StringLiteral {
+                                        value: "deprecated",
+                                        multi_line: false,
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 5,
+                                            start_column: 5,
+                                            end_line: 5,
+                                            end_column: 16,
+                                        },
+                                    },
+                                ),
+                            ),
+                        ],
+                        stereotypes: [
+                            StereotypePtr {
+                                profile: PackageableElementPtr {
+                                    package: None,
+                                    name: "doc",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 3,
+                                        start_column: 12,
+                                        end_line: 3,
+                                        end_column: 14,
+                                    },
+                                },
+                                value: "deprecated",
+                                value_source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 16,
+                                    end_line: 3,
+                                    end_column: 25,
+                                },
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 12,
+                                    end_line: 3,
+                                    end_column: 25,
+                                },
+                            },
+                        ],
+                        tagged_values: [
+                            TaggedValue {
+                                tag: TagPtr {
+                                    profile: PackageableElementPtr {
+                                        package: None,
+                                        name: "doc",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 3,
+                                            start_column: 30,
+                                            end_line: 3,
+                                            end_column: 32,
+                                        },
+                                    },
+                                    value: "description",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 3,
+                                        start_column: 34,
+                                        end_line: 3,
+                                        end_column: 44,
+                                    },
+                                },
+                                value: "Old func",
+                                multi_line: false,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 30,
+                                    end_line: 3,
+                                    end_column: 57,
+                                },
+                            },
+                        ],
+                        tests: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 3,
+                            start_column: 1,
+                            end_line: 6,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

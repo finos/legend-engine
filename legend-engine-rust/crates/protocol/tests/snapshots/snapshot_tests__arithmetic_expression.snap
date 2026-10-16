@@ -1,0 +1,22 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 437
+expression: json
+---
+{
+  "_type": "func",
+  "function": "plus",
+  "parameters": [
+    {
+      "_type": "integer",
+      "sourceInformation": "test.pure:1:1-1",
+      "value": 1
+    },
+    {
+      "_type": "integer",
+      "sourceInformation": "test.pure:1:5-5",
+      "value": 2
+    }
+  ],
+  "sourceInformation": "test.pure:1:1-5"
+}
