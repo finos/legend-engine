@@ -35,6 +35,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -57,6 +58,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -274,12 +276,188 @@ public class TestDataQualityApi
         assertNotNull(resultAsString);
     }
 
+    @Test
+    public void testDataQualityRecon_multiStatementBothSidesWithDistinctRelationLets() throws IOException
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "{|let olderThan26 = #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.AGE->isNotEmpty() && ($r.AGE->toOne() > 26))->select(~[ID, FULL_NAME]); $olderThan26->from(demo::PersonRuntime);}",
+                "{|let positiveIds = #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > 0)->select(~[ID, FULL_NAME]); $positiveIds->from(demo::PersonRuntime);}");
+
+        assertEquals(Sets.mutable.of("-1", "2", "4"), reconDefectKeys(postRecon(input), "ID"));
+    }
+
+    @Test
+    public void testDataQualityRecon_multiStatementLetReferencingParameter() throws IOException
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "{minId:Integer[1]|let threshold = $minId; #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > $threshold)->select(~[ID, FULL_NAME])->from(demo::PersonRuntime);}",
+                "|#>{demo::PersonDB.PERSON_TBL}#->select(~[ID, FULL_NAME])->from(demo::PersonRuntime)");
+        input.sourceLambdaParameterValues = Collections.singletonList(createParameterValue("minId", new CInteger(2L)));
+
+        assertEquals(Sets.mutable.of("-1", "1", "2"), reconDefectKeys(postRecon(input), "ID"));
+    }
+
+    @Test
+    public void testDataQualityRecon_multiStatementSameScalarLetNameOnBothSides() throws IOException
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "{|let minId = 0; #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > $minId)->select(~[ID, FULL_NAME])->from(demo::PersonRuntime);}",
+                "{|let minId = 2; #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > $minId)->select(~[ID, FULL_NAME])->from(demo::PersonRuntime);}");
+
+        assertEquals(Sets.mutable.of("1", "2"), reconDefectKeys(postRecon(input), "ID"));
+    }
+
+    @Test
+    public void testDataQualityRecon_multiStatementClassBasedProject() throws IOException
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("{|let minAge = 26; demo::Person.all()->filter(x | $x.age->isNotEmpty() && ($x.age->toOne() > $minAge))->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);}");
+        input.target = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)");
+        input.keys = new LinkedHashSet<>(Collections.singletonList("id"));
+        input.colsForHash = new LinkedHashSet<>(Collections.singletonList("fullName"));
+
+        assertEquals(Sets.mutable.of("2", "4"), reconDefectKeys(postRecon(input), "id"));
+    }
+
+    @Test
+    public void testDataQualityRecon_multiStatementLegacyTdsProject() throws IOException
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("{|let minAge = 26; demo::Person.all()->filter(x | $x.age->isNotEmpty() && ($x.age->toOne() > $minAge))->project([x|$x.id, x|$x.fullName], ['id', 'fullName'])->from(demo::PersonMap, demo::PersonRuntime);}");
+        input.target = lambda("|demo::Person.all()->project([x|$x.id, x|$x.fullName], ['id', 'fullName'])->from(demo::PersonMap, demo::PersonRuntime)");
+        input.keys = new LinkedHashSet<>(Collections.singletonList("id"));
+        input.colsForHash = new LinkedHashSet<>(Collections.singletonList("fullName"));
+
+        assertEquals(Sets.mutable.of("2", "4"), reconDefectKeys(postRecon(input), "id"));
+    }
+
+    @Test
+    public void testDataQualityReconPlan_multiStatementBothSidesGeneratesCommonTableExpressions() throws IOException
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "{|let olderThan26 = #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.AGE->isNotEmpty() && ($r.AGE->toOne() > 26))->select(~[ID, FULL_NAME]); $olderThan26->from(demo::PersonRuntime);}",
+                "{|let positiveIds = #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > 0)->select(~[ID, FULL_NAME]); $positiveIds->from(demo::PersonRuntime);}");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation/generatePlan")
+                .request()
+                .post(Entity.json(input));
+
+        String resultAsString = response.readEntity(String.class);
+        assertEquals(resultAsString, 200, response.getStatus());
+        List<String> sqlQueries = objectMapper.readTree(resultAsString).findValues("sqlQuery").stream().map(JsonNode::asText).collect(Collectors.toList());
+        assertTrue(resultAsString, sqlQueries.stream().anyMatch(sql -> definesCommonTableExpression(sql, "olderThan26") && definesCommonTableExpression(sql, "positiveIds")));
+    }
+
+    @Test
+    public void testDataQualityReconReportsQueryRuleViolationBeforeMissingFromCheck()
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "|#>{demo::PersonDB.PERSON_TBL}#->select(~[ID, FULL_NAME])->from(demo::PersonRuntime)",
+                "{|let people = #>{demo::PersonDB.PERSON_TBL}#->select(~[ID, FULL_NAME])->from(demo::PersonRuntime); $people;}");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(500, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertTrue(resultAsString, resultAsString.contains("The 'from' function is not supported inside let 'people' of the target query; apply 'from' to the final expression only"));
+    }
+
+    @Test
+    public void testDataQualityRecon_runSourceQueryIsNotSubjectToReconQueryRules() throws IOException
+    {
+        DataQualityReconInput input = relationApiReconInput(
+                "{minId:Integer[1]|let source_minId = 0; #>{demo::PersonDB.PERSON_TBL}#->filter(r | $r.ID > $source_minId)->select(~[ID, FULL_NAME])->from(demo::PersonRuntime);}",
+                "|#>{demo::PersonDB.PERSON_TBL}#->select(~[ID, FULL_NAME])->from(demo::PersonRuntime)");
+        input.runSourceQuery = true;
+        input.sourceLambdaParameterValues = Collections.singletonList(createParameterValue("minId", new CInteger(0L)));
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        String resultAsString = response.readEntity(String.class);
+        assertEquals(resultAsString, 200, response.getStatus());
+    }
+
+    private static boolean definesCommonTableExpression(String sql, String name)
+    {
+        return Pattern.compile("(?<!\\w)\"?" + Pattern.quote(name) + "\"?\\s+as\\s*\\(", Pattern.CASE_INSENSITIVE).matcher(sql).find();
+    }
+
+    private DataQualityReconInput relationApiReconInput(String source, String target)
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda(source);
+        input.target = lambda(target);
+        input.keys = new LinkedHashSet<>(Collections.singletonList("ID"));
+        input.colsForHash = new LinkedHashSet<>(Collections.singletonList("FULL_NAME"));
+        return input;
+    }
+
+    private String postRecon(DataQualityReconInput input)
+    {
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+        String resultAsString = response.readEntity(String.class);
+        assertEquals(resultAsString, 200, response.getStatus());
+        return resultAsString;
+    }
+
+    private Set<String> reconDefectKeys(String reconResult, String key) throws IOException
+    {
+        JsonNode result = objectMapper.readTree(reconResult);
+        JsonNode columns = result.path("builder").path("columns");
+        JsonNode rows = result.path("result").path("rows");
+        assertTrue(reconResult, rows.isArray());
+
+        int sourceKeyIndex = -1;
+        int targetKeyIndex = -1;
+        for (int i = 0; i < columns.size(); i++)
+        {
+            String columnName = columns.get(i).path("name").asText();
+            if ((key + "_SOURCE").equals(columnName))
+            {
+                sourceKeyIndex = i;
+            }
+            else if ((key + "_TARGET").equals(columnName))
+            {
+                targetKeyIndex = i;
+            }
+        }
+        assertTrue(key + "_SOURCE/_TARGET columns not found in " + columns, sourceKeyIndex >= 0 && targetKeyIndex >= 0);
+
+        Set<String> defectKeys = new LinkedHashSet<>();
+        for (JsonNode row : rows)
+        {
+            JsonNode sourceKey = row.path("values").get(sourceKeyIndex);
+            defectKeys.add(sourceKey.isNull() ? row.path("values").get(targetKeyIndex).asText() : sourceKey.asText());
+        }
+        return defectKeys;
+    }
+
     private LambdaFunction lambda(String code)
     {
         return PureGrammarParser.newInstance().parseLambda(code, "", false);
     }
 
     private ParameterValue createParameterValue(String name, CString value)
+    {
+        ParameterValue parameterValue = new ParameterValue();
+        parameterValue.name = name;
+        parameterValue.value = value;
+        return parameterValue;
+    }
+
+    private ParameterValue createParameterValue(String name, CInteger value)
     {
         ParameterValue parameterValue = new ParameterValue();
         parameterValue.name = name;

@@ -53,6 +53,9 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
 
   let allParams = $renamedSourceParams->concatenate($renamedTargetParams);
 
+  let queryViolations = validateReconQueries($reconInput.source, $reconInput.target);
+  assert($queryViolations->isEmpty(), | $queryViolations->at(0).message);
+
   let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler, $extensions));
   let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler, $extensions));
 
@@ -117,16 +120,22 @@ function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentCo
 function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], additionalPersistCols: String[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
   let hasFrom = $dataset->isEndingWithFromFunction();
-  let withoutFrom = if ($hasFrom,
-    | $dataset->popTerminalFunctionExpression().expressionSequence->evaluateAndDeactivate()->last()->toOne(), //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
-    | $dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne()
-  );
+  let finalExpression = $dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne();
+  //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
+  let withoutFrom = if ($hasFrom, | $finalExpression->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0), | $finalExpression);
 
   //if lambda returning Tablular Data Set (TDS) then add cast to Relation
-  let input = if ($dataset->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet),
+  let relationInput = if ($dataset->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet),
     | $dataset->buildCastToRelation($withoutFrom, $extensions),
     | $withoutFrom
   );
+
+  //the lets of a multi-statement query stay in their own zero-arg lambda invoked via eval, so the source and target scopes never mix
+  let input = if ($dataset->isMultiStatement(),
+    | wrapStatementsInEval($dataset.expressionSequence->evaluateAndDeactivate()->init(), $relationInput),
+    | $relationInput
+  );
+  let contextLambda = ^$dataset(expressionSequence = $input);
   validateColumns($input, $type, $keys, $colsForHash, $hashCol);
 
   let suffix = '_' + $type->toUpper();
@@ -153,7 +162,7 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   //create hash - additional-persist cols must be excluded so they don't influence the hash
   let withHash = if ($hashCol->isNotEmpty(),
     | $withNormalizedCols,
-    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true, $dataset, $compiler, $applicableAdditional);
+    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true, $contextLambda, $compiler, $applicableAdditional);
       if ($includeColumnValues && !$aggregatedHash,
         | $withRowHash,
         | //select only hash col + keys + additional-persist cols
@@ -166,16 +175,131 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   //create aggregated hash
   let hashColumn = if ($hashCol->isNotEmpty(), | $hashCol->toOne(), | 'DIGEST') + $suffix;
   let withAggregatedHash = if ($aggregatedHash,
-    | buildAggregatedHash($withHash, getRelType($withHash->compileViaGrammarWithContext($dataset, $compiler)), $hashColumn, $keys->map(col | $col + $suffix), $suffix, $type, $dataset, $compiler),
+    | buildAggregatedHash($withHash, getRelType($withHash->compileViaGrammarWithContext($contextLambda, $compiler)), $hashColumn, $keys->map(col | $col + $suffix), $suffix, $type, $contextLambda, $compiler),
     | $withHash
   );
 
-  let compiled = $withAggregatedHash->compileViaGrammarWithContext($dataset, $compiler);
+  let compiled = $withAggregatedHash->compileViaGrammarWithContext($contextLambda, $compiler);
   if ($hasFrom && !$removeFrom,
     | let from = $dataset.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
       sfe($from.func, $compiled.genericType, [], $compiled->concatenate($from.parametersValues->tail()));,
     | $compiled
   );
+}
+
+function meta::external::dataquality::datarecon::isMultiStatement(query: LambdaFunction<Any>[1]): Boolean[1]
+{
+  $query.expressionSequence->evaluateAndDeactivate()->size() > 1
+}
+
+function meta::external::dataquality::datarecon::validateReconQueries(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1]): DataQualityReconQueryViolation[*]
+{
+  $source->multiStatementQueryViolations('source')
+    ->concatenate($target->multiStatementQueryViolations('target'))
+    ->concatenate(sharedCteLetNameViolations($source, $target));
+}
+
+function meta::external::dataquality::datarecon::multiStatementQueryViolations(query: LambdaFunction<Any>[1], side: String[1]): DataQualityReconQueryViolation[*]
+{
+  let parameterNames = $query->functionType().parameters->evaluateAndDeactivate().name;
+  let letViolations = $query.expressionSequence->evaluateAndDeactivate()->init()->toIndexed()->map(indexedStatement |
+    let statement = $indexedStatement.second;
+    let message = if (!$statement->meta::pure::router::utils::isLetFunction(),
+      | 'Only let statements are supported before the final expression of a multi-statement ' + $side + ' query',
+      | let letName = $statement->meta::pure::router::utils::extractLetVariableName()->toOne();
+        //looks for any from() call in the let value, including inside nested lambdas but not inside called user functions
+        if ($statement->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(1)->findExpressionsForFunctionInValueSpecification(meta::external::dataquality::fromFunctions(), {f: FunctionDefinition<Any>[1] | false})->isNotEmpty(),
+          | 'The \'from\' function is not supported inside let \'' + $letName + '\' of the ' + $side + ' query; apply \'from\' to the final expression only',
+          //parameters are renamed to <side>_<name> by reference, so a let named like a parameter or like its renamed form would capture its references
+          | let clashingParameters = $parameterNames->filter(p | ($p == $letName) || (($side + '_' + $p) == $letName));
+            if ($clashingParameters->isEmpty(),
+              | [],
+              | 'Let variable \'' + $letName + '\' of the ' + $side + ' query clashes with parameter \'' + $clashingParameters->at(0) + '\'; use a distinct name'
+            );
+        );
+    );
+    $message->map(m | ^DataQualityReconQueryViolation(side = $side, statementIndex = $indexedStatement.first, message = $m));
+  );
+  $letViolations->concatenate($query->fromLetReferenceViolations($side));
+}
+
+//the final from() is re-attached outside the eval that holds the lets, so its arguments cannot see them
+function meta::external::dataquality::datarecon::fromLetReferenceViolations(query: LambdaFunction<Any>[1], side: String[1]): DataQualityReconQueryViolation[*]
+{
+  let statements = $query.expressionSequence->evaluateAndDeactivate();
+  let letNames = $statements->init()->filter(s | $s->meta::pure::router::utils::isLetFunction())->map(s | $s->meta::pure::router::utils::extractLetVariableName()->toOne());
+  let fromLetReferences = if ($letNames->isNotEmpty() && $query->isEndingWithFromFunction(),
+    | $statements->last()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->tail()
+        ->map(argument | $argument->findVariableExpressionsInValueSpecification(false).name)
+        ->filter(n | $letNames->contains($n))
+        ->distinct(),
+    | []
+  );
+  if ($fromLetReferences->isEmpty(),
+    | [],
+    | ^DataQualityReconQueryViolation(
+        side = $side,
+        statementIndex = $statements->size() - 1,
+        message = 'The \'from\' function of the ' + $side + ' query must not use let variable(s) [' + $fromLetReferences->joinStrings(', ') + ']; pass the mapping and runtime directly'
+      )
+  );
+}
+
+//lets that pre-evaluation does not substitute become common table expressions named after the variable, and both sides land in one SQL statement where CTEs are de-duplicated by name and identifiers may be case-folded
+function meta::external::dataquality::datarecon::sharedCteLetNameViolations(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1]): DataQualityReconQueryViolation[*]
+{
+  let sourceLetNames = $source->cteLets().second->map(n | $n->toLower());
+  let sharedTargetLets = $target->cteLets()->filter(indexedName | $sourceLetNames->contains($indexedName.second->toLower()));
+  if ($sharedTargetLets->isEmpty(),
+    | [],
+    | ^DataQualityReconQueryViolation(
+        side = 'target',
+        statementIndex = $sharedTargetLets->at(0).first,
+        message = 'Let variable(s) [' + $sharedTargetLets.second->joinStrings(', ') + '] are declared in both source and target queries (names compared case-insensitively) and would become common table expressions with clashing names; use distinct names on each side'
+      )
+  );
+}
+
+function meta::external::dataquality::datarecon::cteLets(query: LambdaFunction<Any>[1]): Pair<Integer, String>[*]
+{
+  $query.expressionSequence->evaluateAndDeactivate()->init()->toIndexed()
+    ->filter(indexedStatement | $indexedStatement.second->meta::pure::router::utils::isLetFunction()
+        && !$indexedStatement.second->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(1)->isSubstitutedByPreeval())
+    ->map(indexedStatement | pair($indexedStatement.first, $indexedStatement.second->meta::pure::router::utils::extractLetVariableName()->toOne()))
+}
+
+//a conservative approximation of the lets pre-evaluation substitutes: a bare variable reference, or a scalar built only from literals (a variable inside an expression is not in scope at plan time, so that let stays)
+function meta::external::dataquality::datarecon::isSubstitutedByPreeval(value: ValueSpecification[1]): Boolean[1]
+{
+  $value->instanceOf(VariableExpression) || $value->isLiteralScalar()
+}
+
+function meta::external::dataquality::datarecon::isLiteralScalar(value: ValueSpecification[1]): Boolean[1]
+{
+  $value->match([
+    i: InstanceValue[1] | $i.values->forAll(x | $x->instanceOf(String) || $x->instanceOf(Number) || $x->instanceOf(Boolean) || $x->instanceOf(Date) || $x->instanceOf(Enum)),
+    s: SimpleFunctionExpression[1] | $s.genericType.rawType->isScalarType() && $s.parametersValues->evaluateAndDeactivate()->forAll(p | $p->isLiteralScalar()),
+    other: ValueSpecification[1] | false
+  ])
+}
+
+function meta::external::dataquality::datarecon::isScalarType(type: Type[0..1]): Boolean[1]
+{
+  $type->isNotEmpty() && ($type->toOne()->instanceOf(PrimitiveType) || $type->toOne()->instanceOf(Enumeration))
+}
+
+function meta::external::dataquality::datarecon::wrapStatementsInEval(lets: ValueSpecification[*], body: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+  let relationGenericType = ^GenericType(rawType = Relation, typeArguments = ^GenericType(rawType = getRelType($body)));
+  let query = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = $relationGenericType, parameters = []), $lets->concatenate($body));
+  ^SimpleFunctionExpression
+  (
+    func = eval_Function_1__V_m_,
+    multiplicity = PureOne,
+    genericType = $relationGenericType,
+    importGroup = coreImport,
+    parametersValues = ^InstanceValue(genericType = $query->genericType(), multiplicity = PureOne, values = $query)
+  )->evaluateAndDeactivate();
 }
 
 function meta::external::dataquality::datarecon::validateColumns(input: ValueSpecification[1], type: String[1], keys: String[*], colsForHash: String[*], hashCol: String[0..1]): Boolean[*]
