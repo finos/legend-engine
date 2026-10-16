@@ -103,6 +103,20 @@ public class TestGrammarParser
             return pureModelContextData;
         }
 
+        protected static void testWithoutSourceInformation(String val)
+        {
+            String json;
+            try
+            {
+                json = objectMapper.writeValueAsString(PureGrammarParser.newInstance().parseModel(val, false));
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            Assert.assertFalse(json, StringUtils.containsIgnoreCase(json, "sourceInformation"));
+        }
+
         protected static void test(String val, String expectedErrorMsg)
         {
             try

@@ -174,4 +174,19 @@ public class TestPersistenceContextGrammarParser extends TestGrammarParser.TestG
                 "  }#;\n" +
                 "}\n", "PARSER error at [3:1-23:1]: Field 'sinkConnection' should be specified only once");
     }
+
+    @Test
+    public void testServiceParametersWithoutSourceInformation()
+    {
+        testWithoutSourceInformation("###Persistence\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  serviceParameters:\n" +
+                "  [\n" +
+                "    foo='hello',\n" +
+                "    bar=1\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

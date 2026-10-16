@@ -23,12 +23,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
 
 @JsonDeserialize(using = ModelStoreData.ModelStoreDeserializer.class)
 public class ModelStoreData extends EmbeddedData
@@ -46,6 +49,7 @@ public class ModelStoreData extends EmbeddedData
             JsonNode instances = node.get("instances");
             JsonNode modelDataJsonNode = node.get("modelData");
             ModelStoreData result = new ModelStoreData();
+            result.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
             result.modelData = Lists.mutable.empty();
             if (modelDataJsonNode != null)
             {

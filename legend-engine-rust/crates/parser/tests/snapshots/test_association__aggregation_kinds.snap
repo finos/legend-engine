@@ -1,0 +1,157 @@
+---
+source: crates/parser/tests/test_association.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Association(
+                    AssociationDef {
+                        package: Some(
+                            Package {
+                                name: "model",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 13,
+                                    end_line: 2,
+                                    end_column: 17,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "SharedAssoc",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 20,
+                                end_line: 2,
+                                end_column: 30,
+                            },
+                        },
+                        properties: [
+                            Property {
+                                name: "left",
+                                type_ref: Type(
+                                    TypeReference {
+                                        package: Some(
+                                            Package {
+                                                name: "model",
+                                                parent: None,
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 4,
+                                                    start_column: 20,
+                                                    end_line: 4,
+                                                    end_column: 24,
+                                                },
+                                            },
+                                        ),
+                                        name: "A",
+                                        type_arguments: [],
+                                        multiplicity_arguments: [],
+                                        type_variable_values: [],
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 20,
+                                            end_line: 4,
+                                            end_column: 27,
+                                        },
+                                    },
+                                ),
+                                multiplicity: ZeroOrMany,
+                                aggregation: Some(
+                                    Shared,
+                                ),
+                                default_value: None,
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 5,
+                                    end_line: 4,
+                                    end_column: 31,
+                                },
+                            },
+                            Property {
+                                name: "right",
+                                type_ref: Type(
+                                    TypeReference {
+                                        package: Some(
+                                            Package {
+                                                name: "model",
+                                                parent: None,
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 5,
+                                                    start_column: 19,
+                                                    end_line: 5,
+                                                    end_column: 23,
+                                                },
+                                            },
+                                        ),
+                                        name: "B",
+                                        type_arguments: [],
+                                        multiplicity_arguments: [],
+                                        type_variable_values: [],
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 5,
+                                            start_column: 19,
+                                            end_line: 5,
+                                            end_column: 26,
+                                        },
+                                    },
+                                ),
+                                multiplicity: ZeroOrMany,
+                                aggregation: Some(
+                                    None,
+                                ),
+                                default_value: None,
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 5,
+                                    end_line: 5,
+                                    end_column: 30,
+                                },
+                            },
+                        ],
+                        qualified_properties: [],
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 6,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}
