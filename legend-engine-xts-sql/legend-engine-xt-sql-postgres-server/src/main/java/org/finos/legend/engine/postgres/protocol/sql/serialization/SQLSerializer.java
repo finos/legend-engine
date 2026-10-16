@@ -1388,7 +1388,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitIntervalLiteral(SqlBaseParser.IntervalLiteralContext ctx)
     {
-        return "INTERVAL " + (ctx.sign == null ? "" : ctx.sign.getText()) +
+        return "INTERVAL " +
                 ctx.stringLiteral().accept(this) +
                 (ctx.from == null ? "" : " " + ctx.from.accept(this)) +
                 (ctx.to == null ? "" : " TO " + ctx.to.accept(this));

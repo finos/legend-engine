@@ -564,7 +564,7 @@ numericLiteral
     ;
 
 intervalLiteral
-    : INTERVAL sign=(PLUS | MINUS)? stringLiteral (from=intervalField)? (TO to=intervalField)?
+    : INTERVAL stringLiteral (from=intervalField)? (TO to=intervalField)?
     ;
 
 intervalField

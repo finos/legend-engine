@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParserBas
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
     private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds|microsecond|microseconds]+))+");
+
+    private static final List<String> INTERVAL_FIELD_ORDER = Arrays.asList("year", "month", "day", "hour", "minute", "second");
 
     //cmpOp also covers the regex and like operators, which SQL does not allow a quantifier on
     private static final EnumSet<ComparisonOperator> QUANTIFIABLE_OPERATORS = EnumSet.of(
@@ -131,6 +134,10 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         String value = stringLiteral.value.toLowerCase();
 
         Map<String, Long> matches = parseIntervalValue(value);
+        if (matches.isEmpty())
+        {
+            matches = parseUnitlessIntervalValue(value, context.from, context.to);
+        }
 
         intervalLiteral.years = matches.get("year");
         intervalLiteral.months = matches.get("month");
@@ -145,6 +152,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         return intervalLiteral;
     }
 
+
     private Map<String, Long> parseIntervalValue(String value)
     {
         Map<String, Long> matches = UnifiedMap.newMap();
@@ -155,6 +163,47 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
             Long l = Long.parseLong(matcher.group(2));
             String period = matcher.group(3).replaceAll("s$", "");
             matches.put(period, l);
+        }
+        return matches;
+    }
+
+    //a plain number carries no embedded unit (INTERVAL '365' DAY), so the unit comes from the trailing
+    //intervalField token; Postgres defaults an omitted field to seconds (INTERVAL '365')
+    private Map<String, Long> parseUnitlessIntervalValue(String value, SqlBaseParser.IntervalFieldContext from, SqlBaseParser.IntervalFieldContext to)
+    {
+        String trimmed = value.trim();
+
+        if (from != null && to != null)
+        {
+            return parseRangedIntervalValue(trimmed, from, to);
+        }
+
+        if (!trimmed.matches("[+-]?[0-9]+"))
+        {
+            return UnifiedMap.newMap();
+        }
+        String unit = from == null ? "second" : from.getText().toLowerCase();
+        return UnifiedMap.newWithKeysValues(unit, Long.parseLong(trimmed));
+    }
+
+    //the ranged form packs several fields into one string with field-specific separators
+    //(YEAR TO MONTH -> '1-2', DAY TO SECOND -> '1 02:03:04'); a leading sign negates every field
+    private Map<String, Long> parseRangedIntervalValue(String value, SqlBaseParser.IntervalFieldContext from, SqlBaseParser.IntervalFieldContext to)
+    {
+        int fromIndex = INTERVAL_FIELD_ORDER.indexOf(from.getText().toLowerCase());
+        int toIndex = INTERVAL_FIELD_ORDER.indexOf(to.getText().toLowerCase());
+        if (fromIndex < 0 || toIndex < fromIndex)
+        {
+            return UnifiedMap.newMap();
+        }
+
+        long sign = value.startsWith("-") ? -1L : 1L;
+        String[] parts = value.replaceFirst("^[+-]", "").split("[-: ]+");
+
+        Map<String, Long> matches = UnifiedMap.newMap();
+        for (int i = 0; i < parts.length && fromIndex + i <= toIndex; i++)
+        {
+            matches.put(INTERVAL_FIELD_ORDER.get(fromIndex + i), sign * Long.parseLong(parts[i]));
         }
         return matches;
     }
