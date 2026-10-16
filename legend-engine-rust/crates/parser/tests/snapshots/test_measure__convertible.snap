@@ -1,0 +1,227 @@
+---
+source: crates/parser/tests/test_measure.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Measure(
+                    MeasureDef {
+                        package: Some(
+                            Package {
+                                name: "pkg",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 17,
+                                    start_column: 9,
+                                    end_line: 17,
+                                    end_column: 11,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "NewMeasure",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 17,
+                                start_column: 14,
+                                end_line: 17,
+                                end_column: 23,
+                            },
+                        },
+                        canonical_unit: Some(
+                            UnitDef {
+                                name: "UnitOne",
+                                conversion_param: Some(
+                                    "x",
+                                ),
+                                conversion_body: Some(
+                                    Variable(
+                                        Variable {
+                                            name: "x",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 19,
+                                                start_column: 20,
+                                                end_line: 19,
+                                                end_column: 21,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 19,
+                                    start_column: 6,
+                                    end_line: 19,
+                                    end_column: 22,
+                                },
+                            },
+                        ),
+                        non_canonical_units: [
+                            UnitDef {
+                                name: "UnitTwo",
+                                conversion_param: Some(
+                                    "x",
+                                ),
+                                conversion_body: Some(
+                                    Arithmetic(
+                                        ArithmeticExpr {
+                                            left: Variable(
+                                                Variable {
+                                                    name: "x",
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 20,
+                                                        start_column: 19,
+                                                        end_line: 20,
+                                                        end_column: 20,
+                                                    },
+                                                },
+                                            ),
+                                            op: Times,
+                                            right: Literal(
+                                                Integer(
+                                                    IntegerLiteral {
+                                                        value: 1000,
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 20,
+                                                            start_column: 24,
+                                                            end_line: 20,
+                                                            end_column: 27,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            left_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 20,
+                                                start_column: 19,
+                                                end_line: 20,
+                                                end_column: 20,
+                                            },
+                                            right_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 20,
+                                                start_column: 24,
+                                                end_line: 20,
+                                                end_column: 27,
+                                            },
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 20,
+                                                start_column: 22,
+                                                end_line: 20,
+                                                end_column: 22,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 20,
+                                    start_column: 5,
+                                    end_line: 20,
+                                    end_column: 28,
+                                },
+                            },
+                            UnitDef {
+                                name: "UnitThree",
+                                conversion_param: Some(
+                                    "x",
+                                ),
+                                conversion_body: Some(
+                                    Arithmetic(
+                                        ArithmeticExpr {
+                                            left: Variable(
+                                                Variable {
+                                                    name: "x",
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 21,
+                                                        start_column: 21,
+                                                        end_line: 21,
+                                                        end_column: 22,
+                                                    },
+                                                },
+                                            ),
+                                            op: Times,
+                                            right: Literal(
+                                                Integer(
+                                                    IntegerLiteral {
+                                                        value: 1000000,
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 21,
+                                                            start_column: 26,
+                                                            end_line: 21,
+                                                            end_column: 32,
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            left_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 21,
+                                                start_column: 21,
+                                                end_line: 21,
+                                                end_column: 22,
+                                            },
+                                            right_span: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 21,
+                                                start_column: 26,
+                                                end_line: 21,
+                                                end_column: 32,
+                                            },
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 21,
+                                                start_column: 24,
+                                                end_line: 21,
+                                                end_column: 24,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 21,
+                                    start_column: 5,
+                                    end_line: 21,
+                                    end_column: 33,
+                                },
+                            },
+                        ],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 17,
+                            start_column: 1,
+                            end_line: 22,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 16,
+                start_column: 1,
+                end_line: 16,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 16,
+        start_column: 1,
+        end_line: 16,
+        end_column: 7,
+    },
+}

@@ -1,0 +1,65 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "association",
+      "name": "PersonAddress",
+      "package": "model",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Person",
+              "sourceInformation": "association.pure:19:13-25"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "person",
+          "sourceInformation": "association.pure:19:5-29"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Address",
+              "sourceInformation": "association.pure:20:16-29"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "addresses",
+          "sourceInformation": "association.pure:20:5-33"
+        }
+      ],
+      "sourceInformation": "association.pure:17:1-21:1"
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::PersonAddress"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "association.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "association.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

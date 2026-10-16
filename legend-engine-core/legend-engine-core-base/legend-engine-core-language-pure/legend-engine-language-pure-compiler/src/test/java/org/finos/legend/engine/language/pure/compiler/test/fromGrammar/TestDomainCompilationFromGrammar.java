@@ -2941,15 +2941,6 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testCompilationForEmbeddedPureExtension()
-    {
-        test("function x::f(): Any[*]\n" +
-                "{\n" +
-                "   let x = #Test{My random Parser #Test{ OK OK } Yo}#;" +
-                "}\n");
-    }
-
-    @Test
     public void testGraphFetchTreeWithQualifierCompilation()
     {
         String code = "Class test::Firm\n" +

@@ -1,0 +1,149 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model::domain",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "class_with_qualified_property.pure:19:16-21"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "sourceInformation": "class_with_qualified_property.pure:19:5-25"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "class_with_qualified_property.pure:20:15-20"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "sourceInformation": "class_with_qualified_property.pure:20:5-24"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "plus",
+              "parameters": [
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 3,
+                    "upperBound": 3
+                  },
+                  "sourceInformation": "class_with_qualified_property.pure:23:25-47",
+                  "values": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this",
+                          "sourceInformation": "class_with_qualified_property.pure:23:9-13"
+                        }
+                      ],
+                      "property": "firstName",
+                      "sourceInformation": "class_with_qualified_property.pure:23:15-23"
+                    },
+                    {
+                      "_type": "var",
+                      "name": "sep",
+                      "sourceInformation": "class_with_qualified_property.pure:23:27-30"
+                    },
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this",
+                          "sourceInformation": "class_with_qualified_property.pure:23:34-38"
+                        }
+                      ],
+                      "property": "lastName",
+                      "sourceInformation": "class_with_qualified_property.pure:23:40-47"
+                    }
+                  ]
+                }
+              ],
+              "sourceInformation": "class_with_qualified_property.pure:23:25-47"
+            }
+          ],
+          "name": "fullName",
+          "parameters": [
+            {
+              "_type": "var",
+              "genericType": {
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String",
+                  "sourceInformation": "class_with_qualified_property.pure:21:19-24"
+                }
+              },
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "sep",
+              "sourceInformation": "class_with_qualified_property.pure:21:14-27"
+            }
+          ],
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "class_with_qualified_property.pure:24:8-13"
+            }
+          },
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "sourceInformation": "class_with_qualified_property.pure:21:5-24:17"
+        }
+      ],
+      "sourceInformation": "class_with_qualified_property.pure:17:1-25:1"
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::domain::Person"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "class_with_qualified_property.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "class_with_qualified_property.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

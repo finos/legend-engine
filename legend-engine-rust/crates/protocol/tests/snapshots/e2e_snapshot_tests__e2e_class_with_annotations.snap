@@ -1,0 +1,93 @@
+---
+source: crates/protocol/tests/e2e_snapshot_tests.rs
+expression: json
+---
+{
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model::domain",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": "class_with_annotations.pure:19:11-16"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "sourceInformation": "class_with_annotations.pure:19:5-20"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": "class_with_annotations.pure:20:10-16"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "age",
+          "sourceInformation": "class_with_annotations.pure:20:5-23"
+        }
+      ],
+      "sourceInformation": "class_with_annotations.pure:17:1-21:1",
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "profileSourceInformation": "class_with_annotations.pure:17:9-16",
+          "sourceInformation": "class_with_annotations.pure:17:9-33",
+          "value": "businesstemporal"
+        }
+      ],
+      "superTypes": [
+        {
+          "path": "model::domain::LegalEntity",
+          "sourceInformation": "class_with_annotations.pure:17:105-130",
+          "type": "CLASS"
+        }
+      ],
+      "taggedValues": [
+        {
+          "sourceInformation": "class_with_annotations.pure:17:38-72",
+          "tag": {
+            "profile": "doc",
+            "profileSourceInformation": "class_with_annotations.pure:17:38-40",
+            "sourceInformation": "class_with_annotations.pure:17:42-52",
+            "value": "description"
+          },
+          "value": "A person entity"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "model::domain::Person"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": "class_with_annotations.pure:16:1-7"
+        }
+      ],
+      "sourceInformation": "class_with_annotations.pure:16:1-7"
+    }
+  ],
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

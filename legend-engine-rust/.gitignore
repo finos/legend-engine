@@ -1,0 +1,4 @@
+# Local cargo overrides (e.g. lld/sccache opt-in via `.cargo/config.toml.example`).
+# Contributors copy `.cargo/config.toml.example` here to enable lld without
+# forcing every contributor to install Homebrew LLVM.
+.cargo/config.local.toml

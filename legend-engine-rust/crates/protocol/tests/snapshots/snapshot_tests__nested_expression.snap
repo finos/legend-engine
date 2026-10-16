@@ -1,0 +1,41 @@
+---
+source: crates/protocol/tests/snapshot_tests.rs
+assertion_line: 530
+expression: json
+---
+{
+  "_type": "func",
+  "function": "plus",
+  "parameters": [
+    {
+      "_type": "func",
+      "function": "plus",
+      "parameters": [
+        {
+          "_type": "property",
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "this"
+            }
+          ],
+          "property": "firstName"
+        },
+        {
+          "_type": "var",
+          "name": "sep"
+        }
+      ]
+    },
+    {
+      "_type": "property",
+      "parameters": [
+        {
+          "_type": "var",
+          "name": "this"
+        }
+      ],
+      "property": "lastName"
+    }
+  ]
+}
