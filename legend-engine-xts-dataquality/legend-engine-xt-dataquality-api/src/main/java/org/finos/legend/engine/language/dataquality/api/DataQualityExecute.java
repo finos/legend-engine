@@ -449,16 +449,12 @@ public class DataQualityExecute
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction = dqComparisonElement == null ? HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()) : dqComparisonElement._source();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction = dqComparisonElement == null ? HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()) : dqComparisonElement._target();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> dqLambdaFunction;
-
-        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(sourceLambdaFunction, pureModel.getExecutionSupport()))
-        {
-            throw new EngineException("The source query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
-        }
-        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(targetLambdaFunction, pureModel.getExecutionSupport()))
-        {
-            throw new EngineException("The target query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
-        }
         MutableMap<String, Object> lambdaParameterMap = Maps.mutable.empty();
+
+        if (input.runSourceQuery || input.runTargetQuery)
+        {
+            validateQueriesEndWithFrom(pureModel, sourceLambdaFunction, targetLambdaFunction);
+        }
 
         if (input.runSourceQuery)
         {
@@ -484,8 +480,9 @@ public class DataQualityExecute
         {
             // 1. create DQ recon input
             Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = createReconInput(pureModel, dqComparisonElement, input, sourceLambdaFunction, targetLambdaFunction);
-            // 2. call DQ PURE func to generate recon lambda
+            // 2. call DQ PURE func to generate recon lambda - before the from checks so that its source/target query rule violations are reported first
             dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+            validateQueriesEndWithFrom(pureModel, sourceLambdaFunction, targetLambdaFunction);
             // 3. build parameter map with source_/target_ prefixes for the recon lambda
             if (input.sourceLambdaParameterValues != null)
             {
@@ -501,6 +498,18 @@ public class DataQualityExecute
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
         return Tuples.pair(plan, lambdaParameterMap);
+    }
+
+    private static void validateQueriesEndWithFrom(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction)
+    {
+        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(sourceLambdaFunction, pureModel.getExecutionSupport()))
+        {
+            throw new EngineException("The source query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(targetLambdaFunction, pureModel.getExecutionSupport()))
+        {
+            throw new EngineException("The target query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
+        }
     }
 
     private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
