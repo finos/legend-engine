@@ -120,6 +120,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 |---------|---------------|
 | [Getting Started Guide](guides/getting-started.md) | Prerequisites, clone → build → run, Pure IDE, REPL, config files, troubleshooting |
 | [Build & CI Guide](guides/build-and-ci.md) | Full build lifecycle, Maven plugins, profiles, GitHub Actions pipeline, Docker, releases |
+| [Build Isolation](guides/build-isolation.md) | Keeping a local build off the `~/.m2` coordinates another checkout uses: `-Drevision` stamping, chained local repositories, collision symptoms |
 | [Contributor Workflow](guides/contributor-workflow.md) | How to add a grammar section, store extension, or function activator |
 | [Exploration & Discovery](guides/exploration.md) | Systematic approach for new engineers exploring the codebase |
 | [Pure IDE Delta-Compiler Debugging](guides/pure-ide-delta-compiler-debugging.md) | Driving the Pure IDE over HTTP to delta-compile and run `.pure` code in seconds instead of a full Maven rebuild |

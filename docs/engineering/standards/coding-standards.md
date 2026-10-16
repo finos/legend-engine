@@ -28,8 +28,11 @@ Key rules enforced:
 **Running Checkstyle locally:**
 
 ```bash
-mvn checkstyle:check
+mvn checkstyle:check@verify -pl <module-path>
 ```
+
+The project rules are bound to the plugin's `verify` execution, so a bare `mvn checkstyle:check`
+runs Checkstyle's built-in defaults and reports violations CI does not.
 
 **Suppressing a rule for a specific line** (use sparingly):
 
@@ -119,9 +122,9 @@ The project uses a **trunk-based development** model on GitHub:
 Before opening a PR, verify:
 
 - [ ] `mvn install -DskipTests` passes locally.
-- [ ] `mvn checkstyle:check` passes with zero violations.
+- [ ] `mvn checkstyle:check@verify` passes with zero violations.
 - [ ] New public APIs have Javadoc comments.
-- [ ] New Pure functions have a comment block describing their purpose.
+- [ ] Comments follow [§8 — Comments](#8-comments): they record a surprise, not a summary of the code.
 - [ ] Tests are added for new functionality (unit test at minimum).
 - [ ] If adding a new module: `pom.xml` parent reference is correct; module is listed in root `pom.xml`; a `README.md` stub is created.
 - [ ] If changing a grammar section: both parser and composer are updated; round-trip test is added.
@@ -243,3 +246,24 @@ Execution endpoints are not (they hit live databases).
 
 Execution endpoints support `Accept: application/json` (default), `text/csv`,
 `application/x-arrow-stream` (Apache Arrow IPC). Specify via request header.
+
+---
+
+## 8. Comments
+
+Naming is the documentation. A function name and its body should read better than any comment
+you could put above them; if they don't, rename or restructure rather than explain. Do not
+narrate what the code does, and do not rationalise why you wrote it — both restate the code and
+both go stale the moment it changes.
+
+A comment earns its place only when the code is *genuinely ambiguous*, or when it looks like it
+contradicts the status quo and a reader would otherwise "fix" it: a spec or dialect quirk being
+worked around, a deliberate deviation from the surrounding pattern, an ordering constraint that
+isn't visible locally, or a link to an issue. Write the surprise, not the summary.
+
+**Tests are not an exception, they are the clearest case.** A test's name and its assertions
+already state the intended behaviour; a comment above them almost always repeats it. Name the
+test so the comment becomes unnecessary. The only test comment worth keeping is one explaining
+why an assertion that *looks* wrong is correct.
+
+Match the surrounding file's comment density; most functions here have none.
