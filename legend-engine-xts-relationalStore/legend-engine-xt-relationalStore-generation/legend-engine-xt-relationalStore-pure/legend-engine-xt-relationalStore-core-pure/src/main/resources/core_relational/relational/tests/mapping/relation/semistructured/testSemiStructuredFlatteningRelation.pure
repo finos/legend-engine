@@ -308,7 +308,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[

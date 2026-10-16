@@ -280,7 +280,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
 // =============================================================================
 // Tests — Array direct operations (isEmpty, size, isNotEmpty, at, fold)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -300,7 +300,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -320,7 +320,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -360,7 +360,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -383,7 +383,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
 // =============================================================================
 // Tests — Array filter + scalar operations
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -424,7 +424,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -444,7 +444,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -464,7 +464,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -505,7 +505,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -525,7 +525,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
