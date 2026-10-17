@@ -277,7 +277,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::
      $result.values->at(0)->sort([~firm->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterOnEmployeesOfFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterOnEmployeesOfFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Taylor') && $f.employees->exists(e|$e.lastName == 'Scott'))->project(~[legalName:f|$f.legalName]),
@@ -293,7 +293,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~legalName->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_MultiHopColleaguesThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_MultiHopColleaguesThroughFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.employees->exists(e|$e.lastName == 'Wright'))->project(~[name:p|$p.lastName]),
@@ -384,7 +384,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::
      $result.values->at(0)->sort([~coworker->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
 {
    let result = execute(
       |Colleague.all()->filter(c|$c.coworkers->exists(w|$w.name == 'Roberts'))->project(~[name:c|$c.name]),
@@ -567,7 +567,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::
      $result.values->at(0)->sort([~legalName->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_MultiHopColleaguesThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_MultiHopColleaguesThroughFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.employees->exists(e|$e.lastName == 'Wright'))->project(~[name:p|$p.lastName]),
@@ -586,7 +586,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_FilterOnCoworkers():Boolean[1]
 {
    let result = execute(
       |Colleague.all()->filter(c|$c.coworkers->exists(w|$w.name == 'Roberts'))->project(~[name:c|$c.name]),
