@@ -1267,106 +1267,10 @@
     "test" : "meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
@@ -1375,94 +1279,13 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_CurrentRow_CurrentRow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_CurrentRow_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_CurrentRow_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_NFollowing_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_NFollowing_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_NPreceding_CurrentRow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_NPreceding_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_NPreceding_NPreceding_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_NPreceding_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_CurrentRow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_NPreceding_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_"
   }, {
     "test" : "meta::pure::functions::relation::tests::rename::testSimpleRenameShared_Function_1__Boolean_1_",
@@ -1639,31 +1462,13 @@
     "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::intersectAll_Relation_1__Relation_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::union::testSimpleUnion_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::union::testUnionRemovesDuplicates_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfDistinctRelation_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::distinct_Relation_1__Relation_1_\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedLimitedRelations_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedRelations_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
-  }, {
     "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAllShared_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testSimpleUnionAll_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
     "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_\""
   }, {
     "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
