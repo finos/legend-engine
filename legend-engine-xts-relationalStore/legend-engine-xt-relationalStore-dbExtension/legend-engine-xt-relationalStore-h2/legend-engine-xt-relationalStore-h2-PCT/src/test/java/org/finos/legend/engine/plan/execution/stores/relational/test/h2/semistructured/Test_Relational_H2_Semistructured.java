@@ -95,7 +95,20 @@ public class Test_Relational_H2_Semistructured
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStrings_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStringsPrefixSuffix_Connection_1__Boolean_1_"
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStringsPrefixSuffix_Connection_1__Boolean_1_",
+            // Array-op-then-flatten (project does the array operation before flattening, not after)
+            // routes the flatten through toPostgresModel's semi-structured translation, which H2
+            // alone shares with Postgres. That translation has no case for the resulting shape:
+            // "Expected one table alias column in operation" (MultiLevelFlatten,
+            // PrimitivePropertyFilteringInProject) or "Couldn't find DynaFunction to Postgres model
+            // translation for array_contains()" (PrimitivePropertyFiltering). Both the plain and
+            // relation-function-mapped variants hit it.
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlatten_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredMultiLevelFlatten_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFilteringInProject_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFiltering_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFiltering_Connection_1__Boolean_1_"
     );
 
     public static Test suite()

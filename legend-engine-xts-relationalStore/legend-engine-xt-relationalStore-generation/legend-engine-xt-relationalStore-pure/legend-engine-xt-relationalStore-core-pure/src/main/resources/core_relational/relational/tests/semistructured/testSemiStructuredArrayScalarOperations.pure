@@ -139,6 +139,12 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
     'flatten::semiStructuredArrayFilterOnly__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Filtered Address Name\n' +
+    'Anthony,Firm X,null\n' +
+    'David,Firm B,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Oliver,Firm B,null\n' +
     'Peter,Firm X,A1\n' +
     'Peter,Firm X,A11\n'
   );
@@ -198,6 +204,12 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
     'flatten::semiStructuredArrayFilterMap__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Matching Address Names\n' +
+    'Anthony,Firm X,null\n' +
+    'David,Firm B,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Oliver,Firm B,null\n' +
     'Peter,Firm X,A1\n' +
     'Peter,Firm X,A11\n'
   );
@@ -324,8 +336,20 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
     'recordId,recordVersion,revision,section,batchId,action,tagCode,tagCategory,_tagCategoryRanking,participantId,_participantRoleRanking,itemId,itemVersion,_revisionRecencyIndex,_versionRecencyIndex,_tagCategoryRankingIndex,_participantRoleRankingIndex\n' +
     'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L1,1,1,1,1,1\n' +
     'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L2,2,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,V1,1,L1,1,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,V1,1,L2,2,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,S1,Secondary,1,A1,1,L1,1,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,S1,Secondary,1,A1,1,L2,2,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,S1,Secondary,1,V1,1,L1,1,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,S1,Secondary,1,V1,1,L2,2,1,1,1,1\n' +
     'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L3,1,1,1,1,1\n' +
     'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L4,2,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,Z2,2,L3,1,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,Z2,2,L4,2,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,X2,Other,2,V2,2,L3,1,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,X2,Other,2,V2,2,L4,2,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,X2,Other,2,Z2,2,L3,1,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,X2,Other,2,Z2,2,L4,2,1,1,1,1\n' +
     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L5,1,1,1,1,1\n' +
     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L6,2,1,1,1,1\n' +
     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,Z3,999,L5,1,1,1,1,1\n' +

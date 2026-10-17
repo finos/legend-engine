@@ -169,6 +169,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
                       )
                  )
             ),
+         s: SQLNull[1] | ^meta::relational::metamodel::datatype::Other(),
          a: Any[1]     | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
       ]),
       j : meta::relational::metamodel::operation::JoinStrings[1] | ^meta::relational::metamodel::datatype::Varchar(size = $j.strings->concatenate($j.prefix)->concatenate($j.separator)->concatenate($j.suffix)->map(x | $x->inferRelationalType($failOnMatchFailure)->toOne()->getSize())->sum()),
@@ -1146,7 +1147,17 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
             )
          ])
-      ),      
+      ),
+
+      pair(
+         'mapConcatenate',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->map(p | $p->inferRelationalType(false))->filter(t | $t->instanceOf(meta::relational::metamodel::datatype::Object))->first()}
+            )
+         ])
+      ),
 
       pair(
          'max',
@@ -1839,6 +1850,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),     
+
+      pair(
+         'variantTo',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | $params->at(1)->instanceOf(DataTypeInfo)},
+               {params: RelationalOperationElement[*] | $params->at(1)->cast(@DataTypeInfo).dataType}
+            )
+         ])
+      ),
 
       pair(
          'toUpper',

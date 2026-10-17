@@ -23,25 +23,25 @@ function <<access.private>> meta::relational::tests::query::arrayOperations::toM
   toSQLString($f, simpleRelationalMapping, DatabaseType.H2, relationalExtensions());
 }
 
-function <<test.ToFix>> meta::relational::tests::query::arrayOperations::testSortOnRelationalToManyIsRejected():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::arrayOperations::testSortOnRelationalToManyIsRejected():Boolean[1]
 {
   assertError(|meta::relational::tests::query::arrayOperations::toManySql(|Firm.all()->project([f|$f.employees.firstName->sort()], ['n'])),
               '\'sort\' on a to-many relational property is not supported - collapse the collection first (e.g. ->first(), ->toOne())');
 }
 
-function <<test.ToFix>> meta::relational::tests::query::arrayOperations::testReverseOnRelationalToManyIsRejected():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::arrayOperations::testReverseOnRelationalToManyIsRejected():Boolean[1]
 {
   assertError(|meta::relational::tests::query::arrayOperations::toManySql(|Firm.all()->project([f|$f.employees.firstName->reverse()], ['n'])),
               '\'reverse\' on a to-many relational property is not supported - collapse the collection first (e.g. ->first(), ->toOne())');
 }
 
-function <<test.ToFix>> meta::relational::tests::query::arrayOperations::testAddOnRelationalToManyIsRejected():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::arrayOperations::testAddOnRelationalToManyIsRejected():Boolean[1]
 {
   assertError(|meta::relational::tests::query::arrayOperations::toManySql(|Firm.all()->project([f|$f.employees.firstName->add('x')], ['n'])),
               '\'add\' on a to-many relational property is not supported - collapse the collection first (e.g. ->first(), ->toOne())');
 }
 
-function <<test.ToFix>> meta::relational::tests::query::arrayOperations::testLastOnRelationalToManyIsRejected():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::arrayOperations::testLastOnRelationalToManyIsRejected():Boolean[1]
 {
   assertError(|meta::relational::tests::query::arrayOperations::toManySql(|Firm.all()->project([f|$f.employees.firstName->last()], ['n'])),
               '\'last\' on a to-many relational property is not supported - collapse the collection first (e.g. ->first(), ->toOne())');

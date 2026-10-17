@@ -289,7 +289,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -327,7 +327,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -346,7 +346,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -437,7 +437,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayTakeInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayTakeInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -455,7 +455,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayReverseThenTakeInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayReverseThenTakeInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -473,7 +473,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayConcatenateThenDistinctInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayConcatenateThenDistinctInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -498,7 +498,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayFilterThenTakeInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayFilterThenTakeInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -516,7 +516,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArraySortThenDropThenSizeInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArraySortThenDropThenSizeInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -534,7 +534,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayEmptyResultKeepsOwnerInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayEmptyResultKeepsOwnerInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -552,7 +552,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArraySameTransformTwiceInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArraySameTransformTwiceInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -572,7 +572,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
 }
 
 // The plain and the transformed column flatten different arrays, so each owner gets their cross product.
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayPlainAndTransformedInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayPlainAndTransformedInProject(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()->project(~[
@@ -609,7 +609,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayLastInFilter(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::flattening::testSemiStructuredArrayLastInFilter(conn: Connection[1]): Boolean[1]
 {
   flatteningExecute($conn,
     |Person.all()

@@ -342,7 +342,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
 // ====== Source: testSemiStructuredMatching.pure (->match scenarios) ======
 // =============================================================================
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchComplexProperty(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchComplexProperty(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()->project(~[
@@ -366,7 +366,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()->project(~[
@@ -391,7 +391,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()->project(~[
@@ -418,7 +418,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()
@@ -444,7 +444,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]): Boolean[1]
 {
   let maxAmount = 200;
   typeNarrowingExecute($conn,
@@ -468,7 +468,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchMultilevel(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchMultilevel(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()->project(~[
@@ -495,7 +495,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]): Boolean[1]
 {
   typeNarrowingExecute($conn,
     |Order.all()->project(~[

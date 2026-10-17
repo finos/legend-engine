@@ -83,7 +83,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 3 — Array size / isEmpty / isNotEmpty (§2.15)
 // Mapping ops: toMany→size(), isNotEmpty(), isEmpty(), get→get→size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testArraySizeIsEmptyIsNotEmpty(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArraySizeIsEmptyIsNotEmpty(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -110,7 +110,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 4 — Array at() and first() (§2.15)
 // Mapping ops: toMany→first(), toMany→at(1), get→at(0)→get→to
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayAtAndFirst(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayAtAndFirst(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -135,7 +135,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Mapping ops: toMany→distinct()→size(), toMany→contains(), toMany→indexOf(),
 //              toMany→concatenate(toMany)→size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayDistinctContainsIndexOf(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayDistinctContainsIndexOf(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -161,7 +161,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 6 — Numeric array aggregations (§2.17)
 // Mapping ops: toMany(@Float)→plus() (sum), toMany(@Float)→max(), min()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testNumericAggregations(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testNumericAggregations(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -187,7 +187,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Mapping ops: toMany→fold({r,acc|...},''), toMany→take(2)→size(),
 //              toMany→drop(1)→size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFoldTakeDrop(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFoldTakeDrop(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -211,7 +211,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 8 — Computed leaves: arithmetic + string assembly (§2.3)
 // Mapping ops: to(@String) + '(' + FIRSTNAME + ')', to(@Float) * to(@Float)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedArithmetic(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedArithmetic(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -234,7 +234,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 9 — Computed leaves: conditional + boolean logic (§2.3)
 // Mapping ops: if(isNotEmpty, |to(@String), |'N/A'), to(@Boolean) && (to(@Integer) > 2)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedConditional(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedConditional(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -257,7 +257,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 10 — exists() on variant array (§2.5)
 // Mapping ops: toMany(@String)→exists(n| $n == 'O3')
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testExistsOnArray(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testExistsOnArray(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -280,7 +280,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 11 — filter() on variant array at mapping level (§2.5)
 // Mapping ops: toMany(@String)→filter(n| $n→startsWith('O1'))→size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnArrayAtMapping(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnArrayAtMapping(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -414,7 +414,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 17 — Filter on mapping-level contains() result
 // Query: filter(hasUkOffice == true) + project multiple cols
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnContains(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnContains(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -477,7 +477,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 20 — Filter then multi-column project
 // Query: filter(hasRevHistory==true) + project 5 mapped properties
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterThenProjectMany(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterThenProjectMany(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -503,7 +503,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 35 — Cross-feature mix: filter on mapping-level ops + project aggregates
 // Query: filter(filteredNameCt > 0 && totalRevenue > 100) + project 4 cols
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix1(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix1(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -526,7 +526,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 36 — Cross-feature mix: filter on mapping filter+size result
 // Query: filter(filteredNameCt > 0) + project 4 mixed cols
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix2(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix2(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -549,7 +549,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 38 — GroupBy with multiple aggregation functions
 // Query: groupBy([entityType], [sum totalRevenue, max revenue, count])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByMultipleAggs(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByMultipleAggs(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->groupBy(
@@ -719,7 +719,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 46 — Filter on computed property + project display props
 // Query: filter(fteEquiv > 100.0) + project(firstName, fteEquiv, displayName)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnComputed(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnComputed(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -769,7 +769,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Mapping ops: fromJson()→get('header')→get('source')→to(@String),
 //              to(@Float) * to(@Float), to(@String) + ':' + to(@String)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonNestedComputed(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonNestedComputed(conn: Connection[1]):Boolean[1]
 {
   orderExecute($conn,
     |Order.all()->project(~[
@@ -790,7 +790,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 23 — fromJson filter on extracted integer (§2.4)
 // Query: filter(qty > 50) + project
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonFilter(conn: Connection[1]):Boolean[1]
 {
   orderExecute($conn,
     |Order.all()
@@ -811,7 +811,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 24 — fromJson groupBy (§2.4)
 // Query: groupBy([side], [sum qty, sum totalValue])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonGroupBy(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonGroupBy(conn: Connection[1]):Boolean[1]
 {
   orderExecute($conn,
     |Order.all()->groupBy(
@@ -829,7 +829,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 25 — fromJson compound filter (§2.4)
 // Query: filter(isActive && qty > 50) + project 4 cols
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonCompoundFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonCompoundFilter(conn: Connection[1]):Boolean[1]
 {
   orderExecute($conn,
     |Order.all()
@@ -856,7 +856,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 26 — Conditional discriminator shape (§2.12)
 // Mapping ops: if(kind=='TRADE', counterparty, []), if(kind=='EXEC', venue, [])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCondDiscriminator(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCondDiscriminator(conn: Connection[1]):Boolean[1]
 {
   eventExecute($conn,
     |PartyEvent.all()->project(~[
@@ -878,7 +878,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 27 — Filter on discriminator (§2.18)
 // Query: filter(kind == 'TRADE') + project
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testDiscriminatorFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testDiscriminatorFilter(conn: Connection[1]):Boolean[1]
 {
   eventExecute($conn,
     |PartyEvent.all()
@@ -924,7 +924,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Mapping ops: toMany(@Variant)→filter→size(), →filter→first→get→to,
 //              →filter→fold({e,acc|acc + value}, 0.0)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockArrayAggs(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockArrayAggs(conn: Connection[1]):Boolean[1]
 {
   blockExecute($conn,
     |BlockSummary.all()->project(~[
@@ -946,7 +946,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 30 — Filter on mapping-aggregated property (§2.13)
 // Query: filter(tradeCount > 1) + project
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockFilterAggregated(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockFilterAggregated(conn: Connection[1]):Boolean[1]
 {
   blockExecute($conn,
     |BlockSummary.all()
@@ -965,7 +965,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 31 — Filter on mapping-level filter→isNotEmpty result
 // Query: filter(hasTradeEntities == true) + project
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockHasTradeFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockHasTradeFilter(conn: Connection[1]):Boolean[1]
 {
   blockExecute($conn,
     |BlockSummary.all()
@@ -991,7 +991,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 32 — Polymorphic deserialization (§2.6)
 // Mapping ops: to(@Pet, '_type', [pair('Dog', @Dog), pair('Cat', @Cat)])→toOne()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testPolyDeserialize(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testPolyDeserialize(conn: Connection[1]):Boolean[1]
 {
   petExecute($conn,
     |PersonWithPet.all()->project(~[
@@ -1028,7 +1028,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 34 — match dispatch on polymorphic variant (§2.16)
 // Mapping ops: $row.PAYLOAD→match([d:Dog|'dog', c:Cat|'cat', a:Any|'unknown'])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMatchDispatch(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testMatchDispatch(conn: Connection[1]):Boolean[1]
 {
   petExecute($conn,
     |PersonWithPet.all()->project(~[
@@ -1073,7 +1073,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 48 — Block: groupBy on mapped status property
 // Query: groupBy([status], [sum totalValue, count])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockGroupByStatus(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockGroupByStatus(conn: Connection[1]):Boolean[1]
 {
   blockExecute($conn,
     |BlockSummary.all()->groupBy(
@@ -1097,7 +1097,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 49 — Collection last() (§A)
 // Mapping ops: toMany(@String)->last()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionLast(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionLast(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -1119,7 +1119,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 50 — Collection init() and tail() (§A)
 // Mapping ops: toMany(@String)->init()->size(), ->tail()->size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionInitTail(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionInitTail(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -1142,7 +1142,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 51 — Collection sort() and reverse() (§A)
 // Mapping ops: toMany(@String)->sort()->first(), ->reverse()->first()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionSortReverse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionSortReverse(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -1165,7 +1165,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 52 — Collection add() (§A)
 // Mapping ops: toMany(@String)->add('NEW')->size() vs ->size()
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionAdd(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionAdd(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->project(~[
@@ -1207,7 +1207,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 54 — Filter on last() result (§A)
 // Query: filter(lastOtherName == 'O2') + project(firstName, firmName)
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnLastElement(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnLastElement(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -1228,7 +1228,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 55 — GroupBy with collection ops (§A)
 // Query: groupBy([firmName], [agg withExtraName sum, count])
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByWithCollectionOps(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByWithCollectionOps(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()->groupBy(
@@ -1310,7 +1310,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 59 — Map put() + get() via to(@Map<String,String>) (§B)
 // Mapping ops: ->to(@Map<String,String>)->put('extra','yes')->get('extra')
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapPut(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapPut(conn: Connection[1]):Boolean[1]
 {
   mapExecute($conn,
     |MapPerson.all()->project(~[
@@ -1324,7 +1324,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testIntegerArrayOperations(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testIntegerArrayOperations(conn: Connection[1]):Boolean[1]
 {
   mapExecute($conn,
     |MapPerson.all()->project(~[
@@ -1369,7 +1369,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 61 — toMany primitive project (§D)
 // Mapping ops: toMany(@String) — direct projection flattens array to rows
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveProject(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveProject(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -1385,7 +1385,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 }
 
 // The three columns flatten three different arrays, so Fabrice gets their cross product: 1 x 2 x 2 rows.
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilterInProject(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilterInProject(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -1408,7 +1408,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 62 — toMany primitive filter (§D)
 // Query: filter on flattened array value
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilter(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -1443,7 +1443,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 64 — toMany countries with distinct values (§D)
 // Query: project countries (flattened) for a specific person
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyCountriesProject(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyCountriesProject(conn: Connection[1]):Boolean[1]
 {
   firmExecute($conn,
     |Person.all()
@@ -1486,7 +1486,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Test 65 — Chained getMany: toMany(@Variant)->map(->toMany(@String)) (§D)
 // Mapping ops: nested array flatten via processVariantMap + array_flatten
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetMany(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetMany(conn: Connection[1]):Boolean[1]
 {
   nestedExecute($conn,
     |NestedDoc.all()->project(~[
@@ -1505,7 +1505,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Test 66 — Chained getMany with scalar body (§D)
 // Mapping ops: toMany(@Variant)->map(->to(@String)->toOne()) — single flatten
 // =============================================================================
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetManyScalar(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetManyScalar(conn: Connection[1]):Boolean[1]
 {
   nestedExecute($conn,
     |NestedDoc.all()->project(~[
