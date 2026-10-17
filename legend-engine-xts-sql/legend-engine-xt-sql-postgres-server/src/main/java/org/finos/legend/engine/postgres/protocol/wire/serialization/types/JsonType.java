@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class JsonType extends PGType<Object>
 {
@@ -75,14 +76,21 @@ public class JsonType extends PGType<Object>
         {
             if (value instanceof String)
             {
+                // A json/jsonb column's extracted value (e.g. the result of ->, #>) arrives here
+                // as the exact text Postgres itself already produced for it: Postgres's own `json`
+                // type preserves the original input text verbatim (including whitespace, key
+                // order, duplicate keys), while `jsonb` returns its own canonical form (e.g. a
+                // space after every ':' and ','). Either way, it's already correct -- pass it
+                // through unchanged rather than re-serializing it (re-serializing through a
+                // generic Java Map/List loses whichever of those two conventions applied). Only a
+                // genuine non-JSON string -- never valid json/jsonb text on its own -- needs
+                // encoding as a JSON string literal here.
                 String str = (String) value;
-                // If the string is already valid JSON (object or array), send as-is
-                if (isJsonObjectOrArray(str))
+                if (isValidJson(str))
                 {
-                    // Re-serialize to normalize (compact) the JSON
-                    Object parsed = OBJECT_MAPPER.readValue(str, Object.class);
-                    return OBJECT_MAPPER.writeValueAsBytes(parsed);
+                    return str.getBytes(StandardCharsets.UTF_8);
                 }
+                return OBJECT_MAPPER.writeValueAsBytes(str);
             }
             return OBJECT_MAPPER.writeValueAsBytes(value);
         }
@@ -92,14 +100,17 @@ public class JsonType extends PGType<Object>
         }
     }
 
-    private static boolean isJsonObjectOrArray(String str)
+    private static boolean isValidJson(String str)
     {
-        if (str.isEmpty())
+        try
+        {
+            OBJECT_MAPPER.readTree(str);
+            return true;
+        }
+        catch (IOException notJson)
         {
             return false;
         }
-        char first = str.charAt(0);
-        return first == '{' || first == '[';
     }
 
     @Override

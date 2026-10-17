@@ -235,7 +235,15 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::VariantI
     +altCount        : Integer[0..1]: ALT_COUNT,
     +expectedRevenue : Float[0..1]: EXPECTED_REVENUE,
     +maxRevenue      : Float[0..1]: MAX_REVENUE,
-    +minRevenue      : Float[0..1]: MIN_REVENUE
+    +minRevenue      : Float[0..1]: MIN_REVENUE,
+    // [1]-declared twins of the [0..1] properties above, for ModelJoin equalities whose right-hand
+    // side is logically known-present at the point of comparison (the same role ->toOne() plays,
+    // without depending on the router's native-call wrapper to report that at query-routing time).
+    +codeOne             : String[1]: $row.CODE->toOne(),
+    +altCodeOne          : String[1]: $row.ALT_CODE->toOne(),
+    +expectedRevenueOne  : Float[1]: $row.EXPECTED_REVENUE->toOne(),
+    +maxRevenueOne       : Float[1]: $row.MAX_REVENUE->toOne(),
+    +minRevenueOne       : Float[1]: $row.MIN_REVENUE->toOne()
   }
 )
 
@@ -262,10 +270,8 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T0_2_Map
 
   Person_Firm: ModelJoin
   {
-    // ->toOne() on the Firm side keeps SQL '=': with both sides optional, '==' is null-safe and a
-    // missing person value would match every Firm whose column is NULL.
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.entityType == $firm.code->toOne() || $persons.firmInfo.address.street == $firm.altCode->toOne()}
+      $persons.firmInfo.entityType == $firm.codeOne || $persons.firmInfo.address.street == $firm.altCodeOne}
   }
 )
 
@@ -281,9 +287,9 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_1_Map
   Person_Firm: ModelJoin
   {
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.otherNames->first() == $firm.code->toOne() ||
-      $persons.firmInfo.otherNames->at(1)   == $firm.code->toOne() ||
-      $persons.firmInfo.otherNames->last()  == $firm.code->toOne()}
+      $persons.firmInfo.otherNames->first() == $firm.codeOne ||
+      $persons.firmInfo.otherNames->at(1)   == $firm.codeOne ||
+      $persons.firmInfo.otherNames->last()  == $firm.codeOne}
   }
 )
 
@@ -320,9 +326,9 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_4_Map
   Person_Firm: ModelJoin
   {
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.revenueHistory->plus() == $firm.expectedRevenue->toOne() &&
-      $persons.firmInfo.revenueHistory->max() == $firm.maxRevenue->toOne() &&
-      $persons.firmInfo.revenueHistory->min() == $firm.minRevenue->toOne()}
+      $persons.firmInfo.revenueHistory->plus() == $firm.expectedRevenueOne &&
+      $persons.firmInfo.revenueHistory->max() == $firm.maxRevenueOne &&
+      $persons.firmInfo.revenueHistory->min() == $firm.minRevenueOne}
   }
 )
 
@@ -376,8 +382,8 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T2_3_Map
   Person_Firm: ModelJoin
   {
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.revenueHistory->filter(r | $r > 100.0)->plus() == $firm.expectedRevenue->toOne() &&
-      $persons.firmInfo.revenueHistory->filter(r | $r > 0.0)->max() == $firm.maxRevenue->toOne()}
+      $persons.firmInfo.revenueHistory->filter(r | $r > 100.0)->plus() == $firm.expectedRevenueOne &&
+      $persons.firmInfo.revenueHistory->filter(r | $r > 0.0)->max() == $firm.maxRevenueOne}
   }
 )
 
@@ -444,10 +450,8 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_5_Map
 
   Person_Firm: ModelJoin
   {
-    // ->toOne() on the Firm side keeps SQL '=': with both sides optional, '==' is null-safe and a
-    // missing person value would match every Firm whose column is NULL.
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.orders->filter(o | $o.side == 'BUY')->first().customer.tier == $firm.code->toOne()}
+      $persons.firmInfo.orders->filter(o | $o.side == 'BUY')->first().customer.tier == $firm.codeOne}
   }
 )
 
@@ -525,7 +529,7 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T5_2_Map
     {persons: Person[1], firm: Firm[1] |
       if($persons.firmInfo.countries->contains('UK'),
          |$persons.firmInfo.otherNames->first(),
-         |$persons.firmInfo.otherNames->last()) == $firm.code->toOne()}
+         |$persons.firmInfo.otherNames->last()) == $firm.codeOne}
   }
 )
 
@@ -571,7 +575,7 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_1_Map
   Person_Firm: ModelJoin
   {
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.otherNames->first() == $firm.code->toOne()}
+      $persons.firmInfo.otherNames->first() == $firm.codeOne}
   }
 )
 
@@ -582,10 +586,8 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_2_Map
 
   Person_Firm: ModelJoin
   {
-    // ->toOne() on the Firm side keeps SQL '=': with both sides optional, '==' is null-safe and a
-    // missing person value would match every Firm whose column is NULL.
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.entityType == $firm.code->toOne()}
+      $persons.firmInfo.entityType == $firm.codeOne}
   }
 )
 
@@ -610,7 +612,7 @@ Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_4_Map
   Person_Firm: ModelJoin
   {
     {persons: Person[1], firm: Firm[1] |
-      $persons.firmInfo.otherNames->first() == $firm.code->toOne()}
+      $persons.firmInfo.otherNames->first() == $firm.codeOne}
   }
 )
 
