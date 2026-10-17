@@ -674,7 +674,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Q2 — ->filter(p | $p.X->exists(...)) over a variant class array
 //   Filter: orders->exists(o | $o.side == 'BUY')
 //   Alice (BUY ORD-A) ✓; Bob (empty); Carol (BUY ORD-C) ✓; Dave (empty)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterWithExistsOnVariantArray(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterWithExistsOnVariantArray(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -853,7 +853,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 //     Carol (contains UK true)  ✓
 //     Dave  (no UK, plus 30)    ✗
 //   Project: $p.firstName, $p.firmInfo.otherNames->filter(starts with 'O')->first()
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testCompoundFilterAndNestedProject(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testCompoundFilterAndNestedProject(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -902,7 +902,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testArrayOperationAfterSortByOnSemiStructuredKey(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testArrayOperationAfterSortByOnSemiStructuredKey(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()

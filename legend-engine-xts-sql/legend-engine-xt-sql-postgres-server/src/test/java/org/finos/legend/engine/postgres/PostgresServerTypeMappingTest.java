@@ -436,7 +436,7 @@ public class PostgresServerTypeMappingTest
     public void testJSON() throws Exception
     {
         validate(LegendDataType.VARIANT, "\"hello\"", "json", pgJson("\"hello\""));
-        validate(LegendDataType.VARIANT, "\"{\\\"a\\\": 1}\"", "json", pgJson("{\"a\":1}"));
+        validate(LegendDataType.VARIANT, "\"{\\\"a\\\": 1}\"", "json", pgJson("{\"a\": 1}"));
         validate(LegendDataType.VARIANT, "\"[1,2,3]\"", "json", pgJson("[1,2,3]"));
         validate(LegendDataType.VARIANT, "123", "json", pgJson("123"));
         validate(LegendDataType.VARIANT, "null", "json", null);

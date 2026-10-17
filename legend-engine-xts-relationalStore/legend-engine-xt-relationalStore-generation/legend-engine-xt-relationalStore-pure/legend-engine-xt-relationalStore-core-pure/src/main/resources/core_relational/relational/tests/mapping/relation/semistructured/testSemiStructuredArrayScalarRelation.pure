@@ -188,6 +188,29 @@ function meta::relational::tests::mapping::relation::semistructured::arrayscalar
   )
 }
 
+// =============================================================================
+// Lambda-taking helpers whose lambda does not iterate their first argument
+// =============================================================================
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::countAddressesMatching(label: String[1], addresses: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address[*], pred: Function<{meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address[1]->Boolean[1]}>[1]): Integer[1]
+{
+  $addresses->filter($pred)->size()
+}
+
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::countAddressesMatchingCollectionFirst(addresses: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address[*], label: String[1], pred: Function<{meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address[1]->Boolean[1]}>[1]): Integer[1]
+{
+  $addresses->filter($pred)->size()
+}
+
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::anyPersonMatching(label: String[1], people: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[*], pred: Function<{meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[1]->Boolean[1]}>[1]): Boolean[1]
+{
+  $people->exists($pred)
+}
+
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::anyFirmMatching(label: String[1], people: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[*], pred: Function<{meta::relational::tests::mapping::relation::semistructured::arrayscalar::Firm[1]->Boolean[1]}>[1]): Boolean[1]
+{
+  $people.firm->exists($pred)
+}
+
 
 ###Mapping
 import meta::relational::tests::mapping::relation::semistructured::arrayscalar::*;
@@ -299,7 +322,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   executeLegendFunction($func, ArrayScalarEmbeddedFirmMapping, H2DB, $conn, [personCsv()], $expected, false);
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArraySizeInsideEmbeddedBlock(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArraySizeInsideEmbeddedBlock(conn: Connection[1]):Boolean[1]
 {
   embeddedFirmExecute(
     $conn,
@@ -317,6 +340,99 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
     'John,Firm X,2,2\n' +
     'Oliver,Firm B,1,2\n' +
     'Peter,Firm X,2,2\n'
+  );
+}
+
+// =============================================================================
+// Tests — lambda routing decided by the lambda parameter's type, not argument position
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testLambdaOverSemiStructuredCollectionPassedAfterAnotherArgument(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | countAddressesMatching('label', $x.firm.addresses, a | $a.name->length() == 3), 'Three Char Addresses')
+    ]),
+    'First Name,Three Char Addresses\n' +
+    'Anthony,0\n' +
+    'David,0\n' +
+    'Fabrice,1\n' +
+    'John,1\n' +
+    'John,1\n' +
+    'Oliver,0\n' +
+    'Peter,1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testLambdaOverSemiStructuredCollectionPassedFirst(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | countAddressesMatchingCollectionFirst($x.firm.addresses, 'label', a | $a.name->length() == 3), 'Three Char Addresses')
+    ]),
+    'First Name,Three Char Addresses\n' +
+    'Anthony,0\n' +
+    'David,0\n' +
+    'Fabrice,1\n' +
+    'John,1\n' +
+    'John,1\n' +
+    'Oliver,0\n' +
+    'Peter,1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testLambdaOverRoutedCollectionPassedAfterAnotherArgument(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | anyPersonMatching('label', $x.reports, r | $r.lastName->startsWith('H')), 'Has Report Named H')
+    ]),
+    'First Name,Has Report Named H\n' +
+    'Anthony,false\n' +
+    'David,true\n' +
+    'Fabrice,false\n' +
+    'John,false\n' +
+    'John,true\n' +
+    'Oliver,false\n' +
+    'Peter,false\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testLambdaOverSemiStructuredCollectionNestedInLambdaOverRoutedCollection(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.reports->exists(r | countAddressesMatching('label', $r.firm.addresses, a | $a.name->length() == 3) > 0), 'Has Report With Three Char Address')
+    ]),
+    'First Name,Has Report With Three Char Address\n' +
+    'Anthony,true\n' +
+    'David,false\n' +
+    'Fabrice,false\n' +
+    'John,false\n' +
+    'John,true\n' +
+    'Oliver,false\n' +
+    'Peter,false\n'
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testLambdaParameterOfClassWithNoSourceInScopeFailsEarly():Boolean[1]
+{
+  assertError(
+    | meta::pure::executionPlan::executionPlan(
+        |Person.all()->project([col(x | anyFirmMatching('label', $x.reports, f | $f.legalName == 'Firm X'), 'Any Firm X')]),
+        ArrayScalarMapping,
+        meta::external::store::relational::tests::testRuntime(H2DB),
+        meta::relational::extension::relationalExtensions()
+      ),
+    {message: String[1], sourceInformation: SourceInformation[0..1] |
+      assert($message->startsWith('Error mapping not found for class Firm'), | 'Unexpected error: ' + $message)}
   );
 }
 
