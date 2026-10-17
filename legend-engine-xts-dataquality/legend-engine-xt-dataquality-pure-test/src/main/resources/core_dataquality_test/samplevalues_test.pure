@@ -104,23 +104,20 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDecim
 {
   let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[COUPOUN])};
 
-  let expected = {|
-    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[COUPOUN]);
-    $cte
-      ->groupBy(~[COUPOUN], ~count: row|$row.COUPOUN : y|$y->count())
-      ->sort(descending(~count))
-      ->limit(20)
-      ->extend(~[
-          column_name: row|'COUPOUN',
-          column_data_type: row|'Decimal',
-          string_value: row|[]->cast(@String),
-          int_value: row|[]->cast(@Integer),
-          float_value: row|$row.COUPOUN->cast(@Float),
-          date_value: row|[]->cast(@StrictDate),
-          boolean_value: row|[]->cast(@Boolean)
-        ])
-      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
-  };
+  // The generator retypes a Decimal column to Float with cast(@Float), which only makes sense once the query
+  // is pushed down to SQL. Pure rejects that cast at compile time, so the expected query is given as grammar.
+  let expected = '|let cte = RelationElementAccessor(RelationStoreAccessor)->select(~[COUPOUN]);\n $cte'
+                 + '->groupBy(~[COUPOUN], ~count:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1])[1]|$row.COUPOUN:y: meta::pure::precisePrimitives::Numeric(4, 4)[*]|$y->count())'
+                 + '->sort(~count->descending())'
+                 + '->limit(20)'
+                 + '->extend(~[column_name:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|\'COUPOUN\''
+                 + ',column_data_type:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|\'Decimal\''
+                 + ',string_value:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|[]->cast(@String)'
+                 + ',int_value:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|[]->cast(@Integer)'
+                 + ',float_value:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|$row.COUPOUN->cast(@Float)'
+                 + ',date_value:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|[]->cast(@StrictDate)'
+                 + ',boolean_value:row: (COUPOUN:meta::pure::precisePrimitives::Numeric(4, 4)[0..1], count:Integer[1])[1]|[]->cast(@Boolean)'
+                 + '])->select(~[column_name,column_data_type,count,string_value,int_value,float_value,date_value,boolean_value]);\n';
 
   doSampleValuesTest($query, $expected, 20);
 }
@@ -130,23 +127,20 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDateC
 {
   let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB])};
 
-  let expected = {|
-    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB]);
-    $cte
-      ->groupBy(~[DOB], ~count: row|$row.DOB : y|$y->count())
-      ->sort(descending(~count))
-      ->limit(20)
-      ->extend(~[
-          column_name: row|'DOB',
-          column_data_type: row|'DateTime',
-          string_value: row|[]->cast(@String),
-          int_value: row|[]->cast(@Integer),
-          float_value: row|[]->cast(@Float),
-          date_value: row|$row.DOB->cast(@StrictDate),
-          boolean_value: row|[]->cast(@Boolean)
-        ])
-      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
-  };
+  // The generator retypes a Timestamp column to StrictDate with cast(@StrictDate), which only makes sense once the
+  // query is pushed down to SQL. Pure rejects that cast at compile time, so the expected query is given as grammar.
+  let expected = '|let cte = RelationElementAccessor(RelationStoreAccessor)->select(~[DOB]);\n $cte'
+                 + '->groupBy(~[DOB], ~count:row: (DOB:meta::pure::precisePrimitives::Timestamp[1])[1]|$row.DOB:y: meta::pure::precisePrimitives::Timestamp[*]|$y->count())'
+                 + '->sort(~count->descending())'
+                 + '->limit(20)'
+                 + '->extend(~[column_name:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|\'DOB\''
+                 + ',column_data_type:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|\'DateTime\''
+                 + ',string_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@String)'
+                 + ',int_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Integer)'
+                 + ',float_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Float)'
+                 + ',date_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|$row.DOB->cast(@StrictDate)'
+                 + ',boolean_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Boolean)'
+                 + '])->select(~[column_name,column_data_type,count,string_value,int_value,float_value,date_value,boolean_value]);\n';
 
   doSampleValuesTest($query, $expected, 20);
 }
@@ -281,54 +275,44 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesOrder
   // Verify column blocks appear in relation column order and each has sort(desc(~count))
   let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME])};
 
-  let expected = {|
-    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME]);
-    $cte
-      ->groupBy(~[DOB], ~count: row|$row.DOB : y|$y->count())
-      ->sort(descending(~count))
-      ->limit(20)
-      ->extend(~[
-          column_name: row|'DOB',
-          column_data_type: row|'DateTime',
-          string_value: row|[]->cast(@String),
-          int_value: row|[]->cast(@Integer),
-          float_value: row|[]->cast(@Float),
-          date_value: row|$row.DOB->cast(@StrictDate),
-          boolean_value: row|[]->cast(@Boolean)
-        ])
-      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
-      ->concatenate(
-        $cte
-          ->groupBy(~[AGE], ~count: row|$row.AGE : y|$y->count())
-          ->sort(descending(~count))
-          ->limit(20)
-          ->extend(~[
-              column_name: row|'AGE',
-              column_data_type: row|'Integer',
-              string_value: row|[]->cast(@String),
-              int_value: row|$row.AGE->cast(@Integer),
-              float_value: row|[]->cast(@Float),
-              date_value: row|[]->cast(@StrictDate),
-              boolean_value: row|[]->cast(@Boolean)
-            ])
-          ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
-      )->concatenate(
-        $cte
-          ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
-          ->sort(descending(~count))
-          ->limit(20)
-          ->extend(~[
-              column_name: row|'FIRSTNAME',
-              column_data_type: row|'String',
-              string_value: row|$row.FIRSTNAME->cast(@String),
-              int_value: row|[]->cast(@Integer),
-              float_value: row|[]->cast(@Float),
-              date_value: row|[]->cast(@StrictDate),
-              boolean_value: row|[]->cast(@Boolean)
-            ])
-          ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
-      );
-  };
+  // The generator retypes a Timestamp column to StrictDate with cast(@StrictDate), which only makes sense once the
+  // query is pushed down to SQL. Pure rejects that cast at compile time, so the expected query is given as grammar.
+  let expected = '|let cte = RelationElementAccessor(RelationStoreAccessor)->select(~[DOB,AGE,FIRSTNAME]);\n $cte'
+                 + '->groupBy(~[DOB], ~count:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], AGE:meta::pure::precisePrimitives::Int[0..1], FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1])[1]|$row.DOB:y: meta::pure::precisePrimitives::Timestamp[*]|$y->count())'
+                 + '->sort(~count->descending())'
+                 + '->limit(20)'
+                 + '->extend(~[column_name:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|\'DOB\''
+                 + ',column_data_type:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|\'DateTime\''
+                 + ',string_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@String)'
+                 + ',int_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Integer)'
+                 + ',float_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Float)'
+                 + ',date_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|$row.DOB->cast(@StrictDate)'
+                 + ',boolean_value:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], count:Integer[1])[1]|[]->cast(@Boolean)'
+                 + '])->select(~[column_name,column_data_type,count,string_value,int_value,float_value,date_value,boolean_value])'
+                 + '->concatenate($cte'
+                 + '->groupBy(~[AGE], ~count:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], AGE:meta::pure::precisePrimitives::Int[0..1], FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1])[1]|$row.AGE:y: meta::pure::precisePrimitives::Int[*]|$y->count())'
+                 + '->sort(~count->descending())'
+                 + '->limit(20)'
+                 + '->extend(~[column_name:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|\'AGE\''
+                 + ',column_data_type:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|\'Integer\''
+                 + ',string_value:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|[]->cast(@String)'
+                 + ',int_value:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|$row.AGE->cast(@Integer)'
+                 + ',float_value:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|[]->cast(@Float)'
+                 + ',date_value:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|[]->cast(@StrictDate)'
+                 + ',boolean_value:row: (AGE:meta::pure::precisePrimitives::Int[0..1], count:Integer[1])[1]|[]->cast(@Boolean)'
+                 + '])->select(~[column_name,column_data_type,count,string_value,int_value,float_value,date_value,boolean_value]))'
+                 + '->concatenate($cte'
+                 + '->groupBy(~[FIRSTNAME], ~count:row: (DOB:meta::pure::precisePrimitives::Timestamp[1], AGE:meta::pure::precisePrimitives::Int[0..1], FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1])[1]|$row.FIRSTNAME:y: meta::pure::precisePrimitives::Varchar(200)[*]|$y->count())'
+                 + '->sort(~count->descending())'
+                 + '->limit(20)'
+                 + '->extend(~[column_name:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|\'FIRSTNAME\''
+                 + ',column_data_type:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|\'String\''
+                 + ',string_value:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|$row.FIRSTNAME->cast(@String)'
+                 + ',int_value:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|[]->cast(@Integer)'
+                 + ',float_value:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|[]->cast(@Float)'
+                 + ',date_value:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|[]->cast(@StrictDate)'
+                 + ',boolean_value:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200)[0..1], count:Integer[1])[1]|[]->cast(@Boolean)'
+                 + '])->select(~[column_name,column_data_type,count,string_value,int_value,float_value,date_value,boolean_value]));\n';
 
   doSampleValuesTest($query, $expected, 20);
 }
@@ -349,6 +333,12 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesColum
 
 // ─── Test helper ──
 function meta::external::dataquality::tests::doSampleValuesTest(query: FunctionDefinition<Any>[1], expected: FunctionDefinition<Any>[1], maxNumberOfSampleValues: Integer[1]):Boolean[1]
+{
+  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], $maxNumberOfSampleValues, false, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
+}
+
+function meta::external::dataquality::tests::doSampleValuesTest(query: FunctionDefinition<Any>[1], expected: String[1], maxNumberOfSampleValues: Integer[1]):Boolean[1]
 {
   let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], $maxNumberOfSampleValues, false, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
