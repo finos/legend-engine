@@ -3614,7 +3614,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
       let ssp = $r->toOne()->cast(@SemiStructuredPropertyAccess);
       assert($ssp.index->isEmpty(), | 'Detected unexpected multiple \'at\' function application ->at(...)->at(...)');
       let indexSelect = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select;
-      ^$ssp(index = $state.inFilter->if(|$indexSelect.filteringOperation,|$indexSelect.columns)->toOne()->cast(@Literal));
+      // avoidCastIfPrimitive on $ssp describes the whole (to-many) property -- it must stay JSON
+      // for array ops. Narrowing to one element here means that no longer applies: the element is
+      // a scalar and still needs its own unwrap, so each dialect renderer's cast must run.
+      ^$ssp(index = $state.inFilter->if(|$indexSelect.filteringOperation,|$indexSelect.columns)->toOne()->cast(@Literal), avoidCastIfPrimitive = false);
    };
 
    let newSelect = $state.inFilter->if(|^$collectionSelect(filteringOperation = $arrayAccessBuilder->eval($collectionSelect.filteringOperation)),|^$collectionSelect(columns = $arrayAccessBuilder->eval($collectionSelect.columns)));

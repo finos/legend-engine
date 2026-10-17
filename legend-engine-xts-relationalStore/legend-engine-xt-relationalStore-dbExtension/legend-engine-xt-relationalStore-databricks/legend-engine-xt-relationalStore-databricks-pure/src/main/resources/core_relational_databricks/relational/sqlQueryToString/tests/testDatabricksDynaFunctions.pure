@@ -312,7 +312,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->filter(p | $p.firstName->isNotEmpty())->project([p | $p.firstName], ['name']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where `root`.FIRSTNAME is not null', $result);
+   assertEquals('select `root`.FIRSTNAME as `name` from personTable as `root` where (`root`.FIRSTNAME is not null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDistinctDatabricks():Boolean[1]

@@ -13,14 +13,16 @@
 // limitations under the License.
 
 import meta::relational::runtime::*;
+import meta::pure::testConnection::*;
+import meta::pure::test::*;
 
 // todo move to better module!
-function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::pct::snowflake::semistructured::testCollection(): meta::pure::test::PureTestCollection[1]
+function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::pct::snowflake::semistructured::relationalMappingTestCollection(): PureTestCollection[1]
 {
-  meta::relational::tests::semistructured->meta::pure::test::collectParameterizedTests(
-    'snowflake',
-    meta::pure::testConnection::getTestConnection(DatabaseType.Snowflake),
-    [],
-    []
-  );
+  meta::relational::tests::semistructured->collectParameterizedTests('snowflake', getTestConnection(DatabaseType.Snowflake), [], []);
+}
+
+function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::pct::snowflake::semistructured::relationFunctionMappingTestCollection(): PureTestCollection[1]
+{
+  meta::relational::tests::mapping::relation->collectParameterizedTests('snowflake', getTestConnection(DatabaseType.Snowflake), [], []);
 }
