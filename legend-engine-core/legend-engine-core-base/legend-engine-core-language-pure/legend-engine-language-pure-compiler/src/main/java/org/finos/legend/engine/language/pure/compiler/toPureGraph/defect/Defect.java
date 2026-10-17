@@ -14,14 +14,16 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.defect;
 
+import java.util.Objects;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 public class Defect
 {
-    public DefectSeverityLevel defectSeverityLevel;
-    public SourceInformation sourceInformation;
-    public String message;
-    public String defectTypeId;
+    public final DefectSeverityLevel defectSeverityLevel;
+    public final SourceInformation sourceInformation;
+    public final String message;
+    public final String defectTypeId;
 
     public Defect(DefectSeverityLevel defectSeverityLevel, SourceInformation sourceInformation, String message, String defectTypeId)
     {
@@ -29,6 +31,30 @@ public class Defect
         this.sourceInformation = sourceInformation;
         this.message = message;
         this.defectTypeId = defectTypeId;
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+        if ((other == null) || (getClass() != other.getClass()))
+        {
+            return false;
+        }
+        Defect that = (Defect) other;
+        return (this.defectSeverityLevel == that.defectSeverityLevel) &&
+                Objects.equals(this.defectTypeId, that.defectTypeId) &&
+                Objects.equals(this.message, that.message) &&
+                SourceInformationHelper.equals(this.sourceInformation, that.sourceInformation);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.defectSeverityLevel, this.defectTypeId, this.message, SourceInformationHelper.hashCode(this.sourceInformation));
     }
 
     /**

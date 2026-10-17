@@ -102,12 +102,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().collect(Defect::buildPrettyDefectMessage, Lists.mutable.empty()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().collect(Defect::buildPrettyDefectMessage, Lists.mutable.empty()).sortThis();
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -174,12 +174,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().collect(Defect::buildPrettyDefectMessage, Lists.mutable.empty()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().collect(Defect::buildPrettyDefectMessage, Lists.mutable.empty()).sortThis();
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -1181,7 +1181,7 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   1->cast(@Relation<(country:String[0..1], city:String[1], year:Integer[0..1])>)->project(~[\n" +
+                        "   []->cast(@Relation<(country:String[0..1], city:String[1], year:Integer[0..1])>)->project(~[\n" +
                         "        country: x|$x.country,\n" +
                         "        city : x|$x.city,\n" +
                         "        year: x|$x.year->map(y|$y)\n" +

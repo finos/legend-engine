@@ -3383,7 +3383,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
             // the `[1]` properties above.  This mirrors legend-pure's RelationMappingShared.
             "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
             "}\n";
 
     public void testRelationMapping(String grammar)
@@ -3436,7 +3436,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "import meta::pure::metamodel::relation::*;\n" +
                 "function my::personFunctionWithQuotedCol():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], 'FIRM ID':Integer[1], CITY:String[1])>);\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], 'FIRM ID':Integer[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3658,7 +3658,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3696,7 +3696,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3737,7 +3737,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +

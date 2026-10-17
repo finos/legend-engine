@@ -19,18 +19,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
 import net.javacrumbs.jsonunit.JsonAssert;
-import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesInput;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesResult;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
@@ -42,7 +38,6 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.Pack
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
-import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -63,6 +58,10 @@ public class TestCompileApi
 {
     private static final Compile compileApi = new Compile(new ModelManager(DeploymentMode.TEST));
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final String IMPOSSIBLE_CAST_MODEL = "function my::f(i: Integer[1]): String[1]\n" +
+            "{\n" +
+            "  $i->cast(@String)\n" +
+            "}\n";
 
     @Test
     public void testEnumerationMappingWithMixedFormatSourceValues()
@@ -411,8 +410,8 @@ public class TestCompileApi
     @Test
     public void testErrorDefectIsReturnedAsDefectWhenDisabled() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")), false);
-        Response response = compileSimpleModel(api);
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST), false);
+        Response response = compileModel(api, IMPOSSIBLE_CAST_MODEL);
 
         Assert.assertEquals(200, response.getStatus());
         JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
@@ -423,21 +422,21 @@ public class TestCompileApi
     @Test
     public void testErrorDefectFailsCompilationByDefault() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 2, 3, 2, 9), "the error", "TestError")));
-        Response response = compileSimpleModel(api);
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST));
+        Response response = compileModel(api, IMPOSSIBLE_CAST_MODEL);
 
         Assert.assertEquals(400, response.getStatus());
         JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
         Assert.assertEquals("COMPILATION", json.get("errorType").asText());
-        Assert.assertEquals("the error", json.get("message").asText());
-        Assert.assertEquals(2, json.get("sourceInformation").get("startLine").asInt());
+        Assert.assertEquals("Cast will always fail: Integer cannot be cast to String", json.get("message").asText());
+        Assert.assertEquals(3, json.get("sourceInformation").get("startLine").asInt());
     }
 
     @Test
     public void testWarningDefectDoesNotFailCompilationByDefault() throws JsonProcessingException
     {
-        Compile api = new Compile(modelManagerAddingDefects(new Warning(new SourceInformation("src", 2, 3, 2, 9), "a warning")));
-        Response response = compileSimpleModel(api);
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST));
+        Response response = compileModel(api, "Enum my::E\n{\n  A, A\n}\n");
 
         Assert.assertEquals(200, response.getStatus());
         JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(response.getEntity()));
@@ -445,24 +444,67 @@ public class TestCompileApi
         Assert.assertEquals("WARN", json.get("defects").get(0).get("defectSeverityLevel").asText());
     }
 
-    private static Response compileSimpleModel(Compile api)
+    @Test
+    public void testErrorDefectOfLambdaDoesNotFailCompilationOfCachedModel() throws JsonProcessingException
     {
-        PureModelContextText text = new PureModelContextText();
-        text.code = "Class my::A { x: String[1]; }";
-        return api.compile(text, null, null, null);
-    }
-
-    private static ModelManager modelManagerAddingDefects(Defect... defects)
-    {
-        return new ModelManager(DeploymentMode.TEST)
+        AtomicInteger loadCount = new AtomicInteger(0);
+        ModelLoader loader = new ModelLoader()
         {
             @Override
-            public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
+            public boolean supports(PureModelContext context)
             {
-                Pair<PureModelContextData, PureModel> result = super.loadModelAndData(context, clientVersion, identity, packageOffset);
-                result.getTwo().addDefects(Arrays.asList(defects));
-                return result;
+                return context instanceof PureModelContextPointer;
+            }
+
+            @Override
+            public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
+            {
+                loadCount.incrementAndGet();
+                return PureGrammarParser.newInstance().parseModel("Class model::Person { name: String[1]; }");
+            }
+
+            @Override
+            public void setModelManager(ModelManager modelManager)
+            {
+            }
+
+            @Override
+            public boolean shouldCache(PureModelContext context)
+            {
+                return true;
+            }
+
+            @Override
+            public PureModelContext cacheKey(PureModelContext context, Identity identity)
+            {
+                return context;
             }
         };
+        AlloySDLC sdlc = new AlloySDLC();
+        sdlc.groupId = "org.example";
+        sdlc.artifactId = "some-published-model";
+        sdlc.version = "1.0.0";
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlc;
+        pointer.serializer = new Protocol("pure", "v1_33_0");
+        LambdaReturnTypeInput input = new LambdaReturnTypeInput();
+        input.model = pointer;
+        input.lambda = PureGrammarParser.newInstance().parseLambda("|1->cast(@String)", "", 0, 0, true);
+
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST, loader));
+        Assert.assertEquals(200, api.compile(pointer, null, null, null).getStatus());
+        Assert.assertEquals(200, api.lambdaReturnType(input, null, null).getStatus());
+        Response response = api.compile(pointer, null, null, null);
+
+        Assert.assertEquals(1, loadCount.get());
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("{\"message\":\"OK\",\"defects\":[]}", objectMapper.writeValueAsString(response.getEntity()));
+    }
+
+    private static Response compileModel(Compile api, String code)
+    {
+        PureModelContextText text = new PureModelContextText();
+        text.code = code;
+        return api.compile(text, null, null, null);
     }
 }

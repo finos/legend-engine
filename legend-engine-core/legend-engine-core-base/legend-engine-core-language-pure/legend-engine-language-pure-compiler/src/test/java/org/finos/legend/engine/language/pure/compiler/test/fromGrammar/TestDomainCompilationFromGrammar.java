@@ -316,6 +316,135 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testImpossibleCastBetweenPrimitivesError()
+    {
+        test("function test::f(s: String[1], i: Integer[1], d: Decimal[1], dt: DateTime[1], sd: StrictDate[1]): Boolean[1]\n" +
+                "{\n" +
+                "  $i->cast(@String);\n" +
+                "  $i->cast(@Float);\n" +
+                "  $d->cast(@Float);\n" +
+                "  $dt->cast(@StrictDate);\n" +
+                "  $sd->cast(@DateTime);\n" +
+                "  $s->cast(@Int);\n" +
+                "  true;\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION error at [3:7-10]: Cast will always fail: Integer cannot be cast to String",
+                "COMPILATION error at [4:7-10]: Cast will always fail: Integer cannot be cast to Float",
+                "COMPILATION error at [5:7-10]: Cast will always fail: Decimal cannot be cast to Float",
+                "COMPILATION error at [6:8-11]: Cast will always fail: DateTime cannot be cast to StrictDate",
+                "COMPILATION error at [7:8-11]: Cast will always fail: StrictDate cannot be cast to DateTime",
+                "COMPILATION error at [8:7-10]: Cast will always fail: String cannot be cast to meta::pure::precisePrimitives::Int"));
+    }
+
+    @Test
+    public void testImpossibleCastWithEnumerationError()
+    {
+        test("Enum test::E\n" +
+                "{\n" +
+                "  A, B\n" +
+                "}\n" +
+                "Enum test::F\n" +
+                "{\n" +
+                "  X\n" +
+                "}\n" +
+                "function test::f(e: test::E[1]): Boolean[1]\n" +
+                "{\n" +
+                "  $e->cast(@Integer);\n" +
+                "  $e->cast(@test::F);\n" +
+                "  'A'->cast(@test::E);\n" +
+                "  test::E.A->cast(@String);\n" +
+                "  true;\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION error at [11:7-10]: Cast will always fail: test::E cannot be cast to Integer",
+                "COMPILATION error at [12:7-10]: Cast will always fail: test::E cannot be cast to test::F",
+                "COMPILATION error at [13:8-11]: Cast will always fail: String cannot be cast to test::E",
+                "COMPILATION error at [14:14-17]: Cast will always fail: test::E cannot be cast to String"));
+    }
+
+    @Test
+    public void testImpossibleCastWithClassError()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "}\n" +
+                "function test::f(a: test::A[1], v: Variant[1], t: TabularDataSet[1]): Boolean[1]\n" +
+                "{\n" +
+                "  1->cast(@Relation<(a:Integer)>);\n" +
+                "  $v->cast(@Integer);\n" +
+                "  $t->cast(@Relation<(a:Integer)>);\n" +
+                "  $a->cast(@test::B);\n" +
+                "  $a->cast(@String);\n" +
+                "  true;\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION error at [9:6-9]: Cast will always fail: Integer cannot be cast to meta::pure::metamodel::relation::Relation<(a:Integer)>",
+                "COMPILATION error at [10:7-10]: Cast will always fail: meta::pure::metamodel::variant::Variant cannot be cast to Integer",
+                "COMPILATION error at [11:7-10]: Cast will always fail: meta::pure::tds::TabularDataSet cannot be cast to meta::pure::metamodel::relation::Relation<(a:Integer)>",
+                "COMPILATION error at [12:7-10]: Cast will always fail: test::A cannot be cast to test::B",
+                "COMPILATION error at [13:7-10]: Cast will always fail: test::A cannot be cast to String"));
+    }
+
+    @Test
+    public void testPossibleCast()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "}\n" +
+                "Class test::C extends test::A, test::B\n" +
+                "{\n" +
+                "}\n" +
+                "Class test::T extends TabularDataSet, test::B\n" +
+                "{\n" +
+                "}\n" +
+                "Enum test::E\n" +
+                "{\n" +
+                "  A\n" +
+                "}\n" +
+                "function test::f(n: Number[1], d: Date[1], i: Int[1], s: String[1], x: Any[1], a: test::A[1], t: TabularDataSet[1], e: Enum[1]): Boolean[1]\n" +
+                "{\n" +
+                "  []->cast(@String);\n" +
+                "  []->cast(@Relation<(a:Integer)>);\n" +
+                "  $n->cast(@Integer);\n" +
+                "  $d->cast(@StrictDate);\n" +
+                "  $i->cast(@BigInt);\n" +
+                "  $s->cast(@Varchar(10));\n" +
+                "  $s->cast(@Any);\n" +
+                "  $x->cast(@test::A);\n" +
+                "  $a->cast(@test::B);\n" +
+                "  $t->cast(@test::B);\n" +
+                "  test::E.A->cast(@Enum);\n" +
+                "  $e->cast(@test::E);\n" +
+                "  true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testImpossibleCastReportedOnce()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "function test::f(items: test::A[*], i: Integer[1]): Boolean[1]\n" +
+                "{\n" +
+                "  $items->cast(@test::B).name;\n" +
+                "  $i->cast(@String)->filter(x | true);\n" +
+                "  true;\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION error at [11:11-14]: Cast will always fail: test::A cannot be cast to test::B",
+                "COMPILATION error at [12:7-10]: Cast will always fail: Integer cannot be cast to String"));
+    }
+
+    @Test
     public void testDuplicateEnumValueWarning()
     {
         test("Enum test::A\n" +

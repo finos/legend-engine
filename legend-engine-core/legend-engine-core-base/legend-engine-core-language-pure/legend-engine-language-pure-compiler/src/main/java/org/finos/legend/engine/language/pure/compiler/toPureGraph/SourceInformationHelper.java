@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.Objects;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 public class SourceInformationHelper
@@ -36,5 +37,25 @@ public class SourceInformationHelper
         return sourceInformation != null
                 ? new org.finos.legend.pure.m4.coreinstance.SourceInformation(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn)
                 : new org.finos.legend.pure.m4.coreinstance.SourceInformation("X", 0, 0, 0, 0);
+    }
+
+    public static boolean equals(SourceInformation first, SourceInformation second)
+    {
+        if ((first == null) || (second == null))
+        {
+            return first == second;
+        }
+        return Objects.equals(first.sourceId, second.sourceId) &&
+                (first.startLine == second.startLine) &&
+                (first.startColumn == second.startColumn) &&
+                (first.endLine == second.endLine) &&
+                (first.endColumn == second.endColumn);
+    }
+
+    public static int hashCode(SourceInformation sourceInformation)
+    {
+        return (sourceInformation == null)
+                ? 0
+                : Objects.hash(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn);
     }
 }

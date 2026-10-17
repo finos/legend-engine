@@ -991,6 +991,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
         LegacyDateFormatDetector.check(result, this.context.pureModel);
+        ImpossibleCastDetector.check(result, appliedFunction.sourceInformation, this.context.pureModel);
 
         return result;
     }
