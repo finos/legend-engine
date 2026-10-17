@@ -159,6 +159,8 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
+    // Ordered as found, which a hashed set would not keep: checkNoErrorDefect locates its error at the first ERROR and
+    // lists them in order, as does the Compile API.
     private final MutableSet<Defect> defects = SetAdapter.adapt(new LinkedHashSet<>());
     private volatile boolean constructed;
 
