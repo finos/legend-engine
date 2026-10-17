@@ -468,6 +468,26 @@ public class TestDataQualityApi
     }
 
     @Test
+    public void testSampleValuesDecimalColumnValues() throws IOException
+    {
+        String singleColQuery = "|#>{demo::PersonDB.PERSON_TBL}#->select(~[SALARY])->from(demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(singleColQuery, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        JsonNode rows = objectMapper.readTree(response.readEntity(String.class)).path("result").path("rows");
+        Set<Double> floatValues = StreamSupport.stream(rows.spliterator(), false)
+                .map(row -> row.path("values").get(5))
+                .filter(JsonNode::isNumber)
+                .map(JsonNode::asDouble)
+                .collect(Collectors.toSet());
+        assertEquals(Sets.mutable.with(30000.0, 50000.0, 60000.5, 75000.75, 45000.0, 55000.0), floatValues);
+    }
+
+    @Test
     public void testSampleValuesColumnOrder()
     {
         // Project id then fullName — id block should appear before fullName block

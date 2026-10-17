@@ -115,17 +115,17 @@ function meta::external::dataquality::samplevalues::getSampleValuesLambda(l: Lam
           function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Integer), parameters = var('row')),
             if(isIntegerColumn($c), | createCast(col($c, var('row')), Integer), | createCast(iv([]), Integer))->evaluateAndDeactivate())
         ),
-        // float_value: cast value to Float if column is Float type, else null
+        // float_value: value as a Float (converted from a Decimal) if column is Float type, else null
         ^FuncColSpec<Any, Any>(
           name = name(SampleValuesColumn.FLOAT_VALUE),
           function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Float), parameters = var('row')),
-            if(isFloatColumn($c), | createCast(col($c, var('row')), Float), | createCast(iv([]), Float))->evaluateAndDeactivate())
+            if(isFloatColumn($c), | floatValue($c, var('row')), | createCast(iv([]), Float))->evaluateAndDeactivate())
         ),
-        // date_value: cast value to StrictDate if column is Date type, else null
+        // date_value: value as a StrictDate (the date part of a DateTime) if column is Date type, else null
         ^FuncColSpec<Any, Any>(
           name = name(SampleValuesColumn.DATE_VALUE),
           function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(StrictDate), parameters = var('row')),
-            if(isDateColumn($c), | createCast(col($c, var('row')), StrictDate), | createCast(iv([]), StrictDate))->evaluateAndDeactivate())
+            if(isDateColumn($c), | strictDateValue($c, var('row')), | createCast(iv([]), StrictDate))->evaluateAndDeactivate())
         ),
         // boolean_value: cast value to Boolean if column is Boolean type, else null
         ^FuncColSpec<Any, Any>(
@@ -184,6 +184,18 @@ function meta::external::dataquality::samplevalues::col(column:Column<Nil,Any|*>
       parametersValues = $var,
       genericType = $column.classifierGenericType.typeArguments->last()->toOne()
   );
+}
+
+function meta::external::dataquality::samplevalues::floatValue(column:Column<Nil,Any|*>[1], var:VariableExpression[1]):ValueSpecification[1]
+{
+  let value = col($column, $var);
+  if($value.genericType.rawType->toOne()->subTypeOf(Decimal), | sfe(toFloat_Number_1__Float_1_, $value), | createCast($value, Float));
+}
+
+function meta::external::dataquality::samplevalues::strictDateValue(column:Column<Nil,Any|*>[1], var:VariableExpression[1]):ValueSpecification[1]
+{
+  let value = col($column, $var);
+  createCast(if($value.genericType.rawType->toOne()->subTypeOf(DateTime), | sfe(datePart_Date_1__Date_1_, $value), | $value), StrictDate);
 }
 
 // Returns the base type name for a column — maps precise primitives (Varchar, Int, Timestamp, etc.)

@@ -75,7 +75,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "Class test::Person{name : String[1];}" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   1->cast(@Relation<(name:String)>)->project(~[mycol:x|$x.name])\n" +
+                        "   []->cast(@Relation<(name:String)>)->project(~[mycol:x|$x.name])\n" +
                         "}"
         );
 
@@ -204,7 +204,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                 "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   'ab'->cast(@meta::pure::precisePrimitives::Varchar(32))->in(1->cast(@meta::pure::metamodel::relation::Relation<(c:meta::pure::precisePrimitives::Varchar(64))>))\n" +
+                        "   'ab'->cast(@meta::pure::precisePrimitives::Varchar(32))->in([]->cast(@meta::pure::metamodel::relation::Relation<(c:meta::pure::precisePrimitives::Varchar(64))>))\n" +
                         "}"
         );
 

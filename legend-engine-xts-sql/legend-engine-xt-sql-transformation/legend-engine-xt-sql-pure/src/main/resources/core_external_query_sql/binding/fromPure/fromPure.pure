@@ -3951,6 +3951,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair($castName == 'VARCHAR', | processVarcharCast($c, $expression, $expContext, $context)),
         pair($castName == 'NUMERIC' || $castName == 'DECIMAL', | processNumericCast($c, $expression, $expContext, $context)),
         pair($castName == 'INTEGER' && !$type->subTypeOf(Integer) && $type->subTypeOfExNil(Number), | processRound($expression)),
+        pair($castName->in(['BIGINT', 'SMALLINT']) && $type->subTypeOfExNil(Decimal), | processRound($expression)),
+        pair($castName == 'BOOLEAN' && $type->subTypeOfExNil(Integer), | ^ComparisonExpression(left = $c.expression, operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 0))->processExpression($expContext, $context)),
         pair($castName->in(['DOUBLE PRECISION', 'FLOAT8']), | processDoublePrecisionCast($c, $expression, $expContext, $context)),
         pair($type->preciseToPrimitive() == String || $castName->in(['TEXT', 'JSON', 'JSONB']), | processCastAsParse($c, $expression, $expContext, $context)),
         pair(true, | processCastAsCast($c, $expression, $expContext, $context))
@@ -4070,7 +4072,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if (normalizeType($expressionType) == normalizeType($type),
     | $expression,
-    | doCreateCast($expression, $type, $typeVars));
+    | unsupported(($expression->evaluateAndDeactivate().multiplicity == PureZero) || castCanSucceed($expressionType, $type), | 'cast from ' + $expressionType.name->toOne() + ' to ' + $type.name->toOne());
+      doCreateCast($expression, $type, $typeVars););
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::castCanSucceed(from:Type[1], to:Type[1]):Boolean[1]
+{
+  let source = $from->preciseToPrimitive();
+  let target = $to->preciseToPrimitive();
+
+  $source->subTypeOf($target) || $target->subTypeOf($source) || ($source->instanceOf(Class) && $target->instanceOf(Class));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::doCreateCast(expression:ValueSpecification[1], type:Type[1]):ValueSpecification[1]

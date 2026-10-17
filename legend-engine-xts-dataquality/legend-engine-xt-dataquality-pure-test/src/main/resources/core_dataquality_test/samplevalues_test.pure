@@ -115,7 +115,7 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDecim
           column_data_type: row|'Decimal',
           string_value: row|[]->cast(@String),
           int_value: row|[]->cast(@Integer),
-          float_value: row|$row.COUPOUN->cast(@Float),
+          float_value: row|$row.COUPOUN->toOne()->toFloat(),
           date_value: row|[]->cast(@StrictDate),
           boolean_value: row|[]->cast(@Boolean)
         ])
@@ -142,7 +142,7 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDateC
           string_value: row|[]->cast(@String),
           int_value: row|[]->cast(@Integer),
           float_value: row|[]->cast(@Float),
-          date_value: row|$row.DOB->cast(@StrictDate),
+          date_value: row|$row.DOB->datePart()->cast(@StrictDate),
           boolean_value: row|[]->cast(@Boolean)
         ])
       ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
@@ -293,7 +293,7 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesOrder
           string_value: row|[]->cast(@String),
           int_value: row|[]->cast(@Integer),
           float_value: row|[]->cast(@Float),
-          date_value: row|$row.DOB->cast(@StrictDate),
+          date_value: row|$row.DOB->datePart()->cast(@StrictDate),
           boolean_value: row|[]->cast(@Boolean)
         ])
       ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])

@@ -641,14 +641,73 @@ index structures to concurrent (`ConcurrentHashMap`, `ConcurrentHashSet`) and su
 as parallel streams. First and second passes within each disjoint dependency sub-graph are
 parallelised at the element level.
 
+### 4.11 Defects — Warnings and Errors
+
+Not every problem stops compilation. A check that the model can still be built around records a
+**defect** — `defect/Defect`: a `DefectSeverityLevel`, the source information, a message and a
+`defectTypeId` — with `PureModel.addDefects(…)`. `Warning` is the `WARN` defect with id
+`PureWarning`. `PureModel.getDefects()` returns them in the order they were found.
+
+| Severity | Effect |
+|----------|--------|
+| `INFO`, `WARN` | Reported; compilation succeeds |
+| `ERROR` | Reported; `PureModel.checkNoErrorDefect()` throws a `COMPILATION` `EngineException` naming every `ERROR` defect. The Compile API calls it, so `/compile` fails (see §12) |
+
+- **Only building the model records defects.** Once the `PureModel` constructor has finished,
+  `addDefects` does nothing: a built model may be cached and shared by `ModelManager`, so a
+  defect found compiling something else against it — a query compiled with
+  `HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext())` — is not
+  recorded, rather than failing a later `/compile` of the model.
+- **Identical defects are reported once.** Two defects with the same severity, type id, message
+  and location (`SourceInformationHelper.equals`/`hashCode`) are the same defect, so an
+  expression the compiler builds more than once does not repeat its defect.
+- **The severity of a type of defect can be overridden.** The severity given to a `Defect` is a
+  default: the system property `legend.engine.pureModel.defect.<defectTypeId>`, set to `INFO`,
+  `WARN` or `ERROR`, overrides it for every defect of that type (`DefectSeverity.of`). Any
+  other value fails with an `IllegalArgumentException` when such a defect is created.
+
+```text
+-Dlegend.engine.pureModel.defect.PureImpossibleCast=WARN   # impossible casts no longer fail compilation
+-Dlegend.engine.pureModel.defect.PureWarning=ERROR         # every warning fails compilation
+```
+
+| `defectTypeId` | Default | Raised for |
+|----------------|---------|------------|
+| `PureWarning` | `WARN` | Every `Warning`: duplicated properties, enumeration values, tags and stereotypes, runtimes not covering their stores, deprecated date formats, … |
+| `PureImpossibleCast` | `ERROR` | A `cast` that can never succeed (below) |
+
+#### Impossible casts (`PureImpossibleCast`)
+
+A cast never converts its value. `ImpossibleCastDetector`, called for every function application
+in `ValueSpecificationBuilder.visit(AppliedFunction)`, reports a `cast(@T)` when no instance can
+be both of the declared type of the value and of `T`. A class can extend only classes, a
+primitive only primitives, and an enumeration nothing, so:
+
+| Reported | Examples |
+|----------|----------|
+| A primitive or an enumeration cast outside its own hierarchy | `String` → `Integer`, `Integer` → `Float`, `Decimal` → `Float`, `DateTime` → `StrictDate`, an enumeration → `String`, one enumeration → another |
+| A primitive or an enumeration cast to or from a class | `1->cast(@Relation<(a:Integer)>)`, `Variant` → `Integer` |
+| A class cast to a class that no class in the model extends along with it | `TabularDataSet` → `Relation` |
+
+Not reported: an empty value (`[]->cast(@T)`, whose type is `Nil`), a cast up or down a
+hierarchy, an extended primitive cast within the primitive it extends (`Int` → `BigInt`,
+`String` → `Varchar(10)`), two classes that some class extends both of, and a type parameter
+or a function or relation type on either side. The defect is located at the `cast` and reads
+`Cast will always fail: Integer cannot be cast to String`.
+
+In tests, `TestCompilationFromGrammarTestSuite.test(code, null, expectedDefects)` compares the
+pretty message of every defect (`COMPILATION error at [3:7-10]: …`), and `test(code)` asserts
+there is none.
+
 ---
 
 ## 5. Key Internal Classes
 
 ### `PureModel`
 
-The top-level compilation result. Holds all index maps, the `Handlers` registry, and the
-`CompiledExecutionSupport`. Exposes lookup methods:
+The top-level compilation result. Holds all index maps, the `Handlers` registry, the
+`CompiledExecutionSupport`, and the defects found while building it (§4.11). Exposes lookup
+methods:
 
 ```java
 pureModel.getClass("my::domain::Person", sourceInfo);
@@ -1168,7 +1227,7 @@ The compiler is exposed via two HTTP endpoints:
 ```text
 POST /api/pure/v1/compilation/compile
   body: PureModelContextData (JSON)
-  → compiles the model and returns any warnings/errors
+  → compiles the model and returns its defects (§4.11); fails with 400 when one is an ERROR
 
 POST /api/pure/v1/compilation/lambdaReturnType
   body: { lambda, model } (JSON)
@@ -1192,3 +1251,5 @@ repeated requests for the same model version reuse the compiled graph rather tha
 | `FunctionHandler not initialised` | The function's full Pure descriptor doesn't match what's in `legend-pure` metadata; check the function descriptor string matches exactly |
 | Handler validation fails with "Duplicate parameter size" | Two handlers for the same function name have the same parameter count without a discriminating dispatch guard |
 | Type not found in second pass | Element was registered in the wrong index during first pass (e.g. stored in `typesIndex` but looked up via `getStore`) |
+| `Cast will always fail: Integer cannot be cast to …Relation<…>` | A stub such as `1->cast(@Relation<…>)` gives a function a type; cast an empty value instead, `[]->cast(@Relation<…>)` (§4.11) |
+| A test expecting no defects finds `COMPILATION error at …` | The model has an `ERROR` defect, which `test(code)` reports like any other defect; expect it with `test(code, null, expectedDefects)` or fix the model |

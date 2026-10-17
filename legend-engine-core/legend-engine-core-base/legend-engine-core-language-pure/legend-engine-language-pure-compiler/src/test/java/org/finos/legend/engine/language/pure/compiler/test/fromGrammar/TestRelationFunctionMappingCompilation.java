@@ -127,26 +127,26 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
     private static final String FUNCTIONS_SOURCE = "###Pure\n" +
             "function my::personFunction(): meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
             "}\n" +
             "function my::firmFunction(): meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGALNAME:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], LEGALNAME:String[1])>);\n" +
             "}\n" +
             "function my::addressFunction(): meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(CITY:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(CITY:String[1])>);\n" +
             "}\n" +
             "function my::personFunctionTyped(): meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
             "}\n";
 
     /** Quoted-column variant used by §quoted-column tests below. */
     private static final String QUOTED_COL_FUNCTION_SOURCE = "###Pure\n" +
             "function my::personFunctionQuoted(): meta::pure::metamodel::relation::Relation<('FIRST NAME':String[1], AGE:Integer[1])>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<('FIRST NAME':String[1], AGE:Integer[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<('FIRST NAME':String[1], AGE:Integer[1])>);\n" +
             "}\n";
 
     /** Enum + PersonWithGender used by enumeration-transformer tests. */
@@ -159,7 +159,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
             "}\n" +
             "function my::personWithGenderFunction(): meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], GENDER:String[1])>);\n" +
+            "  []->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], GENDER:String[1])>);\n" +
             "}\n";
 
     private static final String STANDARD_FIXTURE = CLASSES_SOURCE + FUNCTIONS_SOURCE;
@@ -759,7 +759,7 @@ public class TestRelationFunctionMappingCompilation extends TestCompilationFromG
                 "}\n" +
                 "function my::optionalColumnFunction(): meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(LEGALNAME:String[0..1])>);\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(LEGALNAME:String[0..1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +

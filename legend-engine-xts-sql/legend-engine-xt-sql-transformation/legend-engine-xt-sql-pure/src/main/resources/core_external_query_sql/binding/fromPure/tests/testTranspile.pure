@@ -1965,6 +1965,59 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCastDecimalToBigint():Boolean[1]
+{
+  test('SELECT CAST(Decimal AS BIGINT) AS "bigint", CAST(Decimal AS SMALLINT) AS "smallint" FROM service."/service/service1"',
+
+    [
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | round($row.getDecimal('Decimal')), 'bigint'),
+          col(row:TDSRow[1] | round($row.getDecimal('Decimal')), 'smallint')
+        ])
+      },
+
+      {|FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->project(~[bigint : x|$x.Decimal->round(), smallint : x|$x.Decimal->round()])
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCastIntegerToBoolean():Boolean[1]
+{
+  test('SELECT CAST(Integer AS BOOLEAN) AS "boolean" FROM service."/service/service1"',
+
+    [
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | $row.getInteger('Integer') != 0, 'boolean')
+        ])
+      },
+
+      {|FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->project(~[boolean : x|$x.Integer != 0])
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCastsUnsupported():Boolean[1]
+{
+  error('SELECT CAST(Boolean AS INTEGER) AS "integer" FROM service."/service/service1"', 'Unsupported: cast from Boolean to Integer');
+  error('SELECT CAST(Integer AS DATE) AS "date" FROM service."/service/service1"', 'Unsupported: cast from Integer to StrictDate');
+  error('SELECT CAST(Float AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"', 'Unsupported: cast from Float4 to DateTime');
+  error('SELECT CAST(StrictDate AS INTEGER) AS "integer" FROM service."/service/service1"', 'Unsupported: cast from StrictDate to Integer');
+  error('SELECT CAST(DateTime AS BOOLEAN) AS "boolean" FROM service."/service/service1"', 'Unsupported: cast from Timestamp to Boolean');
+  error('SELECT CAST("The Enum Value" AS INTEGER) AS "integer" FROM service."/service/service3"', 'Unsupported: cast from MyEnum to Integer');
+}
+
 //CAST
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateCasts():Boolean[1]
 {
