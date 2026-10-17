@@ -374,7 +374,12 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                         s:SelectSQLQuery[1]|^$s(filteringOperation = $s.filteringOperation->map(f|$f->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide)));,
                         t:TableAlias[1]| $t,
                         a:Alias[1]|^$a(relationalElement = $a.relationalElement->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide));,
-                        d:DynaFunction[1]|^DynaFunction(name=$d.name, parameters=$d.parameters->map(p | $p->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide))),
+                        d:DynaFunction[1]|let parameters = $d.parameters->map(p | $p->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide));
+                                          let readsPaddedUnionColumn = $parameters->filter(p | $p->instanceOf(TableAliasColumn))->cast(@TableAliasColumn)
+                                                                         ->exists(c | ($sourceIndex != -1 && $c.alias == $newSourceAlias) || ($targetIndex != -1 && $c.alias == $newTargetAlias));
+                                          if($readsPaddedUnionColumn && ($d.name == 'equal' || $d.name == 'nullSafeEqual'),
+                                             | $parameters->comparedNullUnsafe(),
+                                             | ^DynaFunction(name = $d.name, parameters = $parameters));,
                         op:UnaryOperation[1]|^$op(nested=$op.nested->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide)),
                         op:BinaryOperation[1]|^$op(left=$op.left->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide), right=$op.right->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide)),
                         op:VariableArityOperation[1]|^$op(args=$op.args->map(arg | $arg->modifyColumnNameInOperation($sourceIndex, $targetIndex, $srcMap, $targetMap, $newSourceAlias, $newTargetAlias, $sourceTable, $targetTable, $targetForSelfJoinFromJoin, $processingSide))),
@@ -1482,4 +1487,15 @@ function meta::relational::functions::pureToSqlQuery::union::removeUnionOrJoins(
     ])
   };
   meta::relational::postProcessor::transformNonCached($s, $transformFunction)->cast(@SelectSQLQuery);
+}
+
+// Each union branch pads the other branches' columns with null, so comparing them null-safely (as a filter renders
+// equal on nullable columns) would pair up rows of unrelated branches.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::comparedNullUnsafe(parameters:RelationalOperationElement[*]):DynaFunction[1]
+{
+   ^DynaFunction(name = 'equal', parameters = $parameters->map(p | $p->match([
+      c:TableAliasColumn[1] | let column = $c.column;
+                              ^$c(column = ^$column(nullable = false));,
+      o:RelationalOperationElement[1] | $o
+   ])));
 }

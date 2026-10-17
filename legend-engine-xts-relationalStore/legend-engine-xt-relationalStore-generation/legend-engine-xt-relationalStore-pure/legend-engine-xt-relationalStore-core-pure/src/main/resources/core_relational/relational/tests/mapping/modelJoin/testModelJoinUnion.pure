@@ -280,6 +280,19 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 }
 
 // =============================================================================
+// Non-union ModelJoin on a NOT NULL -> PRIMARY KEY relation-function key, used
+// inside exists() (which triggers the filter null-safety rule). Before this fix
+// this rendered null-safe ("is not distinct from") even though both sides of the
+// join are non-nullable (fullTimeTable.FIRMID NOT NULL, firmTable.ID PRIMARY KEY).
+// Contrast with testUnionWithExistsFilter below, where a genuinely nullable key
+// column still needs — and gets — the null-safe comparison.
+function <<test.Test>> meta::relational::tests::mapping::modelJoin::union::testDirectRelationFunctionJoinOnNotNullKeyIsPlainEqualInFilter():Boolean[1]
+{
+  let sql = meta::relational::functions::sqlstring::toSQLString(|meta::relational::tests::mapping::modelJoin::domain::Firm.all()->filter(f | $f.employees->exists(e | $e.lastName == 'Smith')), meta::relational::tests::mapping::modelJoin::union::DirectRelationFunctionMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+  assertEquals('select "dbAccessor_d#4".ID as "ID", "dbAccessor_d#4".LEGALNAME as "LEGALNAME", "dbAccessor_d#4".CITY as "CITY", "dbAccessor_d#4".COUNTRY as "COUNTRY", "dbAccessor_d#4".CODE as "CODE" from (select "_sub_d#2".ID as ID, "_sub_d#2".LEGALNAME as LEGALNAME, "_sub_d#2".CITY as CITY, "_sub_d#2".COUNTRY as COUNTRY, "_sub_d#2".CODE as CODE from firmTable as "_sub_d#2") as "dbAccessor_d#4" where exists (select 1 from (select "dbAccessor_d#3_mj_tgt_d#2".ID as "ID", "dbAccessor_d#3_mj_tgt_d#2".FIRSTNAME as "FIRSTNAME", "dbAccessor_d#3_mj_tgt_d#2".LASTNAME as "LASTNAME", "dbAccessor_d#3_mj_tgt_d#2".FIRMID as "FIRMID", "dbAccessor_d#3_mj_tgt_d#2".AGE as "AGE" from (select "_sub_d#3_mj_tgt".ID as ID, "_sub_d#3_mj_tgt".FIRSTNAME as FIRSTNAME, "_sub_d#3_mj_tgt".LASTNAME as LASTNAME, "_sub_d#3_mj_tgt".FIRMID as FIRMID, "_sub_d#3_mj_tgt".AGE as AGE from fullTimeTable as "_sub_d#3_mj_tgt" where "_sub_d#3_mj_tgt".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2" where "dbAccessor_d#3_mj_tgt_d#2".LASTNAME = \'Smith\') as "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3" where "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3"."FIRMID" = "dbAccessor_d#4"."ID" and "dbAccessor_d#3_mj_tgt_d#2_d#3_mj_tgt_d#3"."LASTNAME" = \'Smith\')', $sql);
+}
+
+// =============================================================================
 // Union source + exists() filter
 // =============================================================================
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionWithExistsFilter():Boolean[1]

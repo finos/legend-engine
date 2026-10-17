@@ -188,7 +188,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::graphFetch::p
     '                   (\n' +
     '                     type = meta::pure::metamodel::type::Any\n' +
     '                     resultColumns = [("cross_join_op$", BIT), ("pk_0", VARCHAR(1024)), ("ceoId", INT), ("name", VARCHAR(1024)), ("parent_cross_key_0", INT)]\n' +
-    '                     sql = select distinct "cross_temp_table_node_0_0".ceoId = "root"."identifier" as "cross_join_op$", "root"."name" as "pk_0", "root"."identifier" as "ceoId", "root"."name" as "name", "cross_temp_table_node_0_0".ceoId as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join (select "ceo_1".name as "name", "ceo_1".identifier as "identifier" from (select "ceo_2".name as name, "ceo_2".identifier as identifier from ceo as "ceo_2") as "ceo_1") as "root" on (1 = 1) where "cross_temp_table_node_0_0".ceoId is not distinct from "root"."identifier"\n' +
+    '                     sql = select distinct "cross_temp_table_node_0_0".ceoId = "root"."identifier" as "cross_join_op$", "root"."name" as "pk_0", "root"."identifier" as "ceoId", "root"."name" as "name", "cross_temp_table_node_0_0".ceoId as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join (select "ceo_1".name as "name", "ceo_1".identifier as "identifier" from (select "ceo_2".name as name, "ceo_2".identifier as identifier from ceo as "ceo_2") as "ceo_1") as "root" on (1 = 1) where "cross_temp_table_node_0_0".ceoId = "root"."identifier"\n' +
     '                     connection = TestDatabaseConnection(type = "H2")\n' +
     '                   )\n' +
     '                children = [\n' +

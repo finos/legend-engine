@@ -671,3 +671,31 @@ Mapping meta::relational::tests::mapping::modelJoin::union::MixedUnionNavigating
     {employees: Person[1], firm: Firm[1]|$employees.address.city == $firm.city}
   }
 )
+
+// =========================================================================
+// Non-union relation-function ModelJoin on a NOT NULL -> PRIMARY KEY key, used to
+// exercise gap 1: RelationFunctionColumn never set `nullable`, so pureToSQL's
+// filter-equality null-safety check (column.nullable != false) always treated a
+// relation-function-backed column as nullable regardless of the source schema.
+Mapping meta::relational::tests::mapping::modelJoin::union::DirectRelationFunctionMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::fullTimeTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)

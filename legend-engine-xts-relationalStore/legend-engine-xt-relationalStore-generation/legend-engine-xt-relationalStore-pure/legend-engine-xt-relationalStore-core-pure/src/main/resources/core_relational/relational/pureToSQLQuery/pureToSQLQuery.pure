@@ -2377,9 +2377,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildSy
   let rfColumns = $allCols->map(c |
     let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
     ^RelationFunctionColumn(
-      column = $c,
-      name   = $c.name->toOne()->addQuotesIfNecessary(),
-      type   = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+      column   = $c,
+      name     = $c.name->toOne()->addQuotesIfNecessary(),
+      type     = meta::relational::mapping::pureTypeToDataType($colType)->toOne(),
+      nullable = $c.classifierGenericType.multiplicityArguments->at(0)->getLowerBound() == 0
     );
   );
 

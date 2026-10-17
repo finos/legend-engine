@@ -542,9 +542,10 @@ function <<access.private>> meta::relational::mapping::relationFunctionColumnsAs
     ^TableAliasColumn(
       alias = $alias,
       column = ^RelationFunctionColumn(
-        column = $c,
-        name = $c.name->toOne()->addQuotesIfNecessary(),
-        type = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+        column   = $c,
+        name     = $c.name->toOne()->addQuotesIfNecessary(),
+        type     = meta::relational::mapping::pureTypeToDataType($colType)->toOne(),
+        nullable = $c.classifierGenericType.multiplicityArguments->at(0)->getLowerBound() == 0
       )
     );
   );
