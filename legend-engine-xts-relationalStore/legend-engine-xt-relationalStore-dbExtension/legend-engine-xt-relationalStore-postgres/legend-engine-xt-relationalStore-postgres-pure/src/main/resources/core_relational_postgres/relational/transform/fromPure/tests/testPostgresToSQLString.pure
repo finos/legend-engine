@@ -121,7 +121,6 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
       assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
 }
-
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithPosition():Boolean[1]
 {
    let postgresSql = toSQLString(

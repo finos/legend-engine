@@ -175,6 +175,7 @@ Class meta::relational::tests::mapping::relation::variant::comprehensive::Person
   withExtraName   : Integer[1];
   // §C — round-trip: toJson
   firmDetailsJson : String[1];
+  legalNameJson   : String[1];
   // §D — toMany (direct array flatten)
   otherNamesDirect : String[*];
   countriesDirect  : String[*];
@@ -408,6 +409,7 @@ Mapping meta::relational::tests::mapping::relation::variant::comprehensive::Vari
     withExtraName   : $row.FIRM_DETAILS->get('otherNames')->toMany(@String)->add('NEW')->size(),
     // §C — round-trip: toJson
     firmDetailsJson : $row.FIRM_DETAILS->toOne()->toJson(),
+    legalNameJson   : $row.FIRM_DETAILS->get('legalName')->toOne()->toJson(),
     // §D — toMany (direct array flatten — produces multiple rows)
     otherNamesDirect : $row.FIRM_DETAILS->get('otherNames')->toMany(@String),
     countriesDirect  : $row.FIRM_DETAILS->get('countries')->toMany(@String),

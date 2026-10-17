@@ -1203,6 +1203,20 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
   );
 }
 
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testLengthOfToJsonStringKeepsQuotes(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name' : x|$x.firstName,
+        'JSON Length': x|$x.legalNameJson->length()
+      ]),
+    'First Name,JSON Length\n' +
+    'Fabrice,8\n'
+  );
+}
+
 // =============================================================================
 // Test 54 — Filter on last() result (§A)
 // Query: filter(lastOtherName == 'O2') + project(firstName, firmName)

@@ -23,3 +23,13 @@ function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::
     []
   );
 }
+
+function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::pct::postgres::semistructured::relationFunctionMappingTestCollection(): meta::pure::test::PureTestCollection[1]
+{
+  meta::relational::tests::mapping::relation->meta::pure::test::collectParameterizedTests(
+    'postgres',
+    meta::pure::testConnection::getTestConnection(DatabaseType.Postgres),
+    [],
+    []
+  );
+}
