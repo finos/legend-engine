@@ -494,7 +494,7 @@ public class HelperMappingBuilder
         {
             String superType = superTypePtr.path;
             Generalization generalization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(context.resolveGenericType(superType))._specific(mappingClass);
-            context.resolveType(superType)._specializationsAdd(generalization);
+            context.pureModel.addSpecialization(context.resolveType(superType), generalization);
             return generalization;
         });
         mappingClass._generalizations(generalizations);
@@ -663,7 +663,7 @@ public class HelperMappingBuilder
                 GenericType superType = context.newGenericType(setImplementation._class());
                 Generalization newGeneralization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass(M3Paths.Generalization))._specific(mappingClass)._general(superType);
                 mappingClass._generalizations(Lists.immutable.with(newGeneralization));
-                setImplementation._class()._specializationsAdd(newGeneralization);
+                context.pureModel.addSpecialization(setImplementation._class(), newGeneralization);
 
                 mappingClass._properties(ListIterate.collect(localPropertyMappings, pm ->
                 {

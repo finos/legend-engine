@@ -1526,7 +1526,7 @@ public class HelperRelationalBuilder
                     ._specific(mappingClass)
                     ._general(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(pureClass));
             mappingClass._generalizations(Lists.mutable.with(g));
-            pureClass._specializationsAdd(g);
+            context.pureModel.addSpecialization(pureClass, g);
             mappingClass._properties(localMappingProperties.collect(propertyMapping ->
             {
                 GenericType returnGenericType = context.resolveGenericType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation);
@@ -2018,7 +2018,7 @@ public class HelperRelationalBuilder
         PropertyOwner owner = property._owner();
         if ((parent._id() == null) && (owner instanceof Association))
         {
-            Property<?, ?> prop = ((Class<?>) property._genericType()._rawType())._propertiesFromAssociations().detect(p -> owner.equals(p._owner()));
+            Property<?, ?> prop = context.pureModel.getPropertiesFromAssociations((Class<?>) property._genericType()._rawType()).detect(p -> owner.equals(p._owner()));
             return HelperModelBuilder.getTypeFullPath(prop._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
         }
         return parent._id();

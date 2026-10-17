@@ -346,7 +346,7 @@ public class HelperValueSpecificationBuilder
         }
         catch (Exception e)
         {
-            return HelperModelBuilder.getOwnedAppliedProperty(aClass, name, sourceInformation, context.pureModel.getExecutionSupport());
+            return HelperModelBuilder.getOwnedAppliedProperty(context.pureModel, aClass, name, sourceInformation);
         }
     }
 

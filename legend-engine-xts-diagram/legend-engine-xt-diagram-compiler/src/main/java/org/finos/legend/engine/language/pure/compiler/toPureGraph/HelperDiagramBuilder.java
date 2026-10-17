@@ -77,7 +77,7 @@ public class HelperDiagramBuilder
             Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(association, compileContext.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
             return property;
         }
-        return HelperModelBuilder.getAllOwnedAppliedProperty(propertyOwner, propertyName, sourceInformation, compileContext.pureModel.getExecutionSupport());
+        return HelperModelBuilder.getAllOwnedAppliedProperty(compileContext.pureModel, propertyOwner, propertyName, sourceInformation);
     }
 
     public static Root_meta_pure_metamodel_diagram_PropertyView buildPropertyView(PropertyView propertyView, CompileContext context, Root_meta_pure_metamodel_diagram_Diagram diagram)
