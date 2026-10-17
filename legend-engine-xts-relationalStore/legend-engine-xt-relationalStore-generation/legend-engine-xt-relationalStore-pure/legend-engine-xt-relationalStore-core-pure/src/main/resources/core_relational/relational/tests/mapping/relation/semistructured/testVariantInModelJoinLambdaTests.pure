@@ -87,7 +87,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 //   Bob   {X1, X2, X2}: matches F4 (first=X1), F34 (at(1)/last=X2)
 //   Carol {O5, O6, O6}: matches F5 (first=O5)
 //   Dave  {NULL}:       no matches
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testIndexedAccess(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testIndexedAccess(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T1_1_Mapping,
     |Person.all()->project(~[
@@ -114,7 +114,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (size=2, distinct=1) → F3 (2, 1) AND F4 (2, 1) — fan-out
 //   Carol (size=2, distinct=2) → F2 (2, 2)
 //   Dave  (size=0, distinct=1) → no Firm with (0, 1)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testCardinalityAndDistinct(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testCardinalityAndDistinct(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T1_2_Mapping,
     |Person.all()->project(~[
@@ -135,7 +135,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // T1.3 — indexOf
 //   Alice/Carol (indexOf=1) → F6 (expectedCount=1), F10 (expectedCount=1)
 //   Bob/Dave   (indexOf=-1) → F7 (expectedCount=-1)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testMembership(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testMembership(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T1_3_Mapping,
     |Person.all()->project(~[
@@ -159,7 +159,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (0, NULL, NULL) → no (NULL==NULL is false in SQL)
 //   Carol (500, 500, 500) → F2
 //   Dave  (30, 20, 10)    → F3
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testNumericAggregations(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testNumericAggregations(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T1_4_Mapping,
     |Person.all()->project(~[
@@ -181,7 +181,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   fold='X1X2',   take(2).size=2 → F16
 //   Carol fold='O5O6',   take(2).size=2 → F17
 //   Dave  fold='',       take(2).size=0 → no (no Firm with EXPECTED_COUNT=0)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFoldAndTake(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFoldAndTake(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T1_5_Mapping,
     |Person.all()->project(~[
@@ -207,7 +207,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (no O*, X2)→ no (first clause NULL)
 //   Carol (O5, O5)   → no Firm (O5, O5)
 //   Dave  (NULL, NULL) → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenIndexed(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenIndexed(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T2_1_Mapping,
     |Person.all()->project(~[
@@ -230,7 +230,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (size=1) → F6 (expectedCount=1), F10 (expectedCount=1)
 //   Carol (size=3) → F1, F11, F32
 //   Dave  (size=1) → F6, F10
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenCardinality(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenCardinality(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T2_2_Mapping,
     |Person.all()->project(~[
@@ -258,7 +258,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (0, NULL)  → no
 //   Carol (500, 500) → F2 (500, 500)
 //   Dave  (0, 20)    → F21 (0, 20)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenNumericAgg(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFilterThenNumericAgg(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T2_3_Mapping,
     |Person.all()->project(~[
@@ -282,7 +282,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // T3.1 — 2-hop nav + first.details + size
 //   Alice (D1, 3) → F11 (D1, 3)
 //   Others: no Firm matches their (details, size) pair
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedDirectCollapse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedDirectCollapse(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T3_1_Mapping,
     |Person.all()->project(~[
@@ -302,7 +302,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // T3.2 — at(1).details AND first.details.toUpper (against altCode.toUpper)
 //   Alice (D2, D1) → F24 (D2, D1)
 //   Others: no Firm
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedAtNAndScalarFn(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testNestedAtNAndScalarFn(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T3_2_Mapping,
     |Person.all()->project(~[
@@ -345,7 +345,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 //   Alice (CustA, R1) → F26
 //   Carol (CustC, R2) → F27
 //   Bob/Dave: empty orders → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testPostCollapseClassNav(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testPostCollapseClassNav(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T3_4_Mapping,
     |Person.all()->project(~[
@@ -392,7 +392,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 //   Bob   (FirmA, X1) → F4 (region=FirmA, aliases.first=X1)
 //   Carol (FirmB, O5) → F2 (region=FirmB, aliases.first=O5)
 //   Dave  (FirmX, NULL) → NULL second clause → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideScalarAndFirst(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideScalarAndFirst(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T4_1_Mapping,
     |Person.all()->project(~[
@@ -413,7 +413,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Alice (3, CustA) → F1 (productLines.size=3, contacts.first.name=CustA)
 //   Carol (3, CustC) → no Firm with contacts.first.name=CustC AND productLines.size=3
 //   Bob/Dave: NULL customer.name → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideSizeAndPostCollapse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideSizeAndPostCollapse(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T4_2_Mapping,
     |Person.all()->project(~[
@@ -433,7 +433,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // T4.3 — filter+first.details == filter+first.name on both sides
 //   Alice (D1) == F30.contacts.filter(lead).first.name (D1) → F30
 //   Others: no contacts with matching lead names
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideDeepFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testCrossSideDeepFilter(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T4_3_Mapping,
     |Person.all()->project(~[
@@ -459,7 +459,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (3, 'X1-FR') → F32
 //   Carol (5, 'O5-US') → F33
 //   Dave  (1, NULL)    → no (NULL+'-'+'JP' = NULL in SQL)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testArithmeticAndConcatOfCollapses(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testArithmeticAndConcatOfCollapses(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T5_1_Mapping,
     |Person.all()->project(~[
@@ -481,7 +481,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   contains(UK)=false → last=X2 → F34 (CODE=X2)
 //   Carol contains(UK)=true → first=O5 → F5 (CODE=O5)
 //   Dave  contains(UK)=false → last=NULL → no
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testIfThenElseOverCollapse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testIfThenElseOverCollapse(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T5_2_Mapping,
     |Person.all()->project(~[
@@ -510,7 +510,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (2, 0)   matches F10 (1, 0)
 //   Carol (2, 500) matches F10 (1, 0)
 //   Dave  (0, 30)  matches nothing (size=0 can't be > any expectedCount in scope)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testInequalityGtAndGe(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testInequalityGtAndGe(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T6_1_Mapping,
     |Person.all()->project(~[
@@ -540,7 +540,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Bob   (FirmA) → F4: X1 != X1 → false; entityType [] != X2 → TRUE (Pure) → match
 //   Carol (FirmB) → F2: O5 != A3 → true → match
 //   Dave  (FirmX) → F1, F3: otherNames->first() [] != CODE → TRUE (Pure) → match both
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testInequalityNe(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testInequalityNe(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T6_2_Mapping,
     |Person.all()->project(~[
@@ -565,7 +565,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 
 // T7.1 — empty array on LHS (focused on Dave via filter)
 //   Dave.otherNames=[] → ->first() returns [] → comparison fails → no match → NULL row
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testEmptyArrayLhs(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testEmptyArrayLhs(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T7_1_Mapping,
     |Person.all()->filter(p | $p.firstName == 'Dave')->project(~[
@@ -625,7 +625,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 
 // T7.4 — fan-out: Alice's first()=O1 matches F14, F18, F35 (all CODE=O1)
 //   Asserts the full output to verify cardinality fan-out is preserved.
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testFanOutOneToMany(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testFanOutOneToMany(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T7_4_Mapping,
     |Person.all()->project(~[
@@ -713,7 +713,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Q4 — TDS ->sort() over a column populated by a variant aggregation
 //   Project total revenue (sum of revenueHistory), then sort TDS ascending.
 //   Bob (empty → 0), Dave (30), Alice (350), Carol (500)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testSortByVariantAggregation(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testSortByVariantAggregation(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -757,7 +757,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 //   Per Person: firstName, FirstCtry (countries.first().toUpper),
 //               CtrySize (countries.size), RevOrZero (if-isEmpty guard)
 //   Alice ('US', 3, 350.0); Bob ('FR', 1, 0.0); Carol ('US', 3, 500.0); Dave ('JP', 1, 30.0)
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testComplexProjectionWithFnCalls(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testComplexProjectionWithFnCalls(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -873,7 +873,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
 // Routability: a semi-structured expression must not make its siblings, or the calls after it, unroutable
 // =============================================================================
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testSemiStructuredExistsAndModelJoinSiblingInFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testSemiStructuredExistsAndModelJoinSiblingInFilter(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -887,7 +887,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testProjectThroughModelJoinAfterSemiStructuredFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testProjectThroughModelJoinAfterSemiStructuredFilter(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecuteWithDept($conn,
     |Person.all()
@@ -939,7 +939,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant:
 // Tier 8 — map / fold on the Firm (ModelJoin target) side; rows match the T4 originals
 // =============================================================================
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testTargetSideMapThenFirst(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testTargetSideMapThenFirst(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T8_1_Mapping,
     |Person.all()->project(~[
@@ -956,7 +956,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::varian
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::modelJoin::testTargetSideFold(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::modelJoin::testTargetSideFold(conn: Connection[1]):Boolean[1]
 {
   variantInMJExecute($conn, T8_2_Mapping,
     |Person.all()->project(~[

@@ -111,6 +111,7 @@ import meta::pure::metamodel::variant::*;
 Class meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Firm
 {
   firmName: String[1];
+  codes   : String[*];
 }
 
 Class meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person
@@ -310,9 +311,9 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   'PERSON_SCHEMA\n' +
   'PERSON_TABLE_1\n' +
   'ID,FIRM_DETAILS,NAME\n' +
-  '1,"{""firm"": {""firmName"": ""firm_A""}}",ABC\n' +
-  '3,"{""firm"": {""firmName"": ""firm_B""}}",PQR\n' +
-  '5,"{""firm"": {""firmName"": ""firm_C""}}",XYZ\n'
+  '1,"{""firm"": {""firmName"": ""firm_A"", ""codes"": [""A1"", ""A2""]}}",ABC\n' +
+  '3,"{""firm"": {""firmName"": ""firm_B"", ""codes"": [""B1""]}}",PQR\n' +
+  '5,"{""firm"": {""firmName"": ""firm_C"", ""codes"": [""C1"", ""C2"", ""C3""]}}",XYZ\n'
 }
 
 function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionCsv2(): String[1]
@@ -320,9 +321,9 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   'PERSON_SCHEMA\n' +
   'PERSON_TABLE_2\n' +
   'ID,FIRM_DETAILS,NAME\n' +
-  '2,"{""firmName"": ""firm_D""}",MNO\n' +
-  '4,"{""firmName"": ""firm_E""}",DEF\n' +
-  '6,"{""firmName"": ""firm_F""}",STU\n'
+  '2,"{""firmName"": ""firm_D"", ""codes"": [""D1""]}",MNO\n' +
+  '4,"{""firmName"": ""firm_E"", ""codes"": [""E1"", ""E2""]}",DEF\n' +
+  '6,"{""firmName"": ""firm_F"", ""codes"": [""F1""]}",STU\n'
 }
 
 function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
@@ -343,7 +344,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBinding(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBinding(conn: Connection[1]):Boolean[1]
 {
   meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
     $conn,
@@ -359,7 +360,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBindingAndFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBindingAndFilter(conn: Connection[1]):Boolean[1]
 {
   meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
     $conn,
@@ -370,6 +371,22 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
     'firm_A\n' +
     'firm_B\n' +
     'firm_D\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredArraySizeThroughUnion(conn: Connection[1]):Boolean[1]
+{
+  meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
+    $conn,
+    |meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person.all()
+      ->project(~['Firm/FirmName': x|$x.firm.firmName, 'Code Count': x|$x.firm.codes->size()]),
+    'Firm/FirmName,Code Count\n' +
+    'firm_A,2\n' +
+    'firm_B,1\n' +
+    'firm_C,3\n' +
+    'firm_D,1\n' +
+    'firm_E,2\n' +
+    'firm_F,1\n'
   );
 }
 
@@ -431,7 +448,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::testSemiStructuredUnionFlattenWithAssociation(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::testSemiStructuredUnionFlattenWithAssociation(conn: Connection[1]):Boolean[1]
 {
   meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::lateralExecute(
       $conn,

@@ -221,7 +221,7 @@ import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::mapping::union::relation::combinations::*;
 import meta::pure::mapping::*;
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterAndProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_FilterAndProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
@@ -240,7 +240,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_ProjectToManyEmployees():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_ProjectToManyEmployees():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -260,7 +260,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_GroupByFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testBothSidesUnion_GroupByFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(~[firm:p|$p.firm.legalName, name:p|$p.lastName])->groupBy(~firm, ~count:x|$x.name:y|$y->count()),
@@ -312,7 +312,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSubAggregationsToFirmUnion_FilterAndProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSubAggregationsToFirmUnion_FilterAndProject():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
@@ -329,7 +329,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_FilterAndProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_FilterAndProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
@@ -345,7 +345,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_ProjectToManyEmployees():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testRelationAndRelationalFirmUnion_ProjectToManyEmployees():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -365,7 +365,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
 {
    let result = execute(
       |Colleague.all()->filter(c|$c.name == 'Taylor')->project(~[name:c|$c.name, coworker:c|$c.coworkers.name]),
@@ -495,7 +495,7 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::mapping::union::relation::combinations::*;
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterAndProjectThroughFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterAndProjectThroughFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName, firm:p|$p.firm.legalName]),
@@ -514,7 +514,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_ProjectToManyEmployees():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_ProjectToManyEmployees():Boolean[1]
 {
    let result = execute(
       |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
@@ -534,7 +534,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_GroupByFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_GroupByFirm():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(~[firm:p|$p.firm.legalName, name:p|$p.lastName])->groupBy(~firm, ~count:x|$x.name:y|$y->count()),
@@ -551,7 +551,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~firm->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterOnEmployeesOfFirm():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedBothSides_FilterOnEmployeesOfFirm():Boolean[1]
 {
    let result = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Taylor') && $f.employees->exists(e|$e.lastName == 'Scott'))->project(~[legalName:f|$f.legalName]),
@@ -602,7 +602,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union:
      $result.values->at(0)->sort([~name->ascending()])->toString());
 }
 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::combinations::testMixedSelfModelJoinAcrossUnion_ProjectCoworkers():Boolean[1]
 {
    let result = execute(
       |Colleague.all()->filter(c|$c.name == 'Taylor')->project(~[name:c|$c.name, coworker:c|$c.coworkers.name]),

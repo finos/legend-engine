@@ -233,6 +233,23 @@ Mapping meta::relational::tests::mapping::relation::semistructured::arrayscalar:
   }
 )
 
+// The firm's arrays are this mapping's only semi-structured property mappings, all inside the embedded block.
+Mapping meta::relational::tests::mapping::relation::semistructured::arrayscalar::ArrayScalarEmbeddedFirmMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::arrayscalar::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName : LASTNAME,
+    firm
+    (
+      legalName : $row.FIRM_DETAILS->get('legalName')->to(@String)->toOne(),
+      otherNames: $row.FIRM_DETAILS->get('otherNames')->toMany(@String),
+      addresses : $row.FIRM_DETAILS->get('addresses')->toMany(@meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address)
+    )
+  }
+)
+
 
 ###Pure
 import meta::pure::test::*;
@@ -275,6 +292,32 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
 function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::semiRecordExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
 {
   executeLegendFunction($func, ArrayScalarSemiRecordMapping, SemiDB, $conn, [semiRecordCsv()], $expected, false);
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::embeddedFirmExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, ArrayScalarEmbeddedFirmMapping, H2DB, $conn, [personCsv()], $expected, false);
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArraySizeInsideEmbeddedBlock(conn: Connection[1]):Boolean[1]
+{
+  embeddedFirmExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->size(), 'Address Count'),
+      col(x | $x.firm.otherNames->size(), 'Other Name Count')
+    ]),
+    'First Name,Firm Name,Address Count,Other Name Count\n' +
+    'Anthony,Firm X,1,2\n' +
+    'David,Firm B,1,2\n' +
+    'Fabrice,Firm A,2,2\n' +
+    'John,Firm X,2,2\n' +
+    'John,Firm X,2,2\n' +
+    'Oliver,Firm B,1,2\n' +
+    'Peter,Firm X,2,2\n'
+  );
 }
 
 // =============================================================================
@@ -403,7 +446,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,
@@ -484,7 +527,7 @@ function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute(
     $conn,

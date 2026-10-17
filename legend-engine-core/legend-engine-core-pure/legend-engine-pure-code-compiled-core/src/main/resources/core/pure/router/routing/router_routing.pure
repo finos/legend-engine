@@ -600,13 +600,21 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
    )->routeSubFunction($executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 }
 
+// A lambda's own parameters shadow outer variables of the same name, e.g. a match arm `s:` inside
+// a query that also captures an `s`.
+function <<access.private>> meta::pure::router::routing::lambdaBodyScope(f:FunctionDefinition<Any>[1], inScopeVars:Map<String, List<Any>>[1]):Map<String, List<Any>>[1]
+{
+  let params = $f->functionType().parameters->evaluateAndDeactivate().name;
+  newMap($inScopeVars->putAll($f->openVariableValues())->keyValues()->filter(kv | !$kv.first->in($params)));
+}
+
 function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let i = $state.value->cast(@InstanceValue)->toOne()->evaluateAndDeactivate();
    $i.values->at(0)->match(
       [
          f:FunctionDefinition<Any>[1] |
-            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
+            let results = processCollection($state, $f.expressionSequence->evaluateAndDeactivate()->toOne(), $executionContext, $vars, $f->lambdaBodyScope($inScopeVars), v:Any[1]|true, $extensions, ^$debug(space = $debug.space+'  '))->evaluateAndDeactivate();
 
             let last = $results->last()->toOne();
 

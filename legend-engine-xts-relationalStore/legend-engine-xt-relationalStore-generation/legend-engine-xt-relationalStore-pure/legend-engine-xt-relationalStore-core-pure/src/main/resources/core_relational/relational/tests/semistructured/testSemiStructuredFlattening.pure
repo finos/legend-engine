@@ -236,29 +236,22 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
     'flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_',
     $mapping,
     'First Name,Firm Name,Firm Other Name\n' +
-    'Anthony,Firm X,O1\n' +
-    'Anthony,Firm X,O2\n' +
-    'David,Firm B,O5\n' +
-    'David,Firm B,O6\n' +
-    'Fabrice,Firm A,O3\n' +
-    'Fabrice,Firm A,O4\n' +
-    'John,Firm X,O1\n' +
-    'John,Firm X,O1\n' +
-    'John,Firm X,O2\n' +
-    'John,Firm X,O2\n' +
-    'Oliver,Firm B,O5\n' +
-    'Oliver,Firm B,O6\n' +
-    'Peter,Firm X,O1\n' +
-    'Peter,Firm X,O2\n'
+    'Anthony,Firm X,null\n' +
+    'David,Firm B,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Oliver,Firm B,null\n' +
+    'Peter,Firm X,null\n'
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
 {
   testSemiStructuredPrimitivePropertyFilteringInProjectHelper($conn, 'flatten::mapping::H2Mapping');
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
 {
   testSemiStructuredPrimitivePropertyFilteringInProjectHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
 }
@@ -325,26 +318,12 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
     'First Name,Firm Name,Firm Address Name Line No\n' +
     'Peter,Firm X,1\n' +
     'Peter,Firm X,2\n' +
-    'Peter,Firm X,1\n' +
-    'Peter,Firm X,2\n' +
-    'John,Firm X,1\n' +
-    'John,Firm X,2\n' +
-    'John,Firm X,1\n' +
-    'John,Firm X,2\n' +
-    'John,Firm X,1\n' +
-    'John,Firm X,2\n' +
-    'John,Firm X,1\n' +
-    'John,Firm X,2\n' +
-    'Anthony,Firm X,1\n' +
-    'Anthony,Firm X,2\n' +
-    'Fabrice,Firm A,1\n' +
-    'Fabrice,Firm A,2\n' +
-    'Fabrice,Firm A,1\n' +
-    'Fabrice,Firm A,2\n' +
-    'Oliver,Firm B,1\n' +
-    'Oliver,Firm B,2\n' +
-    'David,Firm B,1\n' +
-    'David,Firm B,2\n'
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Anthony,Firm X,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'Oliver,Firm B,null\n' +
+    'David,Firm B,null\n'
   );
 }
 

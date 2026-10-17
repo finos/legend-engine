@@ -742,7 +742,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::semistru
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::testJoinOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::testJoinOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
 {
   meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::extractjoinExecute($conn,
     |meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::Person.all()->project(~[
@@ -761,7 +761,7 @@ function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semist
   );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::testJoinOnSemiStructuredPropertyWithQPFilter(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::testJoinOnSemiStructuredPropertyWithQPFilter(conn: Connection[1]):Boolean[1]
 {
   meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::extractjoinExecute($conn,
     |meta::relational::tests::mapping::relation::semistructured::misc::extractjoin::Person.all()->project(~[

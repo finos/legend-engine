@@ -248,7 +248,7 @@ function flatten::semiStructuredMultiLevelFlattening(): TabularDataSet[1]
     ->project([
         col(x | $x.firstName, 'First Name'),
         col(x | $x.firm.legalName, 'Firm Name'),
-        col(x | $x.firm.addresses->filter(a | $a.name == 'A')->subType(@flatten::model::AddressWithLines).lines.lineno, 'Firm Address Name Line No')
+        col(x | $x.firm.addresses->filter(a | $a.name == 'A1')->subType(@flatten::model::AddressWithLines).lines.lineno, 'Firm Address Name Line No')
     ])
 }
 
