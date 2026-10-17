@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unknown embedded data type: Unknown",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 27
+    }
+  }
+}

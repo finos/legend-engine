@@ -1,0 +1,10 @@
+
+function my::under_score::function_example(): Any[1]
+{
+  my::under_score::function_example2()
+}
+
+function my::under_score::function_example2(): Any[1]
+{
+  'a'
+}

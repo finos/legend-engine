@@ -1,0 +1,159 @@
+
+ServiceStore meta::external::store::service::showcase::store::ShowcaseServiceStore
+(
+   description : 'Showcase Service Store';
+
+   ServiceGroup TradeServices
+   (
+      path : '/trades';
+
+      Service AllTradeService
+      (
+         path : '/allTradesService';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service AllTradeSpecialCharactersService
+      (
+         path : '/allTradesSpecialCharactersService';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaBinding];
+      )
+
+      Service TradeByIdService
+      (
+         path : '/{trade id}';
+         method : GET;
+         parameters :
+         (
+            "trade id" : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByTradeDetailsService
+      (
+         path : '/details';
+         method : GET;
+         parameters :
+         (
+            "trade.details" : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+
+      Service TradeByTraderDetailsService
+      (
+         path : '/traderDetails';
+         method : GET;
+         parameters :
+         (
+            "trader.details" : String (location = query, allowReserved = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup ProductServices
+   (
+      path : '/products';
+
+      Service GetAllProductsService
+      (
+         path : '/getAllProducts';
+         method : GET;
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByIdService
+      (
+         path : '/getProductById/{id}';
+         method : GET;
+         parameters :
+         (
+            id : String (location = path)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameService
+      (
+         path : '/getProductByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+
+      Service ProductByNameAndDescriptionService
+      (
+         path : '/getProductByNameAndDescription';
+         method : GET;
+         parameters :
+         (
+            name        : String (location = query),
+            description : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::S_Product <- meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup FirmServices
+   (
+      path : '/firms';
+
+      Service FirmByName
+      (
+         path : '/getFirmByName';
+         method : GET;
+         parameters :
+         (
+            name : String (location = header)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+
+      Service FirmsByNames
+      (
+         path : '/getFirmsByNames';
+         method : GET;
+         parameters :
+         (
+            name : [String] (location = header, style = simple, explode = true)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding];
+      )
+   )
+
+   ServiceGroup PersonServices
+   (
+      path : '/persons';
+
+      Service PersonsByFirstAndMiddleName
+      (
+         path : '/getPersonsByFirstAndMiddleName';
+         method : GET;
+         parameters :
+         (
+            firstName : String (location = query),
+            middleName : String (location = query)
+         );
+         security : [];
+         response : [meta::external::store::service::showcase::domain::Person <- meta::external::store::service::showcase::store::personServiceStoreSchemaBinding];
+      )
+   )
+)

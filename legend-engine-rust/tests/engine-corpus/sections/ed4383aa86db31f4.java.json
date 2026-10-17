@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "executionParameters" : [ {
+        "key" : "PROD",
+        "mapping" : "test::mapping2",
+        "mappingSourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 36
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 37
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      }, {
+        "key" : "QA",
+        "mapping" : "test::mapping2",
+        "mappingSourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 41
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 42
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 32
+            }
+          } ],
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 32
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 32
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 32
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 32
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 30
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

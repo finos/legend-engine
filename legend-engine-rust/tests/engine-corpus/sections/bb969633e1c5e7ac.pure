@@ -1,0 +1,11 @@
+
+Mapping my::baseMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: [FIRSTNAME]
+    firstName: FIRSTNAME,
+    age: AGE
+  }
+)

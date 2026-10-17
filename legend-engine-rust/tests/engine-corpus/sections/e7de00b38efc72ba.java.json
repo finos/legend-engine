@@ -1,0 +1,180 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "join",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 11
+        },
+        "type" : "SQL",
+        "value" : {
+          "sql" : "select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable') as t "
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 188,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 105,
+          "startLine" : 11
+        },
+        "type" : "SQL",
+        "value" : {
+          "sql" : "select FIRM_ID, NAME from tb('meta::analytics::lineage::tests::db.firmTable')"
+        }
+      }, {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "JoinKind",
+          "sourceInformation" : {
+            "endColumn" : 198,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 191,
+            "startLine" : 11
+          }
+        } ],
+        "property" : "INNER",
+        "sourceInformation" : {
+          "endColumn" : 204,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 200,
+          "startLine" : 11
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 214,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 213,
+                "startLine" : 11
+              }
+            } ],
+            "property" : "FIRMID",
+            "sourceInformation" : {
+              "endColumn" : 221,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 216,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y",
+              "sourceInformation" : {
+                "endColumn" : 227,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 226,
+                "startLine" : 11
+              }
+            } ],
+            "property" : "FIRM_ID",
+            "sourceInformation" : {
+              "endColumn" : 235,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 229,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 224,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 223,
+            "startLine" : 11
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        }, {
+          "_type" : "var",
+          "name" : "y"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 235,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 211,
+          "startLine" : 11
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 102,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 99,
+        "startLine" : 11
+      }
+    }, {
+      "_type" : "boolean",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 12
+      },
+      "value" : true
+    } ],
+    "name" : "joinOnSQLAccessor__Boolean_1_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Boolean",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 9
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CORP",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 1
+        } ]
+      }, {
+        "enumValue" : "LLC",
+        "sourceValues" : [ {
+          "_type" : "integerSourceValue",
+          "value" : 2
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::IncType",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 3
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "a",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 3
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "a",
+    "sourceInformation" : {
+      "endColumn" : 26,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

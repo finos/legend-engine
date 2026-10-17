@@ -1,0 +1,11 @@
+
+Mapping mapping::simpleModelMapping
+(
+  include mapping test::mapping::DispatchMapping
+  include mapping test::mapping::Mapping
+  *model::TargetClass[my_mapping_id]: Pure
+  {
+    ~src model::SourceClass
+    name: $src.name
+  }
+)

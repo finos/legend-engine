@@ -1,0 +1,134 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "my::Person",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "p1", "p2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "p1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunc1():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 10
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "p2",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 16
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 16
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunc2():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 15
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "unionMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

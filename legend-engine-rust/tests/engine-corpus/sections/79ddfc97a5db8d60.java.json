@@ -1,0 +1,412 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "noActionIndicator",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 15
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 19
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "hello",
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 13
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "key1",
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 72,
+              "startLine" : 13
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 13
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "hello",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 103,
+              "startLine" : 13
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "key2",
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 109,
+              "startLine" : 13
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 81,
+            "startLine" : 13
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "hello",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 9
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      }
+    }, {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "noPartitioning",
+            "emptyDatasetHandling" : {
+              "_type" : "noOp",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 34
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 32
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 30
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 37
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 28
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "foo",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 28
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 28
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 28
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "bar",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 28
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 28
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 24
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 24
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 24
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 81,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "graphFetchPath" : {
+        "path" : [ {
+          "_type" : "propertyPath",
+          "parameters" : [ ],
+          "property" : "hello",
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 75,
+            "startLine" : 78
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 78
+        },
+        "startType" : "test::example::MyType"
+      },
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 79,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 45
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"Age\":12, \"Name\":\"dummy\"}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 72,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 68
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 65
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 49
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/x.flatdata",
+              "data" : "FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 59,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 55
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 53
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 51
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

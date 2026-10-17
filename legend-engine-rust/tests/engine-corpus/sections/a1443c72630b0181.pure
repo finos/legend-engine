@@ -1,0 +1,21 @@
+
+Database test::testQuotedCollectionName
+(
+  Collection "person-records"
+  (
+    validationLevel: strict;
+    validationAction: warn;
+    jsonSchema: {
+      "bsonType": "object",
+      "properties": {
+        "name": {
+          "bsonType": "string"
+        },
+        "age": {
+          "bsonType": "long"
+        }
+      },
+      "additionalProperties": true
+    };
+  )
+)

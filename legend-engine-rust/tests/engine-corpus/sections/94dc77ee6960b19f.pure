@@ -1,0 +1,11 @@
+
+Class simple::Person
+{
+  lastName: String[1];
+  firm: simple::Firm[1];
+}
+
+Class simple::Firm
+{
+  legalName: String[1];
+}

@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::NumericThing",
+      "id" : "t",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "my::NumericThing",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "t",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::firmFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 28
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

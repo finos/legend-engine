@@ -1,0 +1,1 @@
+|#>{meta::analytics::lineage::tests::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,FIRMID])

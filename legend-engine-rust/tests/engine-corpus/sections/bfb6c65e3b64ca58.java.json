@@ -1,0 +1,116 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "ProductDatabase",
+    "package" : "model::store",
+    "schemas" : [ {
+      "name" : "productSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "productTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 13
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::store::ProductDatabase",
+              "mainTableDb" : "model::store::ProductDatabase",
+              "schema" : "productSchema",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 13
+              },
+              "table" : "productTable"
+            },
+            "tableAlias" : "productTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "productView",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

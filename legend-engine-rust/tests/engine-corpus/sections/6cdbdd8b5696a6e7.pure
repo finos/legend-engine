@@ -1,0 +1,100 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: []
+    deduplication: None;
+    datasetType: Snapshot
+    {
+      partitioning: None
+      {
+        emptyDatasetHandling: NoOp;
+      }
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: None
+    {
+      auditing: DateTime
+      {
+        dateTimeName: 'BATCH_TIME_IN';
+      }
+      updatesHandling: Overwrite;
+    }
+  }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
+                }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":1}]';
+                }#;
+              }#
+          ]
+        },
+        testBatch2:
+        {
+          data:
+          {
+            connection:
+            {
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":2, "NAME":"BRADLEY"},{"ID":3, "NAME":"CATHY"}]';
+                }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":2, "NAME":"BRADLEY", "BATCH_ID":2},{"ID":3, "NAME":"CATHY", "BATCH_ID":2}]';
+                }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: true;
+    }
+  ]
+}

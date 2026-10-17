@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unsupported SecurityScheme - INVALID",
+    "sourceInformation" : {
+      "endColumn" : 23,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 13
+    }
+  }
+}

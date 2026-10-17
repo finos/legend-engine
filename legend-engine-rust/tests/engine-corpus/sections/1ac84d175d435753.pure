@@ -1,0 +1,19 @@
+
+Mapping modelToModel::test::BridgeToDestMapping
+(
+  modelToModel::test::Firm: Pure
+  {
+    ~src modelToModel::test::_Firm
+    name: '|' + $src.name + '|'
+  }
+)
+
+Mapping modelToModel::test::SrcToBridgeMapping
+(
+  modelToModel::test::_Firm: Pure
+  {
+    ~src modelToModel::test::__Firm
+    name: '$' + $src.name + '$'
+  }
+)
+

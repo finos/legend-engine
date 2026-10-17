@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'applicatioName'. Valid alternatives: ['applicationName', 'permissionScheme', 'usageRole', 'description', 'function', 'ownership', 'activationConfiguration', 'deploymentSchema']",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 4
+    }
+  }
+}

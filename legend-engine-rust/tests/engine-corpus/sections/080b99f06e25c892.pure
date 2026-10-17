@@ -1,0 +1,15 @@
+
+DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>> {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.topics = 'Securities, Equities', meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::OtherDataSpace', meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.deprecationNotice = 'Use model::NewDataSpace'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Securities Data Space';
+  description: 'A certified data space covering securities and equities.';
+}

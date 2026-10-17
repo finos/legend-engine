@@ -1,0 +1,7 @@
+
+Class test::A
+{
+   optional : String[0..1];
+   many : String[*];
+   prop() { concatenate([$this.optional], $this.many) } : String[*];
+}

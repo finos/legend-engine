@@ -1,0 +1,16 @@
+
+import anything::*;
+Class anything::goes2
+{
+}
+
+Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}
+
+function <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} f(s: goes2[1], s1: goes2[1]): goes2[1]
+{
+  println('ok')
+}

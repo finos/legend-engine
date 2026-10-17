@@ -1,0 +1,13 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~src my::personFunctionTyped()
+    firstName: FIRSTNAME,
+    address
+    (
+      city: $src.CITY
+    )
+  }
+)

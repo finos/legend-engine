@@ -1,0 +1,21 @@
+
+Class test::DataTypesClass
+{
+    tinyInt: Integer[0..1];
+    smallInt: Integer[0..1];
+    integer: Integer[0..1];
+    bigInt: Integer[0..1];
+    varchar: String[0..1];
+    char: String[0..1];
+    date : Date[0..1];
+    timestamp : Date[0..1];
+    float: Float[0..1];
+    double: Float[0..1];
+    decimalAsFloat: Float[0..1];
+    real: Float[0..1];
+    numericAsFloat: Float[0..1];
+    bit:Boolean[0..1];
+    decimal: Decimal[0..1];
+    numeric: Decimal[0..1];
+    floatAsDecimal: Decimal[0..1];
+}

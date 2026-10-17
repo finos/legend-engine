@@ -1,0 +1,15 @@
+
+Runtime runtime::MyRuntime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: runtime::connection::MyConnection
+    ]
+  ];
+}

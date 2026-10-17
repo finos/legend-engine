@@ -1,0 +1,282 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "project",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "filter",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::Person",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 113,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 113
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 113
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "in",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 114,
+                    "sourceId" : "",
+                    "startColumn" : 54,
+                    "startLine" : 114
+                  }
+                } ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 114,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 114
+                }
+              }, {
+                "_type" : "var",
+                "name" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 114,
+                  "sourceId" : "",
+                  "startColumn" : 70,
+                  "startLine" : 114
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 114,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 114
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "test::Person",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 114,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 114
+                  }
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "name" : "p",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 114,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 114
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 75,
+              "endLine" : 114,
+              "sourceId" : "",
+              "startColumn" : 52,
+              "startLine" : 114
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 114,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 114
+          }
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 115
+          },
+          "values" : [ {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 115,
+                  "sourceId" : "",
+                  "startColumn" : 40,
+                  "startLine" : 115
+                }
+              } ],
+              "property" : "fullName",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 115,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 115
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 115
+            }
+          } ]
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 115
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 115
+            },
+            "value" : "fullName"
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 115,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 115
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 113
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 0,
+          "upperBound" : 1
+        },
+        "name" : "name",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 113,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 113
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 115,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 113
+      }
+    } ],
+    "name" : "fetch__Any_1_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 111,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 111
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 116,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 111
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

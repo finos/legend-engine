@@ -1,0 +1,59 @@
+
+Mapping demo::PartyJoinedTableMapping
+(
+  *demo::joined::Party[party]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PartyDB]PartyTable.id
+    )
+    ~mainTable [demo::store::PartyDB]PartyTable
+    name: [demo::store::PartyDB]PartyTable.name
+  }
+
+  *demo::joined::Organisation[organisation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PartyDB]OrganisationTable.partyId
+    )
+    ~mainTable [demo::store::PartyDB]OrganisationTable
+    name: [demo::store::PartyDB]@PartyOrganisation | [demo::store::PartyDB]PartyTable.name,
+    registrationNumber: [demo::store::PartyDB]OrganisationTable.registrationNumber
+  }
+
+  testSuites:
+  [
+    joinedTableInheritanceSuite:
+    {
+      function: |demo::joined::Organisation.all()->sortBy(x|$x.name)->project([x|$x.name, x|$x.registrationNumber], ['Name', 'Registration']);
+      tests:
+      [
+        inheritedPropertyCrossesJoin:
+        {
+          data:
+          [
+            demo::store::PartyDB:
+              Reference
+              #{
+                demo::data::PartyData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveInheritedName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Acme Holdings","Registration":"REG-001"},{"Name":"Beta Corp","Registration":"REG-003"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

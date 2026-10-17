@@ -1,0 +1,9 @@
+
+Enum test::EmployeeType
+{
+  FULL_TIME
+}
+Class test::Employee
+{
+  type: test::EmployeeType[1];
+}

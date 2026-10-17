@@ -1,0 +1,153 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "propertyMappings" : [ {
+          "_type" : "relationFunctionPropertyMapping",
+          "property" : {
+            "property" : "city",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 50,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 50
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 50
+          },
+          "valueFn" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 50,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 50
+                }
+              } ],
+              "property" : "CITY",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 50,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 50
+              }
+            } ],
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 55
+            }
+          }
+        } ],
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 51,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 48
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "sourceLambda" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "my::personFunctionTyped",
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 47
+        }
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

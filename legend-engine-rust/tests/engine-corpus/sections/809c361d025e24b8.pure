@@ -1,0 +1,11 @@
+
+Class probe::Row
+{
+  id: Integer[1];
+  transformOnly: String[0..1];
+  transformThenFlatten: String[0..1];
+  emptyInner: String[0..1];
+  nullInner: String[0..1];
+  absentInner: String[0..1];
+  allEmpty: String[0..1];
+}

@@ -1,0 +1,50 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section A: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: ',';\n\n  Record\n  {\n    alpha   : STRING;\n    beta    : BOOLEAN(optional);\n    gamma   : INTEGER;\n    delta   : INTEGER;\n    epsilon : INTEGER;\n    zeta    : DECIMAL;\n    eta     : DECIMAL;\n    theta   : DATE;\n    iota    : DATETIME;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 350,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 18
+      },
+      "sourceInformation" : {
+        "endColumn" : 352,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 18
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::model::Z" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 21
+    }
+  } ],
+  "imports" : [ ]
+}

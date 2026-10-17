@@ -1,0 +1,114 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "myFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 8
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::store::db",
+            "mainTableDb" : "model::store::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 8
+            },
+            "table" : "myTable"
+          },
+          "tableAlias" : "myTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 8
+          },
+          "value" : "A"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 8
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "model::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 5
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "myTable",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 7
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ]
+  } ]
+}

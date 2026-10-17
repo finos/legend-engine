@@ -1,0 +1,23 @@
+
+Mapping meta::dataquality::dataquality::Mapping
+(
+
+   meta::dataquality::Person : Relational
+   {
+      name : [meta::dataquality::db]personTable.FIRSTNAME,
+      age : [meta::dataquality::db]personTable.AGE,
+      addresses : [meta::dataquality::db]@Address_Person
+   }
+
+   meta::dataquality::Address : Relational
+   {
+      addressId : [meta::dataquality::db]addressTable.ID,
+      location : [meta::dataquality::db]@Address_Location
+   }
+
+   meta::dataquality::Location : Relational
+   {
+      street : [meta::dataquality::db]locationTable.STREET,
+      locality : [meta::dataquality::db]locationTable.LOCALITY
+   }
+)

@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "generationSpecification",
+    "fileGenerations" : [ {
+      "path" : "model::myFileGeneration",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "type" : "FILE_GENERATION"
+    }, {
+      "path" : "model::myFileGeneration",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 18
+      },
+      "type" : "FILE_GENERATION"
+    } ],
+    "generationNodes" : [ {
+      "generationElement" : "model::serializableSpec",
+      "id" : "model::serializableSpec",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 5
+      }
+    }, {
+      "generationElement" : "model::modelSpec",
+      "id" : "model::modelSpec",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 8
+      }
+    }, {
+      "generationElement" : "model::modelSpec",
+      "id" : "secondGeneration",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "x",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

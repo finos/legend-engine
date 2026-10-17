@@ -1,0 +1,16 @@
+
+DataQualityValidation DataQualityValidation::validationTree::context::fromDataSpace::fromMappingAndRuntime::filter::DataQualityRelationValidation::query::validations::name::description::assertion::type::ROW_LEVEL::AGGREGATE::DataQualityRelationComparison::source::target::keys::columnsToCompare::additionalColumnsToPersist::strategy::MD5Hash::sourceHashColumn::targetHashColumn::aggregatedHash::expectedMatch::persistenceStrategy::testSuites::data::tests::asserts::all::let::allVersions::allVersionsInRange::toBytes
+{
+   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');
+   validationTree: $[
+      Person{
+        lastName,
+        name,
+        age,
+        addresses{
+          addressId
+        }
+      }
+    ]$;
+   filter: p: Person[1]|$p.age >= 18;
+}

@@ -1,0 +1,34 @@
+
+Mapping test::Map
+(
+  test::Person : Relational {
+    +firmName : String[0..1] : [test::DB1]personTable.firmName,
+    +addressName : String[0..1] : [test::DB1]personTable.addressName, 
+    fullName: [test::DB1]personTable.fullName
+  }
+
+  test::Firm : Relational {
+    +addressName : String[0..1] : [test::DB2]firmTable.addressName, 
+    name: [test::DB2]firmTable.name
+  }
+
+  test::Address : Relational {
+    name: [test::DB3]addressTable.name
+  }
+
+  test::Person_Firm : XStore {
+    employees[test_Firm, test_Person]: $this.name == $that.firmName,
+    firm[test_Person, test_Firm]: $this.firmName == $that.name
+  }
+
+  test::Person_Address : XStore {
+    persons[test_Address, test_Person]: $this.name == $that.addressName,
+    address[test_Person, test_Address]: $this.addressName == $that.name
+  }
+
+  test::Firm_Address : XStore {
+    firms[test_Address, test_Firm]: $this.name == $that.addressName,
+    address[test_Firm, test_Address]: $this.addressName == $that.name
+  }
+)
+

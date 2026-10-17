@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "hostedService",
+    "actions" : [ ],
+    "autoActivateUpdates" : true,
+    "documentation" : "sass",
+    "function" : {
+      "path" : "a::f():String[1]",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 4
+      },
+      "type" : "FUNCTION"
+    },
+    "generateLineage" : false,
+    "name" : "toBytes",
+    "ownership" : {
+      "_type" : "userList",
+      "users" : [ "user1" ]
+    },
+    "package" : "stereotypes::tags::HostedService::import::pattern::ownership::Deployment::identifier::UserList::users::activationConfiguration::documentation::autoActivateUpdates::generateLineage::storeModel::function::binding::contentType::testSuites::data::connections::tests::asserts::serializationFormat::parameters::keys::list::postValidations::description::params::assertions::actions::ExecutionEnvironment::mapping::runtime::executions::HostedServiceDeploymentConfiguration::stage::all::let::allVersions::allVersionsInRange",
+    "pattern" : "sass",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "storeModel" : false,
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

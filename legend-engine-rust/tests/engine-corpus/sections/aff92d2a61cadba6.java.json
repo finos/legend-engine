@@ -1,0 +1,229 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 60,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 76
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 75
+        },
+        "table" : "personTable",
+        "temporality" : {
+          "_type" : "bitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "batchIdAndProcessingTime",
+            "batchIdIn" : "BATCH_IN",
+            "batchIdOut" : "BATCH_OUT",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 79
+            },
+            "timeIn" : "IN_Z",
+            "timeOut" : "OUT_Z"
+          },
+          "sourceDerivedDimension" : {
+            "_type" : "sourceDerivedTime",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 95,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 86
+            },
+            "sourceTimeFields" : {
+              "_type" : "sourceTimeStartAndEnd",
+              "endField" : "SOURCE_THROUGH",
+              "sourceInformation" : {
+                "endColumn" : 9,
+                "endLine" : 94,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 90
+              },
+              "startField" : "SOURCE_FROM"
+            },
+            "timeEnd" : "THRU_Z",
+            "timeStart" : "FROM_Z"
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 77
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "noActionIndicator",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 69
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 67
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 66
+          }
+        },
+        "keys" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 63
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 63
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 136,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 56
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 134,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 101
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"AMOUNT\":100, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":2, \"AMOUNT\":200, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":3, \"AMOUNT\":400, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 128,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 124
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 129,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 121
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 131,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 105
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"AMOUNT\":100, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":2, \"AMOUNT\":200, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":3, \"AMOUNT\":400, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 115,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 111
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 116,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 109
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 117,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 107
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

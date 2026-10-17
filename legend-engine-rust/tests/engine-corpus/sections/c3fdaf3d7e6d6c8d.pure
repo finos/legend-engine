@@ -1,0 +1,26 @@
+
+Class test::A
+[
+  constraint1: $this.ok->toOne() == 1,
+  constraint2: if($this.ok == 'ok', |true, |false),
+  constraint3: $this.anyValue->instanceOf(String) || $this.anyValue->instanceOf(test::AEnum)
+]
+{
+  name: String[45..*];
+  name1: Boolean[45..*];
+  ok: Integer[1..2];
+  ok1: Number[1..2];
+  ok2: Decimal[1..2];
+  ok3: Float[1..2];
+  ok4: Date[1..2];
+  ok5: StrictDate[1..2];
+  ok6: DateTime[1..2];
+  ok7: LatestDate[1..2];
+  ok8: StrictTime[1..2];
+  anyValue: meta::pure::metamodel::type::Any[1];
+}
+
+Enum test::AEnum
+{
+  B
+}

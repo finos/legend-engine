@@ -1,0 +1,21 @@
+
+Database test::myDatabase
+(
+  Table bitempPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    startTime TIMESTAMP PRIMARY KEY,
+    endTime TIMESTAMP,
+    batchIdIn INTEGER PRIMARY KEY,
+    batchIdOut INTEGER
+  )
+  Table bitempLegalNameTable
+    (
+      legalName VARCHAR(100) PRIMARY KEY,
+      startTime TIMESTAMP PRIMARY KEY,
+      endTime TIMESTAMP,
+      batchIdIn INTEGER PRIMARY KEY,
+      batchIdOut INTEGER
+    )
+)

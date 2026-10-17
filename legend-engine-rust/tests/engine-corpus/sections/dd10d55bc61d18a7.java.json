@@ -1,0 +1,291 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "myJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::db",
+            "mainTableDb" : "model::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 22
+            },
+            "table" : "otherTb2"
+          },
+          "tableAlias" : "otherTb2"
+        }, {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::db",
+            "mainTableDb" : "model::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 22
+            },
+            "table" : "otherTb"
+          },
+          "tableAlias" : "otherTb"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 22
+      }
+    }, {
+      "name" : "otherJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 23
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::db",
+            "mainTableDb" : "model::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 23
+            },
+            "table" : "otherTb2"
+          },
+          "tableAlias" : "otherTb2"
+        }, {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 23
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::db",
+            "mainTableDb" : "model::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 23
+            },
+            "table" : "firmTb"
+          },
+          "tableAlias" : "firmTb"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "db",
+    "package" : "model",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firm",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 19
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 19
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherTb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 20
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherTb2",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 21
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,20 @@
+
+Mapping test::modelToModelMapping
+(
+    *test::changedModel: Pure
+{
+    ~src test::model
+    name: $src.name,
+    id: $src.id->parseInteger()
+}
+  testSuites:
+  [
+    testSuite1:
+    {
+      function: |test::changedModel.all();
+      tests:
+      [];
+    }
+  ]
+)
+

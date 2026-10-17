@@ -1,0 +1,91 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "Runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        },
+        "store" : {
+          "path" : "local::db",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "RelationalDatabaseConnection",
+            "authenticationStrategy" : {
+              "_type" : "h2Default",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 19,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 19
+              }
+            },
+            "databaseType" : "H2",
+            "datasourceSpecification" : {
+              "_type" : "h2Local",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 18,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 18
+              }
+            },
+            "postProcessorWithParameter" : [ ],
+            "postProcessors" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 15
+            },
+            "type" : "H2"
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          }
+        } ]
+      } ],
+      "mappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 5
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,6 @@
+
+SchemaSet test::Example1
+{
+  format: FlatData;
+  schemas: [ { content: ''; } ];
+}

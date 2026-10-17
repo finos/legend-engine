@@ -1,0 +1,29 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: ObjectStorage
+    {
+      binding: test::Binding;
+    }
+    ingestMode: NontemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: deleted;
+        deleteValues: ['Y', 'true'];
+      }
+      auditing: None;
+    }
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ServiceResult;
+    }
+  }
+}

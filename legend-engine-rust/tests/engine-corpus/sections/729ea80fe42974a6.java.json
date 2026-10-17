@@ -1,0 +1,178 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "model::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 20
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 20
+              }
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 42,
+                "startLine" : 20
+              },
+              "values" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 46,
+                      "endLine" : 20,
+                      "sourceId" : "",
+                      "startColumn" : 45,
+                      "startLine" : 20
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 51,
+                    "endLine" : 20,
+                    "sourceId" : "",
+                    "startColumn" : 48,
+                    "startLine" : 20
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 20
+                }
+              } ]
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 20
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 56,
+                  "startLine" : 20
+                },
+                "value" : "name"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 20
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::MyMapping",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 71,
+              "startLine" : 20
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::MyRuntime",
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 89,
+              "startLine" : 20
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 66,
+            "startLine" : 20
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 20
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "title" : "exec"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "title"
+  } ]
+}

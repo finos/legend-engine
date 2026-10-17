@@ -1,0 +1,21 @@
+
+ModelChainConnection humanResourceModel::M2MModelChainConnection
+{
+  mappings: [
+    humanResourceModel::M2M_Mapping3
+  ];
+}
+
+ModelChainConnection humanResourceModel::M2MModelChainConnection2
+{
+  mappings: [
+    humanResourceModel::M2M_Mapping3
+  ];
+}
+
+JsonModelConnection humanResourceModel::JsonModelConnection
+{
+  class: humanResourceModel::students;
+  url: 'data:application/json,{"name": "John Johnson"}';
+}
+

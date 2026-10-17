@@ -1,0 +1,10 @@
+
+Class arr::Row
+{
+  id: Integer[1];
+  // Bound to a to-many rather than collapsed by an array_* function: the array becomes one row
+  // per element, the way a to-many reached through an exploding join does.
+  divisionNames: String[*];
+  headcounts: Integer[*];
+  tags: String[*];
+}

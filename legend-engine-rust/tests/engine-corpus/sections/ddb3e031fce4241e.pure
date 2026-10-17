@@ -1,0 +1,72 @@
+
+Service test::service::FirmService
+{
+  pattern: '/testFirmService';
+  title: 'my Service';
+  owners:
+  [
+    'owner1',
+    'owner2'
+  ];
+  documentation: 'adding some documentation';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::SFirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        },
+        test2:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

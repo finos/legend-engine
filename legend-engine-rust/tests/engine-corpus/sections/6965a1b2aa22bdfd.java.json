@@ -1,0 +1,17 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ ],
+    "includedStores" : [ ],
+    "name" : "testEmptyDatabase",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

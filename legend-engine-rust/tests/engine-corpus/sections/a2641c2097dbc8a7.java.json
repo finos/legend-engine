@@ -1,0 +1,83 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "A",
+    "package" : "a",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "grp",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 50,
+            "startLine" : 2
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 2
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 68,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

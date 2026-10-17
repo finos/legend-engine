@@ -1,0 +1,95 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "OrganizationsDB",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "Org",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "OrgId",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Org",
+        "primaryKey" : [ "OrgId" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "Product",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ProductId",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 15
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Product",
+        "primaryKey" : [ "ProductId" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 13
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

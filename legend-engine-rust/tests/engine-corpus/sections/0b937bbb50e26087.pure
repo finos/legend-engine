@@ -1,0 +1,14 @@
+
+Data demo::data::VehicleData
+{
+  Relational
+  #{
+    default.CarTable:
+      'id,registration,doors\n' +
+      '1,CAR-001,5\n' +
+      '2,CAR-002,3\n';
+    default.TruckTable:
+      'id,registration,payloadTonnes\n' +
+      '1,TRK-001,12\n';
+  }#
+}

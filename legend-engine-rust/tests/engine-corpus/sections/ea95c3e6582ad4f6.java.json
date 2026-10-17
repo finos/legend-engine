@@ -1,0 +1,226 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "dummyRuntime",
+    "package" : "runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        },
+        "store" : {
+          "path" : "store::CustomerDataStore",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "runtime::connection::dummyConnection",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 12
+            }
+          },
+          "id" : "connection",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 12
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "snowflakeRuntimeWithoutRole",
+    "package" : "runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        },
+        "store" : {
+          "path" : "store::CustomerDataStore",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "runtime::connection::snowflakeConnectionWithoutRole",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 27
+            }
+          },
+          "id" : "connection",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 27
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 21
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 17
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "snowflakeRuntime",
+    "package" : "runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 40
+        },
+        "store" : {
+          "path" : "store::CustomerDataStore",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 40
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "runtime::connection::snowflakeConnection",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 42,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 42
+            }
+          },
+          "id" : "connection",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 42
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 36
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 32
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    }
+  } ],
+  "imports" : [ ]
+}

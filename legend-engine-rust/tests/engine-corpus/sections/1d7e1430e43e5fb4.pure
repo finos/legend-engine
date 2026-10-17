@@ -1,0 +1,9 @@
+
+RelationalMapper test::testMapper
+(
+   TableMappers:
+   [
+      test::OrganizationsDB.Product.Product -> 'ProductTable',
+      test::OrganizationsDB.Product.Product -> 'ProductTableNew'
+   ];
+)

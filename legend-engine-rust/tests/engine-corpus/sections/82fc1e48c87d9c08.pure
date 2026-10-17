@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::FirmWithAliases[firm]: Relation
+  {
+    ~func my::firmFunction():Relation<Any>[1]
+    aliases: LEGALNAME
+  }
+)

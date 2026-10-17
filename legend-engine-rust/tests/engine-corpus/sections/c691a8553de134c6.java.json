@@ -1,0 +1,343 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Firm_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 21
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 21
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "FIRMID",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 21
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 21
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 21
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      }
+    }, {
+      "name" : "Firm_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ADDRESSID",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 22
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        }, {
+          "_type" : "column",
+          "column" : "ADDRESSID",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "simple::dbInc",
+            "mainTableDb" : "simple::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 22
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 40,
+          "startLine" : 22
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    } ],
+    "name" : "dbInc",
+    "package" : "simple",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRSTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "LASTNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRMID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGALNAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "ADDRESSID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "CEOID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 19
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "firmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 14
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

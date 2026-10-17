@@ -1,0 +1,24 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: store::Store;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehouseName';
+    region: 'us-east2';
+    proxyHost: 'sampleHost';
+    proxyPort: 'samplePort';
+    nonProxyHosts: 'sample';
+    accountType: MultiTenant;
+    organization: 'sampleOrganization';
+    role: 'sampleRole';
+  };
+  auth: SnowflakePublic
+  {       publicUserName: 'name';
+       privateKeyVaultReference: 'name';
+       passPhraseVaultReference: 'name';
+  };
+}

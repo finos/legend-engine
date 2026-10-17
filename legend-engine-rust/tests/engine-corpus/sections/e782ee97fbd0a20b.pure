@@ -1,0 +1,9 @@
+
+HostedService <<a::A.test>> {a::A.val = 'ok'} package1::MyHostedService
+{
+   pattern : '/a/b/{integer1}';
+   ownership : Deployment { identifier: '17' };
+   function : zxx(Integer[1]):String[1];
+   documentation : 'My hosted service';
+   autoActivateUpdates : true;
+}

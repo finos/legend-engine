@@ -1,0 +1,6 @@
+
+function test::fetch(): Any[1]
+{
+{names:String[*]|test::Address.all()->filter(x| $x.name->in($names) && $x.street->in($names))
+                                    ->project(x|$x.name, 'addressName')}
+}

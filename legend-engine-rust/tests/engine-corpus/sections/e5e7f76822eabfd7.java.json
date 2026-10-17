@@ -1,0 +1,84 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "withMapping",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::element",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 16,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 16
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 16
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyMapping",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 16
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 16
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 16
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

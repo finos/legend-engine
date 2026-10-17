@@ -1,0 +1,227 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 58,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 58
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 74
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 93,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 73
+        },
+        "table" : "personTable",
+        "temporality" : {
+          "_type" : "bitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "processingTime",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 77
+            },
+            "timeIn" : "IN_Z",
+            "timeOut" : "OUT_Z"
+          },
+          "sourceDerivedDimension" : {
+            "_type" : "sourceDerivedTime",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 82
+            },
+            "sourceTimeFields" : {
+              "_type" : "sourceTimeStartAndEnd",
+              "endField" : "SOURCE_THROUGH",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 90,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 86
+              },
+              "startField" : "SOURCE_FROM"
+            },
+            "timeEnd" : "THRU_Z",
+            "timeStart" : "FROM_Z"
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 75
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "noActionIndicator",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 67,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 67
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 65
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 64
+          }
+        },
+        "keys" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 69,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 61
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 93,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 61
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 132,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 54
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 130,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 97
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"AMOUNT\":100, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\"},{\"ID\":2, \"AMOUNT\":200, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\"},{\"ID\":3, \"AMOUNT\":400, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\"}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 124,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 120
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 117
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 127,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 101
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"AMOUNT\":100, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":2, \"AMOUNT\":200, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":3, \"AMOUNT\":400, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 111,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 107
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 112,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 105
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 103
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'binding' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 11,
+      "startLine" : 44
+    }
+  }
+}

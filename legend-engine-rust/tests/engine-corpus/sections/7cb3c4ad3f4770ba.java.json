@@ -1,0 +1,226 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ReadingNoZoneRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 75,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 72
+        },
+        "store" : {
+          "path" : "demo::store::ReadingDB",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 72,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 72
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ReadingNoZoneConnection",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 74,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 74
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 74,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 74
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ReadingMapping",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 68,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 68
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 77,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 64
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 77,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 64
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ReadingUtcRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 90,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 87
+        },
+        "store" : {
+          "path" : "demo::store::ReadingDB",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 87,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 87
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ReadingUtcConnection",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 89,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 89
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 89,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 89
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ReadingMapping",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 83,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 83
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 92,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 79
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 92,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 79
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ReadingNewYorkRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 105,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 102
+        },
+        "store" : {
+          "path" : "demo::store::ReadingDB",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 102,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 102
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ReadingNewYorkConnection",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 104,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 104
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 104,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 104
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ReadingMapping",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 98,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 98
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 107,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 94
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 107,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 94
+    }
+  } ],
+  "imports" : [ ]
+}

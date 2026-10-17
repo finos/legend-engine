@@ -1,0 +1,11 @@
+
+function my::Hello(name: String[1], age: Integer[1]): String[1]
+{
+  'Hello ' + $name
+}
+{
+  ModelStore: (JSON) '{}';
+  store::MyStore: testing::MyReference;
+  myTest | Hello('John',20) => 'Hello John!';
+  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';
+}

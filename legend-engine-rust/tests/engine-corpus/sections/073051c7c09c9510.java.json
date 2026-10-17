@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 27,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 23,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "CardPaymentTable",
+        "values" : "id,reference,amount,cardLast4\n1,PAY-001,100,4242\n2,PAY-003,300,1881\n"
+      }, {
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 26,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "table" : "BankTransferTable",
+        "values" : "id,reference,amount,sortCode\n1,PAY-002,200,20-00-00\n"
+      } ]
+    },
+    "name" : "PaymentData",
+    "package" : "demo::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,16 @@
+
+Data demo::data::PartyData
+{
+  Relational
+  #{
+    default.PartyTable:
+      'id,name\n' +
+      '1,Acme Holdings\n' +
+      '2,John Doe\n' +
+      '3,Beta Corp\n';
+    default.OrganisationTable:
+      'partyId,registrationNumber\n' +
+      '1,REG-001\n' +
+      '3,REG-003\n';
+  }#
+}

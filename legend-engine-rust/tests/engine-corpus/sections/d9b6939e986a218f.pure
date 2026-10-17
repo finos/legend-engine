@@ -1,0 +1,10 @@
+
+Database demo::ssv::store::DB
+(
+  Table T
+  (
+    ID INTEGER PRIMARY KEY,
+    NUMS SEMISTRUCTURED,
+    WORDS SEMISTRUCTURED
+  )
+)

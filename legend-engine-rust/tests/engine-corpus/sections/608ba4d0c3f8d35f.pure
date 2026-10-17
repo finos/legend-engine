@@ -1,0 +1,11 @@
+
+Data demo::data::AccountData
+{
+  Relational
+  #{
+    default.AccountTable:
+      'id,name,code\n' +
+      '1,Acme,A\n' +
+      '2,Beta,C\n';
+  }#
+}

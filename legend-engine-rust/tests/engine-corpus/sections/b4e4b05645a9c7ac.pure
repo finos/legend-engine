@@ -1,0 +1,49 @@
+
+Mapping demo::view::BigSaleMapping
+(
+  *demo::view::BigSale: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::SalesViewDB]BigSaleView.id
+    )
+    ~mainTable [demo::store::SalesViewDB]BigSaleView
+    product: [demo::store::SalesViewDB]BigSaleView.product,
+    amount: [demo::store::SalesViewDB]BigSaleView.amount
+  }
+
+  testSuites:
+  [
+    inlineViewSuite:
+    {
+      function: |demo::view::BigSale.all()->sortBy(x | $x.product)->project([x | $x.product, x | $x.amount], ['Product', 'Amount']);
+      tests:
+      [
+        onlyBigSales:
+        {
+          data:
+          [
+            demo::store::SalesViewDB:
+              Reference
+              #{
+                demo::view::data::SaleData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnOnlyRowsAboveThreshold:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Product":"Gadget","Amount":250},{"Product":"Widget","Amount":100}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

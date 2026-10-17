@@ -1,0 +1,19 @@
+
+import anything::*;
+Diagram meta::pure::MyDiagram
+{
+  classView 1a0ac401-d443-4388-8ade-08a458f735e9
+  {
+    class: goes;
+    position: (123.123,23.23);
+    rectangle: (123.123,23.23);
+    hideProperties: true;
+  }
+  propertyView
+  {
+    property: goes.name;
+    source: 1a0ac401-d443-4388-8ade-08a458f735e9;
+    target: 1a0ac401-d443-4388-8ade-08a458f735e9;
+    points: [(123.123,23.23),(123.123,23.23)];
+  }
+}

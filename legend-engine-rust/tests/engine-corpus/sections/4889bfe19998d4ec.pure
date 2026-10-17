@@ -1,0 +1,12 @@
+
+Mapping example::mappingWithMatch
+(
+   example::Report : Pure
+            {
+               ~src example::Trade
+                  hasOption: $src.product->instanceOf(example::Option),
+                  productSide: $src.product->match([p:example::Option[1]|$p.side1,
+                                                    s:example::Swap[1]|$s.side2])
+            }
+
+)

@@ -1,0 +1,2 @@
+
+Database a::A (Table tb(id Integer, name VARCHAR(200)))

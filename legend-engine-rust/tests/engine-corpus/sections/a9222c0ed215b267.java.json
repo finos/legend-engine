@@ -1,0 +1,1425 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Abe",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "greaterThan",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "col1",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 25
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "test::TEST_DB2",
+              "mainTableDb" : "test::TEST_DB2",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 44,
+                "startLine" : 25
+              },
+              "table" : "a"
+            },
+            "tableAlias" : "a"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 52,
+              "startLine" : 25
+            },
+            "value" : 2
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 25
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "group",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "or",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "greaterThan",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "col1",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 77,
+                  "startLine" : 25
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "test::TEST_DB2",
+                  "mainTableDb" : "test::TEST_DB2",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 93,
+                    "endLine" : 25,
+                    "sourceId" : "",
+                    "startColumn" : 93,
+                    "startLine" : 25
+                  },
+                  "table" : "b"
+                },
+                "tableAlias" : "b"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 101,
+                  "startLine" : 25
+                },
+                "value" : 3
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 102,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 25
+              }
+            }, {
+              "_type" : "dynaFunc",
+              "funcName" : "greaterThan",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "col1",
+                "sourceInformation" : {
+                  "endColumn" : 138,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 117,
+                  "startLine" : 25
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "test::TEST_DB2",
+                  "mainTableDb" : "test::TEST_DB2",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 133,
+                    "endLine" : 25,
+                    "sourceId" : "",
+                    "startColumn" : 133,
+                    "startLine" : 25
+                  },
+                  "table" : "b"
+                },
+                "tableAlias" : "b"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 141,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 141,
+                  "startLine" : 25
+                },
+                "value" : 4
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 142,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 105,
+                "startLine" : 25
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 143,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 25
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 144,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 25
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 145,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 146,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    } ],
+    "name" : "test",
+    "package" : "sample",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "prefix",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "greaterThan",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "case",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "equal",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 21,
+                    "startLine" : 7
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 23,
+                      "endLine" : 7,
+                      "sourceId" : "",
+                      "startColumn" : 21,
+                      "startLine" : 7
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 30,
+                    "startLine" : 7
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 35,
+                  "startLine" : 7
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "notEqual",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 24,
+                    "startLine" : 8
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 26,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 8
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 33,
+                    "startLine" : 8
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 8
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 38,
+                  "startLine" : 8
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "lessThan",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 24,
+                    "startLine" : 9
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 26,
+                      "endLine" : 9,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 9
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 33,
+                    "startLine" : 9
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 9
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 38,
+                  "startLine" : 9
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "greaterThan",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 10,
+                    "sourceId" : "",
+                    "startColumn" : 27,
+                    "startLine" : 10
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 29,
+                      "endLine" : 10,
+                      "sourceId" : "",
+                      "startColumn" : 27,
+                      "startLine" : 10
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 10,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 10
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 10,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 10
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 10,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 10
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "lessThanEqual",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 35,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 29,
+                    "startLine" : 11
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 31,
+                      "endLine" : 11,
+                      "sourceId" : "",
+                      "startColumn" : 29,
+                      "startLine" : 11
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 11
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 11
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 43,
+                  "startLine" : 11
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "greaterThanEqual",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 38,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 32,
+                    "startLine" : 12
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 12,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 12
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 41,
+                    "startLine" : 12
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 12
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 12
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "notEqualAnsi",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 28,
+                    "startLine" : 13
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 13,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 13
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 38,
+                    "endLine" : 13,
+                    "sourceId" : "",
+                    "startColumn" : 37,
+                    "startLine" : 13
+                  },
+                  "value" : 20
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 13
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 13,
+                  "sourceId" : "",
+                  "startColumn" : 42,
+                  "startLine" : 13
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "isNull",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 22,
+                    "startLine" : 14
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 24,
+                      "endLine" : 14,
+                      "sourceId" : "",
+                      "startColumn" : 22,
+                      "startLine" : 14
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 14
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 14
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "isNotNull",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 15,
+                    "sourceId" : "",
+                    "startColumn" : 25,
+                    "startLine" : 15
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 27,
+                      "endLine" : 15,
+                      "sourceId" : "",
+                      "startColumn" : 25,
+                      "startLine" : 15
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 15
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 35,
+                  "startLine" : 15
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "and",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 25,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 16
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 21,
+                      "endLine" : 16,
+                      "sourceId" : "",
+                      "startColumn" : 19,
+                      "startLine" : 16
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 16,
+                    "sourceId" : "",
+                    "startColumn" : 28,
+                    "startLine" : 16
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 16,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 16
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 16,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 16
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 16,
+                  "sourceId" : "",
+                  "startColumn" : 38,
+                  "startLine" : 16
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "and",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "val",
+                  "sourceInformation" : {
+                    "endColumn" : 25,
+                    "endLine" : 17,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 17
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "sample::test",
+                    "mainTableDb" : "sample::test",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 21,
+                      "endLine" : 17,
+                      "sourceId" : "",
+                      "startColumn" : 19,
+                      "startLine" : 17
+                    },
+                    "table" : "tab"
+                  },
+                  "tableAlias" : "tab"
+                }, {
+                  "_type" : "dynaFunc",
+                  "funcName" : "group",
+                  "parameters" : [ {
+                    "_type" : "dynaFunc",
+                    "funcName" : "or",
+                    "parameters" : [ {
+                      "_type" : "column",
+                      "column" : "val",
+                      "sourceInformation" : {
+                        "endColumn" : 43,
+                        "endLine" : 17,
+                        "sourceId" : "",
+                        "startColumn" : 37,
+                        "startLine" : 17
+                      },
+                      "table" : {
+                        "_type" : "Table",
+                        "database" : "sample::test",
+                        "mainTableDb" : "sample::test",
+                        "schema" : "default",
+                        "sourceInformation" : {
+                          "endColumn" : 39,
+                          "endLine" : 17,
+                          "sourceId" : "",
+                          "startColumn" : 37,
+                          "startLine" : 17
+                        },
+                        "table" : "tab"
+                      },
+                      "tableAlias" : "tab"
+                    }, {
+                      "_type" : "column",
+                      "column" : "val",
+                      "sourceInformation" : {
+                        "endColumn" : 52,
+                        "endLine" : 17,
+                        "sourceId" : "",
+                        "startColumn" : 46,
+                        "startLine" : 17
+                      },
+                      "table" : {
+                        "_type" : "Table",
+                        "database" : "sample::test",
+                        "mainTableDb" : "sample::test",
+                        "schema" : "default",
+                        "sourceInformation" : {
+                          "endColumn" : 48,
+                          "endLine" : 17,
+                          "sourceId" : "",
+                          "startColumn" : 46,
+                          "startLine" : 17
+                        },
+                        "table" : "tab"
+                      },
+                      "tableAlias" : "tab"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 53,
+                      "endLine" : 17,
+                      "sourceId" : "",
+                      "startColumn" : 34,
+                      "startLine" : 17
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 54,
+                    "endLine" : 17,
+                    "sourceId" : "",
+                    "startColumn" : 28,
+                    "startLine" : 17
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 17,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 17
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 17,
+                  "sourceId" : "",
+                  "startColumn" : 58,
+                  "startLine" : 17
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "and",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "greaterThan",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 37,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 31,
+                      "startLine" : 18
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 33,
+                        "endLine" : 18,
+                        "sourceId" : "",
+                        "startColumn" : 31,
+                        "startLine" : 18
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 41,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 40,
+                      "startLine" : 18
+                    },
+                    "value" : 20
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 18,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 18
+                  }
+                }, {
+                  "_type" : "dynaFunc",
+                  "funcName" : "lessThan",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 60,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 54,
+                      "startLine" : 18
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 56,
+                        "endLine" : 18,
+                        "sourceId" : "",
+                        "startColumn" : 54,
+                        "startLine" : 18
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 65,
+                      "endLine" : 18,
+                      "sourceId" : "",
+                      "startColumn" : 63,
+                      "startLine" : 18
+                    },
+                    "value" : 100
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 66,
+                    "endLine" : 18,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 18
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 18,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 18
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 18,
+                  "sourceId" : "",
+                  "startColumn" : 70,
+                  "startLine" : 18
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "or",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "greaterThan",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 36,
+                      "endLine" : 19,
+                      "sourceId" : "",
+                      "startColumn" : 30,
+                      "startLine" : 19
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 32,
+                        "endLine" : 19,
+                        "sourceId" : "",
+                        "startColumn" : 30,
+                        "startLine" : 19
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 40,
+                      "endLine" : 19,
+                      "sourceId" : "",
+                      "startColumn" : 39,
+                      "startLine" : 19
+                    },
+                    "value" : 20
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 19,
+                    "sourceId" : "",
+                    "startColumn" : 18,
+                    "startLine" : 19
+                  }
+                }, {
+                  "_type" : "dynaFunc",
+                  "funcName" : "lessThanEqual",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 64,
+                      "endLine" : 19,
+                      "sourceId" : "",
+                      "startColumn" : 58,
+                      "startLine" : 19
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 60,
+                        "endLine" : 19,
+                        "sourceId" : "",
+                        "startColumn" : 58,
+                        "startLine" : 19
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 69,
+                      "endLine" : 19,
+                      "sourceId" : "",
+                      "startColumn" : 67,
+                      "startLine" : 19
+                    },
+                    "value" : 100
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 70,
+                    "endLine" : 19,
+                    "sourceId" : "",
+                    "startColumn" : 44,
+                    "startLine" : 19
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 19,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 19
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 19,
+                  "sourceId" : "",
+                  "startColumn" : 74,
+                  "startLine" : 19
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "or",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "group",
+                  "parameters" : [ {
+                    "_type" : "dynaFunc",
+                    "funcName" : "and",
+                    "parameters" : [ {
+                      "_type" : "dynaFunc",
+                      "funcName" : "greaterThan",
+                      "parameters" : [ {
+                        "_type" : "column",
+                        "column" : "val",
+                        "sourceInformation" : {
+                          "endColumn" : 46,
+                          "endLine" : 20,
+                          "sourceId" : "",
+                          "startColumn" : 40,
+                          "startLine" : 20
+                        },
+                        "table" : {
+                          "_type" : "Table",
+                          "database" : "sample::test",
+                          "mainTableDb" : "sample::test",
+                          "schema" : "default",
+                          "sourceInformation" : {
+                            "endColumn" : 42,
+                            "endLine" : 20,
+                            "sourceId" : "",
+                            "startColumn" : 40,
+                            "startLine" : 20
+                          },
+                          "table" : "tab"
+                        },
+                        "tableAlias" : "tab"
+                      }, {
+                        "_type" : "literal",
+                        "sourceInformation" : {
+                          "endColumn" : 50,
+                          "endLine" : 20,
+                          "sourceId" : "",
+                          "startColumn" : 49,
+                          "startLine" : 20
+                        },
+                        "value" : 20
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 51,
+                        "endLine" : 20,
+                        "sourceId" : "",
+                        "startColumn" : 28,
+                        "startLine" : 20
+                      }
+                    }, {
+                      "_type" : "dynaFunc",
+                      "funcName" : "lessThanEqual",
+                      "parameters" : [ {
+                        "_type" : "column",
+                        "column" : "val",
+                        "sourceInformation" : {
+                          "endColumn" : 74,
+                          "endLine" : 20,
+                          "sourceId" : "",
+                          "startColumn" : 68,
+                          "startLine" : 20
+                        },
+                        "table" : {
+                          "_type" : "Table",
+                          "database" : "sample::test",
+                          "mainTableDb" : "sample::test",
+                          "schema" : "default",
+                          "sourceInformation" : {
+                            "endColumn" : 70,
+                            "endLine" : 20,
+                            "sourceId" : "",
+                            "startColumn" : 68,
+                            "startLine" : 20
+                          },
+                          "table" : "tab"
+                        },
+                        "tableAlias" : "tab"
+                      }, {
+                        "_type" : "literal",
+                        "sourceInformation" : {
+                          "endColumn" : 79,
+                          "endLine" : 20,
+                          "sourceId" : "",
+                          "startColumn" : 77,
+                          "startLine" : 20
+                        },
+                        "value" : 100
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 80,
+                        "endLine" : 20,
+                        "sourceId" : "",
+                        "startColumn" : 54,
+                        "startLine" : 20
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 20,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 20
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 20,
+                    "sourceId" : "",
+                    "startColumn" : 18,
+                    "startLine" : 20
+                  }
+                }, {
+                  "_type" : "dynaFunc",
+                  "funcName" : "notEqualAnsi",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 104,
+                      "endLine" : 20,
+                      "sourceId" : "",
+                      "startColumn" : 98,
+                      "startLine" : 20
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 100,
+                        "endLine" : 20,
+                        "sourceId" : "",
+                        "startColumn" : 98,
+                        "startLine" : 20
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 107,
+                      "endLine" : 20,
+                      "sourceId" : "",
+                      "startColumn" : 107,
+                      "startLine" : 20
+                    },
+                    "value" : 2
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 108,
+                    "endLine" : 20,
+                    "sourceId" : "",
+                    "startColumn" : 85,
+                    "startLine" : 20
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 109,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 20
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 112,
+                  "endLine" : 20,
+                  "sourceId" : "",
+                  "startColumn" : 112,
+                  "startLine" : 20
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "greaterThan",
+                "parameters" : [ {
+                  "_type" : "dynaFunc",
+                  "funcName" : "substring",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "val",
+                    "sourceInformation" : {
+                      "endColumn" : 43,
+                      "endLine" : 21,
+                      "sourceId" : "",
+                      "startColumn" : 37,
+                      "startLine" : 21
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "sample::test",
+                      "mainTableDb" : "sample::test",
+                      "schema" : "default",
+                      "sourceInformation" : {
+                        "endColumn" : 39,
+                        "endLine" : 21,
+                        "sourceId" : "",
+                        "startColumn" : 37,
+                        "startLine" : 21
+                      },
+                      "table" : "tab"
+                    },
+                    "tableAlias" : "tab"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 21,
+                    "sourceId" : "",
+                    "startColumn" : 27,
+                    "startLine" : 21
+                  }
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 21,
+                    "sourceId" : "",
+                    "startColumn" : 47,
+                    "startLine" : 21
+                  },
+                  "value" : 100
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 21,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 21
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 53,
+                  "endLine" : 21,
+                  "sourceId" : "",
+                  "startColumn" : 53,
+                  "startLine" : 21
+                },
+                "value" : 1
+              }, {
+                "_type" : "dynaFunc",
+                "funcName" : "sqlNull",
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 22,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 22
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 23
+              },
+              "value" : 2
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 6
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "SomeView",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

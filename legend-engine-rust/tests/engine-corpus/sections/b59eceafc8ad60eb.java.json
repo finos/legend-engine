@@ -1,0 +1,129 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 46
+            }
+          } ],
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "org::dxl::Zoo",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 46
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 46
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 46
+        }
+      },
+      "mapping" : "org::dxl::Mapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 47
+      },
+      "runtime" : {
+        "_type" : "engineRuntime",
+        "connectionStores" : [ ],
+        "connections" : [ ],
+        "mappings" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 50
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 44
+      }
+    },
+    "name" : "ZooService",
+    "owners" : [ ],
+    "package" : "org::dxl",
+    "pattern" : "test",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "test",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 53
+      }
+    },
+    "title" : "test"
+  } ],
+  "imports" : [ ]
+}

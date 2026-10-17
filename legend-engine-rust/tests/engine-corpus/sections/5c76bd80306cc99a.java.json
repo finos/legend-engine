@@ -1,0 +1,696 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "filter1",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "isNotNull",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "col1",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 39
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 39
+            },
+            "table" : "TAB2"
+          },
+          "tableAlias" : "TAB2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 39
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    }, {
+      "_type" : "multigrain",
+      "name" : "filter2",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "isNull",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "col2",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 40
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 40
+            },
+            "table" : "TAB1"
+          },
+          "tableAlias" : "TAB1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 40
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    } ],
+    "includedStores" : [ {
+      "path" : "Store1",
+      "sourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "type" : "STORE"
+    }, {
+      "path" : "test::Store2",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ {
+      "name" : "join1",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "col1",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 36
+            },
+            "table" : "TAB"
+          },
+          "tableAlias" : "TAB"
+        }, {
+          "_type" : "column",
+          "column" : "col2",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 36
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 36
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    }, {
+      "name" : "join2",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "col3",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 37
+            },
+            "table" : "TAB2"
+          },
+          "tableAlias" : "TAB2"
+        }, {
+          "_type" : "column",
+          "column" : "col2",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::db",
+            "mainTableDb" : "test::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 37
+            },
+            "table" : "TAB3"
+          },
+          "tableAlias" : "TAB3"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 37
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 37
+      }
+    } ],
+    "name" : "db",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "stereotypes" : [ {
+        "profile" : "equality",
+        "profileSourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 7
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 7
+        },
+        "value" : "Key"
+      } ],
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 7
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 7
+          },
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 7
+          },
+          "value" : "doc"
+        },
+        "value" : "schema"
+      } ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "col1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "table1",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        },
+        "stereotypes" : [ {
+          "profile" : "equality",
+          "profileSourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 11
+          },
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 11
+          },
+          "value" : "Key"
+        } ],
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 11
+          },
+          "tag" : {
+            "profile" : "doc",
+            "profileSourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 11
+            },
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 11
+            },
+            "value" : "doc"
+          },
+          "value" : "table"
+        } ]
+      }, {
+        "columns" : [ {
+          "name" : "col1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "stereotypes" : [ {
+            "profile" : "equality",
+            "profileSourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 17
+            },
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 17
+            },
+            "value" : "Key"
+          } ],
+          "taggedValues" : [ {
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 17
+            },
+            "tag" : {
+              "profile" : "doc",
+              "profileSourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 17
+              },
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 17
+              },
+              "value" : "doc"
+            },
+            "value" : "col"
+          } ],
+          "type" : {
+            "_type" : "Char",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "table2",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        }
+      }, {
+        "columns" : [ {
+          "name" : "\"col1\"",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 32
+          }
+        }, {
+          "name" : "\"this is a col\"",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "table3",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 19
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "col1",
+          "operation" : {
+            "_type" : "column",
+            "column" : "col1",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 28
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "test::db",
+              "mainTableDb" : "test::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 28
+              },
+              "table" : "test"
+            },
+            "tableAlias" : "test"
+          },
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        } ],
+        "distinct" : false,
+        "filter" : {
+          "filter" : {
+            "name" : "filter1"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "view1",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 25
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "col2",
+          "operation" : {
+            "_type" : "column",
+            "column" : "col2",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 33
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "test::db",
+              "mainTableDb" : "test::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 33
+              },
+              "table" : "test"
+            },
+            "tableAlias" : "test"
+          },
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        } ],
+        "distinct" : false,
+        "filter" : {
+          "filter" : {
+            "name" : "filter2"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "view2",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 30
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "equality",
+      "profileSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 2
+      },
+      "value" : "Key"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "database"
+    } ]
+  } ]
+}

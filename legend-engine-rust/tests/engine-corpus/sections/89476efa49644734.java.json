@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "URL is not valid",
+    "sourceInformation" : {
+      "endColumn" : 38,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 26,
+      "startLine" : 5
+    }
+  }
+}

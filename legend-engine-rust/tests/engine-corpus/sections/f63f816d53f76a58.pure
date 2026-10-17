@@ -1,0 +1,19 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::S_Trade.all()
+       ->take(2)
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::S_Trade {
+               s_tradeId,
+               s_traderDetails,
+               s_tradeDetails
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::S_Trade {
+               s_tradeId,
+               s_traderDetails,
+               s_tradeDetails
+           }
+        }#)};
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'derivation' is required",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 28,
+      "startLine" : 26
+    }
+  }
+}

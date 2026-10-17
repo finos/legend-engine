@@ -1,0 +1,15 @@
+
+ModelChainConnection meta::external::store::service::showcase::connection::modelChainConnection
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+}
+
+
+JsonModelConnection meta::external::store::service::showcase::connection::jsonModelConnection
+{
+    class : meta::external::store::service::showcase::domain::Person;
+    url   : 'data:application/json,{"firstName":"FirstName Model", "lastName" : "LastName Model", "firmId":"Model"}';
+}

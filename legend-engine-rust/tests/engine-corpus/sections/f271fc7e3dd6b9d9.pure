@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.namex, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];
+}

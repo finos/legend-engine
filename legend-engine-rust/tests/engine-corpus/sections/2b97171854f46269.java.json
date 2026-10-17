@@ -1,0 +1,18 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ ],
+    "generalizationViews" : [ ],
+    "name" : "target",
+    "package" : "Diagram::import::classView::class::position::rectangle::hideProperties::hideTaggedValue::hideStereotype::propertyView::generalizationView::property::points::source",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

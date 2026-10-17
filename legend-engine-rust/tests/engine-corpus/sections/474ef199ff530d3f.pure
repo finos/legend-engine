@@ -1,0 +1,26 @@
+
+Mapping test::M1 (
+   test::B: EnumerationMapping 1 {
+      a : ['a'],
+      b : ['b']
+   }
+)
+Mapping test::M2 (
+   test::B: EnumerationMapping 2 {
+      a : 'a',
+      b : 'b'
+   }
+)
+
+Mapping test::M3 (
+   include test::M1
+   include test::M2
+   test::B: EnumerationMapping 2 {
+      a : ['a'],
+      b : ['b']
+   }
+   test::B: EnumerationMapping {
+      a : ['a'],
+      b : ['b']
+   }
+)

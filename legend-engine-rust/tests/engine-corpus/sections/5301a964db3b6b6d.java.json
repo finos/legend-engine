@@ -1,0 +1,98 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "M2MModelRuntime",
+    "package" : "humanResourceModel",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 85,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 81
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 81
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "humanResourceModel::M2MModelChainConnection",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 83
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 83
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "humanResourceModel::M2MModelChainConnection2",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 84
+            }
+          },
+          "id" : "connection_2",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 84
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "humanResourceModel::M2M_Mapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 77
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 73
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 87,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 73
+    }
+  } ],
+  "imports" : [ ]
+}

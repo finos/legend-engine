@@ -1,0 +1,12 @@
+
+Class model::A
+{
+  '''
+  Given name.
+  '''
+  firstName: String[1];
+  '''
+  Full legal name.
+  '''
+  fullName() {$this.firstName}: String[1];
+}

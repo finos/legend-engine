@@ -1,0 +1,6 @@
+
+SchemaSet test::Example1
+{
+  format: FlatData;
+  schemas: [ { content: 'section readLines: ImmaterialLines\n{\n  scope.forNumberOfLines: 2;\n  recordSeparator: \';\';\n}\n\nsection sectionName: DelimitedWithHeadings\n{\n  scope.untilEof;\n  recordSeparator: \';\';\n  delimiter: \'::\';\n  quoteChar: \'\\\'\';\n  escapingChar: \'\\\'\';\n  nullString: \'null\';\n  mayContainBlankLines;\n\n  Record\n  {\n    HEADING1: STRING;\n    HEADING2: INTEGER(optional);\n    HEADING3: BOOLEAN(trueString=\'Y\', falseString=\'N\', optional);\n    \'My Fourth Heading\': DECIMAL(optional);\n    HEADING5: DATE(format=\'MM-DD-EE\');\n    HEADING6: DATETIME(format=\'MM-DD-EE\');\n  }\n}\n\nsection sectionName2: DelimitedWithoutHeadings\n{\n  scope.forNumberOfLines: 1;\n  recordSeparator: \'\\n\';\n  delimiter: \',\';\n  quoteChar: \'\\\'\';\n  escapingChar: \'\\\'\';\n  nullString: \'None\';\n\n  Record\n  {\n    A {1}: STRING;\n    B {2}: INTEGER(format=\'#,##0\', optional);\n    C {3}: DECIMAL(format=\'#,##0.0#\', optional);\n    D {4}: BOOLEAN(optional);\n    E {5}: DATE(format=\'MM-DD-EE\');\n    F {6}: DATETIME(format=\'MM-DD-EE\');\n  }\n}'; } ];
+}

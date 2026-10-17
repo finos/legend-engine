@@ -1,0 +1,128 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "filter",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 25
+        },
+        "type" : ">",
+        "value" : {
+          "path" : [ "test::myDB", "dataTable" ],
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 25
+          }
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "c",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 67,
+                "startLine" : 25
+              }
+            } ],
+            "property" : "pk",
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 70,
+              "startLine" : 25
+            }
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 76,
+              "startLine" : 25
+            },
+            "value" : 1
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 73,
+            "startLine" : 25
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "c"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 66,
+          "startLine" : 25
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 58,
+        "startLine" : 25
+      }
+    } ],
+    "name" : "func__Any_MANY_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 25
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 79,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

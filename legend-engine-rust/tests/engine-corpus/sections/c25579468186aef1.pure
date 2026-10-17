@@ -1,0 +1,11 @@
+
+Diagram meta::pure::MyDiagram
+{
+  classView firstTimeIsNotAlwaysTheHardest
+  {
+    class: anything::goes;
+    position: (123.123,23.23);
+    rectangle: (123.123,23.23);
+    hideProperties: true;
+  }
+}

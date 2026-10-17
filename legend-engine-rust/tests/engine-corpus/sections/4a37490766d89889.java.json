@@ -1,0 +1,276 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 20,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 39,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 48,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        },
+        "table" : "personTable",
+        "temporality" : {
+          "_type" : "unitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "batchId",
+            "batchIdIn" : "BATCH_IN",
+            "batchIdOut" : "BATCH_OUT",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 46,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 28,
+              "startLine" : 42
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 47,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 18,
+            "startLine" : 40
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "snapshot",
+          "partitioning" : {
+            "_type" : "noPartitioning",
+            "emptyDatasetHandling" : {
+              "_type" : "noOp",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 31,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 31,
+                "startLine" : 31
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 32,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 21,
+              "startLine" : 29
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 33,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 18,
+            "startLine" : 27
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 26,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 26
+          }
+        },
+        "keys" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 34,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 3,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 48,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 114,
+      "sourceId" : "persistence.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 112,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 4,
+        "startLine" : 52
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 79,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 18,
+              "startLine" : 75
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 80,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 14,
+            "startLine" : 72
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 82,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 8,
+          "startLine" : 56
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"ANDY\"},{\"ID\":2, \"NAME\":\"BRAD\"},{\"ID\":3, \"NAME\":\"CATHY\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 66,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 14,
+                "startLine" : 62
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 67,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 12,
+              "startLine" : 60
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 68,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 10,
+            "startLine" : 58
+          }
+        }
+      }, {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_IN\":1, \"BATCH_OUT\":1}, {\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_IN\":1, \"BATCH_OUT\":1}, {\"ID\":3, \"NAME\":\"CATHERINE\", \"BATCH_IN\":2, \"BATCH_OUT\":999999999}, {\"ID\":4, \"NAME\":\"TOM\", \"BATCH_IN\":2, \"BATCH_OUT\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 106,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 18,
+              "startLine" : 102
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 107,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 14,
+            "startLine" : 99
+          }
+        } ],
+        "batchId" : 1,
+        "id" : "testBatch2",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 109,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 8,
+          "startLine" : 83
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"ANDY\"},{\"ID\":3, \"NAME\":\"CATHERINE\"},{\"ID\":4, \"NAME\":\"TOM\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 93,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 14,
+                "startLine" : 89
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 94,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 12,
+              "startLine" : 87
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 95,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 10,
+            "startLine" : 85
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

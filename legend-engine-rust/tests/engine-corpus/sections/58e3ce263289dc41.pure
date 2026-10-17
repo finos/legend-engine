@@ -1,0 +1,6 @@
+
+function test::fetch(): Any[1]
+{
+  {| test::Person.all()
+     ->graphFetch(#{test::Person{fullName}}#)->serialize(#{test::Person{fullName}}#)}
+}

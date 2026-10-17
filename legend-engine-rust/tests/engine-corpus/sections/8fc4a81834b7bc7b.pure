@@ -1,0 +1,6 @@
+
+Profile test::SampleProfile
+{
+  stereotypes: [important];
+  tags: [doc, version];
+}

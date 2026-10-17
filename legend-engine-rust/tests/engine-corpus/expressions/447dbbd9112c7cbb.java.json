@@ -1,0 +1,841 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "meta::pure::functions::relation::select",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::relation::extend",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "meta::pure::functions::relation::select",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "meta::pure::functions::relation::extend",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "meta::pure::functions::relation::project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::Person",
+                "sourceInformation" : {
+                  "endColumn" : 13,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 2,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 1
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 132,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 1
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 88,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 87,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 91,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 90,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "genericType" : {
+                        "multiplicityArguments" : [ ],
+                        "rawType" : {
+                          "_type" : "packageableType",
+                          "fullPath" : "demo::Person",
+                          "sourceInformation" : {
+                            "endColumn" : 82,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 71,
+                            "startLine" : 1
+                          }
+                        },
+                        "typeArguments" : [ ],
+                        "typeVariableValues" : [ ]
+                      },
+                      "multiplicity" : {
+                        "lowerBound" : 1,
+                        "upperBound" : 1
+                      },
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 85,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 68,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 91,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 86,
+                      "startLine" : 1
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 65,
+                    "startLine" : 1
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 122,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 121,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "property" : "fullName",
+                      "sourceInformation" : {
+                        "endColumn" : 131,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 124,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "genericType" : {
+                        "multiplicityArguments" : [ ],
+                        "rawType" : {
+                          "_type" : "packageableType",
+                          "fullPath" : "demo::Person",
+                          "sourceInformation" : {
+                            "endColumn" : 116,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 105,
+                            "startLine" : 1
+                          }
+                        },
+                        "typeArguments" : [ ],
+                        "typeVariableValues" : [ ]
+                      },
+                      "multiplicity" : {
+                        "lowerBound" : 1,
+                        "upperBound" : 1
+                      },
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 119,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 102,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 131,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 120,
+                      "startLine" : 1
+                    }
+                  },
+                  "name" : "fullName",
+                  "sourceInformation" : {
+                    "endColumn" : 131,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 93,
+                    "startLine" : 1
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 1
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 233,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 177,
+              "startLine" : 1
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "row",
+                      "sourceInformation" : {
+                        "endColumn" : 195,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 192,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 198,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 197,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "row"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 198,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 191,
+                    "startLine" : 1
+                  }
+                },
+                "name" : "id_SOURCE",
+                "sourceInformation" : {
+                  "endColumn" : 198,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 178,
+                  "startLine" : 1
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "row",
+                      "sourceInformation" : {
+                        "endColumn" : 223,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 220,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "property" : "fullName",
+                    "sourceInformation" : {
+                      "endColumn" : 232,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 225,
+                      "startLine" : 1
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "row"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 232,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 219,
+                    "startLine" : 1
+                  }
+                },
+                "name" : "fullName_SOURCE",
+                "sourceInformation" : {
+                  "endColumn" : 232,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 200,
+                  "startLine" : 1
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 174,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 136,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 304,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 278,
+            "startLine" : 1
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "id_SOURCE",
+              "sourceInformation" : {
+                "endColumn" : 287,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 279,
+                "startLine" : 1
+              }
+            }, {
+              "name" : "fullName_SOURCE",
+              "sourceInformation" : {
+                "endColumn" : 303,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 289,
+                "startLine" : 1
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 275,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 237,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 919,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 349,
+          "startLine" : 1
+        },
+        "type" : "colSpec",
+        "value" : {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "meta::pure::functions::hash::hash",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "plus",
+                "parameters" : [ {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "sourceInformation" : {
+                    "endColumn" : 875,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 647,
+                    "startLine" : 1
+                  },
+                  "values" : [ {
+                    "_type" : "func",
+                    "function" : "meta::pure::functions::lang::if",
+                    "parameters" : [ {
+                      "_type" : "func",
+                      "function" : "meta::pure::functions::collection::isEmpty",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "row",
+                          "sourceInformation" : {
+                            "endColumn" : 404,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 401,
+                            "startLine" : 1
+                          }
+                        } ],
+                        "property" : "fullName_SOURCE",
+                        "sourceInformation" : {
+                          "endColumn" : 420,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 406,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 464,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 423,
+                        "startLine" : 1
+                      }
+                    }, {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 503,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 502,
+                          "startLine" : 1
+                        },
+                        "value" : ""
+                      } ],
+                      "parameters" : [ ],
+                      "sourceInformation" : {
+                        "endColumn" : 503,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 501,
+                        "startLine" : 1
+                      }
+                    }, {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "func",
+                        "function" : "plus",
+                        "parameters" : [ {
+                          "_type" : "collection",
+                          "multiplicity" : {
+                            "lowerBound" : 4,
+                            "upperBound" : 4
+                          },
+                          "sourceInformation" : {
+                            "endColumn" : 644,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 513,
+                            "startLine" : 1
+                          },
+                          "values" : [ {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 511,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 507,
+                              "startLine" : 1
+                            },
+                            "value" : "\u001E\u001F\u001D"
+                          }, {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 524,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 515,
+                              "startLine" : 1
+                            },
+                            "value" : "fullName"
+                          }, {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 532,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 528,
+                              "startLine" : 1
+                            },
+                            "value" : "\u001E\u001F\u001D"
+                          }, {
+                            "_type" : "func",
+                            "function" : "meta::pure::functions::string::toString",
+                            "parameters" : [ {
+                              "_type" : "func",
+                              "function" : "meta::pure::functions::multiplicity::toOne",
+                              "parameters" : [ {
+                                "_type" : "property",
+                                "parameters" : [ {
+                                  "_type" : "var",
+                                  "name" : "row",
+                                  "sourceInformation" : {
+                                    "endColumn" : 539,
+                                    "endLine" : 1,
+                                    "sourceId" : "",
+                                    "startColumn" : 536,
+                                    "startLine" : 1
+                                  }
+                                } ],
+                                "property" : "fullName_SOURCE",
+                                "sourceInformation" : {
+                                  "endColumn" : 555,
+                                  "endLine" : 1,
+                                  "sourceId" : "",
+                                  "startColumn" : 541,
+                                  "startLine" : 1
+                                }
+                              } ],
+                              "sourceInformation" : {
+                                "endColumn" : 599,
+                                "endLine" : 1,
+                                "sourceId" : "",
+                                "startColumn" : 558,
+                                "startLine" : 1
+                              }
+                            } ],
+                            "sourceInformation" : {
+                              "endColumn" : 642,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 604,
+                              "startLine" : 1
+                            }
+                          } ]
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 644,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 513,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "parameters" : [ ],
+                      "sourceInformation" : {
+                        "endColumn" : 644,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 506,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 499,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 469,
+                      "startLine" : 1
+                    }
+                  }, {
+                    "_type" : "func",
+                    "function" : "meta::pure::functions::lang::if",
+                    "parameters" : [ {
+                      "_type" : "func",
+                      "function" : "meta::pure::functions::collection::isEmpty",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "row",
+                          "sourceInformation" : {
+                            "endColumn" : 652,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 649,
+                            "startLine" : 1
+                          }
+                        } ],
+                        "property" : "id_SOURCE",
+                        "sourceInformation" : {
+                          "endColumn" : 662,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 654,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 706,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 665,
+                        "startLine" : 1
+                      }
+                    }, {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 745,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 744,
+                          "startLine" : 1
+                        },
+                        "value" : ""
+                      } ],
+                      "parameters" : [ ],
+                      "sourceInformation" : {
+                        "endColumn" : 745,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 743,
+                        "startLine" : 1
+                      }
+                    }, {
+                      "_type" : "lambda",
+                      "body" : [ {
+                        "_type" : "func",
+                        "function" : "plus",
+                        "parameters" : [ {
+                          "_type" : "collection",
+                          "multiplicity" : {
+                            "lowerBound" : 4,
+                            "upperBound" : 4
+                          },
+                          "sourceInformation" : {
+                            "endColumn" : 874,
+                            "endLine" : 1,
+                            "sourceId" : "",
+                            "startColumn" : 755,
+                            "startLine" : 1
+                          },
+                          "values" : [ {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 753,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 749,
+                              "startLine" : 1
+                            },
+                            "value" : "\u001E\u001F\u001D"
+                          }, {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 760,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 757,
+                              "startLine" : 1
+                            },
+                            "value" : "id"
+                          }, {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 768,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 764,
+                              "startLine" : 1
+                            },
+                            "value" : "\u001E\u001F\u001D"
+                          }, {
+                            "_type" : "func",
+                            "function" : "meta::pure::functions::string::toString",
+                            "parameters" : [ {
+                              "_type" : "func",
+                              "function" : "meta::pure::functions::multiplicity::toOne",
+                              "parameters" : [ {
+                                "_type" : "property",
+                                "parameters" : [ {
+                                  "_type" : "var",
+                                  "name" : "row",
+                                  "sourceInformation" : {
+                                    "endColumn" : 775,
+                                    "endLine" : 1,
+                                    "sourceId" : "",
+                                    "startColumn" : 772,
+                                    "startLine" : 1
+                                  }
+                                } ],
+                                "property" : "id_SOURCE",
+                                "sourceInformation" : {
+                                  "endColumn" : 785,
+                                  "endLine" : 1,
+                                  "sourceId" : "",
+                                  "startColumn" : 777,
+                                  "startLine" : 1
+                                }
+                              } ],
+                              "sourceInformation" : {
+                                "endColumn" : 829,
+                                "endLine" : 1,
+                                "sourceId" : "",
+                                "startColumn" : 788,
+                                "startLine" : 1
+                              }
+                            } ],
+                            "sourceInformation" : {
+                              "endColumn" : 872,
+                              "endLine" : 1,
+                              "sourceId" : "",
+                              "startColumn" : 834,
+                              "startLine" : 1
+                            }
+                          } ]
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 874,
+                          "endLine" : 1,
+                          "sourceId" : "",
+                          "startColumn" : 755,
+                          "startLine" : 1
+                        }
+                      } ],
+                      "parameters" : [ ],
+                      "sourceInformation" : {
+                        "endColumn" : 874,
+                        "endLine" : 1,
+                        "sourceId" : "",
+                        "startColumn" : 748,
+                        "startLine" : 1
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 741,
+                      "endLine" : 1,
+                      "sourceId" : "",
+                      "startColumn" : 711,
+                      "startLine" : 1
+                    }
+                  } ]
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 875,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 647,
+                  "startLine" : 1
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "meta::pure::functions::hash::HashType",
+                  "sourceInformation" : {
+                    "endColumn" : 914,
+                    "endLine" : 1,
+                    "sourceId" : "",
+                    "startColumn" : 878,
+                    "startLine" : 1
+                  }
+                } ],
+                "property" : "MD5",
+                "sourceInformation" : {
+                  "endColumn" : 918,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 916,
+                  "startLine" : 1
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 399,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 367,
+                "startLine" : 1
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "row"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 919,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 366,
+              "startLine" : 1
+            }
+          },
+          "name" : "DIGEST_SOURCE",
+          "sourceInformation" : {
+            "endColumn" : 919,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 349,
+            "startLine" : 1
+          }
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 346,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 308,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 978,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 964,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "DIGEST_SOURCE",
+          "sourceInformation" : {
+            "endColumn" : 977,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 965,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 961,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 923,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 979,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,1038 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "FullTimeFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "EMP_TYPE",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 107,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 25,
+            "startLine" : 107
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 107,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 25,
+              "startLine" : 107
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 107,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 50,
+            "startLine" : 107
+          },
+          "value" : "FULL_TIME"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 107,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 48,
+          "startLine" : 107
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 107,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 3,
+        "startLine" : 107
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "EmployeeFirmJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "FIRM_ID",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 102,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 25,
+            "startLine" : 102
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 102,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 25,
+              "startLine" : 102
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 102,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 49,
+            "startLine" : 102
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 102,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 49,
+              "startLine" : 102
+            },
+            "table" : "FirmTable"
+          },
+          "tableAlias" : "FirmTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 102,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 47,
+          "startLine" : 102
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 102,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 3,
+        "startLine" : 102
+      }
+    }, {
+      "name" : "PositionProductJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "PRODUCT_ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 103,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 28,
+            "startLine" : 103
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 103,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 28,
+              "startLine" : 103
+            },
+            "table" : "PositionTable"
+          },
+          "tableAlias" : "PositionTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 103,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 55,
+            "startLine" : 103
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 103,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 55,
+              "startLine" : 103
+            },
+            "table" : "ProductTable"
+          },
+          "tableAlias" : "ProductTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 103,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 53,
+          "startLine" : 103
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 103,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 3,
+        "startLine" : 103
+      }
+    }, {
+      "name" : "FirmDepartmentJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 104,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 27,
+            "startLine" : 104
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 104,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 27,
+              "startLine" : 104
+            },
+            "table" : "FirmTable"
+          },
+          "tableAlias" : "FirmTable"
+        }, {
+          "_type" : "column",
+          "column" : "FIRM_ID",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 104,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 42,
+            "startLine" : 104
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 104,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 42,
+              "startLine" : 104
+            },
+            "table" : "DepartmentTable"
+          },
+          "tableAlias" : "DepartmentTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 104,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 40,
+          "startLine" : 104
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 104,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 3,
+        "startLine" : 104
+      }
+    }, {
+      "name" : "DepartmentEmployeeJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 105,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 31,
+            "startLine" : 105
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 105,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 31,
+              "startLine" : 105
+            },
+            "table" : "DepartmentTable"
+          },
+          "tableAlias" : "DepartmentTable"
+        }, {
+          "_type" : "column",
+          "column" : "DEPARTMENT_ID",
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 105,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 52,
+            "startLine" : 105
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::db::EmployeeDB",
+            "mainTableDb" : "demo::relation::db::EmployeeDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 105,
+              "sourceId" : "store/employeeDb.pure",
+              "startColumn" : 52,
+              "startLine" : 105
+            },
+            "table" : "EmployeeTable"
+          },
+          "tableAlias" : "EmployeeTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 105,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 50,
+          "startLine" : 105
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 105,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 3,
+        "startLine" : 105
+      }
+    } ],
+    "name" : "EmployeeDB",
+    "package" : "demo::relation::db",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 108,
+        "sourceId" : "store/employeeDb.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 20,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRST_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 21,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "LAST_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 22,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "FIRM_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 23,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "EMP_TYPE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 24,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "ACTIVE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 25,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        }, {
+          "name" : "HIRE_DATE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 26,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "SALARY",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 27,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "STREET",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 28,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "CITY",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 29,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "DEPARTMENT_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 30,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ACTIVE_STATUS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 31,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EmployeeTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 32,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 36,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGAL_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 37,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FirmTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 38,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 34
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 42,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 42
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRM_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 43,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 44,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "CODE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 45,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "DepartmentTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 46,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 40
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 50,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 50
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ACC_NUM",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 51,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "GSN",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 52,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "PRODUCT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 53,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 53
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "QTY",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 54,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 54
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PositionTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 55,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 48
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 59,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 59
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "DESCRIPTION",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 60,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 60
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ProductTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 61,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 57
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 69,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 69
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRST_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 70,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 70
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "SALARY",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 71,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 71
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "IN_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 72,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 72
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "OUT_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 73,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 73
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "IN_Z",
+          "out" : "OUT_Z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 67,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 8,
+            "startLine" : 67
+          }
+        } ],
+        "name" : "TemporalEmployeeTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 74,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 63
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 82,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 82
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRST_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 83,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 83
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "SALARY",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 84,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 84
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "FROM_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 85,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 85
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "THRU_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 86,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 86
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "FROM_Z",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 80,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 17,
+            "startLine" : 80
+          },
+          "thru" : "THRU_Z",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "BusinessTemporalEmployeeTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 87,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 76
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 95,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 95
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 96,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 96
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "EMPLOYEE_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 97,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 97
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "IN_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 98,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 98
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "OUT_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 99,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 5,
+            "startLine" : 99
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "IN_Z",
+          "out" : "OUT_Z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 93,
+            "sourceId" : "store/employeeDb.pure",
+            "startColumn" : 8,
+            "startLine" : 93
+          }
+        } ],
+        "name" : "TemporalDepartmentTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 100,
+          "sourceId" : "store/employeeDb.pure",
+          "startColumn" : 3,
+          "startLine" : 89
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 108,
+      "sourceId" : "store/employeeDb.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ]
+  } ]
+}

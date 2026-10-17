@@ -1,0 +1,48 @@
+
+Mapping demo::DistinctPersonMapping
+(
+  *demo::Person: Relational
+  {
+    ~distinct
+    scope([demo::store::DistinctDB]PersonRoleTable)
+    (
+      firstName: firstName,
+      lastName: lastName
+    )
+  }
+
+  testSuites:
+  [
+    distinctSuite:
+    {
+      function: |demo::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name'])->sort([asc('First Name')]);
+      tests:
+      [
+        collapsesDuplicateRows:
+        {
+          data:
+          [
+            demo::store::DistinctDB:
+              Reference
+              #{
+                demo::data::DistinctPersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldDeduplicate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Jane","Last Name":"Smith"},{"First Name":"John","Last Name":"Doe"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

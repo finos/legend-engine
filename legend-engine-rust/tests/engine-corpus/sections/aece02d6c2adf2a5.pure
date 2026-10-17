@@ -1,0 +1,30 @@
+
+Mapping test::mapping
+(
+  *test::model::A: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService1
+    (
+      ~request
+      (
+        parameters
+        (
+           param1 = 1,
+           param = $this.alpha        )
+      )
+    )
+  }
+  *test::model::B: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService2
+    (
+      ~request
+      (
+        parameters
+        (
+           param1 = 1.1,
+           param = $this.beta->toOne()        )
+      )
+    )
+  }
+)

@@ -1,0 +1,2 @@
+
+Mapping a::mapping(   test::Firm : Pure   {       ~src test::SrcFirm       employees : $src.empl   }   test::Person : Pure   {       ~src test::SrcPerson       lastName : '1'   })

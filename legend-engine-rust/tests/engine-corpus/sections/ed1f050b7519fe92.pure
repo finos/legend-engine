@@ -1,0 +1,12 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      mappingProvider: model::product.key;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

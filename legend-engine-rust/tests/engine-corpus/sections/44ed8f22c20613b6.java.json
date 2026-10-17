@@ -1,0 +1,95 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "my Enum",
+    "package" : "@",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "profile" : "st",
+      "profileSourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "value" : "test"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "Anything e"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "A g"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "Anything r"
+    } ]
+  } ],
+  "imports" : [ ]
+}

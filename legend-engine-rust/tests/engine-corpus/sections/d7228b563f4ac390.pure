@@ -1,0 +1,32 @@
+
+Mapping mapping::RelationalMapping
+(
+  models::Person: Relational
+  {
+    ~primaryKey([stores::testRelationalJoinsDB]testSchema.People.id)
+    ~mainTable [stores::testRelationalJoinsDB]testSchema.People
+    name: [stores::testRelationalJoinsDB]testSchema.People.name,
+    firm: [stores::testRelationalJoinsDB]@FirmPerson,
+    pet_name: [stores::testRelationalJoinsDB]@PersonPetWithNull
+  }
+  models::Firm: Relational
+  {
+    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Firms.id)
+    ~mainTable [stores::testRelationalJoinsDB]testSchema.Firms
+    firm_name: [stores::testRelationalJoinsDB]testSchema.Firms.firm_name
+  }
+  models::Pet: Relational
+  {
+    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Pets.id)
+    ~mainTable [stores::testRelationalJoinsDB]testSchema.Pets
+    pet_name: [stores::testRelationalJoinsDB]testSchema.Pets.pet_name,
+    species: EnumerationMapping PetTypeMapping: [stores::testRelationalJoinsDB]testSchema.Pets.species
+  }
+  models::PetType: EnumerationMapping PetTypeMapping
+  {
+    DOG: ['DOG'],
+    CAT: ['CAT'],
+    RABBIT: ['RABBIT'],
+    HAMSTER: ['HAMSTER']
+  }
+)

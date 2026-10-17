@@ -1,0 +1,22 @@
+
+Class demo::ss::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+  employeeCount: Integer[1];
+  isMnc: Boolean[1];
+  ticker: String[1];
+  sector: String[1];
+  revenue: Float[1];
+  marketCap: Decimal[1];
+  estDate: StrictDate[1];
+  lastUpdate: DateTime[1];
+  auditStamp: DateTime[1];
+  firstOrderPrice: Integer[1];
+  nestedCell: Integer[1];
+  nestedTag: String[1];
+  quotedKey: String[1];
+  firstTag: String[1];
+  secondTagLabel: String[1];
+  detailsJson: String[1];
+}

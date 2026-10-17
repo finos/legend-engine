@@ -1,0 +1,2 @@
+
+function local::func(): Any[*]{ |#>{local::db.person}#->select()->from(test::Runtime) }

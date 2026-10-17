@@ -1,0 +1,5 @@
+
+SnowflakeApp SnowflakeApp::applicationName::SnowflakeAppDeploymentConfiguration::permissionScheme::usageRole::SnowflakeM2MUdf::udfName::SnowflakeUDFDeploymentConfiguration::description::function::ownership::Deployment::identifier::activationConfiguration::deploymentSchema::activationConnection::deploymentStage::all::let::allVersions::allVersionsInRange::toBytes
+{
+   function : a::f():String[1];   ownership : Deployment{identifier:'testDeployment'};   applicationName : 'sass';
+}

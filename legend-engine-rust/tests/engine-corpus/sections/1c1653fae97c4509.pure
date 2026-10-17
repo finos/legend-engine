@@ -1,0 +1,5 @@
+
+function xx::myFunc() : Boolean[1] {
+   ^Pair<String,Integer>(first = 'student1', second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])->meta::pure::tds::extensions::zScore([], ['score'], ['score zScore']);
+   true;
+}

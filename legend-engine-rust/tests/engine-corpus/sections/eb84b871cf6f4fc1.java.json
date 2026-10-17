@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "MongoDB",
+      "bindingPath" : "meta::external::store::mongodb::showcase::store::PersonCollectionBinding",
+      "class" : "meta::external::store::mongodb::showcase::domain::Person",
+      "id" : "Person",
+      "mainCollectionName" : "PersonCollection",
+      "root" : true,
+      "storePath" : "meta::external::store::mongodb::showcase::store::PersonDatabase"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "MongoDBMapping",
+    "package" : "mongo::test::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 94,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 87
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,8 @@
+
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::EmployeeDepartment
+{
+  department: demo::relation::domain::Department[0..1];
+  employeesInDept: demo::relation::domain::Employee[*];
+}

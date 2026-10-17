@@ -1,0 +1,65 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "select",
+    "parameters" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "a::A", "tb" ],
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      },
+      "type" : "colSpec",
+      "value" : {
+        "name" : "id",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 1
+        }
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 26,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

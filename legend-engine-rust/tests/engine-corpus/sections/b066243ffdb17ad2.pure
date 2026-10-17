@@ -1,0 +1,8 @@
+
+RelationalDatabaseConnection test::runtime::TestConnection
+{
+  store: test::store::TestDB;
+  type: H2;
+  specification: LocalH2 {};
+  auth: DefaultH2;
+}

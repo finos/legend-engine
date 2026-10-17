@@ -591,7 +591,7 @@ Property mappings always emit `valueFn` in the transferred protocol (never
 
 Use this to jump from a concept in the doc to its implementation. Paths are
 relative to their module roots; every file lives under the modules described
-in [`CLAUDE.md`](../../CLAUDE.md).
+in the [Module Reference](../reference/modules.md).
 
 | Concern | Key files |
 |---------|-----------|

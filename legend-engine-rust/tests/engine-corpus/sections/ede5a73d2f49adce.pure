@@ -1,0 +1,27 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Firm.all()       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Firm {
+               firmName,
+               address{
+                   street
+               },
+               employees{                   firstName,
+                   lastName,
+                   middleName
+               }
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::Firm {
+               firmName,
+               address{
+                   street
+               },
+               employees{                   firstName,
+                   lastName,
+                   middleName
+               }
+           }
+        }#)};
+}

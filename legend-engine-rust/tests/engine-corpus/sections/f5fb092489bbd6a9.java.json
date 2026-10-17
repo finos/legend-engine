@@ -1,0 +1,40 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "DOC" ],
+        "paths" : [ "default", "T" ],
+        "rows" : [ {
+          "values" : [ "1", "\"{\"\"a\"\":[{\"\"b\"\":[1,2]},{\"\"b\"\":[3]}],\"\"e\"\":[{\"\"b\"\":[1]},{\"\"b\"\":[]}],\"\"n\"\":[{\"\"b\"\":[1]},{\"\"b\"\":null}],\"\"k\"\":[{\"\"b\"\":[1]},{}],\"\"z\"\":[{\"\"b\"\":[]},{\"\"b\"\":[]}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 163,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 22
+      }
+    },
+    "name" : "D",
+    "package" : "probe::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

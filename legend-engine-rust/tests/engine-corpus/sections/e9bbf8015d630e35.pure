@@ -1,0 +1,6 @@
+
+Class test::model::A
+{
+  alpha   : Date[1];
+  beta    : Boolean[0..1];
+}

@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "A",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 4
+      },
+      "value" : "modifier"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 29,
+        "startLine" : 4
+      },
+      "value" : "modifier"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 39,
+        "startLine" : 4
+      },
+      "value" : "accessorType"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 53,
+        "startLine" : 4
+      },
+      "value" : "accessorType"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 3
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 3
+      },
+      "value" : "doc"
+    } ]
+  } ],
+  "imports" : [ ]
+}

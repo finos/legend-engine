@@ -1,0 +1,13 @@
+
+Mapping a::mapping
+(
+   test::Firm : Pure
+   {
+       incType : EnumerationMapping a : test::Other.bla
+   }
+   test::IncType : EnumerationMapping a
+   {
+       CORP : [test::Other.bla],
+       LLC : [test::Other.bla]
+   }
+)

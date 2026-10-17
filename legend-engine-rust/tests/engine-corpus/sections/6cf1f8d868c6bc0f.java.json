@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "myRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "meta::myMapping",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 250,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 250
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 252,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 246
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 252,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 246
+    }
+  } ],
+  "imports" : [ ]
+}

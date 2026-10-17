@@ -1,0 +1,41 @@
+
+Class test::Person
+{
+  fullName: String[1];
+  firmAddressName() { $this.firm.address.name } : String[0..1];
+}
+
+Class test::Firm
+{
+  name: String[1];
+  estDate: StrictDate[0..1];
+}
+
+Class test::Address
+{
+  name: String[1];
+}
+
+Association test::Person_Firm
+{
+  employees: test::Person[*];
+  firm: test::Firm[0..1];
+}
+
+Association test::Person_Address
+{
+  persons: test::Person[*];
+  address: test::Address[0..1];  
+}
+
+Association test::Firm_Address
+{
+  firms: test::Firm[*];
+  address: test::Address[0..1];  
+}
+Association test::Person_FirmAddress
+{
+  firmPersons: test::Person[*];
+  firmAddress: test::Address[0..1];  
+}
+

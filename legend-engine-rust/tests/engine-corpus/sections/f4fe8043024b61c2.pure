@@ -1,0 +1,108 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+    *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: Operation
+    {
+        meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(s_trade_set1, s_trade_set2)
+    }
+
+    meta::external::store::service::showcase::domain::S_Trade[s_trade_set1]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.AllTradeService1
+    }
+
+    meta::external::store::service::showcase::domain::S_Trade[s_trade_set2]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] TradeServices.AllTradeService2
+    }
+
+    *meta::external::store::service::showcase::domain::S_Product[s_product_set]: Operation
+    {
+        meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(s_product_set1, s_product_set2)
+    }
+
+    meta::external::store::service::showcase::domain::S_Product[s_product_set1]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.AllProductsService1
+
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService1
+        (
+             ~request
+             (
+                parameters
+                (
+                    id = $this.s_productId
+                )
+             )
+        )
+    }
+
+    meta::external::store::service::showcase::domain::S_Product[s_product_set2]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.AllProductsService2
+
+        ~service [meta::external::store::service::showcase::store::TradeProductServiceStore] ProductServices.ProductByIdService2
+        (
+             ~request
+             (
+                parameters
+                (
+                    id = $this.s_productId
+                )
+             )
+        )
+    }
+
+    *meta::external::store::service::showcase::domain::Person[person_set]: Operation
+    {
+        meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set1]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set2]: Pure
+    {
+        ~src meta::external::store::service::showcase::domain::Person
+
+        firstName : $src.firstName,
+        lastName  : $src.lastName,
+        firmId    : $src.firmId
+    }
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+(
+    *meta::external::store::service::showcase::domain::Person[person_set]: Operation
+    {
+        meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2, person_set3, person_set4, person_set5)
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set1]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore1] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set2]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore2] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set3]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore3] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set4]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore4] EmployeeService
+    }
+
+    meta::external::store::service::showcase::domain::Person[person_set5]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeeServiceStore5] EmployeeService
+    }
+)
+

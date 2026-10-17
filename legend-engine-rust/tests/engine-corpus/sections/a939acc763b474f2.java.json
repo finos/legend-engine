@@ -1,0 +1,5739 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ssv::Row",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssv::store::DB",
+        "mainTableDb" : "demo::ssv::store::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 21,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 38,
+          "startLine" : 21
+        },
+        "table" : "T"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 20,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 20
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssv::store::DB",
+          "mainTableDb" : "demo::ssv::store::DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 20,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 41,
+            "startLine" : 20
+          },
+          "table" : "T"
+        },
+        "tableAlias" : "T"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssv::store::DB",
+            "mainTableDb" : "demo::ssv::store::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 22,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 22
+            },
+            "table" : "T"
+          },
+          "tableAlias" : "T"
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "lastVal",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 23,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_last",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "NUMS",
+              "sourceInformation" : {
+                "endColumn" : 78,
+                "endLine" : 23,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 51,
+                "startLine" : 23
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssv::store::DB",
+                "mainTableDb" : "demo::ssv::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 23,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 73,
+                  "startLine" : 23
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 23,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 81,
+                "startLine" : 23
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 101,
+                "endLine" : 23,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 91,
+                "startLine" : 23
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 23,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 25,
+              "startLine" : 23
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 23,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 23
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 103,
+          "endLine" : 23,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 23
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "initVals",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 24,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_init",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 68,
+                  "startLine" : 24
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 24,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 90,
+                    "startLine" : 24
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 105,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 98,
+                  "startLine" : 24
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 118,
+                  "endLine" : 24,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 108,
+                  "startLine" : 24
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 24,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 42,
+                "startLine" : 24
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 120,
+              "endLine" : 24,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 24
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 125,
+              "endLine" : 24,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 123,
+              "startLine" : 24
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 24,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 24
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 126,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 24
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "tailVals",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_tail",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 68,
+                  "startLine" : 25
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 25,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 90,
+                    "startLine" : 25
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 105,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 98,
+                  "startLine" : 25
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 118,
+                  "endLine" : 25,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 108,
+                  "startLine" : 25
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 25,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 42,
+                "startLine" : 25
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 120,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 25
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 125,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 123,
+              "startLine" : 25
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 25
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 126,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "sortedVals",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_sort",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 70,
+                  "startLine" : 26
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 92,
+                    "endLine" : 26,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 92,
+                    "startLine" : 26
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 100,
+                  "startLine" : 26
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 120,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 110,
+                  "startLine" : 26
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 44,
+                "startLine" : 26
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 33,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 127,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 125,
+              "startLine" : 26
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 128,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "reversedVals",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_reverse",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 102,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 75,
+                  "startLine" : 27
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 97,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 97,
+                    "startLine" : 27
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 112,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 105,
+                  "startLine" : 27
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 125,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 115,
+                  "startLine" : 27
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 126,
+                "endLine" : 27,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 49,
+                "startLine" : 27
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 127,
+              "endLine" : 27,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 27
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 132,
+              "endLine" : 27,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 130,
+              "startLine" : 27
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 27
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 133,
+          "endLine" : 27,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 17,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "appendedVals",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_append",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 28,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 74,
+                  "startLine" : 28
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 96,
+                    "endLine" : 28,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 96,
+                    "startLine" : 28
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 28,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 104,
+                  "startLine" : 28
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 124,
+                  "endLine" : 28,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 114,
+                  "startLine" : 28
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 28,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 48,
+                "startLine" : 28
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 28,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 128,
+                "startLine" : 28
+              },
+              "value" : 9
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 28,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 28
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 134,
+              "endLine" : 28,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 132,
+              "startLine" : 28
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 28
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 135,
+          "endLine" : 28,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 17,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "positionOfTwo",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_position",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "NUMS",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 29,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 61,
+                "startLine" : 29
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssv::store::DB",
+                "mainTableDb" : "demo::ssv::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 29,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 83,
+                  "startLine" : 29
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 98,
+                "endLine" : 29,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 91,
+                "startLine" : 29
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 29,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 101,
+                "startLine" : 29
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 29,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 115,
+              "endLine" : 29,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 115,
+              "startLine" : 29
+            },
+            "value" : 2
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 116,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 20,
+            "startLine" : 29
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 116,
+          "endLine" : 29,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 18,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "slicedVals",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_slice",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 30,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 71,
+                  "startLine" : 30
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 93,
+                    "endLine" : 30,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 93,
+                    "startLine" : 30
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 30,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 101,
+                  "startLine" : 30
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 121,
+                  "endLine" : 30,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 111,
+                  "startLine" : 30
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 122,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 125,
+                "startLine" : 30
+              },
+              "value" : 0
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 30,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 128,
+                "startLine" : 30
+              },
+              "value" : 2
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 33,
+              "startLine" : 30
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 134,
+              "endLine" : 30,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 132,
+              "startLine" : 30
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 30,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 135,
+          "endLine" : 30,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "droppedVals",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_drop",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 71,
+                  "startLine" : 31
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 93,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 93,
+                    "startLine" : 31
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 101,
+                  "startLine" : 31
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 121,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 111,
+                  "startLine" : 31
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 122,
+                "endLine" : 31,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 31
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 31,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 125,
+                "startLine" : 31
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 126,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 34,
+              "startLine" : 31
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 131,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 129,
+              "startLine" : 31
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 132,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 132,
+          "endLine" : 31,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "takenVals",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_take",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "NUMS",
+                "sourceInformation" : {
+                  "endColumn" : 96,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 69,
+                  "startLine" : 32
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 91,
+                    "endLine" : 32,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 91,
+                    "startLine" : 32
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 99,
+                  "startLine" : 32
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 119,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 109,
+                  "startLine" : 32
+                },
+                "value" : "INTEGER[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 32,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 43,
+                "startLine" : 32
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 32,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 123,
+                "startLine" : 32
+              },
+              "value" : 2
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 124,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 32,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 127,
+              "startLine" : 32
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 130,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 130,
+          "endLine" : 32,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "containsTwo",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_contains",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "NUMS",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 59,
+                "startLine" : 33
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssv::store::DB",
+                "mainTableDb" : "demo::ssv::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 81,
+                  "startLine" : 33
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 96,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 89,
+                "startLine" : 33
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 109,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 99,
+                "startLine" : 33
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 33,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 113,
+              "startLine" : 33
+            },
+            "value" : 2
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 114,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "distinctVals",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_sort",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_distinct",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "NUMS",
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 87,
+                    "startLine" : 34
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "demo::ssv::store::DB",
+                    "mainTableDb" : "demo::ssv::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 109,
+                      "endLine" : 34,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 109,
+                      "startLine" : 34
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 124,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 117,
+                    "startLine" : 34
+                  },
+                  "value" : "values"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 137,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 127,
+                    "startLine" : 34
+                  },
+                  "value" : "INTEGER[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 138,
+                  "endLine" : 34,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 61,
+                  "startLine" : 34
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 139,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 34
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 140,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 34
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 145,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 143,
+              "startLine" : 34
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 146,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 146,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 17,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "concatenated",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 35,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_concatenate",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "WORDS",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 79,
+                  "startLine" : 35
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 101,
+                    "endLine" : 35,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 101,
+                    "startLine" : 35
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 117,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 110,
+                  "startLine" : 35
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 130,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 120,
+                  "startLine" : 35
+                },
+                "value" : "VARCHAR[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 131,
+                "endLine" : 35,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 53,
+                "startLine" : 35
+              }
+            }, {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "WORDS",
+                "sourceInformation" : {
+                  "endColumn" : 188,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 160,
+                  "startLine" : 35
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::ssv::store::DB",
+                  "mainTableDb" : "demo::ssv::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 182,
+                    "endLine" : 35,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 182,
+                    "startLine" : 35
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 198,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 191,
+                  "startLine" : 35
+                },
+                "value" : "values"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 211,
+                  "endLine" : 35,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 201,
+                  "startLine" : 35
+                },
+                "value" : "VARCHAR[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 212,
+                "endLine" : 35,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 134,
+                "startLine" : 35
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 213,
+              "endLine" : 35,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 35
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 218,
+              "endLine" : 35,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 216,
+              "startLine" : 35
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 219,
+            "endLine" : 35,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 35
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 219,
+          "endLine" : 35,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 17,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssv::Row",
+          "property" : "sumVals",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_sum",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "NUMS",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 50,
+                "startLine" : 36
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::ssv::store::DB",
+                "mainTableDb" : "demo::ssv::store::DB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 36,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 72,
+                  "startLine" : 36
+                },
+                "table" : "T"
+              },
+              "tableAlias" : "T"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 80,
+                "startLine" : 36
+              },
+              "value" : "values"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 100,
+                "endLine" : 36,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 90,
+                "startLine" : 36
+              },
+              "value" : "INTEGER[]"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 24,
+              "startLine" : 36
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 102,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 36
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M",
+    "package" : "demo::ssv",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 210,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 43,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 43
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 43,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 43
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 43,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 43
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 43,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 43
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 43,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 43
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 43,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 43
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 43,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 43
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 43,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 43
+                        }
+                      } ],
+                      "property" : "lastVal",
+                      "sourceInformation" : {
+                        "endColumn" : 81,
+                        "endLine" : 43,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 43
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 43,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 43
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 43,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 43
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 43,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 43
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 43,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 91,
+              "startLine" : 43
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 43,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 93,
+                  "startLine" : 43
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 43,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 93,
+                    "startLine" : 43
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 105,
+                "endLine" : 43,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 97,
+                "startLine" : 43
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 43,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 86,
+            "startLine" : 43
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 109,
+          "endLine" : 43,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 43
+        }
+      },
+      "id" : "lastValSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 52,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 41
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 1\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 144,
+              "endLine" : 49,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 49
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 49,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 49
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 50,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 46
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 48,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 48
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 48
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 48,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 48
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 48,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 48
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 55,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 55
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 55,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 55
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 83,
+                "endLine" : 55,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 55
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 55,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 55
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 55,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 55
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 55,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 55
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 55,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 55
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 55,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 55
+                        }
+                      } ],
+                      "property" : "initVals",
+                      "sourceInformation" : {
+                        "endColumn" : 82,
+                        "endLine" : 55,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 55
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 82,
+                      "endLine" : 55,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 55
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 55,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 55
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 55,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 55
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 55,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 92,
+              "startLine" : 55
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 55,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 94,
+                  "startLine" : 55
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 55,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 94,
+                    "startLine" : 55
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 55,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 98,
+                "startLine" : 55
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 55,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 87,
+            "startLine" : 55
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 110,
+          "endLine" : 55,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 55
+        }
+      },
+      "id" : "initValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 64,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 53
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"3,1,2\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 150,
+              "endLine" : 61,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 61
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 154,
+            "endLine" : 61,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 61
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 62,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 58
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 60,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 60
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 60
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 60
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 60
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 67,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 67
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 67,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 67
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 83,
+                "endLine" : 67,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 67
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 67,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 67
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 67,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 67
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 67,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 67
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 67,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 67
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 67,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 67
+                        }
+                      } ],
+                      "property" : "tailVals",
+                      "sourceInformation" : {
+                        "endColumn" : 82,
+                        "endLine" : 67,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 67
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 82,
+                      "endLine" : 67,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 67
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 67,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 67
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 67,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 67
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 67,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 92,
+              "startLine" : 67
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 67,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 94,
+                  "startLine" : 67
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 67,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 94,
+                    "startLine" : 67
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 67,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 98,
+                "startLine" : 67
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 67,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 87,
+            "startLine" : 67
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 110,
+          "endLine" : 67,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 67
+        }
+      },
+      "id" : "tailValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 76,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 65
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,2,1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 150,
+              "endLine" : 73,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 73
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 154,
+            "endLine" : 73,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 73
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 74,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 70
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 72,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 72
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 72,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 72
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 72,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 72
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 72,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 72
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 79,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 79
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 79,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 79
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 79,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 79
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 79,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 79
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 79,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 79,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 79
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 79,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 79
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 79,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 79
+                        }
+                      } ],
+                      "property" : "sortedVals",
+                      "sourceInformation" : {
+                        "endColumn" : 84,
+                        "endLine" : 79,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 84,
+                      "endLine" : 79,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 79
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 79,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 79
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 79,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 79
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 111,
+              "endLine" : 79,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 94,
+              "startLine" : 79
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 79,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 96,
+                  "startLine" : 79
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 97,
+                    "endLine" : 79,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 96,
+                    "startLine" : 79
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 79,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 100,
+                "startLine" : 79
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 79,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 89,
+            "startLine" : 79
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 79,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 79
+        }
+      },
+      "id" : "sortedValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 88,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 77
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,1,2,3\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 85,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 85
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 156,
+            "endLine" : 85,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 85
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 86,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 82
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 84,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 84
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 84,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 84
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 84,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 84
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 84,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 84
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 91,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 91
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 91,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 91
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 91,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 91
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 91,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 91
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 91,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 91
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 91,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 91
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 91,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 91
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 91,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 91
+                        }
+                      } ],
+                      "property" : "reversedVals",
+                      "sourceInformation" : {
+                        "endColumn" : 86,
+                        "endLine" : 91,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 91
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 86,
+                      "endLine" : 91,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 91
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 86,
+                    "endLine" : 91,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 91
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 91,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 91
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 91,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 96,
+              "startLine" : 91
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 91,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 98,
+                  "startLine" : 91
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 99,
+                    "endLine" : 91,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 98,
+                    "startLine" : 91
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 91,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 102,
+                "startLine" : 91
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 91,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 91,
+            "startLine" : 91
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 91,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 91
+        }
+      },
+      "id" : "reversedValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 100,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 89
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,2,1,3\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 97,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 97
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 156,
+            "endLine" : 97,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 97
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 98,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 94
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 96,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 96
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 96,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 96
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 96,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 96
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 96,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 96
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 103,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 103
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 103,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 103
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 103,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 103
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 103,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 103
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 103,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 103
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 103,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 103
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 103,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 103
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 103,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 103
+                        }
+                      } ],
+                      "property" : "appendedVals",
+                      "sourceInformation" : {
+                        "endColumn" : 86,
+                        "endLine" : 103,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 103
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 86,
+                      "endLine" : 103,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 103
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 86,
+                    "endLine" : 103,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 103
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 103,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 103
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 103,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 96,
+              "startLine" : 103
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 103,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 98,
+                  "startLine" : 103
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 99,
+                    "endLine" : 103,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 98,
+                    "startLine" : 103
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 103,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 102,
+                "startLine" : 103
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 103,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 91,
+            "startLine" : 103
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 103,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 103
+        }
+      },
+      "id" : "appendedValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 112,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 101
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"3,1,2,1,9\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 154,
+              "endLine" : 109,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 109
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 158,
+            "endLine" : 109,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 109
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 110,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 106
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 108,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 108
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 108,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 108
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 108,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 108
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 108,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 108
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 115,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 115
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 115,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 115
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 115,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 115
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 115,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 115
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 115,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 115
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 115,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 115
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 115,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 115
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 115,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 115
+                        }
+                      } ],
+                      "property" : "positionOfTwo",
+                      "sourceInformation" : {
+                        "endColumn" : 87,
+                        "endLine" : 115,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 115
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 87,
+                      "endLine" : 115,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 115
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 87,
+                    "endLine" : 115,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 115
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 115,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 115
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 114,
+              "endLine" : 115,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 97,
+              "startLine" : 115
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 100,
+                  "endLine" : 115,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 99,
+                  "startLine" : 115
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 100,
+                    "endLine" : 115,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 99,
+                    "startLine" : 115
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 115,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 103,
+                "startLine" : 115
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 115,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 92,
+            "startLine" : 115
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 115,
+          "endLine" : 115,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 115
+        }
+      },
+      "id" : "positionOfTwoSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 124,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 113
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 2\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 144,
+              "endLine" : 121,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 121
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 121,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 121
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 122,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 118
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 120,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 120
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 120,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 120
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 120,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 120
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 120,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 120
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 127,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 127
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 127,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 127
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 127,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 127
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 127,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 127
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 127,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 127
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 127,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 127
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 127
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 127,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 127
+                        }
+                      } ],
+                      "property" : "slicedVals",
+                      "sourceInformation" : {
+                        "endColumn" : 84,
+                        "endLine" : 127,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 127
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 84,
+                      "endLine" : 127,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 127
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 127
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 127,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 127
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 111,
+              "endLine" : 127,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 94,
+              "startLine" : 127
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 127,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 96,
+                  "startLine" : 127
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 97,
+                    "endLine" : 127,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 96,
+                    "startLine" : 127
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 127,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 100,
+                "startLine" : 127
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 127,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 89,
+            "startLine" : 127
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 127,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 127
+        }
+      },
+      "id" : "slicedValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 136,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 125
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"3,1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 148,
+              "endLine" : 133,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 133
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 152,
+            "endLine" : 133,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 133
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 134,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 130
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 132,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 132
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 132,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 132
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 132,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 132
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 132,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 132
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 139,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 139
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 139,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 139
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 139,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 139
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 139,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 139
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 139,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 139
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 139,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 139
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 139,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 139
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 139,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 139
+                        }
+                      } ],
+                      "property" : "droppedVals",
+                      "sourceInformation" : {
+                        "endColumn" : 85,
+                        "endLine" : 139,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 139
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 85,
+                      "endLine" : 139,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 139
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 139,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 139
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 139,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 139
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 139,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 95,
+              "startLine" : 139
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 139,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 97,
+                  "startLine" : 139
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 139,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 97,
+                    "startLine" : 139
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 109,
+                "endLine" : 139,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 101,
+                "startLine" : 139
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 139,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 90,
+            "startLine" : 139
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 139,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 139
+        }
+      },
+      "id" : "droppedValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 148,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 137
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,2,1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 150,
+              "endLine" : 145,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 145
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 154,
+            "endLine" : 145,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 145
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 146,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 142
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 144,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 144
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 144,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 144
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 144,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 144
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 144,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 144
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 151,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 151
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 151,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 151
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 84,
+                "endLine" : 151,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 151
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 151,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 151
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 151,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 151
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 151,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 151
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 151,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 151
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 151,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 151
+                        }
+                      } ],
+                      "property" : "takenVals",
+                      "sourceInformation" : {
+                        "endColumn" : 83,
+                        "endLine" : 151,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 151
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 83,
+                      "endLine" : 151,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 151
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 151,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 151
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 151,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 151
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 151,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 93,
+              "startLine" : 151
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 96,
+                  "endLine" : 151,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 95,
+                  "startLine" : 151
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 96,
+                    "endLine" : 151,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 95,
+                    "startLine" : 151
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 107,
+                "endLine" : 151,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 99,
+                "startLine" : 151
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 151,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 88,
+            "startLine" : 151
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 111,
+          "endLine" : 151,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 151
+        }
+      },
+      "id" : "takenValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 160,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 149
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"3,1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 148,
+              "endLine" : 157,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 157
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 152,
+            "endLine" : 157,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 157
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 158,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 154
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 156,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 156
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 156,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 156
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 156,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 156
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 156,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 156
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 163,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 163
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 163,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 163
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 163,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 163
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 163,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 163
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 163,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 163
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 163,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 163
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 163,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 163
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 163,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 163
+                        }
+                      } ],
+                      "property" : "containsTwo",
+                      "sourceInformation" : {
+                        "endColumn" : 85,
+                        "endLine" : 163,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 163
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 85,
+                      "endLine" : 163,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 163
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 163,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 163
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 163,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 163
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 163,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 95,
+              "startLine" : 163
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 163,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 97,
+                  "startLine" : 163
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 163,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 97,
+                    "startLine" : 163
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 109,
+                "endLine" : 163,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 101,
+                "startLine" : 163
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 163,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 90,
+            "startLine" : 163
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 163,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 163
+        }
+      },
+      "id" : "containsTwoSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 172,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 161
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : true\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 147,
+              "endLine" : 169,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 169
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 151,
+            "endLine" : 169,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 169
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 170,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 166
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 168,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 168
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 168,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 168
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 168,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 168
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 168,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 168
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 175,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 175
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 175,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 175
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 175,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 175
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 175,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 175
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 175,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 175
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 175,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 175
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 175,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 175
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 175,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 175
+                        }
+                      } ],
+                      "property" : "distinctVals",
+                      "sourceInformation" : {
+                        "endColumn" : 86,
+                        "endLine" : 175,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 175
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 86,
+                      "endLine" : 175,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 175
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 86,
+                    "endLine" : 175,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 175
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 175,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 175
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 175,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 96,
+              "startLine" : 175
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 175,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 98,
+                  "startLine" : 175
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 99,
+                    "endLine" : 175,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 98,
+                    "startLine" : 175
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 175,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 102,
+                "startLine" : 175
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 175,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 91,
+            "startLine" : 175
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 175,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 175
+        }
+      },
+      "id" : "distinctValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 184,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 173
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,2,3\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 150,
+              "endLine" : 181,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 181
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 154,
+            "endLine" : 181,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 181
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 182,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 178
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 180,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 180
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 180,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 180
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 180,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 180
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 180,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 180
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 187,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 187
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 187,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 187
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 187,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 187
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 187,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 187
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 187,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 187
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 187,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 187
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 187,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 187
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 187,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 187
+                        }
+                      } ],
+                      "property" : "concatenated",
+                      "sourceInformation" : {
+                        "endColumn" : 86,
+                        "endLine" : 187,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 187
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 86,
+                      "endLine" : 187,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 187
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 86,
+                    "endLine" : 187,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 187
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 187,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 187
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 113,
+              "endLine" : 187,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 96,
+              "startLine" : 187
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 187,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 98,
+                  "startLine" : 187
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 99,
+                    "endLine" : 187,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 98,
+                    "startLine" : 187
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 187,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 102,
+                "startLine" : 187
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 187,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 91,
+            "startLine" : 187
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 187,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 187
+        }
+      },
+      "id" : "concatenatedSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 196,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 185
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"b,a,b,a\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 193,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 193
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 156,
+            "endLine" : 193,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 193
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 194,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 190
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 192,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 192
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 192,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 192
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 192,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 192
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 192,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 192
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssv::Row",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 199,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 18,
+                  "startLine" : 199
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 199,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 32,
+                "startLine" : 199
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 199,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 49,
+                "startLine" : 199
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 59,
+                          "endLine" : 199,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 58,
+                          "startLine" : 199
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 199,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 61,
+                        "startLine" : 199
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 199,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 56,
+                      "startLine" : 199
+                    }
+                  },
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 199,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 50,
+                    "startLine" : 199
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 199,
+                          "sourceId" : "demo::ssv::M",
+                          "startColumn" : 72,
+                          "startLine" : 199
+                        }
+                      } ],
+                      "property" : "sumVals",
+                      "sourceInformation" : {
+                        "endColumn" : 81,
+                        "endLine" : 199,
+                        "sourceId" : "demo::ssv::M",
+                        "startColumn" : 75,
+                        "startLine" : 199
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 199,
+                      "sourceId" : "demo::ssv::M",
+                      "startColumn" : 70,
+                      "startLine" : 199
+                    }
+                  },
+                  "name" : "v",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 199,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 65,
+                    "startLine" : 199
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 199,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 40,
+              "startLine" : 199
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 199,
+              "sourceId" : "demo::ssv::M",
+              "startColumn" : 91,
+              "startLine" : 199
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 199,
+                  "sourceId" : "demo::ssv::M",
+                  "startColumn" : 93,
+                  "startLine" : 199
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "id",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 199,
+                    "sourceId" : "demo::ssv::M",
+                    "startColumn" : 93,
+                    "startLine" : 199
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 105,
+                "endLine" : 199,
+                "sourceId" : "demo::ssv::M",
+                "startColumn" : 97,
+                "startLine" : 199
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 199,
+            "sourceId" : "demo::ssv::M",
+            "startColumn" : 86,
+            "startLine" : 199
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 109,
+          "endLine" : 199,
+          "sourceId" : "demo::ssv::M",
+          "startColumn" : 17,
+          "startLine" : 199
+        }
+      },
+      "id" : "sumValsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 208,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 197
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : 7\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 144,
+              "endLine" : 205,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 50,
+              "startLine" : 205
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 205,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 25,
+            "startLine" : 205
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 206,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 202
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssv::data::D",
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 204,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 41,
+                "startLine" : 204
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 204,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 41,
+              "startLine" : 204
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 204,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 204
+          },
+          "store" : {
+            "path" : "demo::ssv::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 204,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 204
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,677 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ssj::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssj::store::HrDB",
+        "mainTableDb" : "demo::ssj::store::HrDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "EMPLOYEE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssj::store::HrDB",
+          "mainTableDb" : "demo::ssj::store::HrDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "EMPLOYEE"
+        },
+        "tableAlias" : "EMPLOYEE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssj::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssj::store::HrDB",
+            "mainTableDb" : "demo::ssj::store::HrDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 25
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssj::Employee",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::ssj::store::HrDB",
+            "name" : "Employee_Firm",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 35,
+              "startLine" : 26
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 11,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::ssj::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 29,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssj::store::HrDB",
+        "mainTableDb" : "demo::ssj::store::HrDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 35,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 40,
+          "startLine" : 35
+        },
+        "table" : "FIRM"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssj::store::HrDB",
+          "mainTableDb" : "demo::ssj::store::HrDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 31,
+            "startLine" : 33
+          },
+          "table" : "FIRM"
+        },
+        "tableAlias" : "FIRM"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssj::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssj::store::HrDB",
+            "mainTableDb" : "demo::ssj::store::HrDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 36,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 33,
+              "startLine" : 36
+            },
+            "table" : "FIRM"
+          },
+          "tableAlias" : "FIRM"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssj::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LEGAL_NAME",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 37,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssj::store::HrDB",
+            "mainTableDb" : "demo::ssj::store::HrDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 37,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 40,
+              "startLine" : 37
+            },
+            "table" : "FIRM"
+          },
+          "tableAlias" : "FIRM"
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 37,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 37
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "HrMapping",
+    "package" : "demo::ssj",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 76,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssj::Employee",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 44,
+                  "sourceId" : "demo::ssj::HrMapping",
+                  "startColumn" : 18,
+                  "startLine" : 44
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 44,
+                "sourceId" : "demo::ssj::HrMapping",
+                "startColumn" : 37,
+                "startLine" : 44
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 45,
+                "sourceId" : "demo::ssj::HrMapping",
+                "startColumn" : 30,
+                "startLine" : 45
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "e",
+                        "sourceInformation" : {
+                          "endColumn" : 42,
+                          "endLine" : 45,
+                          "sourceId" : "demo::ssj::HrMapping",
+                          "startColumn" : 41,
+                          "startLine" : 45
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 47,
+                        "endLine" : 45,
+                        "sourceId" : "demo::ssj::HrMapping",
+                        "startColumn" : 44,
+                        "startLine" : 45
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 47,
+                      "endLine" : 45,
+                      "sourceId" : "demo::ssj::HrMapping",
+                      "startColumn" : 39,
+                      "startLine" : 45
+                    }
+                  },
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 47,
+                    "endLine" : 45,
+                    "sourceId" : "demo::ssj::HrMapping",
+                    "startColumn" : 31,
+                    "startLine" : 45
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "e",
+                          "sourceInformation" : {
+                            "endColumn" : 63,
+                            "endLine" : 45,
+                            "sourceId" : "demo::ssj::HrMapping",
+                            "startColumn" : 62,
+                            "startLine" : 45
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 68,
+                          "endLine" : 45,
+                          "sourceId" : "demo::ssj::HrMapping",
+                          "startColumn" : 65,
+                          "startLine" : 45
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 71,
+                        "endLine" : 45,
+                        "sourceId" : "demo::ssj::HrMapping",
+                        "startColumn" : 70,
+                        "startLine" : 45
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 71,
+                      "endLine" : 45,
+                      "sourceId" : "demo::ssj::HrMapping",
+                      "startColumn" : 60,
+                      "startLine" : 45
+                    }
+                  },
+                  "name" : "firmId",
+                  "sourceInformation" : {
+                    "endColumn" : 71,
+                    "endLine" : 45,
+                    "sourceId" : "demo::ssj::HrMapping",
+                    "startColumn" : 50,
+                    "startLine" : 45
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "e",
+                          "sourceInformation" : {
+                            "endColumn" : 90,
+                            "endLine" : 45,
+                            "sourceId" : "demo::ssj::HrMapping",
+                            "startColumn" : 89,
+                            "startLine" : 45
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 95,
+                          "endLine" : 45,
+                          "sourceId" : "demo::ssj::HrMapping",
+                          "startColumn" : 92,
+                          "startLine" : 45
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 105,
+                        "endLine" : 45,
+                        "sourceId" : "demo::ssj::HrMapping",
+                        "startColumn" : 97,
+                        "startLine" : 45
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 105,
+                      "endLine" : 45,
+                      "sourceId" : "demo::ssj::HrMapping",
+                      "startColumn" : 87,
+                      "startLine" : 45
+                    }
+                  },
+                  "name" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 105,
+                    "endLine" : 45,
+                    "sourceId" : "demo::ssj::HrMapping",
+                    "startColumn" : 74,
+                    "startLine" : 45
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 45,
+              "sourceId" : "demo::ssj::HrMapping",
+              "startColumn" : 21,
+              "startLine" : 45
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 46,
+              "sourceId" : "demo::ssj::HrMapping",
+              "startColumn" : 26,
+              "startLine" : 46
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 46,
+                  "sourceId" : "demo::ssj::HrMapping",
+                  "startColumn" : 28,
+                  "startLine" : 46
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 46,
+                    "sourceId" : "demo::ssj::HrMapping",
+                    "startColumn" : 28,
+                    "startLine" : 46
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 46,
+                "sourceId" : "demo::ssj::HrMapping",
+                "startColumn" : 34,
+                "startLine" : 46
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 46,
+            "sourceId" : "demo::ssj::HrMapping",
+            "startColumn" : 21,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 46,
+          "sourceId" : "demo::ssj::HrMapping",
+          "startColumn" : 17,
+          "startLine" : 44
+        }
+      },
+      "id" : "joinOnDocumentValueSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 74,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 42
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Alice\",\"firmId\":\"f1\",\"legalName\":\"Firm One\"},{\"name\":\"Bob\",\"firmId\":\"f2\",\"legalName\":\"Firm Two\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 69,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 65
+            }
+          },
+          "id" : "shouldResolveFirmFromDocument",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 70,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 62
+          }
+        } ],
+        "id" : "joinAcrossDocumentValue",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 72,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 49
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssj::data::HrData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 54
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 54
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 53
+          },
+          "store" : {
+            "path" : "demo::ssj::store::HrDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 53,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 53
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

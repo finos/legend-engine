@@ -1,0 +1,57 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "f",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "not",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "isNumber",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 21,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 23,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,378 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "adding some documentation",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "test::model::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 101,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 101
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 101,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 101
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 101,
+                "sourceId" : "",
+                "startColumn" : 51,
+                "startLine" : 101
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "test::model::Firm",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 101,
+                  "sourceId" : "",
+                  "startColumn" : 51,
+                  "startLine" : 101
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employees",
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 101,
+                    "sourceId" : "",
+                    "startColumn" : 69,
+                    "startLine" : 101
+                  },
+                  "subTrees" : [ {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "firstName",
+                    "sourceInformation" : {
+                      "endColumn" : 87,
+                      "endLine" : 101,
+                      "sourceId" : "",
+                      "startColumn" : 79,
+                      "startLine" : 101
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  }, {
+                    "_type" : "propertyGraphFetchTree",
+                    "_type" : "propertyGraphFetchTree",
+                    "parameters" : [ ],
+                    "property" : "lastName",
+                    "sourceInformation" : {
+                      "endColumn" : 96,
+                      "endLine" : 101,
+                      "sourceId" : "",
+                      "startColumn" : 89,
+                      "startLine" : 101
+                    },
+                    "subTrees" : [ ],
+                    "subTypeTrees" : [ ]
+                  } ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "legalName",
+                  "sourceInformation" : {
+                    "endColumn" : 107,
+                    "endLine" : 101,
+                    "sourceId" : "",
+                    "startColumn" : 99,
+                    "startLine" : 101
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 101
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 142,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 126,
+              "startLine" : 101
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "test::model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 142,
+                "endLine" : 101,
+                "sourceId" : "",
+                "startColumn" : 126,
+                "startLine" : 101
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 152,
+                  "endLine" : 101,
+                  "sourceId" : "",
+                  "startColumn" : 144,
+                  "startLine" : 101
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 162,
+                    "endLine" : 101,
+                    "sourceId" : "",
+                    "startColumn" : 154,
+                    "startLine" : 101
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "lastName",
+                  "sourceInformation" : {
+                    "endColumn" : 171,
+                    "endLine" : 101,
+                    "sourceId" : "",
+                    "startColumn" : 164,
+                    "startLine" : 101
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "legalName",
+                "sourceInformation" : {
+                  "endColumn" : 182,
+                  "endLine" : 101,
+                  "sourceId" : "",
+                  "startColumn" : 174,
+                  "startLine" : 101
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 122,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 114,
+            "startLine" : 101
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 186,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 101
+        }
+      },
+      "mapping" : "test::mapping::FirmMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 102
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::runtime::SFirmRuntime",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 103,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 103
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 99
+      }
+    },
+    "name" : "FirmService",
+    "owners" : [ "owner1", "owner2" ],
+    "package" : "test::service",
+    "pattern" : "/testFirmService",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 158,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 88
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 156,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 107
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 118,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 114
+            }
+          },
+          "id" : "connection1",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 113
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 120,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 109
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 135,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 131
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 136,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 128
+          }
+        } ],
+        "id" : "test1",
+        "keys" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 138,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 123
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 151,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 147
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 152,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 144
+          }
+        } ],
+        "id" : "test2",
+        "keys" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 154,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 139
+        }
+      } ]
+    } ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,10 @@
+
+Mapping model::mapping1
+(
+  *model::Firm: Pure
+  {
+    ~src model::_Firm
+    type: EnumerationMapping model_IncType2: $src._type
+  }
+)
+

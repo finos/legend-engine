@@ -1,0 +1,1 @@
+|model::Person.all()->project(~['Missing':x|$x.doesNotExist])

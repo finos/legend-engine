@@ -1,0 +1,283 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "join",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 15
+        },
+        "type" : ">",
+        "value" : {
+          "path" : [ "my::db", "personTable" ],
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 15
+          }
+        }
+      }, {
+        "_type" : "func",
+        "function" : "select",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "rename",
+          "parameters" : [ {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 15
+            },
+            "type" : ">",
+            "value" : {
+              "path" : [ "my::db", "personTable" ],
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 15
+              }
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 15
+            },
+            "type" : "colSpec",
+            "value" : {
+              "name" : "ID",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 15
+              }
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 73,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 71,
+              "startLine" : 15
+            },
+            "type" : "colSpec",
+            "value" : {
+              "name" : "ID2",
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 15
+              }
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 58,
+            "startLine" : 15
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 85,
+            "startLine" : 15
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "ID2",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 86,
+                "startLine" : 15
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 77,
+          "startLine" : 15
+        }
+      }, {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "meta::pure::functions::relation::JoinKind",
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 93,
+            "startLine" : 15
+          }
+        } ],
+        "property" : "INNER",
+        "sourceInformation" : {
+          "endColumn" : 139,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 135,
+          "startLine" : 15
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 151,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 150,
+                "startLine" : 15
+              }
+            } ],
+            "property" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 154,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 153,
+              "startLine" : 15
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y",
+              "sourceInformation" : {
+                "endColumn" : 160,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 159,
+                "startLine" : 15
+              }
+            } ],
+            "property" : "ID2",
+            "sourceInformation" : {
+              "endColumn" : 164,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 162,
+              "startLine" : 15
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 157,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 156,
+            "startLine" : 15
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        }, {
+          "_type" : "var",
+          "name" : "y"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 164,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 148,
+          "startLine" : 15
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 15
+      }
+    } ],
+    "name" : "joinFunc__Relation_1_",
+    "package" : "my",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 13
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 67,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

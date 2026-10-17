@@ -1,0 +1,7 @@
+
+Class test::A
+{
+   many1 : String[*];
+   many2 : String[*];
+   prop() { concatenate([$this.many1], $this.many2) } : String[*];
+}

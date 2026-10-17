@@ -1,0 +1,10 @@
+
+Class Firm
+{
+  prop1: Float[1];
+  prop3: String[1];
+  prop2() {
+    let x = 0;
+    $x;
+  }: Integer[1];
+}

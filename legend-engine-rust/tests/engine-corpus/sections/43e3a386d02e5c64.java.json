@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "DeephavenRuntime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 47
+        },
+        "store" : {
+          "path" : "test::Store::foo",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 47
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::DeephavenConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 49,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 49
+            }
+          },
+          "id" : "connection",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 49
+          }
+        } ]
+      } ],
+      "mappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 40
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 40
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,127 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "value" : ""
+    } ],
+    "name" : "MyFunc_String_1__String_1_",
+    "package" : "model",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ {
+      "_type" : "functionTestSuite",
+      "id" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 5
+      },
+      "testData" : [ ],
+      "tests" : [ {
+        "_type" : "functionTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 6
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 6
+          }
+        } ],
+        "id" : "testDuplicate",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

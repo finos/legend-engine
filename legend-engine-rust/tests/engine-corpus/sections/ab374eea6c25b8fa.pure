@@ -1,0 +1,19 @@
+
+ServiceStore test::ServiceStore
+(
+  ServiceGroup TestServiceGroup
+  (
+    path : '/testServices';
+    Service TestService
+    (
+      path : '/testService/{param}';
+      method : GET;
+      parameters :
+      (
+        param : String ( location = path )
+      );
+      response : test::model::A <- test::Binding;
+      security : [];
+    )
+  )
+)

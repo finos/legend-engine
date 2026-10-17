@@ -1,0 +1,200 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "myDatabase",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 132,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 113
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 117,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 117
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 118
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "startTime",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 119
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "endTime",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 120
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "batchIdIn",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 121,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 121
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "batchIdOut",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 122
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "bitempPersonTable",
+        "primaryKey" : [ "ID", "startTime", "batchIdIn" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 123,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 115
+        }
+      }, {
+        "columns" : [ {
+          "name" : "legalName",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 126
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "startTime",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 127,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 127
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "endTime",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 128,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 128
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "batchIdIn",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 129,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 129
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "batchIdOut",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 130,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 130
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "bitempLegalNameTable",
+        "primaryKey" : [ "legalName", "startTime", "batchIdIn" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 131,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 124
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 132,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 113
+    },
+    "stereotypes" : [ ]
+  } ]
+}

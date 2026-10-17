@@ -1,0 +1,11 @@
+
+Data demo::dyna::data::ProductData
+{
+  Relational
+  #{
+    default.PRODUCT:
+      'ID,NAME,QTY,PRICE\n' +
+      '1,Widget,3,100\n' +
+      '2,Gadget,5,200\n';
+  }#
+}

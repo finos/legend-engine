@@ -1,0 +1,5 @@
+
+function a::a(): String[*]
+{
+  [true, false, true]
+}

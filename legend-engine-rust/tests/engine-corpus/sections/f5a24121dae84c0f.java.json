@@ -1,0 +1,351 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "humanResourceModel::school",
+      "classSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 25
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "humanResourceModel::school",
+          "property" : "studentname",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 28
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 28
+              }
+            } ],
+            "property" : "studentname",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 28
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 27
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "srcClass" : "humanResourceModel::class"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2M_Mapping",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "humanResourceModel::class",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 34
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "humanResourceModel::class",
+          "property" : "studentname",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 37
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "toUpper",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 21,
+                  "endLine" : 37,
+                  "sourceId" : "",
+                  "startColumn" : 18,
+                  "startLine" : 37
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 37
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 37
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 36
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "srcClass" : "humanResourceModel::students"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2M_Mapping2",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 39,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "humanResourceModel::student",
+      "classSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 43
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "humanResourceModel::student",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 46
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "substring",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 46
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 46
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 46
+              },
+              "value" : 0
+            }, {
+              "_type" : "func",
+              "function" : "indexOf",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 46,
+                    "sourceId" : "",
+                    "startColumn" : 40,
+                    "startLine" : 46
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 46
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 46,
+                  "sourceId" : "",
+                  "startColumn" : 59,
+                  "startLine" : 46
+                },
+                "value" : " "
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 57,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 51,
+                "startLine" : 46
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 46
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 45
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      },
+      "srcClass" : "humanResourceModel::students"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M2M_Mapping3",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 41
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

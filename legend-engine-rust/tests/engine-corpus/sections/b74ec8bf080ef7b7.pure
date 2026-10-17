@@ -1,0 +1,30 @@
+
+Diagram animal::test
+{
+  classView 51a08024-0583-457f-81f8-c028c4cff247
+  {
+    class: user::User;
+    position: (817.156494140625,602.2708129882812);
+    rectangle: (135.53759765625,103.0);
+  }
+  classView 464a4e74-60b8-4dd5-875e-e983aedf933a
+  {
+    class: animal::Animal;
+    position: (399.0,251.90884399414062);
+    rectangle: (233.31298828125,211.0);
+  }
+  propertyView
+  {
+    property: animal::Animal.owner;
+    source: 464a4e74-60b8-4dd5-875e-e983aedf933a;
+    target: 51a08024-0583-457f-81f8-c028c4cff247;
+    points: [];
+  }
+  propertyView
+  {
+    property: animal::Animal.a;
+    source: 464a4e74-60b8-4dd5-875e-e983aedf933a;
+    target: 51a08024-0583-457f-81f8-c028c4cff247;
+    points: [];
+  }
+}

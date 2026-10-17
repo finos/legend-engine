@@ -1,0 +1,10 @@
+
+Class test::B
+{
+  good : Integer[0..1];
+}
+Association anything::somethingelse
+{
+  b1 : anything::class[1];
+  b2 : test::B[1];
+}

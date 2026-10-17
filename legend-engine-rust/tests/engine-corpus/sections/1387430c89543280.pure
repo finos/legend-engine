@@ -1,0 +1,58 @@
+
+Enum {doc.doc = 'Types of company'} model::target::IncType
+{
+  {doc.doc = 'Limited'} LLC,
+  CORP
+}
+
+Class model::experiment::Animal
+{
+}
+
+Class model::experiment::Human
+{
+}
+
+Class {doc.doc = 'Animal class'} model::Animal
+{
+  {doc.doc = 'age'} age: Integer[1];
+}
+
+Class {doc.doc = 'Homo Sapien'} model::Person extends model::Animal
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::LegalEntity
+{
+  {doc.doc = 'name of the entity'} legalName: String[1];
+}
+
+Class {doc.doc = 'The Firm concept'} model::Firm extends model::LegalEntity
+{
+  {doc.doc = 'type of firm: e.g. CORP, LTD'} type: String[1];
+}
+
+Class model::target::_Person
+{
+  fullName: String[1];
+}
+
+Class model::target::_Firm
+{
+  employees: model::target::_Person[1..*];
+  type: model::target::IncType[1];
+  name: String[1];
+}
+
+Association model::Firm_Person
+{
+  firm: model::Firm[1];
+  {doc.doc = 'some doc for employees'} employees : model::Person[1..*];
+}
+
+Class model::NotRelevant
+{
+}
+

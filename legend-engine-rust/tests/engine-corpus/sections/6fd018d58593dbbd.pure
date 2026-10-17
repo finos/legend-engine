@@ -1,0 +1,12 @@
+
+Class wild::Row
+{
+  id: Integer[1];
+  // [*] yields an array, which the array_* family collapses to a scalar property.
+  oneLevel: String[0..1];
+  twoLevels: String[0..1];
+  countLeaves: Integer[0..1];
+  maxLeaf: Integer[0..1];
+  countDivisions: Integer[0..1];
+  shadowed: String[0..1];
+}

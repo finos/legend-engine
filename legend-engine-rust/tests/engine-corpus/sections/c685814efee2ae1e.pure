@@ -1,0 +1,13 @@
+
+Class test::Dog
+{
+    funcDog(){'my Name is Bobby';}:String[1];
+}
+Class test::B
+{
+    funcB(s: test::Dog[1]){$s.WhoopsfuncDog()}:String[1];
+}
+Class test::C
+{
+   test(s: test::B[1], d: test::Dog[1]){$s.funcB($d) + '!'}:String[1];
+}

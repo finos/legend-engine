@@ -1,0 +1,11 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Firm: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME,
+    employee(
+       missingEmbeddedProperty: [model::relational::tests::dbInc]@Firm_Person| personTable.FIRSTNAME
+    )
+  }
+)

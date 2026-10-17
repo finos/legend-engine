@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "default",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "meta::dataquality::DataQualityRuntime",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 98,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 98
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "meta::dataquality::dataquality::Mapping",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 97
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 99,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 95
+      }
+    } ],
+    "name" : "PersonDataspace",
+    "package" : "meta::dataquality",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 102,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 91
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

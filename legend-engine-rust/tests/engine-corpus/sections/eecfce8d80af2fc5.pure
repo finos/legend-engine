@@ -1,0 +1,11 @@
+
+SnowflakeApp <<a::A.test>> {a::A.val = 'ok'} xx::MyApp
+{
+   applicationName : 'MyApp';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'pierre'};
+   description : 'A super nice app!';
+   usageRole : 'PRIVATE';
+   permissionScheme : SEQUESTERED;
+   activationConfiguration : a::b::connection;
+}

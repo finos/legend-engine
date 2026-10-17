@@ -1,0 +1,104 @@
+
+Database model::relational::tests::db
+(
+    include model::relational::tests::dbInc
+
+    Table interactionTable(ID INT PRIMARY KEY, sourceId INT, targetId INT, time INT, active VARCHAR(1))
+    Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+    Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
+    Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
+    Table orderTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity INT, orderDate DATE, settlementDateTime TIMESTAMP)
+    Table orderFactTable( ORDER_ID INT PRIMARY KEY, fact FLOAT,from_z DATE,thru_z DATE )
+    Table salesPersonTable(PERSON_ID INT PRIMARY KEY, ACCOUNT_ID INT PRIMARY KEY, NAME VARCHAR(200), from_z DATE, thru_z DATE)
+    Table otherNamesTable(PERSON_ID INT, OTHER_NAME VARCHAR(200))
+
+
+    View interactionViewMaxTime  
+    (
+       ~filter [model::relational::tests::db] PositiveInteractionTimeFilter
+       ~groupBy (interactionTable.sourceId, interactionTable.targetId)
+       sourceId : interactionTable.sourceId,
+       targetId : interactionTable.targetId,
+       maxTime : max(interactionTable.time)
+    )
+
+    View tradeEventViewMaxTradeEventDate
+    (
+       ~groupBy (tradeEventTable.trade_id)
+       trade_id : tradeEventTable.trade_id,
+       maxTradeEventDate : max(tradeEventTable.eventDate)
+    )
+
+    View orderFactView
+    (
+       ~filter NonNegativeFactFilter
+       ~distinct
+        ORDER_ID: orderFactTable.ORDER_ID PRIMARY KEY,
+        fact: orderFactTable.fact,
+        accountId : @OrderFactTable_Order > @Order_Account | accountTable.ID,
+        supportContact : @OrderFactTable_Order > @Order_SalesPerson | salesPersonTable.NAME,
+        supportContactId : @OrderFactTable_Order > @Order_SalesPerson | salesPersonTable.PERSON_ID
+    )
+
+    View orderFactViewOnView
+    (
+        ORDER_ID: orderFactView.ORDER_ID PRIMARY KEY,
+        fact: orderFactView.fact
+    )
+
+    View orderNegativeFactView
+    (
+       ~filter LessThanEqualZeroFactFilter
+       ~distinct
+        ORDER_ID: orderFactTable.ORDER_ID PRIMARY KEY,
+        fact: orderFactTable.fact,
+        accountId : @OrderFactTable_Order > @Order_Account | accountTable.ID,
+        supportContact : @OrderFactTable_Order > @Order_SalesPerson | salesPersonTable.NAME,
+        supportContactId : @OrderFactTable_Order > @Order_SalesPerson | salesPersonTable.PERSON_ID
+    )
+
+    View orderNegativeFactViewOnView
+    (
+        ORDER_ID: orderNegativeFactView.ORDER_ID PRIMARY KEY,
+        fact: orderNegativeFactView.fact
+    )
+
+    View accountOrderFactView
+    (
+       ~groupBy (orderTable.accountID)
+        accountId : orderTable.accountID PRIMARY KEY,
+        orderFact : sum(@OrderFactTable_Order | orderFactTable.fact)
+    )
+
+    Schema productSchema
+    (
+       Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+
+    Filter PositiveInteractionTimeFilter(interactionTable.time > 0)
+    Filter ProductSynonymFilter(productSchema.synonymTable.ID != 1)
+    Filter NonNegativeFactFilter(orderFactTable.fact > 0)
+    Filter LessThanEqualZeroFactFilter(orderFactTable.fact <= 0)
+
+    Join Product_Synonym(productSchema.synonymTable.PRODID = productSchema.productTable.ID)
+    Join Trade_Product(tradeTable.prodId = productSchema.productTable.ID)
+    Join Trade_Account(tradeTable.accountID = accountTable.ID)
+    Join Interaction_Source(interactionTable.sourceId = personTable.ID)
+    Join Interaction_Target(interactionTable.targetId = personTable.ID)
+    Join InteractionTable_InteractionViewMaxTime(interactionTable.sourceId = interactionViewMaxTime.sourceId and interactionTable.targetId = interactionViewMaxTime.targetId)
+    Join Trade_TradeEvent(tradeTable.ID = tradeEventTable.trade_id)
+    Join Trade_TradeEventViewMaxTradeEventDate(tradeTable.ID = tradeEventViewMaxTradeEventDate.trade_id)
+    Join TradeEvent_Person(tradeEventTable.person_id = personTable.ID)
+    Join Interaction_Interaction(interactionTable.sourceId = {target}.sourceId and interactionTable.targetId = {target}.targetId)
+    Join Order_SalesPerson(orderTable.accountID = salesPersonTable.ACCOUNT_ID)
+    Join Order_Account(orderTable.accountID = accountTable.ID)
+    Join OrderFactView_Order(orderFactView.ORDER_ID = orderTable.ID)
+    Join OrderFactViewOnView_Order(orderFactViewOnView.ORDER_ID = orderTable.ID)
+    Join OrderNegativeFactView_Order(orderNegativeFactView.ORDER_ID = orderTable.ID)
+    Join OrderNegativeFactViewOnView_Order(orderNegativeFactViewOnView.ORDER_ID = orderTable.ID)
+    Join OrderFactView_Person(orderFactView.supportContactId = personTable.ID)
+    Join SalesPerson_PersonView(salesPersonTable.PERSON_ID = PersonFirmView.PERSON_ID)
+    Join OrderFactTable_Order(orderFactTable.ORDER_ID = orderTable.ID)
+    Join AccountFactView_Account(accountOrderFactView.accountId = accountTable.ID)
+    Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+)

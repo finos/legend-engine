@@ -1,0 +1,325 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "testing::Person",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "id" : "testing_Person",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "testing::Person",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "source" : "testing_Person",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 7
+              },
+              "values" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 7
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 28,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 7
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 7
+                },
+                "value" : " "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 7
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 43,
+                  "startLine" : 7
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "srcClass" : "testing::other::NPerson"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "testing",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 14,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 18,
+                "startLine" : 14
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 14,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 33,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 14,
+              "sourceId" : "testing::mapping",
+              "startColumn" : 54,
+              "startLine" : 14
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "testing::Person",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 14,
+                "sourceId" : "testing::mapping",
+                "startColumn" : 54,
+                "startLine" : 14
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "fullName",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 14,
+                  "sourceId" : "testing::mapping",
+                  "startColumn" : 70,
+                  "startLine" : 14
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 14,
+            "sourceId" : "testing::mapping",
+            "startColumn" : 41,
+            "startLine" : 14
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 14,
+          "sourceId" : "testing::mapping",
+          "startColumn" : 17,
+          "startLine" : 14
+        }
+      },
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToRelation",
+          "expected" : {
+            "columns" : [ "fullName" ],
+            "paths" : [ ],
+            "rows" : [ {
+              "values" : [ "john" ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 33
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 32
+          }
+        } ],
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 17
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "relationAccessor",
+            "relationElements" : [ {
+              "columns" : [ "id", "firstName" ],
+              "paths" : [ "default", "PersonTable" ],
+              "rows" : [ {
+                "values" : [ "1", "John" ]
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 24
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 24
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 21
+          },
+          "store" : {
+            "path" : "store::TestDB",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 21
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

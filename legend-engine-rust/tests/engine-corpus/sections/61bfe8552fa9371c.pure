@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.nae, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];
+}

@@ -1,0 +1,14 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'ab',
+      'cd'
+      ];
+  };
+  auth: DefaultH2;
+}

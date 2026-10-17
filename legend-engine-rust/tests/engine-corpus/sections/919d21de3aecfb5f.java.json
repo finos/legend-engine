@@ -1,0 +1,614 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "mergeOperation",
+      "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+      "classSourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "operation" : "MERGE",
+      "parameters" : [ "p1", "p2", "p3" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "validationFunction" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "and",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "s1",
+                  "sourceInformation" : {
+                    "endColumn" : 263,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 261,
+                    "startLine" : 6
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 266,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 265,
+                  "startLine" : 6
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "s2",
+                  "sourceInformation" : {
+                    "endColumn" : 271,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 269,
+                    "startLine" : 6
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 274,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 273,
+                  "startLine" : 6
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 268,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 267,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "s1",
+                  "sourceInformation" : {
+                    "endColumn" : 281,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 279,
+                    "startLine" : 6
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 284,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 283,
+                  "startLine" : 6
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "s3",
+                  "sourceInformation" : {
+                    "endColumn" : 289,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 287,
+                    "startLine" : 6
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 292,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 291,
+                  "startLine" : 6
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 286,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 285,
+                "startLine" : 6
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 277,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 276,
+              "startLine" : 6
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 9,
+                  "startLine" : 6
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "s1",
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 6,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "var",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName",
+                "sourceInformation" : {
+                  "endColumn" : 174,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 96,
+                  "startLine" : 6
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "s2",
+            "sourceInformation" : {
+              "endColumn" : 177,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 93,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "var",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge",
+                "sourceInformation" : {
+                  "endColumn" : 255,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 182,
+                  "startLine" : 6
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "s3",
+            "sourceInformation" : {
+              "endColumn" : 258,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 179,
+              "startLine" : 6
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 293,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 259,
+            "startLine" : 6
+          }
+        } ],
+        "parameters" : [ ]
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "id" : "p1",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 11
+              }
+            } ],
+            "property" : "sourceFirstName",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 11
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          }
+        },
+        "source" : "p1",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 12
+              }
+            } ],
+            "property" : "sourceAddress",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 12
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 89,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 10
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "id" : "p2",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          }
+        },
+        "source" : "p2",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 17
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 17,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 17
+              }
+            } ],
+            "property" : "sourceLastName",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 17
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 88,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 16
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 14
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "id" : "p3",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "source" : "p3",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 22
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 13,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 22
+              }
+            } ],
+            "property" : "sourceAge",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 22
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 21
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Address",
+      "classSourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::pure::mapping::modelToModel::test::alloy::merge::Address",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 27
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 27
+              }
+            } ],
+            "property" : "sourceStreet",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 27
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 77,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 26
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "srcClass" : "meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SimpleMergeModelMapping",
+    "package" : "meta::pure::mapping::modelToModel::test::alloy::merge",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

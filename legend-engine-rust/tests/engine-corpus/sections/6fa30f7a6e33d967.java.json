@@ -1,0 +1,19 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "scope",
+    "package" : "Database::include::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

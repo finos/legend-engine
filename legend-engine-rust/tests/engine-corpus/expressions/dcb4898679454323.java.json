@@ -1,0 +1,24 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "dateTime",
+    "sourceInformation" : {
+      "endColumn" : 25,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "value" : "2010-10-20T20:20:20.000"
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 25,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

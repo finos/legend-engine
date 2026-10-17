@@ -1,0 +1,660 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::dates::TradeProduct",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 50,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 3,
+          "startLine" : 50
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "productTrades",
+              "sourceInformation" : {
+                "endColumn" : 112,
+                "endLine" : 52,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 99,
+                "startLine" : 52
+              }
+            } ],
+            "property" : "productId",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 114,
+              "startLine" : 52
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "product",
+              "sourceInformation" : {
+                "endColumn" : 134,
+                "endLine" : 52,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 127,
+                "startLine" : 52
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 137,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 136,
+              "startLine" : 52
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 124,
+            "startLine" : 52
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::dates::Trade",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 52,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 21,
+                "startLine" : 52
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "productTrades",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 6,
+            "startLine" : 52
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::dates::Product",
+              "sourceInformation" : {
+                "endColumn" : 92,
+                "endLine" : 52,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 63,
+                "startLine" : 52
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "product",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 54,
+            "startLine" : 52
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 137,
+          "endLine" : 52,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 97,
+          "startLine" : 52
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 53,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 50
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::dates::TradeAccount",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 55,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 3,
+          "startLine" : 55
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "accountTrades",
+              "sourceInformation" : {
+                "endColumn" : 112,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 99,
+                "startLine" : 57
+              }
+            } ],
+            "property" : "accountId",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 114,
+              "startLine" : 57
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "account",
+              "sourceInformation" : {
+                "endColumn" : 134,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 127,
+                "startLine" : 57
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 137,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 136,
+              "startLine" : 57
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 124,
+            "startLine" : 57
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::dates::Trade",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 21,
+                "startLine" : 57
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "accountTrades",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 6,
+            "startLine" : 57
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::dates::Account",
+              "sourceInformation" : {
+                "endColumn" : 92,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 63,
+                "startLine" : 57
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "account",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 54,
+            "startLine" : 57
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 137,
+          "endLine" : 57,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 97,
+          "startLine" : 57
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 58,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 55
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::dates::Product",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::dates::Product",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 21,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 21,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "NAME",
+        "property" : {
+          "class" : "demo::relation::dates::Product",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::dates::func::products():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 20,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 20
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::dates::Account",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::dates::Account",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 28,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "STATUS",
+        "property" : {
+          "class" : "demo::relation::dates::Account",
+          "property" : "status",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 29,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::dates::func::accounts():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 27,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 27
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::dates::Rating",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ISSUER",
+        "property" : {
+          "class" : "demo::relation::dates::Rating",
+          "property" : "issuer",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 35,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 35,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "GRADE",
+        "property" : {
+          "class" : "demo::relation::dates::Rating",
+          "property" : "grade",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::dates::func::ratings():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 34
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::dates::Trade",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 42
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 42,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 42
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "PRODUCT_ID",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "productId",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 43,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 43,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 43
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ACCOUNT_ID",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "accountId",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 44,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "TRADE_DATE",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "tradeDate",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 45,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 45,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 45
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EXECUTED_AT",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "executedAt",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 46,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 46,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "QUANTITY",
+        "property" : {
+          "class" : "demo::relation::dates::Trade",
+          "property" : "quantity",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 47,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::dates::func::trades():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 41,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 41
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 39
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "TradingMapping",
+    "package" : "demo::relation::dates",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 59,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+Mapping model::someMapping
+(
+  model::someEnum: EnumerationMapping SomeEnumMapping
+  {
+    value1: ['VALUE_1'],
+    value2: ['VALUE_2']
+  }
+)

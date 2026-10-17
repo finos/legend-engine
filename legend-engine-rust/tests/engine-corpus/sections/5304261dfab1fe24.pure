@@ -1,0 +1,23 @@
+
+Class demo::ssa::Person
+{
+  firstName: String[1];
+  firm: demo::ssa::Firm[1];
+}
+
+Class demo::ssa::Firm
+{
+  legalName: String[1];
+  scores: Integer[*];
+  addresses: demo::ssa::Address[*];
+  // fold needs a two-parameter block lambda, which the relation colSpec grammar cannot
+  // parse. Declaring it here puts it under the ordinary domain grammar, and the query
+  // projects the derived property instead of the fold expression.
+  concatenatedNames() {$this.addresses->fold({a, acc | $acc + $a.name}, '')}: String[1];
+}
+
+Class demo::ssa::Address
+{
+  name: String[1];
+  rank: Integer[1];
+}

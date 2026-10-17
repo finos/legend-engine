@@ -1,0 +1,7 @@
+
+function test::f(): String[1]
+{
+  '''
+  \u0020 a
+  \u0020 b'''
+}

@@ -1,0 +1,13 @@
+
+DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.topics = '  Securities  ,,Fixed-Income , Equities & ETFs ,,,FX/Rates ,  Alt\'s (Private) , ,Backslash\\Path'} model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+}

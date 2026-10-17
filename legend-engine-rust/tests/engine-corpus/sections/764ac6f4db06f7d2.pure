@@ -1,0 +1,9 @@
+
+Mapping testing::mapping
+(
+  *testing::Person[testing_Person]: Pure
+  {
+    ~src testing::other::NPerson
+    fullName: ::.all()
+  }
+)

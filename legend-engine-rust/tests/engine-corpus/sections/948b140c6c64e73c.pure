@@ -1,0 +1,5 @@
+
+SnowflakeM2MUdf x::A
+{
+   function : a::f():String[1];   ownership : Deployment{identifier:'testDeployment'};   udfName : 'sass';
+}

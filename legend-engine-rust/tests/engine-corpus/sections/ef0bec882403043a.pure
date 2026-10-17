@@ -1,0 +1,10 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    firstName: firstName,
+    status: EnumerationMapping statusMapping : STATUS
+  }
+)

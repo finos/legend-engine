@@ -1,0 +1,107 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 62,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 3
+        },
+        "tag" : {
+          "profile" : "meta::pure::profiles::doc",
+          "profileSourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 3
+          },
+          "value" : "doc"
+        },
+        "value" : "Given name."
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : "A person in the system."
+    } ]
+  } ],
+  "imports" : [ ]
+}

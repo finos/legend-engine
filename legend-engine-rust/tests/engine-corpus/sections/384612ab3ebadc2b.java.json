@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unknown contentPattern pattern type: Unknown",
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 15,
+      "startLine" : 15
+    }
+  }
+}

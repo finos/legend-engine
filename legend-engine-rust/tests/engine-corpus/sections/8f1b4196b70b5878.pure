@@ -1,0 +1,10 @@
+
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::ServiceResult
+{
+  property1: String[1];
+}

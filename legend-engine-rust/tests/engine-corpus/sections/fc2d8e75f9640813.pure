@@ -1,0 +1,51 @@
+
+Mapping demo::milestone::BiProductMapping
+(
+  *demo::milestone::BiProduct: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::BiTemporalDB]PRODUCT.ID
+    )
+    ~mainTable [demo::store::BiTemporalDB]PRODUCT
+    name: [demo::store::BiTemporalDB]PRODUCT.NAME
+  }
+
+  testSuites:
+  [
+    biTemporalSuite:
+    {
+      // all(processingDate, businessDate) — processing first, business second.
+      // At 2020-06-01/2020-06-01 only the first version's IN_Z/OUT_Z and
+      // FROM_Z/THRU_Z windows contain the dates, so only WidgetV1 is returned.
+      function: |demo::milestone::BiProduct.all(%2020-06-01, %2020-06-01)->project([x | $x.name], ['Name']);
+      tests:
+      [
+        pointInTimeAcrossBothDimensions:
+        {
+          data:
+          [
+            demo::store::BiTemporalDB:
+              Reference
+              #{
+                demo::milestone::data::BiProductData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnVersionValidAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"WidgetV1"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

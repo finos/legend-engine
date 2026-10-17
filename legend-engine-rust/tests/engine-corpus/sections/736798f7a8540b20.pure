@@ -1,0 +1,18 @@
+
+Service test::service::Service
+{
+  pattern: 'test';
+  owners:
+  [
+    'test'
+  ];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::test::TestClass2[1]|$src.name;
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+}
+

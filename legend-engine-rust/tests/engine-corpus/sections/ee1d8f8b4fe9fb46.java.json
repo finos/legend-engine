@@ -1,0 +1,1547 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "meta::external::store::service::showcase::domain::S_Trade_S_Product",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 164,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 164
+        },
+        "type" : "ASSOCIATION"
+      },
+      "id" : "s_cross_set",
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 166,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 166
+                }
+              } ],
+              "property" : "s_tradeDetails",
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 166,
+                "sourceId" : "",
+                "startColumn" : 47,
+                "startLine" : 166
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 69,
+                  "endLine" : 166,
+                  "sourceId" : "",
+                  "startColumn" : 65,
+                  "startLine" : 166
+                }
+              } ],
+              "property" : "s_productId",
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 166,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 166
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 166,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 166
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::S_Trade_S_Product",
+          "property" : "s_product",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 166,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 166
+          }
+        },
+        "source" : "s_trade_set",
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 166,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 166
+        },
+        "target" : "s_prod_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 167,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 164
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "meta::external::store::service::showcase::domain::Trade_Product",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 169,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 169
+        },
+        "type" : "ASSOCIATION"
+      },
+      "id" : "cross_set",
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "and",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 171,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 171
+                  }
+                } ],
+                "property" : "prodId",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 171,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 171
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "that",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 171,
+                    "sourceId" : "",
+                    "startColumn" : 51,
+                    "startLine" : 171
+                  }
+                } ],
+                "property" : "productId",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 171,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 171
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 171,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 171
+              }
+            }, {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 74,
+                    "endLine" : 171,
+                    "sourceId" : "",
+                    "startColumn" : 70,
+                    "startLine" : 171
+                  }
+                } ],
+                "property" : "quantity",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 171,
+                  "sourceId" : "",
+                  "startColumn" : 76,
+                  "startLine" : 171
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "that",
+                  "sourceInformation" : {
+                    "endColumn" : 92,
+                    "endLine" : 171,
+                    "sourceId" : "",
+                    "startColumn" : 88,
+                    "startLine" : 171
+                  }
+                } ],
+                "property" : "quantity",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 171,
+                  "sourceId" : "",
+                  "startColumn" : 94,
+                  "startLine" : 171
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 171,
+                "sourceId" : "",
+                "startColumn" : 85,
+                "startLine" : 171
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 171,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 171
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trade_Product",
+          "property" : "product",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 171,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 171
+          }
+        },
+        "source" : "trade_set",
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 171,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 171
+        },
+        "target" : "prod_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 172,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 169
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Trade",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 101,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 101
+      },
+      "id" : "s_trade_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TradeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 103,
+              "sourceId" : "",
+              "startColumn" : 91,
+              "startLine" : 103
+            }
+          },
+          "service" : "AllTradeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 119,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 105,
+            "startLine" : 103
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 119,
+          "endLine" : 103,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 103
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 101
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Product",
+      "classSourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 106
+      },
+      "id" : "s_prod_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "idWithQuantity",
+              "sourceInformation" : {
+                "endColumn" : 75,
+                "endLine" : 114,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 114
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "plus",
+                  "parameters" : [ {
+                    "_type" : "collection",
+                    "multiplicity" : {
+                      "lowerBound" : 3,
+                      "upperBound" : 3
+                    },
+                    "sourceInformation" : {
+                      "endColumn" : 75,
+                      "endLine" : 114,
+                      "sourceId" : "",
+                      "startColumn" : 52,
+                      "startLine" : 114
+                    },
+                    "values" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 38,
+                          "endLine" : 114,
+                          "sourceId" : "",
+                          "startColumn" : 34,
+                          "startLine" : 114
+                        }
+                      } ],
+                      "property" : "s_productId",
+                      "sourceInformation" : {
+                        "endColumn" : 50,
+                        "endLine" : 114,
+                        "sourceId" : "",
+                        "startColumn" : 40,
+                        "startLine" : 114
+                      }
+                    }, {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 56,
+                        "endLine" : 114,
+                        "sourceId" : "",
+                        "startColumn" : 54,
+                        "startLine" : 114
+                      },
+                      "value" : ":"
+                    }, {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 64,
+                          "endLine" : 114,
+                          "sourceId" : "",
+                          "startColumn" : 60,
+                          "startLine" : 114
+                        }
+                      } ],
+                      "property" : "s_quantity",
+                      "sourceInformation" : {
+                        "endColumn" : 75,
+                        "endLine" : 114,
+                        "sourceId" : "",
+                        "startColumn" : 66,
+                        "startLine" : 114
+                      }
+                    } ]
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 114,
+                    "sourceId" : "",
+                    "startColumn" : 52,
+                    "startLine" : 114
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 114,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 114
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 115,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 112
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 116,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 110
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 105,
+              "endLine" : 108,
+              "sourceId" : "",
+              "startColumn" : 91,
+              "startLine" : 108
+            }
+          },
+          "service" : "ProductsByIdWithQuantityService",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 137,
+            "endLine" : 108,
+            "sourceId" : "",
+            "startColumn" : 107,
+            "startLine" : 108
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 117,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 108
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 118,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 106
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::external::store::service::showcase::domain::Trade",
+      "classSourceInformation" : {
+        "endColumn" : 57,
+        "endLine" : 120,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 120
+      },
+      "id" : "trade_set",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trade",
+          "property" : "tradeId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 124,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 124
+          }
+        },
+        "source" : "trade_set",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 124,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 124
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 124,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 124
+              }
+            } ],
+            "property" : "s_tradeId",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 124,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 124
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 125
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "property" : "prodId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 125
+          }
+        },
+        "source" : "trade_set",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 125,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 125
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "at",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "split",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 125,
+                    "sourceId" : "",
+                    "startColumn" : 25,
+                    "startLine" : 125
+                  }
+                } ],
+                "property" : "s_tradeDetails",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 125,
+                  "sourceId" : "",
+                  "startColumn" : 30,
+                  "startLine" : 125
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 125,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 125
+                },
+                "value" : ":"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 125,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 125
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 125,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 125
+              },
+              "value" : 0
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 125,
+              "sourceId" : "",
+              "startColumn" : 58,
+              "startLine" : 125
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trade",
+          "property" : "quantity",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 126
+          }
+        },
+        "source" : "trade_set",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 126,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 126
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "at",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "split",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 18,
+                    "endLine" : 126,
+                    "sourceId" : "",
+                    "startColumn" : 15,
+                    "startLine" : 126
+                  }
+                } ],
+                "property" : "s_tradeDetails",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 126,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 126
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 126,
+                  "sourceId" : "",
+                  "startColumn" : 42,
+                  "startLine" : 126
+                },
+                "value" : ":"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 126,
+                "sourceId" : "",
+                "startColumn" : 36,
+                "startLine" : 126
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 126,
+                "sourceId" : "",
+                "startColumn" : 51,
+                "startLine" : 126
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 126,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 126
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trade",
+          "property" : "trader",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 127,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 127
+          }
+        },
+        "source" : "trade_set",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 127,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 127
+        },
+        "target" : "trader_set",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "var",
+            "name" : "src",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 127,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 127
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 122,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 122
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 128,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 120
+      },
+      "srcClass" : "meta::external::store::service::showcase::domain::S_Trade"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::external::store::service::showcase::domain::Trader",
+      "classSourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 130,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 130
+      },
+      "id" : "trader_set",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trader",
+          "property" : "kerberos",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 134,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 134
+          }
+        },
+        "source" : "trader_set",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 134,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 134
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "at",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "split",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 134,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 134
+                  }
+                } ],
+                "property" : "s_traderDetails",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 134,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 134
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 134,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 134
+                },
+                "value" : ":"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 134,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 134
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 134,
+                "sourceId" : "",
+                "startColumn" : 54,
+                "startLine" : 134
+              },
+              "value" : 0
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 134,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 134
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trader",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 135,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 135
+          }
+        },
+        "source" : "trader_set",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 135,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 135
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "at",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "split",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 135,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 135
+                  }
+                } ],
+                "property" : "s_traderDetails",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 135,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 135
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 135,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 135
+                },
+                "value" : ":"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 135,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 135
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 135,
+                "sourceId" : "",
+                "startColumn" : 54,
+                "startLine" : 135
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 135,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 135
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Trader",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 136,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 136
+          }
+        },
+        "source" : "trader_set",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 136,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 136
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "at",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "split",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 136,
+                    "sourceId" : "",
+                    "startColumn" : 17,
+                    "startLine" : 136
+                  }
+                } ],
+                "property" : "s_traderDetails",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 136,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 136
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 136,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 136
+                },
+                "value" : ":"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 136,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 136
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 136,
+                "sourceId" : "",
+                "startColumn" : 54,
+                "startLine" : 136
+              },
+              "value" : 2
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 136,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 136
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 132,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 132
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 137,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 130
+      },
+      "srcClass" : "meta::external::store::service::showcase::domain::S_Trade"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::external::store::service::showcase::domain::Product",
+      "classSourceInformation" : {
+        "endColumn" : 59,
+        "endLine" : 139,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 139
+      },
+      "id" : "prod_set",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Product",
+          "property" : "productId",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 143,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 143
+          }
+        },
+        "source" : "prod_set",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 143,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 143
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 143,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 143
+              }
+            } ],
+            "property" : "s_productId",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 143,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 143
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Product",
+          "property" : "quantity",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 144,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 144
+          }
+        },
+        "source" : "prod_set",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 144
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 144,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 144
+              }
+            } ],
+            "property" : "s_quantity",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 144,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 144
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Product",
+          "property" : "productName",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 145,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 145
+          }
+        },
+        "source" : "prod_set",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 145,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 145
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 145,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 145
+              }
+            } ],
+            "property" : "s_productName",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 145,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 145
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Product",
+          "property" : "description",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 146
+          }
+        },
+        "source" : "prod_set",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 146,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 146
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 146,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 146
+              }
+            } ],
+            "property" : "s_description",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 146
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Product",
+          "property" : "synonyms",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 147,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 147
+          }
+        },
+        "source" : "prod_set",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 147
+        },
+        "target" : "synonym_set",
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 147,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 147
+              }
+            } ],
+            "property" : "s_synonyms",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 147,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 147
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 141,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 141
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 148,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 139
+      },
+      "srcClass" : "meta::external::store::service::showcase::domain::S_Product"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::external::store::service::showcase::domain::Synonym",
+      "classSourceInformation" : {
+        "endColumn" : 59,
+        "endLine" : 150,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 150
+      },
+      "id" : "synonym_set",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Synonym",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 154,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 154
+          }
+        },
+        "source" : "synonym_set",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 154,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 154
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 154,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 154
+              }
+            } ],
+            "property" : "s_name",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 154,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 154
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "enumMappingId" : "SynonymTypeMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Synonym",
+          "property" : "type",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 155,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 155
+          }
+        },
+        "source" : "synonym_set",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 155,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 155
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 155,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 155
+              }
+            } ],
+            "property" : "s_type",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 155,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 155
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 152,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 152
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 156,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 150
+      },
+      "srcClass" : "meta::external::store::service::showcase::domain::S_Synonym"
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CUSIP",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "cusip"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "CUSIP"
+        } ]
+      }, {
+        "enumValue" : "ISIN",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "isin"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "ISIN"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "meta::external::store::service::showcase::domain::SynonymType",
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 158,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 158
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "SynonymTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 162,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 158
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 173,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 99
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

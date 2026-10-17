@@ -1,0 +1,46 @@
+{
+  "elements" : [ {
+    "_type" : "fileGeneration",
+    "configurationProperties" : [ {
+      "name" : "'include Namespace'",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "value" : true
+    }, {
+      "name" : "'property Profiles'",
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "value" : [ "model::myProfile", "model::nextProfile" ]
+    } ],
+    "generationOutputPath" : "myAvroRoot",
+    "name" : "AvroConfig",
+    "package" : "model",
+    "scopeElements" : [ "model::MyClass", "model" ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "avro",
+    "typeSourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

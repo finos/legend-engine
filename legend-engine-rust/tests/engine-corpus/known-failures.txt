@@ -1,0 +1,27 @@
+# Engine corpus entries (sections and expressions) the Rust parser does not match, one per line:
+# `<hash>  <category>: <reason>`.
+#
+# The engine corpus test (crates/api/tests/engine_corpus.rs) fails when an unlisted entry differs from the
+# engine, and when a listed one starts matching: remove its line then. Gaps are fixed at the source, so this
+# list only shrinks, apart from accepted divergences. Categories:
+#   accepted        a Java-only quirk the Rust parser, meant to replace Java's, doesn't reproduce
+#   engine-rejects  the engine rejects the section; Rust parses it
+#   grammar         engine grammar Rust does not parse yet
+#   unsupported     Rust reports the section as unsupported, so the engine parses it with Java
+#   error-position  both reject the section, at different positions
+#   position        source information differs
+#   shape           the protocol JSON differs
+285d7cf695f54ad2  accepted: a quoted type name keeps its quotes in the engine's type path (`processGenericType` takes the raw text, so it can't resolve); Rust unquotes it
+88cf7500ed300bc6  accepted: an element left open at the end of input; ANTLR recovers by inserting the missing `}`, and the engine's error listener, correcting the EOF token's end-before-start span, moves the error one column left onto the last character; Rust reports it at the end of input
+9a8a59921140adf0  accepted: an element left open at the end of input, as 88cf7500ed300bc6
+71d6fca2ff4e0b58  accepted: an operator in a `^Class(p = a + b)` property value; the engine's `processRightSide` reads only the value's first operand (`combinedExpression().expression()`) and drops `+ b`; Rust keeps the whole expression
+4ff54025b761042a  accepted: a connection's last field left without its `;`; ANTLR recovers by inserting it at the end of the value, and the engine's error listener, correcting the end-of-input token's end-before-start span, moves the error one column left of the `}`; Rust reports it at the `}`, as 88cf7500ed300bc6
+9af6a233d74ce934  accepted: a data space executable with neither a query nor an executable; the engine rejects it without a position, which a Rust error always has, so Rust reports it unsupported and the engine then parses the section
+3f46588323583c5e  accepted: a schema set in the format `Example`, which only the engine's tests define; Rust knows the formats the engine's modules define and reports another unsupported, for the engine to check against the formats it has
+50fc901713a1032f  accepted: the engine rejects a legacy test input of type `Objected`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+5684d1bc292024ec  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+af6653c3bb096f1d  accepted: the engine rejects a query generation config of type `UnknownConfig`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+b1f0017c83c207bb  accepted: the engine rejects a service store security scheme of type `INVALID`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+b5e5df0802ef7981  accepted: the engine rejects a persistence platform of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+d3be8c92e5bf6162  accepted: the engine rejects a mapping element of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
+fdf962a97b129789  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section

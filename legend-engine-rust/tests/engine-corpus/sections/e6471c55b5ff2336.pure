@@ -1,0 +1,6 @@
+
+Binding meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::S_Trade ];
+}

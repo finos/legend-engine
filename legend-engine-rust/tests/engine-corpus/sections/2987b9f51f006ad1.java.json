@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "FirmRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 27,
+          "sourceId" : "runtime/firmRuntime.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "store" : {
+          "path" : "demo::store::FirmDB",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 24,
+            "sourceId" : "runtime/firmRuntime.pure",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::FirmH2Connection",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 26,
+              "sourceId" : "runtime/firmRuntime.pure",
+              "startColumn" : 11,
+              "startLine" : 26
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 26,
+            "sourceId" : "runtime/firmRuntime.pure",
+            "startColumn" : 7,
+            "startLine" : 26
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 20,
+          "sourceId" : "runtime/firmRuntime.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 29,
+        "sourceId" : "runtime/firmRuntime.pure",
+        "startColumn" : 1,
+        "startLine" : 16
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "runtime/firmRuntime.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    }
+  } ],
+  "imports" : [ ]
+}

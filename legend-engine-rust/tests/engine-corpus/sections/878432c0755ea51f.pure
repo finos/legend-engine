@@ -1,0 +1,34 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:[];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: meta::myMapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::myConnection,
+          id2: #{ JsonModelConnection { class: meta::mySimpleClass; url: 'my_url'; }}#,
+          id3: #{ JsonModelConnection { class: meta::mySimpleClass; url: 'my_url'; }}#
+        ]
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}

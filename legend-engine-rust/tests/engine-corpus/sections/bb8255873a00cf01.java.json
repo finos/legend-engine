@@ -1,0 +1,133 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ {
+      "name" : "PersonCollection",
+      "validator" : {
+        "validationAction" : "warn",
+        "validationLevel" : "strict",
+        "validatorExpression" : {
+          "_type" : "jsonSchemaExpression",
+          "schemaExpression" : {
+            "_type" : "schema",
+            "_enum" : [ ],
+            "additionalPropertiesAllowed" : false,
+            "allOf" : [ ],
+            "anyOf" : [ ],
+            "oneOf" : [ ],
+            "properties" : [ {
+              "key" : "_id",
+              "value" : {
+                "_type" : "objectIdType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "firstName",
+              "value" : {
+                "_type" : "stringType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "lastName",
+              "value" : {
+                "_type" : "stringType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "middleName",
+              "value" : {
+                "_type" : "stringType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "firm",
+              "value" : {
+                "_type" : "objectType",
+                "_enum" : [ ],
+                "additionalPropertiesAllowed" : false,
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ],
+                "properties" : [ {
+                  "key" : "firmName",
+                  "value" : {
+                    "_type" : "stringType",
+                    "_enum" : [ ],
+                    "allOf" : [ ],
+                    "anyOf" : [ ],
+                    "oneOf" : [ ]
+                  }
+                }, {
+                  "key" : "firmId",
+                  "value" : {
+                    "_type" : "intType",
+                    "_enum" : [ ],
+                    "allOf" : [ ],
+                    "anyOf" : [ ],
+                    "oneOf" : [ ]
+                  }
+                }, {
+                  "key" : "address",
+                  "value" : {
+                    "_type" : "arrayType",
+                    "_enum" : [ ],
+                    "additionalItemsAllowed" : false,
+                    "allOf" : [ ],
+                    "anyOf" : [ ],
+                    "items" : [ {
+                      "_type" : "objectType",
+                      "_enum" : [ ],
+                      "additionalPropertiesAllowed" : false,
+                      "allOf" : [ ],
+                      "anyOf" : [ ],
+                      "oneOf" : [ ],
+                      "properties" : [ {
+                        "key" : "street",
+                        "value" : {
+                          "_type" : "stringType",
+                          "_enum" : [ ],
+                          "allOf" : [ ],
+                          "anyOf" : [ ],
+                          "oneOf" : [ ]
+                        }
+                      } ],
+                      "required" : [ ]
+                    } ],
+                    "oneOf" : [ ],
+                    "uniqueItems" : false
+                  }
+                } ],
+                "required" : [ ]
+              }
+            } ],
+            "required" : [ ],
+            "title" : "Person"
+          }
+        }
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "PersonDatabase",
+    "package" : "meta::external::store::mongodb::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

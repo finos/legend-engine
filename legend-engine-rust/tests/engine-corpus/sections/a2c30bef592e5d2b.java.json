@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 27,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 26,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 3,
+          "startLine" : 24
+        }
+      },
+      "element" : "demo::relation::dates::store::TradingDB",
+      "elementSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 22,
+        "sourceId" : "runtime/runtime.pure",
+        "startColumn" : 10,
+        "startLine" : 22
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 28,
+        "sourceId" : "runtime/runtime.pure",
+        "startColumn" : 1,
+        "startLine" : 20
+      },
+      "type" : "H2"
+    },
+    "name" : "TradingConnection",
+    "package" : "demo::relation::dates::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "runtime/runtime.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    }
+  } ],
+  "imports" : [ ]
+}

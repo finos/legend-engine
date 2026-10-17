@@ -1,0 +1,18 @@
+
+Mapping my::testMapping
+(
+  *my::PersonWithAddress[personWithAddr]: Relation
+  {
+    ~func my::personWithAddressFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    address () Inline [addressSet]
+  }
+
+  *my::FullAddress[addressSet]: Relation
+  {
+    ~func my::personWithAddressFunction():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+)

@@ -1,0 +1,6 @@
+
+Class demo::agg::Sale
+{
+  salesPerson: String[1];
+  revenue: Integer[1];
+}

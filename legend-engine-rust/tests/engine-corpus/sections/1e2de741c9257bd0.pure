@@ -1,0 +1,33 @@
+
+ServiceStore test::testServiceStoreCompilationWithSingleServiceAndServiceGroup
+(
+  Service TestService
+  (
+    path : '/testService/{param2}';
+    requestBody : test::Person <- test::TestBinding;
+    method : POST;
+    parameters :
+    (
+      param1 : String ( location = query ),
+      param2 : String ( location = path )
+    );
+    response : test::Person <- test::TestBinding;
+    security : [];
+  )
+  ServiceGroup TestServices
+  (
+    path : '/testServices';
+
+    Service NestedService
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : test::Person <- test::TestBinding;
+      security : [];
+    )
+  )
+)

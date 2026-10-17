@@ -1,0 +1,11 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];
+   z(){test::A.all()->filter(v|$v->tdsContains(p|$p.name, ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];
+}

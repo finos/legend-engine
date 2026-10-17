@@ -1,0 +1,100 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: [ ID ]
+    deduplication: None;
+    datasetType: Snapshot
+    {
+      partitioning: None
+      {
+        emptyDatasetHandling: NoOp;
+      }
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: Unitemporal
+    {
+      processingDimension: DateTime
+      {
+        dateTimeIn: 'IN_Z';
+        dateTimeOut: 'OUT_Z';
+      }
+    }
+  }#
+  ];
+  tests:
+  [
+   test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"}]';
+                 }#;
+             }#
+         ]
+       },
+       testBatch2:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY"},{"ID":3, "NAME":"CATHERINE"},{"ID":4, "NAME":"TOM"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected :
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}, {"ID":3, "NAME":"CATHY"}, {"ID":3, "NAME":"CATHERINE"}, {"ID":4, "NAME":"TOM"}]';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]
+}

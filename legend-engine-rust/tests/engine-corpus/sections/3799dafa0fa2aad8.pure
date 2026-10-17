@@ -1,0 +1,42 @@
+
+Mapping testing::mapping
+(
+  *testing::Person[testing_Person]: Pure
+  {
+    ~src testing::other::NPerson
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            store::TestDB:
+              Relation
+              #{
+                default.PersonTable:
+                    id, firstName
+                    1 , John;
+              }#
+          ];
+          asserts:
+          [
+            assert1:
+              Relation
+              #{
+                  fullName
+                  john;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

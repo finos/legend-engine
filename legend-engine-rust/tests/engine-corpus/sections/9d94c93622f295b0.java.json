@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token ':'. Valid alternatives: ['[']",
+    "sourceInformation" : {
+      "endColumn" : 29,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 29,
+      "startLine" : 4
+    }
+  }
+}

@@ -1,0 +1,5 @@
+
+function my::joinFunc():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{my::db.personTable}#->join(#>{my::db.personTable}#->rename(~ID, ~ID2)->select(~[ID2]), meta::pure::functions::relation::JoinKind.INNER, {x, y | $x.ID == $y.ID2})
+}

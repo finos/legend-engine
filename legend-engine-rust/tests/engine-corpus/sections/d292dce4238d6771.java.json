@@ -1,0 +1,1872 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "Employment",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 347,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 347
+        },
+        "type" : "ASSOCIATION"
+      },
+      "id" : "firm_set",
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 349,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 349
+                }
+              } ],
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 349,
+                "sourceId" : "",
+                "startColumn" : 47,
+                "startLine" : 349
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 349,
+                  "sourceId" : "",
+                  "startColumn" : 60,
+                  "startLine" : 349
+                }
+              } ],
+              "property" : "firmName",
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 349,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 349
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 349,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 349
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "Employment",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 349,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 349
+          }
+        },
+        "source" : "firm_set",
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 349,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 349
+        },
+        "target" : "employee_set"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 350,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 347
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "Product",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 248,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 248
+      },
+      "id" : "prod_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 254,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 254
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "Synonym"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 46,
+                        "endLine" : 254,
+                        "sourceId" : "",
+                        "startColumn" : 36,
+                        "startLine" : 254
+                      },
+                      "value" : "38142Y716"
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "name"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 62,
+                        "endLine" : 254,
+                        "sourceId" : "",
+                        "startColumn" : 56,
+                        "startLine" : 254
+                      },
+                      "value" : "CUSIP"
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "type"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 254,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 254
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 255,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 252
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 250,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 250
+            }
+          },
+          "service" : "ProductBySynonymService",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 250,
+            "sourceId" : "",
+            "startColumn" : 111,
+            "startLine" : 250
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 256,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 250
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 262,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 262
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "Synonym"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 40,
+                          "endLine" : 262,
+                          "sourceId" : "",
+                          "startColumn" : 36,
+                          "startLine" : 262
+                        }
+                      } ],
+                      "property" : "productName",
+                      "sourceInformation" : {
+                        "endColumn" : 52,
+                        "endLine" : 262,
+                        "sourceId" : "",
+                        "startColumn" : 42,
+                        "startLine" : 262
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "name"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 68,
+                        "endLine" : 262,
+                        "sourceId" : "",
+                        "startColumn" : 62,
+                        "startLine" : 262
+                      },
+                      "value" : "CUSIP"
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "type"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 262,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 262
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 263,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 260
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 109,
+              "endLine" : 258,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 258
+            }
+          },
+          "service" : "ProductBySynonymService",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 258,
+            "sourceId" : "",
+            "startColumn" : 111,
+            "startLine" : 258
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 264,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 258
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 265,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 248
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "Trade",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 267,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 267
+      },
+      "id" : "trade_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 275,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 273
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "TradeDetails"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 3,
+                    "upperBound" : 3
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 41,
+                        "endLine" : 273,
+                        "sourceId" : "",
+                        "startColumn" : 39,
+                        "startLine" : 273
+                      },
+                      "value" : "1"
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "id"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "new",
+                      "parameters" : [ {
+                        "_type" : "genericTypeInstance",
+                        "genericType" : {
+                          "multiplicityArguments" : [ ],
+                          "rawType" : {
+                            "_type" : "packageableType",
+                            "fullPath" : "meta::pure::metamodel::type::Class"
+                          },
+                          "typeArguments" : [ {
+                            "multiplicityArguments" : [ ],
+                            "rawType" : {
+                              "_type" : "packageableType",
+                              "fullPath" : "Product"
+                            },
+                            "typeArguments" : [ ],
+                            "typeVariableValues" : [ ]
+                          } ],
+                          "typeVariableValues" : [ ]
+                        }
+                      }, {
+                        "_type" : "string",
+                        "value" : ""
+                      }, {
+                        "_type" : "collection",
+                        "multiplicity" : {
+                          "lowerBound" : 3,
+                          "upperBound" : 3
+                        },
+                        "values" : [ {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 68,
+                              "endLine" : 274,
+                              "sourceId" : "",
+                              "startColumn" : 65,
+                              "startLine" : 274
+                            },
+                            "value" : "30"
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "productId"
+                          }
+                        }, {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 96,
+                              "endLine" : 274,
+                              "sourceId" : "",
+                              "startColumn" : 85,
+                              "startLine" : 274
+                            },
+                            "value" : "Product 30"
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "productName"
+                          }
+                        }, {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 136,
+                              "endLine" : 274,
+                              "sourceId" : "",
+                              "startColumn" : 113,
+                              "startLine" : 274
+                            },
+                            "value" : "Product 30 description"
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "description"
+                          }
+                        } ]
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "product"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "new",
+                      "parameters" : [ {
+                        "_type" : "genericTypeInstance",
+                        "genericType" : {
+                          "multiplicityArguments" : [ ],
+                          "rawType" : {
+                            "_type" : "packageableType",
+                            "fullPath" : "meta::pure::metamodel::type::Class"
+                          },
+                          "typeArguments" : [ {
+                            "multiplicityArguments" : [ ],
+                            "rawType" : {
+                              "_type" : "packageableType",
+                              "fullPath" : "Trader"
+                            },
+                            "typeArguments" : [ ],
+                            "typeVariableValues" : [ ]
+                          } ],
+                          "typeVariableValues" : [ ]
+                        }
+                      }, {
+                        "_type" : "string",
+                        "value" : ""
+                      }, {
+                        "_type" : "collection",
+                        "multiplicity" : {
+                          "lowerBound" : 2,
+                          "upperBound" : 2
+                        },
+                        "values" : [ {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "string",
+                            "sourceInformation" : {
+                              "endColumn" : 68,
+                              "endLine" : 275,
+                              "sourceId" : "",
+                              "startColumn" : 62,
+                              "startLine" : 275
+                            },
+                            "value" : "dummy"
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "kerberos"
+                          }
+                        }, {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "integer",
+                            "sourceInformation" : {
+                              "endColumn" : 79,
+                              "endLine" : 275,
+                              "sourceId" : "",
+                              "startColumn" : 76,
+                              "startLine" : 275
+                            },
+                            "value" : 1234
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "id"
+                          }
+                        } ]
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "trader"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 275,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 273
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 276,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 271
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TradeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 269,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 269
+            }
+          },
+          "service" : "TradesByDetailsService",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 130,
+            "endLine" : 269,
+            "sourceId" : "",
+            "startColumn" : 109,
+            "startLine" : 269
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 277,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 269
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 278,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 267
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "Firm",
+      "classSourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 281,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 281
+      },
+      "id" : "firm_set",
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 287,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 287
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "FirmSearch"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 1,
+                    "upperBound" : 1
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "collection",
+                      "multiplicity" : {
+                        "lowerBound" : 4,
+                        "upperBound" : 4
+                      },
+                      "sourceInformation" : {
+                        "endColumn" : 84,
+                        "endLine" : 287,
+                        "sourceId" : "",
+                        "startColumn" : 45,
+                        "startLine" : 287
+                      },
+                      "values" : [ {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 53,
+                          "endLine" : 287,
+                          "sourceId" : "",
+                          "startColumn" : 46,
+                          "startLine" : 287
+                        },
+                        "value" : "Firm A"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 63,
+                          "endLine" : 287,
+                          "sourceId" : "",
+                          "startColumn" : 56,
+                          "startLine" : 287
+                        },
+                        "value" : "Firm B"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 287,
+                          "sourceId" : "",
+                          "startColumn" : 66,
+                          "startLine" : 287
+                        },
+                        "value" : "Firm C"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 83,
+                          "endLine" : 287,
+                          "sourceId" : "",
+                          "startColumn" : 76,
+                          "startLine" : 287
+                        },
+                        "value" : "Firm D"
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "legalNames"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 287,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 287
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 288,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 285
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "FirmServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 283,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 283
+            }
+          },
+          "service" : "FirmDetailsByName",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 124,
+            "endLine" : 283,
+            "sourceId" : "",
+            "startColumn" : 108,
+            "startLine" : 283
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 289,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 283
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 295,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 295
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "FirmSearch"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 1,
+                    "upperBound" : 1
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 50,
+                          "endLine" : 295,
+                          "sourceId" : "",
+                          "startColumn" : 46,
+                          "startLine" : 295
+                        }
+                      } ],
+                      "property" : "legalName",
+                      "sourceInformation" : {
+                        "endColumn" : 60,
+                        "endLine" : 295,
+                        "sourceId" : "",
+                        "startColumn" : 52,
+                        "startLine" : 295
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "legalNames"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 295,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 295
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 296,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 293
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "FirmServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 291,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 291
+            }
+          },
+          "service" : "FirmDetailsByName",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 124,
+            "endLine" : 291,
+            "sourceId" : "",
+            "startColumn" : 108,
+            "startLine" : 291
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 297,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 291
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 298,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 281
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "Employee",
+      "classSourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 300,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 300
+      },
+      "id" : "employee_set",
+      "localMappingProperties" : [ {
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "firmName",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 302,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 302
+        },
+        "type" : "String"
+      } ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 80,
+              "endLine" : 309,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 308
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "EmployeeSearch"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 308,
+                          "sourceId" : "",
+                          "startColumn" : 43,
+                          "startLine" : 308
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 50,
+                        "endLine" : 308,
+                        "sourceId" : "",
+                        "startColumn" : 49,
+                        "startLine" : 308
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "ids"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "collection",
+                      "multiplicity" : {
+                        "lowerBound" : 4,
+                        "upperBound" : 4
+                      },
+                      "sourceInformation" : {
+                        "endColumn" : 79,
+                        "endLine" : 309,
+                        "sourceId" : "",
+                        "startColumn" : 60,
+                        "startLine" : 309
+                      },
+                      "values" : [ {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 63,
+                          "endLine" : 309,
+                          "sourceId" : "",
+                          "startColumn" : 61,
+                          "startLine" : 309
+                        },
+                        "value" : "A"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 68,
+                          "endLine" : 309,
+                          "sourceId" : "",
+                          "startColumn" : 66,
+                          "startLine" : 309
+                        },
+                        "value" : "B"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 73,
+                          "endLine" : 309,
+                          "sourceId" : "",
+                          "startColumn" : 71,
+                          "startLine" : 309
+                        },
+                        "value" : "C"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 78,
+                          "endLine" : 309,
+                          "sourceId" : "",
+                          "startColumn" : 76,
+                          "startLine" : 309
+                        },
+                        "value" : "D"
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "designationsToSearch"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 309,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 308
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 310,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 306
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "EmployeeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 304,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 304
+            }
+          },
+          "service" : "EmployeeDetailsById",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 130,
+            "endLine" : 304,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 304
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 311,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 304
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 322,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 317
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "EmployeeSearchByFilters"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 3,
+                    "upperBound" : 3
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "new",
+                      "parameters" : [ {
+                        "_type" : "genericTypeInstance",
+                        "genericType" : {
+                          "multiplicityArguments" : [ ],
+                          "rawType" : {
+                            "_type" : "packageableType",
+                            "fullPath" : "meta::pure::metamodel::type::Class"
+                          },
+                          "typeArguments" : [ {
+                            "multiplicityArguments" : [ ],
+                            "rawType" : {
+                              "_type" : "packageableType",
+                              "fullPath" : "NameFilter"
+                            },
+                            "typeArguments" : [ ],
+                            "typeVariableValues" : [ ]
+                          } ],
+                          "typeVariableValues" : [ ]
+                        }
+                      }, {
+                        "_type" : "string",
+                        "value" : ""
+                      }, {
+                        "_type" : "collection",
+                        "multiplicity" : {
+                          "lowerBound" : 2,
+                          "upperBound" : 2
+                        },
+                        "values" : [ {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "this",
+                              "sourceInformation" : {
+                                "endColumn" : 67,
+                                "endLine" : 319,
+                                "sourceId" : "",
+                                "startColumn" : 63,
+                                "startLine" : 319
+                              }
+                            } ],
+                            "property" : "firstName",
+                            "sourceInformation" : {
+                              "endColumn" : 77,
+                              "endLine" : 319,
+                              "sourceId" : "",
+                              "startColumn" : 69,
+                              "startLine" : 319
+                            }
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "firstName"
+                          }
+                        }, {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "this",
+                              "sourceInformation" : {
+                                "endColumn" : 95,
+                                "endLine" : 319,
+                                "sourceId" : "",
+                                "startColumn" : 91,
+                                "startLine" : 319
+                              }
+                            } ],
+                            "property" : "lastName",
+                            "sourceInformation" : {
+                              "endColumn" : 104,
+                              "endLine" : 319,
+                              "sourceId" : "",
+                              "startColumn" : 97,
+                              "startLine" : 319
+                            }
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "lastName"
+                          }
+                        } ]
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "nameFilters"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "new",
+                      "parameters" : [ {
+                        "_type" : "genericTypeInstance",
+                        "genericType" : {
+                          "multiplicityArguments" : [ ],
+                          "rawType" : {
+                            "_type" : "packageableType",
+                            "fullPath" : "meta::pure::metamodel::type::Class"
+                          },
+                          "typeArguments" : [ {
+                            "multiplicityArguments" : [ ],
+                            "rawType" : {
+                              "_type" : "packageableType",
+                              "fullPath" : "DesignationFilter"
+                            },
+                            "typeArguments" : [ ],
+                            "typeVariableValues" : [ ]
+                          } ],
+                          "typeVariableValues" : [ ]
+                        }
+                      }, {
+                        "_type" : "string",
+                        "value" : ""
+                      }, {
+                        "_type" : "collection",
+                        "multiplicity" : {
+                          "lowerBound" : 1,
+                          "upperBound" : 1
+                        },
+                        "values" : [ {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "this",
+                              "sourceInformation" : {
+                                "endColumn" : 83,
+                                "endLine" : 320,
+                                "sourceId" : "",
+                                "startColumn" : 79,
+                                "startLine" : 320
+                              }
+                            } ],
+                            "property" : "designation",
+                            "sourceInformation" : {
+                              "endColumn" : 95,
+                              "endLine" : 320,
+                              "sourceId" : "",
+                              "startColumn" : 85,
+                              "startLine" : 320
+                            }
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "designation"
+                          }
+                        } ]
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "designationFilters"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "func",
+                      "function" : "new",
+                      "parameters" : [ {
+                        "_type" : "genericTypeInstance",
+                        "genericType" : {
+                          "multiplicityArguments" : [ ],
+                          "rawType" : {
+                            "_type" : "packageableType",
+                            "fullPath" : "meta::pure::metamodel::type::Class"
+                          },
+                          "typeArguments" : [ {
+                            "multiplicityArguments" : [ ],
+                            "rawType" : {
+                              "_type" : "packageableType",
+                              "fullPath" : "IdFilter"
+                            },
+                            "typeArguments" : [ ],
+                            "typeVariableValues" : [ ]
+                          } ],
+                          "typeVariableValues" : [ ]
+                        }
+                      }, {
+                        "_type" : "string",
+                        "value" : ""
+                      }, {
+                        "_type" : "collection",
+                        "multiplicity" : {
+                          "lowerBound" : 1,
+                          "upperBound" : 1
+                        },
+                        "values" : [ {
+                          "_type" : "keyExpression",
+                          "add" : false,
+                          "expression" : {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "this",
+                              "sourceInformation" : {
+                                "endColumn" : 56,
+                                "endLine" : 321,
+                                "sourceId" : "",
+                                "startColumn" : 52,
+                                "startLine" : 321
+                              }
+                            } ],
+                            "property" : "id",
+                            "sourceInformation" : {
+                              "endColumn" : 59,
+                              "endLine" : 321,
+                              "sourceId" : "",
+                              "startColumn" : 58,
+                              "startLine" : 321
+                            }
+                          },
+                          "key" : {
+                            "_type" : "string",
+                            "value" : "id"
+                          }
+                        } ]
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "idFilters"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 322,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 317
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 323,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 315
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "EmployeeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 313,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 313
+            }
+          },
+          "service" : "EmployeeDetailsByFilters",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 313,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 313
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 324,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 313
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 334,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 330
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "EmployeeSearch"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 2,
+                    "upperBound" : 2
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 35,
+                          "endLine" : 332,
+                          "sourceId" : "",
+                          "startColumn" : 31,
+                          "startLine" : 332
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 38,
+                        "endLine" : 332,
+                        "sourceId" : "",
+                        "startColumn" : 37,
+                        "startLine" : 332
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "ids"
+                    }
+                  }, {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "collection",
+                      "multiplicity" : {
+                        "lowerBound" : 4,
+                        "upperBound" : 4
+                      },
+                      "sourceInformation" : {
+                        "endColumn" : 67,
+                        "endLine" : 333,
+                        "sourceId" : "",
+                        "startColumn" : 48,
+                        "startLine" : 333
+                      },
+                      "values" : [ {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 51,
+                          "endLine" : 333,
+                          "sourceId" : "",
+                          "startColumn" : 49,
+                          "startLine" : 333
+                        },
+                        "value" : "A"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 56,
+                          "endLine" : 333,
+                          "sourceId" : "",
+                          "startColumn" : 54,
+                          "startLine" : 333
+                        },
+                        "value" : "B"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 61,
+                          "endLine" : 333,
+                          "sourceId" : "",
+                          "startColumn" : 59,
+                          "startLine" : 333
+                        },
+                        "value" : "C"
+                      }, {
+                        "_type" : "string",
+                        "sourceInformation" : {
+                          "endColumn" : 66,
+                          "endLine" : 333,
+                          "sourceId" : "",
+                          "startColumn" : 64,
+                          "startLine" : 333
+                        },
+                        "value" : "D"
+                      } ]
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "designationsToSearch"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 22,
+                "endLine" : 334,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 330
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 335,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 328
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "EmployeeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 326,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 326
+            }
+          },
+          "service" : "EmployeeDetailsById",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 130,
+            "endLine" : 326,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 326
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 336,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 326
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestBodyBuildInfo" : {
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 342,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 342
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "new",
+                "parameters" : [ {
+                  "_type" : "genericTypeInstance",
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments" : [ {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "FirmSearch"
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    } ],
+                    "typeVariableValues" : [ ]
+                  }
+                }, {
+                  "_type" : "string",
+                  "value" : ""
+                }, {
+                  "_type" : "collection",
+                  "multiplicity" : {
+                    "lowerBound" : 1,
+                    "upperBound" : 1
+                  },
+                  "values" : [ {
+                    "_type" : "keyExpression",
+                    "add" : false,
+                    "expression" : {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "this",
+                        "sourceInformation" : {
+                          "endColumn" : 50,
+                          "endLine" : 342,
+                          "sourceId" : "",
+                          "startColumn" : 46,
+                          "startLine" : 342
+                        }
+                      } ],
+                      "property" : "firmName",
+                      "sourceInformation" : {
+                        "endColumn" : 59,
+                        "endLine" : 342,
+                        "sourceId" : "",
+                        "startColumn" : 52,
+                        "startLine" : 342
+                      }
+                    },
+                    "key" : {
+                      "_type" : "string",
+                      "value" : "legalNames"
+                    }
+                  } ]
+                } ]
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 342,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 342
+              }
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 343,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 340
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "EmployeeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 338,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 338
+            }
+          },
+          "service" : "EmployeeDetailsByFirm",
+          "serviceStore" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+          "sourceInformation" : {
+            "endColumn" : 132,
+            "endLine" : 338,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 338
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 344,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 338
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 345,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 300
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 351,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 246
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::external::store::service::showcase::domain" ]
+}

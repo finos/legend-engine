@@ -1,0 +1,5 @@
+
+Class test::Product { exchange : test::Exchange[0..1]; }
+Class <<temporal.businesstemporal>> test::Exchange{ location : test::Location[1];}
+Class <<temporal.businesstemporal>> test::Location{ street : String[1];}
+function main::walkTree(): Any[*] { {|test::Product.all().exchange(%2022-11-12).location.street} }

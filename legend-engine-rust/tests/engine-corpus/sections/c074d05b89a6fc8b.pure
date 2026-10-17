@@ -1,0 +1,25 @@
+
+function test::fetch(): Any[*]
+{
+  {businessDate: DateTime[1] | 
+    test::Firm.all($businessDate)->graphFetch(
+      #{
+        test::Firm{
+          legalName,
+          'employees':employees($businessDate){
+            name
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        test::Firm{
+          legalName,
+          'employees':employees($businessDate){
+            name
+          }
+        }
+      }#
+    )
+  }
+}

@@ -1,0 +1,14 @@
+
+Class test::Person
+{
+   firstName:String[1];
+   lastName:String[1];
+}
+Class test::Firm
+{
+   employees:test::Person[*];
+}
+Class test::Test
+{
+   x(){test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#);true;}:Boolean[1];
+}

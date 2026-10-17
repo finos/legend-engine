@@ -1,0 +1,36 @@
+
+Class <<temporal.businesstemporal>> {doc.doc = 'bla'} A extends B
+[
+  constraint1: $this.ok->toOne() == 1,
+  constraint2: $this.ok->toOne()->toString() == $this.name
+]
+{
+  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];
+  {doc.doc = 'bla'} ok: Integer[1..2];
+  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];
+  {doc.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];
+}
+
+Association myAsso
+{
+  a: String[1];
+  b: a::c::A[1];
+}
+
+Enum <<st.test>> {doc.doc = 'bla'} z::k::B
+{
+  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} a,
+  b,
+  c
+}
+
+Profile meta::pure::profiles::doc
+{
+  stereotypes: [deprecated];
+  tags: [doc, todo];
+}
+
+Profile meta::pure::profiles::profile2
+{
+  tags: [doc, todo];
+}

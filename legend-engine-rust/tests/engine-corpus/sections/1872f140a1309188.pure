@@ -1,0 +1,15 @@
+
+Mapping simple::simpleRelationalMappingInc
+(
+  simple::Person: Relational
+  {
+    ~mainTable [simple::dbInc]personTable
+    firstName: [simple::dbInc]personTable.FIRSTNAME
+  }
+  simple::Firm[simple_Firm]: Relational
+  {
+    ~mainTable [simple::dbInc]firmTable
+    employees: [simple::dbInc] @Firm_PersonFirm > (INNER) [simple::dbInc] @Person_PersonFirm
+  }
+
+)

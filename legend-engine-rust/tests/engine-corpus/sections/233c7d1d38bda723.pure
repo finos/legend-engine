@@ -1,0 +1,15 @@
+
+Data demo::relation::data::AsymmetricMilestoningData
+{
+  Relation
+  #{
+    default.BusinessTemporalEmployeeTable:
+      ID,FIRST_NAME,SALARY,FROM_Z,THRU_Z
+      1,Alice,90000.0,2024-01-01,9999-12-31
+      2,Bob,75000.0,2024-06-01,9999-12-31;
+    default.TemporalEmployeeTable:
+      ID,FIRST_NAME,SALARY,IN_Z,OUT_Z
+      1,Alice,90000.0,2024-01-01,9999-12-31
+      2,Bob,75000.0,2024-06-01,9999-12-31;
+  }#
+}

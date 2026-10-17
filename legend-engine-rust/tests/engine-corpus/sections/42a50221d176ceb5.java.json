@@ -1,0 +1,148 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 35
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "class" : "my::Person",
+          "property" : "greeted",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 35
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 35
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 35
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 35,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 35
+                },
+                "value" : "Hi "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 35,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 35
+                  }
+                } ],
+                "property" : "FIRST NAME",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 35,
+                  "sourceId" : "",
+                  "startColumn" : 39,
+                  "startLine" : 35
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 35
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 37
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunctionQuoted():Relation<('FIRST NAME':String[1],AGE:Integer[1])>[1]",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 34
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

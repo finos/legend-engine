@@ -1,0 +1,180 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "my::Class1",
+      "classSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "my::db",
+        "mainTableDb" : "my::db",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 30
+        },
+        "table" : "temporalTable"
+      },
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "my::Class1",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "col1",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 31
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "my::db",
+            "mainTableDb" : "my::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 31
+            },
+            "table" : "temporalTable"
+          },
+          "tableAlias" : "temporalTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "embeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "prop2",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 7,
+                "startLine" : 33
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "col2",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 33
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "my::db",
+                "mainTableDb" : "my::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 23,
+                  "startLine" : 33
+                },
+                "table" : "temporalTable"
+              },
+              "tableAlias" : "temporalTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 33
+            }
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 32
+          }
+        },
+        "property" : {
+          "class" : "my::Class1",
+          "property" : "temporalProp",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 32
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "map",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

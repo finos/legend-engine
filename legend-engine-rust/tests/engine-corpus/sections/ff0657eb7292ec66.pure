@@ -1,0 +1,14 @@
+
+Mapping model::mapping::SourceToTargetM2M
+(
+   MappingTests
+   [
+      defaultTest
+      (
+         query: |model::domain::Target.all();
+         data: [
+         <Object, JSON, model::domain::Source, '{"oneName":"oneName 2"}'>                   ];
+         assert: '{"defects":[],"value":{"name":"oneName 2"},"source":{"defects":[],"value":{"oneName":"oneName 2"},"source":{"number":1,"record":"{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}"}}}';
+      )
+   ]
+)

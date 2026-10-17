@@ -1,0 +1,57 @@
+
+DataSpace domain::COVIDDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::H2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'this is description of this COVIDDataspace';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'tds template';
+      description: 'template with TDS return type';
+      query: |domain::COVIDData.all()->project([x|$x.cases], ['Cases'])->from(mapping::CovidDataMapping, runtime::H2Runtime);
+      executionContextKey: 'dummyContext';
+      sampleValues: Relation
+        #{
+          Cases
+          10.0
+          25.0;
+        }#;
+    },
+    {
+      id: 2;
+      title: 'relation template';
+      description: 'template with Relation return type';
+      query: |domain::COVIDData.all()->project(~[Cases:x|$x.cases, Fips:x|$x.fips])->from(mapping::CovidDataMapping, runtime::H2Runtime);
+      executionContextKey: 'dummyContext';
+      sampleValues: Relation
+        #{
+          Cases, Fips
+          10.0 , 'A'
+          25.0 , 'BC';
+        }#;
+    },
+    {
+      id: 3;
+      title: 'relation function pointer';
+      description: 'executable pointing to a function returning Relation';
+      executable: domain::COVIDData_QueryFunctionRelation():Relation[1];
+      executionContextKey: 'dummyContext';
+      sampleValues: Relation
+        #{
+          Cases
+          10.0
+          25.0;
+        }#;
+    }
+  ];
+}

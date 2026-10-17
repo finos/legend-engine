@@ -1,0 +1,15 @@
+
+function test::fetch(): Any[*]
+{
+  |test::DataTypesClass.all()
+    ->graphFetch(#{
+      test::DataTypesClass {
+         integer
+      }
+   }#, 1)
+    ->serialize(#{
+      test::DataTypesClass {
+         integer
+      }
+   }#)
+}

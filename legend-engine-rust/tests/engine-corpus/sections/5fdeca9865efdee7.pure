@@ -1,0 +1,37 @@
+
+function test::fetch(): Any[*]
+{
+  | meta::relational::tests::model::simple::Firm.all()
+    ->filter(x | $x.legalName == 'FirmA')
+    ->limit(1)
+    ->graphFetch(#{
+      meta::relational::tests::model::simple::Firm {
+        legalName,
+        employeeByLastName('Smith') {
+          firstName,
+          lastName,
+          address {name}
+        },
+        employeesByCityOrManager('New York','') {
+          firstName,
+          lastName,
+          address {name}
+        }
+      }
+    }#)
+    ->serialize(#{
+      meta::relational::tests::model::simple::Firm {
+        legalName,
+        employeeByLastName('Smith') {
+          firstName,
+          lastName,
+          address {name}
+        },
+        employeesByCityOrManager('New York','') {
+          firstName,
+          lastName,
+          address {name}
+        }
+      }
+    }#)
+}

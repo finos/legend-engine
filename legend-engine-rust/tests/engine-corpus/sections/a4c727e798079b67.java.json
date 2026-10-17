@@ -1,0 +1,60 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "ID", "FIRST_NAME" ],
+          "paths" : [ "default", "PERSON_TABLE" ],
+          "rows" : [ {
+            "values" : [ "10", "Zoe" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 65,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 63
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 63
+        }
+      },
+      "elementPointer" : {
+        "path" : "test::store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 60
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 60
+      }
+    } ],
+    "name" : "PersonSeed",
+    "package" : "test::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 67,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 58
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

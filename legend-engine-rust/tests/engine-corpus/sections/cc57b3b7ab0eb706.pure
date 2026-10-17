@@ -1,0 +1,12 @@
+
+Mapping model::myRelationalMapping
+(
+  model::LegalEntity[entity]: Relational
+  {
+    name: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+  model::Firm[firm] extends [entity1]: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME
+  }
+)

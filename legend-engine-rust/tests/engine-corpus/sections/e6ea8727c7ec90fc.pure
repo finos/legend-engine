@@ -1,0 +1,15 @@
+
+Runtime meta::mySimpleRuntime
+{
+  mappings:
+  [
+    meta::mySimpleMapping
+  ];
+  connections:
+  [
+    test::someStore:
+    [
+      id1: #{}#
+    ]
+  ];
+}

@@ -1,0 +1,9 @@
+
+Mapping mongo::test::mapping::MongoDBMapping
+(
+  *meta::external::store::mongodb::showcase::domain::Person[Person]: MongoDB
+  {
+    ~mainCollection [meta::external::store::mongodb::showcase::store::PersonDatabase] PersonCollection
+    ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+  }
+)

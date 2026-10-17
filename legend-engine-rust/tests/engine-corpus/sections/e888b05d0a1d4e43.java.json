@@ -1,0 +1,235 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Any[1]",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "my::Person",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 14,
+                "sourceId" : "mappingPackage::myMapping",
+                "startColumn" : 18,
+                "startLine" : 14
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 14,
+              "sourceId" : "mappingPackage::myMapping",
+              "startColumn" : 28,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 14,
+              "sourceId" : "mappingPackage::myMapping",
+              "startColumn" : 49,
+              "startLine" : 14
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "my::Person",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 14,
+                "sourceId" : "mappingPackage::myMapping",
+                "startColumn" : 49,
+                "startLine" : 14
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 14,
+                  "sourceId" : "mappingPackage::myMapping",
+                  "startColumn" : 60,
+                  "startLine" : 14
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 14,
+            "sourceId" : "mappingPackage::myMapping",
+            "startColumn" : 36,
+            "startLine" : 14
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 14,
+          "sourceId" : "mappingPackage::myMapping",
+          "startColumn" : 17,
+          "startLine" : 14
+        }
+      },
+      "id" : "personSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"John\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 33
+            }
+          },
+          "id" : "shouldMatch",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 30
+          }
+        } ],
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 17
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "my::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 22
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 22
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 21
+          },
+          "store" : {
+            "path" : "store::TestDB",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 21
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,85 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 27,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 1
+    },
+    "type" : "colSpecArray",
+    "value" : {
+      "colSpecs" : [ {
+        "name" : "val",
+        "sourceInformation" : {
+          "endColumn" : 6,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 1
+        }
+      }, {
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Numeric",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 1
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 1
+            },
+            "value" : 10
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 1
+            },
+            "value" : 4
+          } ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "ok",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 1
+        }
+      } ]
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 27,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

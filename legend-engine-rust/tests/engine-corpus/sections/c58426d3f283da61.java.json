@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'description' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 14
+    }
+  }
+}

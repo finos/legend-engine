@@ -1,0 +1,22 @@
+
+Class <<temporal.businesstemporal>> main::Person
+{
+  name: String[1];
+  firm: main::Firm[1];
+}
+
+Class <<temporal.businesstemporal>> main::Firm
+{
+  name: String[1];
+  city: main::City[1];
+}
+
+Class <<temporal.businesstemporal>> main::City
+{
+  name: String[1];
+}
+
+function main::walkTree(): String[*]
+{
+   main::Person.all(%2022-12-12).firm->graphFetch(#{main::Firm{city{name}}}#)->serialize(#{main::Firm{city{name}}}#)
+}

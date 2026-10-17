@@ -1,0 +1,60 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "project",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "getAll",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "Person",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 1
+      },
+      "values" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 22,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 16,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 26,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

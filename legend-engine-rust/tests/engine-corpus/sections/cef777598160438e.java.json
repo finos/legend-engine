@@ -1,0 +1,1616 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Class",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NestedClass",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "nestedZeroOne",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NestedClass",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "nestedOne",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NestedClass",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "name" : "nestedTwo",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "test::NestedClass",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "nestedMany",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "mulZeroOne",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "mulOne",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 2
+      },
+      "name" : "mulOneTwo",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 10
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "mulOneMany",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 10
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 11
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "mulZeroMany",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "NestedClass",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 14
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "mulZeroOne",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 14
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 15
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "mulOne",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 15
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 2
+      },
+      "name" : "mulOneTwo",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 16
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 17
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1
+      },
+      "name" : "mulOneMany",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 17
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "mulZeroMany",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "project",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Class",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 4,
+            "startLine" : 22
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 22
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 24,
+                    "endLine" : 23,
+                    "sourceId" : "",
+                    "startColumn" : 23,
+                    "startLine" : 23
+                  }
+                } ],
+                "property" : "mulZeroOne",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 23,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 23
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 23,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 23
+              }
+            },
+            "name" : "mulZeroOne",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 23
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 20,
+                    "endLine" : 24,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 24
+                  }
+                } ],
+                "property" : "mulOne",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 24,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 24
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 24,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 24
+              }
+            },
+            "name" : "mulOne",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 24
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 25,
+                    "sourceId" : "",
+                    "startColumn" : 22,
+                    "startLine" : 25
+                  }
+                } ],
+                "property" : "mulOneTwo",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 25,
+                  "sourceId" : "",
+                  "startColumn" : 25,
+                  "startLine" : 25
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 25,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 25
+              }
+            },
+            "name" : "mulOneTwo",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 25
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 24,
+                    "endLine" : 26,
+                    "sourceId" : "",
+                    "startColumn" : 23,
+                    "startLine" : 26
+                  }
+                } ],
+                "property" : "mulOneMany",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 26,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 26
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 26
+              }
+            },
+            "name" : "mulOneMany",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 26
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 25,
+                    "endLine" : 27,
+                    "sourceId" : "",
+                    "startColumn" : 24,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "mulZeroMany",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 27,
+                  "sourceId" : "",
+                  "startColumn" : 27,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 27
+              }
+            },
+            "name" : "mulZeroMany",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 27
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 33,
+                      "endLine" : 28,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 28
+                    }
+                  } ],
+                  "property" : "nestedOne",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 28,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 28
+                  }
+                } ],
+                "property" : "mulZeroOne",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 28,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 28
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 28
+              }
+            },
+            "name" : "nestedOneMulZeroOne",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 28
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 29,
+                      "endLine" : 29,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 29
+                    }
+                  } ],
+                  "property" : "nestedOne",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 31,
+                    "startLine" : 29
+                  }
+                } ],
+                "property" : "mulOne",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 29
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 29
+              }
+            },
+            "name" : "nestedOneMulOne",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 29
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 32,
+                      "endLine" : 30,
+                      "sourceId" : "",
+                      "startColumn" : 31,
+                      "startLine" : 30
+                    }
+                  } ],
+                  "property" : "nestedOne",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 30,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "mulOneTwo",
+                "sourceInformation" : {
+                  "endColumn" : 52,
+                  "endLine" : 30,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 30
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 30
+              }
+            },
+            "name" : "nestedOneMulOneTwo",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 30
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 33,
+                      "endLine" : 31,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 31
+                    }
+                  } ],
+                  "property" : "nestedOne",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 31,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 31
+                  }
+                } ],
+                "property" : "mulOneMany",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 31,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 31
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 31
+              }
+            },
+            "name" : "nestedOneMulOneMany",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 31
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 32,
+                      "sourceId" : "",
+                      "startColumn" : 33,
+                      "startLine" : 32
+                    }
+                  } ],
+                  "property" : "nestedOne",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 32,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 32
+                  }
+                } ],
+                "property" : "mulZeroMany",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 32,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 32
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 32
+              }
+            },
+            "name" : "nestedOneMulZeroMany",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 32
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 33,
+                      "endLine" : 33,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 33
+                    }
+                  } ],
+                  "property" : "nestedTwo",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 33,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "mulZeroOne",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 33,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 33
+              }
+            },
+            "name" : "nestedTwoMulZeroOne",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 33
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 29,
+                      "endLine" : 34,
+                      "sourceId" : "",
+                      "startColumn" : 28,
+                      "startLine" : 34
+                    }
+                  } ],
+                  "property" : "nestedTwo",
+                  "sourceInformation" : {
+                    "endColumn" : 39,
+                    "endLine" : 34,
+                    "sourceId" : "",
+                    "startColumn" : 31,
+                    "startLine" : 34
+                  }
+                } ],
+                "property" : "mulOne",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 34,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 34
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 34,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 34
+              }
+            },
+            "name" : "nestedTwoMulOne",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 34
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 32,
+                      "endLine" : 35,
+                      "sourceId" : "",
+                      "startColumn" : 31,
+                      "startLine" : 35
+                    }
+                  } ],
+                  "property" : "nestedTwo",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 35,
+                    "sourceId" : "",
+                    "startColumn" : 34,
+                    "startLine" : 35
+                  }
+                } ],
+                "property" : "mulOneTwo",
+                "sourceInformation" : {
+                  "endColumn" : 52,
+                  "endLine" : 35,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 35
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 35,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 35
+              }
+            },
+            "name" : "nestedTwoMulOneTwo",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 35
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 33,
+                      "endLine" : 36,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 36
+                    }
+                  } ],
+                  "property" : "nestedTwo",
+                  "sourceInformation" : {
+                    "endColumn" : 43,
+                    "endLine" : 36,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 36
+                  }
+                } ],
+                "property" : "mulOneMany",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 36,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 36
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 36,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 36
+              }
+            },
+            "name" : "nestedTwoMulOneMany",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 36
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 37,
+                      "sourceId" : "",
+                      "startColumn" : 33,
+                      "startLine" : 37
+                    }
+                  } ],
+                  "property" : "nestedTwo",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 37,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 37
+                  }
+                } ],
+                "property" : "mulZeroMany",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 37,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 37
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 37
+              }
+            },
+            "name" : "nestedTwoMulZeroMany",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 37
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 38,
+                      "sourceId" : "",
+                      "startColumn" : 33,
+                      "startLine" : 38
+                    }
+                  } ],
+                  "property" : "nestedMany",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 38,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 38
+                  }
+                } ],
+                "property" : "mulZeroOne",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 38
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 38
+              }
+            },
+            "name" : "nestedManyMulZeroOne",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 38
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 39,
+                      "sourceId" : "",
+                      "startColumn" : 29,
+                      "startLine" : 39
+                    }
+                  } ],
+                  "property" : "nestedMany",
+                  "sourceInformation" : {
+                    "endColumn" : 41,
+                    "endLine" : 39,
+                    "sourceId" : "",
+                    "startColumn" : 32,
+                    "startLine" : 39
+                  }
+                } ],
+                "property" : "mulOne",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 39,
+                  "sourceId" : "",
+                  "startColumn" : 43,
+                  "startLine" : 39
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 39
+              }
+            },
+            "name" : "nestedManyMulOne",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 39
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 33,
+                      "endLine" : 40,
+                      "sourceId" : "",
+                      "startColumn" : 32,
+                      "startLine" : 40
+                    }
+                  } ],
+                  "property" : "nestedMany",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 35,
+                    "startLine" : 40
+                  }
+                } ],
+                "property" : "mulOneTwo",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 40
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 31,
+                "startLine" : 40
+              }
+            },
+            "name" : "nestedManyMulOneTwo",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 40
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 41,
+                      "sourceId" : "",
+                      "startColumn" : 33,
+                      "startLine" : 41
+                    }
+                  } ],
+                  "property" : "nestedMany",
+                  "sourceInformation" : {
+                    "endColumn" : 45,
+                    "endLine" : 41,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "mulOneMany",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 41
+              }
+            },
+            "name" : "nestedManyMulOneMany",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 41
+            }
+          }, {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 35,
+                      "endLine" : 42,
+                      "sourceId" : "",
+                      "startColumn" : 34,
+                      "startLine" : 42
+                    }
+                  } ],
+                  "property" : "nestedMany",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 42,
+                    "sourceId" : "",
+                    "startColumn" : 37,
+                    "startLine" : 42
+                  }
+                } ],
+                "property" : "mulZeroMany",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 42,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 42
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 42,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 42
+              }
+            },
+            "name" : "nestedManyMulZeroMany",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 42,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 42
+            }
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 22
+      }
+    } ],
+    "name" : "f__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 20
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

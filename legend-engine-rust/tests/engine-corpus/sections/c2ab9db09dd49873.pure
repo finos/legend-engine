@@ -1,0 +1,6 @@
+
+JsonModelConnection test::runtime::FirmConnection
+{
+  class: test::model::Firm;
+  url: 'executor:default';
+}

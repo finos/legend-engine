@@ -1,0 +1,69 @@
+{
+  "elements" : [ {
+    "_type" : "executionEnvironmentInstance",
+    "executionParameters" : [ {
+      "_type" : "singleExecutionParameters",
+      "key" : "UAT",
+      "mapping" : "test::mapping2",
+      "mappingSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 37
+      },
+      "runtimeComponents" : {
+        "binding" : {
+          "path" : "test::bind",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 42
+          },
+          "type" : "BINDING"
+        },
+        "clazz" : {
+          "path" : "test::class",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 41
+          },
+          "type" : "CLASS"
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 40
+          }
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 35
+      }
+    } ],
+    "name" : "executionEnvironment",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 31
+    }
+  } ],
+  "imports" : [ ]
+}

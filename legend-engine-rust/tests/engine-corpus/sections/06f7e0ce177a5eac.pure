@@ -1,0 +1,7 @@
+
+function test::fetch(): Any[1]
+{
+  {nameLengths:Integer[*] | test::Person.all()
+                               ->filter(p:test::Person[1] | $p.fullName->length()->in($nameLengths))
+                               ->project([x | $x.fullName], ['fullName'])}
+}

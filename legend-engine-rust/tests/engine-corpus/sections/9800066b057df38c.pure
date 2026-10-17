@@ -1,0 +1,5 @@
+
+function abc::to(): String[*]
+{
+  toVariant(1)->toMany('String')
+}

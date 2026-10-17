@@ -1,0 +1,62 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "userNamePassword",
+        "passwordVaultReference" : "pwd",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 12
+        },
+        "userNameVaultReference" : "user"
+      },
+      "databaseType" : "Postgres",
+      "datasourceSpecification" : {
+        "_type" : "static",
+        "databaseName" : "myDatabase",
+        "host" : "myHost.com",
+        "port" : 8090,
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        }
+      },
+      "element" : "model::firm::Person",
+      "elementSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Postgres"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

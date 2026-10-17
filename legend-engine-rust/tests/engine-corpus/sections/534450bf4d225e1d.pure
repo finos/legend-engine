@@ -1,0 +1,9 @@
+
+SingleConnectionRuntime com::test::singleConnectionRuntime
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+  connection: com::test::connection;
+}

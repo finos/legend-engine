@@ -1,0 +1,132 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllTradeService",
+        "method" : "GET",
+        "path" : "/allTradesService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 186,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 186
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 187,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 181
+        }
+      } ],
+      "id" : "TradeServices",
+      "path" : "/trades",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 188,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 177
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "ProductsByIdsService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "id",
+          "serializationFormat" : {
+            "explode" : false,
+            "explodeSourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 200,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 200
+            },
+            "style" : "form",
+            "styleSourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 200,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 200
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 200,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 200
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : true,
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 200,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 200
+            }
+          }
+        } ],
+        "path" : "/getProductsById",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 203,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 203
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 204,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 194
+        }
+      } ],
+      "id" : "ProductServices",
+      "path" : "/products",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 205,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 190
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "TradeProductServiceStore",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 206,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 173
+    }
+  } ]
+}

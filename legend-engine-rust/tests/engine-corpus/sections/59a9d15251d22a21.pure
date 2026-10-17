@@ -1,0 +1,9 @@
+
+Class <<temporal.bitemporal>> demo::milestone::BiProduct
+{
+  name: String[1];
+}
+
+// PRODUCT is bitemporally milestoned: business validity via FROM_Z/THRU_Z and
+// processing validity via IN_Z/OUT_Z. The four milestoning columns plus ID form a
+// composite key so multiple versions of one logical product coexist.

@@ -1,0 +1,143 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "test",
+    "package" : "sample",
+    "schemas" : [ {
+      "name" : "SomeView",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 8
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "sample::test",
+              "mainTableDb" : "sample::test",
+              "schema" : "SomeView",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 8
+              },
+              "table" : "test"
+            },
+            "tableAlias" : "test"
+          },
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        }, {
+          "name" : "join_test",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "group",
+            "parameters" : [ {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "sample::test",
+                "joinType" : "INNER",
+                "name" : "TestDemographics",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 42,
+                  "startLine" : 9
+                }
+              }, {
+                "db" : "sample::test",
+                "joinType" : "INNER",
+                "name" : "sites",
+                "sourceInformation" : {
+                  "endColumn" : 89,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 84,
+                  "startLine" : 9
+                }
+              }, {
+                "db" : "sample::test",
+                "joinType" : "INNER",
+                "name" : "sites",
+                "sourceInformation" : {
+                  "endColumn" : 120,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 115,
+                  "startLine" : 9
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 9
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 121,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 9
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "TEST_JOIN",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

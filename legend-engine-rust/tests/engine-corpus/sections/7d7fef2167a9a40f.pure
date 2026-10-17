@@ -1,0 +1,9 @@
+
+Database test::Database
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),    audit_timestamp TIMESTAMP
+  )
+)

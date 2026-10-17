@@ -1,0 +1,88 @@
+
+
+Persistence true::false::import::derivation::None::DateTime::PersistenceContext::persistence::platform::serviceParameters::sinkConnection::Persistence::doc::trigger::service::serviceOutputTargets::persister::notifier::tests::serviceOutput::target::Notifier::notifyees::Email::address::PagerDuty::url::isTestDataFromServiceOutput::graphFetchPath::testBatches::data::connection::asserts::TDS::keys::deduplication::datasetType::AnyVersion::MaxVersion::versionField::Snapshot::partitioning::Delta::actionIndicator::FieldBased::partitionFields::emptyDatasetHandling::NoOp::DeleteTargetData::DeleteIndicator::deleteField::deleteValues::Streaming::Batch::sink::targetShape::ingestMode::Relational::ObjectStorage::database::binding::modelClass::targetName::deduplicationStrategy::Flat::MultiFlat::transactionScope::parts::modelProperty::SINGLE_TARGET::ALL_TARGETS::DuplicateCount::duplicateCountName::NontemporalSnapshot::UnitemporalSnapshot::BitemporalSnapshot::NontemporalDelta::UnitemporalDelta::BitemporalDelta::AppendOnly::filterDuplicates::auditing::dateTimeName::transactionMilestoning::BatchId::BatchIdAndDateTime::batchIdInName::batchIdOutName::dateTimeInName::dateTimeOutName::SourceSpecifiesInDateTime::SourceSpecifiesInAndOutDateTime::sourceDateTimeInField::sourceDateTimeOutField::validityMilestoning::dateTimeFromName::dateTimeThruName::SourceSpecifiesFromDateTime::SourceSpecifiesFromAndThruDateTime::sourceDateTimeFromField::sourceDateTimeThruField::mergeStrategy::NoDeletes::all::let::allVersions::allVersionsInRange::toBytes
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      deduplication: AnyVersion;
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: isDeleted;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+    }
+    ->
+    {
+    },
+    #/test::example::MyType/prop#
+    {
+      keys:
+      [
+        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#
+      ]
+      deduplication: MaxVersion
+      {
+        versionField: #/test::example::MyType/prop/version#;
+      }
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+    }
+    ->
+    {
+    }
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected: 
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '{"Age":12, "Name":"dummy"}';
+                 }#;
+             }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

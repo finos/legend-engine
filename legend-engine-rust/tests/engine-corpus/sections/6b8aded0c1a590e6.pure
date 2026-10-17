@@ -1,0 +1,12 @@
+
+Data data::RelationalData
+{
+  Relation
+  #{
+    default.PersonTable:
+       id,firstName,lastName
+       1,I'm John,"Doe, Jr"
+       2,Nicole,Smith
+       3,Time,Smith;
+  }#
+}

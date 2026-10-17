@@ -27,6 +27,8 @@ public class BenchConfig
     public String csv = null;
     public boolean pause = false;
     public String dumpPlan = null;
+    public boolean parseOnly = false;
+    public boolean rust = false;
 
     public String nextMultiplicity = "0..1";
     public int unionSets = 0;
@@ -79,6 +81,8 @@ public class BenchConfig
         config.semiDepth = Integer.parseInt(opts.getOrDefault("semi", "0"));
         config.dbType = opts.getOrDefault("dbtype", "H2");
         config.fileList = opts.get("filelist");
+        config.parseOnly = opts.containsKey("parseonly");
+        config.rust = opts.containsKey("rust");
         config.queryFile = opts.get("queryfile");
         config.mappingPath = opts.getOrDefault("mapping", "test::Map");
         config.storePath = opts.getOrDefault("db", "test::DB");
@@ -135,6 +139,15 @@ public class BenchConfig
         map.put("modelToModel", this.modelToModel);
         map.put("nextMultiplicity", this.nextMultiplicity);
         map.put("execute", this.execute);
+        // Only when set, so the pipeline suites' results keep their shape.
+        if (this.parseOnly)
+        {
+            map.put("parseOnly", true);
+        }
+        if (this.rust)
+        {
+            map.put("rust", true);
+        }
         return map;
     }
 
@@ -167,6 +180,14 @@ public class BenchConfig
             b.append(" m2m");
         }
         b.append(" nextMult=[").append(this.nextMultiplicity).append("]");
+        if (this.parseOnly)
+        {
+            b.append(" parseOnly");
+        }
+        if (this.rust)
+        {
+            b.append(" rust");
+        }
         b.append(" warmup=").append(this.warmup).append(" iters=").append(this.iterations);
         return b.toString();
     }

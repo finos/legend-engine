@@ -1,0 +1,17 @@
+
+Elasticsearch7Cluster abc::abc::Store
+{
+  indices: [
+    index1: {
+      properties: [
+        prop1: Keyword
+      ];
+    },
+    index2: {
+      properties: [
+        prop1: Keyword
+      ];
+    }
+  ];
+}
+

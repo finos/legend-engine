@@ -1,0 +1,114 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "meta::pure::functions::collection::pair",
+      "parameters" : [ {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 3
+          },
+          "value" : 1
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "TDSRow",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 3,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 3
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "r",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 3
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 3
+        },
+        "value" : "hello"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 41,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "new__Any_1_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

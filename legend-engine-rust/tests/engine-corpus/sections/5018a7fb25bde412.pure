@@ -1,0 +1,8 @@
+
+HostedService pack::A 
+{
+   function : a::f():String[1];
+   pattern : 'sass';
+   documentation : 'sass';
+   autoActivateUpdates : true;
+}

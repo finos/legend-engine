@@ -1,0 +1,14 @@
+
+Class simple::Account
+{
+   id: String[1];   
+}
+
+Class simple::Raw_Account
+{
+   id: String[1];
+}
+
+Class simple::Another extends simple::Account
+{  
+}

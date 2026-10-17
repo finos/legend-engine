@@ -1,0 +1,225 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "test",
+    "package" : "sample",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ ],
+        "milestoning" : [ {
+          "_type" : "processingSnapshotMilestoning",
+          "snapshotDate" : "PROCESSING_DATE",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 8
+          }
+        }, {
+          "_type" : "processingMilestoning",
+          "in" : "dummy",
+          "out" : "dummy",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 9
+          }
+        }, {
+          "_type" : "processingMilestoning",
+          "in" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 10
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "out" : "dummy",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 10
+          }
+        }, {
+          "_type" : "processingMilestoning",
+          "in" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 131,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 107,
+              "startLine" : 11
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "out" : "dummy",
+          "outIsInclusive" : true,
+          "sourceInformation" : {
+            "endColumn" : 132,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 11
+          }
+        }, {
+          "_type" : "processingMilestoning",
+          "in" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 12
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "out" : "dummy",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 12
+          }
+        }, {
+          "_type" : "businessSnapshotMilestoning",
+          "snapshotDate" : "BUSINESS_DATE",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 13
+          }
+        }, {
+          "_type" : "businessMilestoning",
+          "from" : "dummy",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 14
+          },
+          "thru" : "dummy",
+          "thruIsInclusive" : false
+        }, {
+          "_type" : "businessMilestoning",
+          "from" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 93,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 15
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 15
+          },
+          "thru" : "dummy",
+          "thruIsInclusive" : false
+        }, {
+          "_type" : "businessMilestoning",
+          "from" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 119,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 16
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "sourceInformation" : {
+            "endColumn" : 119,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 16
+          },
+          "thru" : "dummy",
+          "thruIsInclusive" : true
+        }, {
+          "_type" : "businessMilestoning",
+          "from" : "dummy",
+          "infinityDate" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 93,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 17
+            },
+            "value" : "9999-12-30T19:00:00.0000"
+          },
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 17
+          },
+          "thru" : "dummy",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "table",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

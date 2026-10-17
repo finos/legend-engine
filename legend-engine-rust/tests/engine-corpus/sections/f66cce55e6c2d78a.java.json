@@ -1,0 +1,120 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Firm",
+      "id" : "firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "my::Firm",
+          "property" : "clientNames",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "firm",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "split",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 21,
+                  "endLine" : 47,
+                  "sourceId" : "",
+                  "startColumn" : 18,
+                  "startLine" : 47
+                }
+              } ],
+              "property" : "LEGALNAME",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 47
+              },
+              "value" : ","
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 47
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 49
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::firmFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 46
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

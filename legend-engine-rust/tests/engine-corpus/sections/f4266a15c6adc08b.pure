@@ -1,0 +1,12 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);
+   validations: [
+   {
+     name: 'testValidation';
+     description: 'test validation';
+     assertion: rel|$rel->assertRelationNotEmpty();
+    }
+   ];
+}

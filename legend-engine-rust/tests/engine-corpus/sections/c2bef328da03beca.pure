@@ -1,0 +1,42 @@
+
+Mapping chain::mapping::M2M
+(
+  *chain::model::Firm: Pure
+  {
+    ~src chain::source::S_FirmRow
+    id: $src.id,
+    name: $src.firm.legalName->toUpper(),
+    city: $src.firm.address.city,
+    // An array of scalars crossing the model-to-model boundary.
+    labels: $src.firm.tags,
+    // An array of nested objects crossing it.
+    units: $src.firm.divisions,
+    // The same, but the array is only reachable after a subType cast part-way along the path.
+    holdings: $src.firm.terms->subType(@chain::source::S_RepoTerms).collateral
+  }
+
+  *chain::model::Holding: Pure
+  {
+    ~src chain::source::S_Collateral
+    pieceId: $src.collateralId.identifier,
+    quantity: $src.quantity
+  }
+
+  *chain::model::Unit: Pure
+  {
+    ~src chain::source::S_Division
+    unitName: $src.name,
+    unitSize: $src.headcount,
+    country: $src.location.country,
+    // An array nested inside an element of the array above.
+    squads: $src.teams
+  }
+
+  *chain::model::Squad: Pure
+  {
+    ~src chain::source::S_Team
+    squadName: $src.label,
+    memberCount: $src.members->size(),
+    memberNames: $src.members
+  }
+)

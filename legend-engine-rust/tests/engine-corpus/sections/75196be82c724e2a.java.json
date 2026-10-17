@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "SampleProfile",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 4
+      },
+      "value" : "important"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 4
+      },
+      "value" : "deprecated"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 5
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "value" : "version"
+    } ]
+  } ],
+  "imports" : [ ]
+}

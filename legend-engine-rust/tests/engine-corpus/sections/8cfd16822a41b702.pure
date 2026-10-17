@@ -1,0 +1,5 @@
+
+Class simple::Item
+{
+   id: Integer[0..1];
+}

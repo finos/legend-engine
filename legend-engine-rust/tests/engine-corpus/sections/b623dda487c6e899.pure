@@ -1,0 +1,13 @@
+
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::positions(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.PositionTable}#
+    ->filter(r | $r.QTY > 0)
+    ->groupBy(~[GSN, PRODUCT_ID], ~[
+      TOTAL_QTY: x | $x.QTY : y | $y->sum(),
+      AVG_QTY: x | $x.QTY : y | $y->average()
+    ])
+}

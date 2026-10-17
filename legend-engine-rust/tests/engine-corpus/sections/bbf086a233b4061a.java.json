@@ -1,0 +1,102 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      },
+      "distinct" : false,
+      "filter" : {
+        "filter" : {
+          "db" : "model::relational::tests::dbInc",
+          "name" : "MissingFilter"
+        },
+        "joins" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 90,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 90
+        }
+      },
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 91
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LEGALNAME",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 91
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 91
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 91,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 91
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 92,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 88
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myRelationalMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 93,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 86
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

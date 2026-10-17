@@ -1,0 +1,9 @@
+
+Data meta::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/x.flatdata';
+    data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+  }#
+}

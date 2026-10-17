@@ -1,0 +1,118 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "my",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "col1",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "col2",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "from",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "thru",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "from",
+          "infinityDate" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 71,
+              "startLine" : 6
+            },
+            "value" : "9999-12-31"
+          },
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 6
+          },
+          "thru" : "thru",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "temporalTable",
+        "primaryKey" : [ "col1", "col2" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

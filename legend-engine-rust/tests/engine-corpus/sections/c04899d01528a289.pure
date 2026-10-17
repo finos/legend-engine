@@ -1,0 +1,12 @@
+
+Data demo::relation::data::FirmRegistryData
+{
+  Relation
+  #{
+    default.FirmRegistryTable:
+      ID,LEGAL_NAME
+      1,Acme Holdings
+      2,Beta Partners
+      3,Gamma Group;
+  }#
+}

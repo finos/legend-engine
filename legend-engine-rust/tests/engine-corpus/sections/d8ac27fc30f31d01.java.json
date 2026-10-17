@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "chain::source::S_Firm", "chain::source::S_Address", "chain::source::S_Division", "chain::source::S_Location", "chain::source::S_Team", "chain::source::S_Terms", "chain::source::S_RepoTerms", "chain::source::S_Collateral", "chain::source::S_Identifier" ]
+    },
+    "name" : "FirmBinding",
+    "package" : "chain::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 147,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 133
+    }
+  } ],
+  "imports" : [ ]
+}

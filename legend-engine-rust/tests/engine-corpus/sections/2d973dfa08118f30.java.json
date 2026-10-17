@@ -1,0 +1,225 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "Context 1",
+      "id" : "2",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 40
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 40
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 40
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 53,
+                        "endLine" : 40,
+                        "sourceId" : "",
+                        "startColumn" : 52,
+                        "startLine" : 40
+                      }
+                    } ],
+                    "property" : "cases",
+                    "sourceInformation" : {
+                      "endColumn" : 59,
+                      "endLine" : 40,
+                      "sourceId" : "",
+                      "startColumn" : 55,
+                      "startLine" : 40
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 51,
+                    "startLine" : 40
+                  }
+                },
+                "name" : "Cases",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 40
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 70,
+                        "endLine" : 40,
+                        "sourceId" : "",
+                        "startColumn" : 69,
+                        "startLine" : 40
+                      }
+                    } ],
+                    "property" : "fips",
+                    "sourceInformation" : {
+                      "endColumn" : 75,
+                      "endLine" : 40,
+                      "sourceId" : "",
+                      "startColumn" : 72,
+                      "startLine" : 40
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 40,
+                    "sourceId" : "",
+                    "startColumn" : 68,
+                    "startLine" : 40
+                  }
+                },
+                "name" : "Fips",
+                "sourceInformation" : {
+                  "endColumn" : 75,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 62,
+                  "startLine" : 40
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 40
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 40
+        }
+      },
+      "sampleValues" : {
+        "columns" : [ "Cases", "Fips" ],
+        "paths" : [ ],
+        "rows" : [ {
+          "values" : [ "10", "A" ]
+        }, {
+          "values" : [ "25", "BC" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 43
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      },
+      "title" : "Template 2"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 31
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 30
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 28
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

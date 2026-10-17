@@ -1,0 +1,14 @@
+
+Elasticsearch7ClusterConnection import::store::clusterDetails::authentication::AuthenticationDemo::UserPassword::username::password::ApiKey::location::keyName::value::EncryptedPrivateKey::userName::privateKey::passphrase::GCPWIFWithAWSIdP::serviceAccountEmail::AWSIdP::idP::region::accountId::role::GCPWorkload::workload::projectNumber::poolId::providerId::PropertiesFileSecret::propertyName::EnvironmentSecret::envVariableName::SystemPropertiesSecret::systemPropertyName::AWSSecretsManagerSecret::secretId::versionId::versionStage::Static::accessKeyId::secretAccessKey::Default::awsCredentials::STSAssumeRole::roleArn::roleSessionName::Kerberos::psk
+{
+  store: test::esStore;
+  clusterDetails: # URL { http://dummyurl.com:1234/api }#;
+  authentication: # UserPassword {
+    username: 'hello_user';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'sys.prop.name';
+    };
+  }#;
+}
+

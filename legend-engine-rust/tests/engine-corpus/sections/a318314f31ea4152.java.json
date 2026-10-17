@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 59,
+        "endLine" : 18,
+        "sourceId" : "mappingFunction/temporalEmployees.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "TemporalEmployeeTable" ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 18,
+          "sourceId" : "mappingFunction/temporalEmployees.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        }
+      }
+    } ],
+    "name" : "temporalEmployees__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 98,
+          "endLine" : 16,
+          "sourceId" : "mappingFunction/temporalEmployees.pure",
+          "startColumn" : 53,
+          "startLine" : 16
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 16,
+            "sourceId" : "mappingFunction/temporalEmployees.pure",
+            "startColumn" : 95,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "mappingFunction/temporalEmployees.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   h(){test::A.all()->projectWithColumnSubset([a|$a.xname], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+}

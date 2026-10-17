@@ -1,0 +1,7 @@
+
+Database test::db
+(
+Table ORDERS (
+      clientId BIGINT(1)
+)
+)

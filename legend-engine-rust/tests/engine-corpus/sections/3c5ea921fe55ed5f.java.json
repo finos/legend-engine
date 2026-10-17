@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token ']'. Valid alternatives: ['Mapping', 'import', 'include', 'MappingTests', 'extends', 'function', 'data', 'assert', 'doc', 'type', 'testSuites', 'asserts', 'tests', 'query', 'all', 'let', 'allVersions', 'allVersionsInRange', 'toBytes']",
+    "sourceInformation" : {
+      "endColumn" : 30,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 30,
+      "startLine" : 4
+    }
+  }
+}

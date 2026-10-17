@@ -1,0 +1,12 @@
+
+Data demo::data::SalesData
+{
+  Relational
+  #{
+    default.SalesTable:
+      'id,salesPerson,amount\n' +
+      '1,John,10\n' +
+      '2,John,20\n' +
+      '3,Jane,5\n';
+  }#
+}

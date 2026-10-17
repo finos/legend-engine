@@ -1,0 +1,20 @@
+
+Binding demo::externalFormat::flatdata::bloomberg::singleFile::binding::BloombergSingleFileBinding
+{
+  schemaSet: demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet::BloombergSingleFileSchemaSet;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    demo::externalFormat::flatdata::bloomberg::singleFile::models::FltCpnHistRecordRecord
+  ];
+}
+
+SchemaSet demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet::BloombergSingleFileSchemaSet
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: 'default.flatdata';
+      content: 'section FltCpnHistRecordRecord: BloombergData\n{\n  filter: \'DATA=FLT_CPN_HIST\';\n\n  Record\n  {\n    SECURITY: STRING;\n    ERROR_COUNT: INTEGER;\n    FIELD_COUNT: INTEGER;\n    ID_BB_UNIQUE: STRING;\n    ID_BB_COMPANY: INTEGER;\n    ID_BB_SECURITY: INTEGER;\n    ID_BB_GLOBAL: STRING;\n    ID_ISIN: STRING(optional);\n    ID_BB_SEC_NUM_DES: STRING(optional);\n    FEED_SOURCE: STRING(optional);\n    FLT_CPN_HIST_DT: DATE;\n    FLT_CPN_HIST_RT: DECIMAL(optional);\n  }\n}';
+    }
+  ];
+}

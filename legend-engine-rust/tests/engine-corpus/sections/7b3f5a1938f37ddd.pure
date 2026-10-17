@@ -1,0 +1,14 @@
+
+Enum <<st.test>> {doc.doc = 'bla'} myEnum
+{
+  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} a,
+  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} b,
+  c
+}
+
+Enum <<st.test>> {doc.doc = 'bla'} zz::MyOther
+{
+  e,
+  g,
+  r
+}

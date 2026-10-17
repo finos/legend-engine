@@ -1,0 +1,80 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: [ ID ]
+    deduplication: None;
+    datasetType: Delta
+    {
+      actionIndicator: None;
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: Bitemporal
+    {
+      processingDimension: BatchId
+      {
+        batchIdIn: BATCH_IN;
+        batchIdOut: BATCH_OUT;
+       }
+      sourceDerivedDimension: DateTime
+      {
+        dateTimeStart: FROM_Z;
+        dateTimeEnd: THRU_Z;
+        sourceFields: StartAndEnd
+        {
+           startField: SOURCE_FROM;
+           endField: SOURCE_THROUGH;
+        }
+      }
+    }
+  }#
+  ];
+  tests:
+  [
+   test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "AMOUNT":100, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0"},{"ID":2, "AMOUNT":200, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0"},{"ID":3, "AMOUNT":400, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "AMOUNT":100, "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0", "BATCH_IN":1, "BATCH_OUT":999999999},{"ID":2, "AMOUNT":200, "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0", "BATCH_IN":1, "BATCH_OUT":999999999},{"ID":3, "AMOUNT":400, "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0", "BATCH_IN":1, "BATCH_OUT":999999999}]';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]
+}

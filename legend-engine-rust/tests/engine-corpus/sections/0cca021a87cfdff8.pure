@@ -1,0 +1,10 @@
+
+RelationalDatabaseConnection demo::connection::FirmH2Connection
+{
+  store: demo::store::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,16 @@
+
+Data data::RelationalData
+{
+  Relation
+  #{
+    default.PersonTable:
+      id,firstName,lastName
+      1,I'm John,"Doe, Jr";
+  }#
+store::TestDB:
+  Relation
+  #{
+    default.PersonTable:
+      id,firstName,lastName
+      1,John,Doe;  }#;
+}

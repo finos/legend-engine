@@ -1,0 +1,8 @@
+
+function test::multiExpressions(): String[0..1]
+{
+  if(true, {|
+let test = 'test';
+$test;
+}, |'fgh')
+}

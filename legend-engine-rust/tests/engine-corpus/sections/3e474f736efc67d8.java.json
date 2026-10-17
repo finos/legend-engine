@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "test::B",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 47
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 45
+      },
+      "url" : "executor:default"
+    },
+    "name" : "connection",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 45
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,16 @@
+
+Enum my::EmployeeType
+{
+  CONTRACT,
+  FULL_TIME
+}
+Class my::PersonWithEmployeeType
+{
+  firstName: String[1];
+  age: Integer[1];
+  employeeType: my::EmployeeType[1];
+}
+function my::personWithEnumFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], EMPLOYEE_TYPE:String[1])>);
+}

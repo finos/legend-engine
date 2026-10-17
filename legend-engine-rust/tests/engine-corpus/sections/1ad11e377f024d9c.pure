@@ -1,0 +1,14 @@
+
+SchemaSet test::SchemaSet
+{
+  format: JSON;
+  schemas: [ { location: 'test/Simple/Person.json';
+               content: '{\n  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n  "title": "test::Simple::Person",\n  "type": "object",\n  "properties":   {\n    "firstName":     {\n      "type": "string"\n    },\n    "lastName":     {\n      "type": "string"\n    },\n    "middleName":     {\n      "type": "string"\n    },\n    "age":     {\n      "type": "integer"\n    },\n    "firm":     {\n      "$ref": "#\\/definitions\\/test::Simple::Firm"\n    }\n  },\n  "required": [\n"firstName",\n"lastName",\n"firm"\n  ],\n  "definitions":   {\n    "test::Simple::Firm":     {\n      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n      "title": "test::Simple::Firm",\n      "type": "object",\n      "properties":       {\n        "legalName":         {\n          "type": "string"\n        }\n      },\n      "required": [\n"legalName"\n      ]\n    }\n  }\n}\n'; } ];
+}
+
+Binding test::Binding
+{
+  schemaSet: test::SchemaSet;
+  contentType: 'application/json';
+  modelIncludes: [ test::Simple::Person, test::Simple::Firm ];
+}

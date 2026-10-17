@@ -1,0 +1,6 @@
+
+Binding test::gen::TestBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [ test::firm::model::Shift ];
+}

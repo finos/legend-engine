@@ -1,0 +1,22 @@
+
+Mapping simple::simpleRelationalMappingInc
+(
+  simple::Person[simple_Person]: Relational
+  {
+    ~mainTable [simple::dbInc]personTable
+    firstName: [simple::dbInc]personTable.FIRSTNAME,
+    lastName: [simple::dbInc]personTable.LASTNAME,
+    age: [simple::dbInc]personTable.AGE
+  }
+  simple::Firm[simple_Firm]: Relational
+  {
+    ~mainTable [simple::dbInc]firmTable
+    legalName: [simple::dbInc]firmTable.LEGALNAME,
+    employees: [simple::dbInc]@Firm_Person
+  }
+
+  simple::GeographicEntityType: EnumerationMapping GE
+  {
+    CITY: [1]
+  }
+)

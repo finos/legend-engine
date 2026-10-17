@@ -1,0 +1,119 @@
+{
+  "elements" : [ {
+    "_type" : "elasticsearch7Store",
+    "includedStores" : [ ],
+    "indices" : [ {
+      "indexName" : "index1",
+      "properties" : [ {
+        "property" : {
+          "keyword" : {
+            "_pure_protocol_type" : "keywordProperty",
+            "_pure_protocol_type" : "keywordProperty",
+            "type" : "keyword"
+          }
+        },
+        "propertyName" : "prop1"
+      }, {
+        "property" : {
+          "text" : {
+            "_pure_protocol_type" : "textProperty",
+            "_pure_protocol_type" : "textProperty",
+            "type" : "text"
+          }
+        },
+        "propertyName" : "prop2"
+      }, {
+        "property" : {
+          "date" : {
+            "_pure_protocol_type" : "dateProperty",
+            "_pure_protocol_type" : "dateProperty",
+            "type" : "date"
+          }
+        },
+        "propertyName" : "prop3"
+      }, {
+        "property" : {
+          "_short" : {
+            "_pure_protocol_type" : "shortNumberProperty",
+            "_pure_protocol_type" : "shortNumberProperty",
+            "type" : "short"
+          }
+        },
+        "propertyName" : "prop4"
+      }, {
+        "property" : {
+          "_byte" : {
+            "_pure_protocol_type" : "byteNumberProperty",
+            "_pure_protocol_type" : "byteNumberProperty",
+            "type" : "byte"
+          }
+        },
+        "propertyName" : "prop5"
+      }, {
+        "property" : {
+          "integer" : {
+            "_pure_protocol_type" : "integerNumberProperty",
+            "_pure_protocol_type" : "integerNumberProperty",
+            "type" : "integer"
+          }
+        },
+        "propertyName" : "prop6"
+      }, {
+        "property" : {
+          "_long" : {
+            "_pure_protocol_type" : "longNumberProperty",
+            "_pure_protocol_type" : "longNumberProperty",
+            "type" : "long"
+          }
+        },
+        "propertyName" : "prop7"
+      }, {
+        "property" : {
+          "_float" : {
+            "_pure_protocol_type" : "floatNumberProperty",
+            "_pure_protocol_type" : "floatNumberProperty",
+            "type" : "float"
+          }
+        },
+        "propertyName" : "prop8"
+      }, {
+        "property" : {
+          "half_float" : {
+            "_pure_protocol_type" : "halfFloatNumberProperty",
+            "_pure_protocol_type" : "halfFloatNumberProperty",
+            "type" : "half_float"
+          }
+        },
+        "propertyName" : "prop9"
+      }, {
+        "property" : {
+          "_double" : {
+            "_pure_protocol_type" : "doubleNumberProperty",
+            "_pure_protocol_type" : "doubleNumberProperty",
+            "type" : "double"
+          }
+        },
+        "propertyName" : "prop10"
+      }, {
+        "property" : {
+          "_boolean" : {
+            "_pure_protocol_type" : "booleanProperty",
+            "_pure_protocol_type" : "booleanProperty",
+            "type" : "boolean"
+          }
+        },
+        "propertyName" : "prop11"
+      } ]
+    } ],
+    "name" : "Store",
+    "package" : "abc::abc",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

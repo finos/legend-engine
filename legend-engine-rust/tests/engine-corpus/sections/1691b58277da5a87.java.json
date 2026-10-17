@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "TestService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "serializationFormat",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 46
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 46
+            }
+          }
+        } ],
+        "path" : "/testService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::TestBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 48
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 40
+        }
+      } ],
+      "id" : "TestServices",
+      "path" : "/testServices",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testServiceStoreCompilationWithSingleServiceGroup",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  } ]
+}

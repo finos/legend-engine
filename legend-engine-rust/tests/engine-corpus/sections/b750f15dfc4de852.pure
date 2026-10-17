@@ -1,0 +1,10 @@
+
+Profile test::SampleProfile
+{
+  stereotypes: [important];
+  tags: [doc];
+}
+
+Class model::Person {
+name: String[1];
+}

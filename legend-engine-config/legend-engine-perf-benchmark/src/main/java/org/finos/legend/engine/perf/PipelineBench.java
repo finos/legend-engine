@@ -34,7 +34,6 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
@@ -55,6 +54,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPla
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 import org.h2.tools.Server;
 
 /**
@@ -65,15 +65,20 @@ import org.h2.tools.Server;
  * The first iteration of a run is the cold one: it pays class loading and JIT for the generated
  * Pure code base. Steady-state cost is the median of the iterations after warmup.
  *
+ * With --rust the grammar is also parsed by the Rust parser (parseRust), and the Rust side of that
+ * parse - the native call, without reading its JSON into protocol objects - is timed on its own
+ * (rustNative). See GrammarParsers for what keeps those phases honest.
+ *
  * See README.md for the workload matrix and the canary ratios worth watching in CI.
  */
 public class PipelineBench
 {
-    private static final String[] PHASES = {"parse", "compile", "lambda", "extensions", "planPure", "javaBind", "serialize", "deserialize", "execute"};
+    private static final String[] PHASES = {"parse", "parseRust", "rustNative", "compile", "lambda", "extensions", "planPure", "javaBind", "serialize", "deserialize", "execute"};
     private static final String CLIENT_VERSION = "vX_X_X";
 
     private final BenchConfig config;
     private final String grammar;
+    private final String rustSkipped;
     private PlanExecutor planExecutor;
     private List<Map<String, Object>> rows = new ArrayList<>();
     private boolean verbose = true;
@@ -82,10 +87,20 @@ public class PipelineBench
     {
         this.config = config;
         this.grammar = config.fileList == null ? this.generateGrammar() : this.readGrammar();
+        this.rustSkipped = config.rust ? GrammarParsers.whyRustCannotParse(this.grammar) : null;
     }
 
     public static void main(String[] args) throws Exception
     {
+        // Before anything loads the Rust parser, which reads its library's location once. A flag
+        // rather than -D keeps the path out of the jvmArgs a results file records.
+        for (int i = 0; i + 1 < args.length; i++)
+        {
+            if (args[i].equals("--rustlib"))
+            {
+                System.setProperty(NativeGrammarParser.LIBRARY_PATH_PROPERTY, args[i + 1]);
+            }
+        }
         for (String arg : args)
         {
             if (arg.equals("--suite"))
@@ -153,7 +168,7 @@ public class PipelineBench
             for (int i = 0; i < this.config.warmup + this.config.iterations; i++)
             {
                 boolean warming = i < this.config.warmup;
-                Map<String, Object> row = this.runOnce();
+                Map<String, Object> row = this.runOnce(i == 0);
                 row.put("iteration", warming ? -1 : i - this.config.warmup);
                 if (i == 0)
                 {
@@ -183,6 +198,10 @@ public class PipelineBench
         result.put("config", this.config.toMap());
         result.put("iterations", this.config.iterations);
         result.put("warmup", this.config.warmup);
+        if (this.config.rust)
+        {
+            result.put("rustParser", this.rustSkipped == null ? "measured" : "skipped: " + this.rustSkipped);
+        }
         result.put("coldMs", phaseValues(cold));
         result.put("warmMedianMs", medians(measured));
         result.put("planJsonChars", cold == null ? null : cold.get("planJsonChars"));
@@ -193,6 +212,10 @@ public class PipelineBench
     public void run() throws Exception
     {
         System.out.println(this.config.describe() + " grammarChars=" + this.grammar.length());
+        if (this.rustSkipped != null)
+        {
+            System.out.println("Rust phases skipped: " + this.rustSkipped);
+        }
         Map<String, Object> result = this.measure();
         System.out.println("--- medians in ms over " + this.rows.size() + " measured iterations ---");
         Map<String, Object> warm = asMap(result.get("warmMedianMs"));
@@ -254,15 +277,24 @@ public class PipelineBench
         return value == null ? new LinkedHashMap<>() : (Map<String, Object>) value;
     }
 
-    private Map<String, Object> runOnce()
+    private Map<String, Object> runOnce(boolean first)
     {
         Map<String, Object> row = new LinkedHashMap<>();
 
         long t0 = System.nanoTime();
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(this.grammar);
-        long t1 = System.nanoTime();
-        row.put("parse", millis(t0, t1));
+        PureModelContextData contextData = GrammarParsers.java().parseModel(this.grammar);
+        row.put("parse", millis(t0, System.nanoTime()));
 
+        if (this.config.rust && this.rustSkipped == null)
+        {
+            this.parseWithRust(row, contextData, first);
+        }
+        if (this.config.parseOnly)
+        {
+            return row;
+        }
+
+        long t1 = System.nanoTime();
         PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
         long t2 = System.nanoTime();
         row.put("compile", millis(t1, t2));
@@ -314,6 +346,21 @@ public class PipelineBench
             row.put("resultChars", output.length());
         }
         return row;
+    }
+
+    private void parseWithRust(Map<String, Object> row, PureModelContextData javaParsed, boolean first)
+    {
+        long t0 = System.nanoTime();
+        PureModelContextData rustParsed = GrammarParsers.withRust(() -> GrammarParsers.rust().parseModel(this.grammar));
+        row.put("parseRust", millis(t0, System.nanoTime()));
+        if (first)
+        {
+            GrammarParsers.checkSameElements(javaParsed, rustParsed);
+        }
+
+        long t1 = System.nanoTime();
+        NativeGrammarParser.parseModel(this.grammar, "", 0, 0);
+        row.put("rustNative", millis(t1, System.nanoTime()));
     }
 
     private void writeCsv(List<Map<String, Object>> rows) throws Exception

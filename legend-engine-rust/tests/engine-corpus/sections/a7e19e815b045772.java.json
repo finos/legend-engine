@@ -1,0 +1,293 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "RankedEmployee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 21,
+            "sourceId" : "mapping/windowFunctionMapping.pure",
+            "startColumn" : 9,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "rank",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 21,
+        "sourceId" : "mapping/windowFunctionMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "mapping/windowFunctionMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::relation::domain::Employee",
+      "sourceInformation" : {
+        "endColumn" : 85,
+        "endLine" : 19,
+        "sourceId" : "mapping/windowFunctionMapping.pure",
+        "startColumn" : 54,
+        "startLine" : 19
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "extend",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 26,
+          "sourceId" : "mapping/windowFunctionMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 26
+        },
+        "type" : ">",
+        "value" : {
+          "path" : [ "demo::relation::db::EmployeeDB", "EmployeeTable" ],
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 26,
+            "sourceId" : "mapping/windowFunctionMapping.pure",
+            "startColumn" : 3,
+            "startLine" : 26
+          }
+        }
+      }, {
+        "_type" : "func",
+        "function" : "over",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 27,
+            "sourceId" : "mapping/windowFunctionMapping.pure",
+            "startColumn" : 20,
+            "startLine" : 27
+          },
+          "type" : "colSpec",
+          "value" : {
+            "name" : "FIRM_ID",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 27,
+              "sourceId" : "mapping/windowFunctionMapping.pure",
+              "startColumn" : 20,
+              "startLine" : 27
+            }
+          }
+        }, {
+          "_type" : "func",
+          "function" : "ascending",
+          "parameters" : [ {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 27,
+              "sourceId" : "mapping/windowFunctionMapping.pure",
+              "startColumn" : 30,
+              "startLine" : 27
+            },
+            "type" : "colSpec",
+            "value" : {
+              "name" : "SALARY",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 27,
+                "sourceId" : "mapping/windowFunctionMapping.pure",
+                "startColumn" : 30,
+                "startLine" : 27
+              }
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 27,
+            "sourceId" : "mapping/windowFunctionMapping.pure",
+            "startColumn" : 38,
+            "startLine" : 27
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 27,
+          "sourceId" : "mapping/windowFunctionMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 27,
+          "sourceId" : "mapping/windowFunctionMapping.pure",
+          "startColumn" : 53,
+          "startLine" : 27
+        },
+        "type" : "colSpecArray",
+        "value" : {
+          "colSpecs" : [ {
+            "function1" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "rank",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/windowFunctionMapping.pure",
+                    "startColumn" : 71,
+                    "startLine" : 27
+                  }
+                }, {
+                  "_type" : "var",
+                  "name" : "w",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/windowFunctionMapping.pure",
+                    "startColumn" : 80,
+                    "startLine" : 27
+                  }
+                }, {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/windowFunctionMapping.pure",
+                    "startColumn" : 84,
+                    "startLine" : 27
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/windowFunctionMapping.pure",
+                  "startColumn" : 75,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              }, {
+                "_type" : "var",
+                "name" : "w"
+              }, {
+                "_type" : "var",
+                "name" : "r"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 27,
+                "sourceId" : "mapping/windowFunctionMapping.pure",
+                "startColumn" : 69,
+                "startLine" : 27
+              }
+            },
+            "name" : "RANK",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 27,
+              "sourceId" : "mapping/windowFunctionMapping.pure",
+              "startColumn" : 54,
+              "startLine" : 27
+            }
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 27,
+        "sourceId" : "mapping/windowFunctionMapping.pure",
+        "startColumn" : 7,
+        "startLine" : 27
+      }
+    } ],
+    "name" : "rankedEmployees__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 24,
+          "sourceId" : "mapping/windowFunctionMapping.pure",
+          "startColumn" : 51,
+          "startLine" : 24
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 24,
+            "sourceId" : "mapping/windowFunctionMapping.pure",
+            "startColumn" : 93,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "mapping/windowFunctionMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

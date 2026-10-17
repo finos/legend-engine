@@ -1,0 +1,15 @@
+
+ServiceStore test::testServiceStoreGrammarWithSingleService
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      "abc.xyz" : String ( location = query )
+    );
+    response : ExampleClass <- tests::store::exampleBinding;
+    security : [];
+  )
+)

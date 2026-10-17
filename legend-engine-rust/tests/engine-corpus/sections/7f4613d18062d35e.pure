@@ -1,0 +1,16 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Firm.all()       ->filter(f | $f.name == 'FirmA')
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Firm {
+               name,
+               employeesCount
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::Firm {
+               name,
+               employeesCount
+           }
+        }#)};
+}

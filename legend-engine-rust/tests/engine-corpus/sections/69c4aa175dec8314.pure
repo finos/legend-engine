@@ -1,0 +1,40 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: '/showcase/binding';
+  documentation: 'Showcase service with binding';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: data: Byte[*]|demo::Address->internalize(demo::InternalizeBinding, $data)->externalize(demo::InternalizeBinding, #{demo::Address{street}}#);
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      tests:
+      [
+        test1:
+        {
+          parameters:
+          [
+            data = toBytes('[{"street":"street A"}]')
+          ]
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"street":"street A"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

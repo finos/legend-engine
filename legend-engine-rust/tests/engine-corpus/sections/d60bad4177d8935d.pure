@@ -1,0 +1,15 @@
+
+Database my::DB
+(
+  Table T
+  (
+    ID INTEGER PRIMARY KEY,
+    DOC SEMISTRUCTURED,
+    NAME VARCHAR(100)
+  )
+  View V
+  (
+    ID: T.ID PRIMARY KEY,
+    N: array_size(array_filter(T.NAME, d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))
+  )
+)

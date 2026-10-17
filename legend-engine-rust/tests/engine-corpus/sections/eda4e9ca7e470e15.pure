@@ -1,0 +1,7 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  type: H2;
+  store: model::firm::Person;
+}
+

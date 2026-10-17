@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "functionJar",
+    "actions" : [ ],
+    "documentation" : "sass",
+    "function" : {
+      "path" : "a::f():String[1]",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 4
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "toBytes",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "stereotypes::tags::FunctionJar::import::ownership::Deployment::identifier::activationConfiguration::documentation::function::all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

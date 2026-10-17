@@ -1,0 +1,15 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: '/showcase/binding';
+  documentation: 'Showcase service with binding';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: data: String[1]|demo::Address->internalize(demo::InternalizeBinding, $data)->externalize(demo::InternalizeBinding, #{demo::Address{street}}#);
+  }
+  testSuites:
+  [
+
+  ]
+}

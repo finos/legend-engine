@@ -1,0 +1,22 @@
+
+Class test::BaseEntity
+{
+   id: Integer[1];
+}
+
+Class test::SpecificEntity extends test::BaseEntity
+{
+   name: String[1];
+}
+
+Class test::Order
+{
+   entityId: Integer[1];
+   description: String[1];
+}
+
+Association test::BaseEntityOrder
+{
+   entity: test::BaseEntity[1];
+   orders: test::Order[*];
+}

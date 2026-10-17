@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   names : String[*];
+   prop() {['a','b']} : String[*];
+}

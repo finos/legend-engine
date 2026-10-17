@@ -1,0 +1,10 @@
+
+Binding test::TestBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::A,
+    test::model::B,
+    test::model::C
+  ];
+}

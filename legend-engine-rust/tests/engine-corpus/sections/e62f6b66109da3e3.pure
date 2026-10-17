@@ -1,0 +1,11 @@
+
+Data demo::ssc::data::PersonData
+{
+  Relation
+  #{
+    default.PERSON_TABLE:
+      ID,FIRST_NAME,FIRM_DETAILS
+      1,Alice,"{""legalName"":""Firm X"",""otherNames"":[""FX"",""FirmTen""],""addresses"":[{""name"":""HQ"",""lines"":[{""detail"":""L1""},{""detail"":""L2""}]},{""name"":""Annex"",""lines"":[{""detail"":""L3""}]}]}"
+      2,Bob,"{""legalName"":""Firm A"",""otherNames"":[""FA""],""addresses"":[{""name"":""Main"",""lines"":[{""detail"":""L9""}]}]}";
+  }#
+}

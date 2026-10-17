@@ -1,0 +1,11 @@
+
+function my::Hello(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}
+{
+  myTest | Hello('John') => Relation
+  #{
+    id, firstName, lastName;
+  }#;
+}

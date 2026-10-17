@@ -1,0 +1,54 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "string",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 1
+    },
+    "value" : "ok"
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "genericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "multiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "name" : "s",
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 17,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 13,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,327 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Employee cards mapped model-to-model over relation-function classes spread across two databases.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::m2m::EmployeeCard",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 94,
+                  "sourceId" : "chain/modelChain.pure",
+                  "startColumn" : 13,
+                  "startLine" : 94
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 94,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 46,
+                "startLine" : 94
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 94,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 67,
+                "startLine" : 94
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "demo::relation::m2m::EmployeeCard",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 94,
+                  "sourceId" : "chain/modelChain.pure",
+                  "startColumn" : 67,
+                  "startLine" : 94
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 104,
+                    "endLine" : 94,
+                    "sourceId" : "chain/modelChain.pure",
+                    "startColumn" : 101,
+                    "startLine" : 94
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "employerName",
+                  "sourceInformation" : {
+                    "endColumn" : 118,
+                    "endLine" : 94,
+                    "sourceId" : "chain/modelChain.pure",
+                    "startColumn" : 107,
+                    "startLine" : 94
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 94,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 54,
+              "startLine" : 94
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 169,
+              "endLine" : 94,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 137,
+              "startLine" : 94
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::relation::m2m::EmployeeCard",
+              "sourceInformation" : {
+                "endColumn" : 169,
+                "endLine" : 94,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 137,
+                "startLine" : 94
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 174,
+                  "endLine" : 94,
+                  "sourceId" : "chain/modelChain.pure",
+                  "startColumn" : 171,
+                  "startLine" : 94
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "employerName",
+                "sourceInformation" : {
+                  "endColumn" : 188,
+                  "endLine" : 94,
+                  "sourceId" : "chain/modelChain.pure",
+                  "startColumn" : 177,
+                  "startLine" : 94
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 94,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 125,
+            "startLine" : 94
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 192,
+          "endLine" : 94,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 12,
+          "startLine" : 94
+        }
+      },
+      "mapping" : "demo::relation::mapping::EmployeeCardChainMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 95,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 14,
+        "startLine" : 95
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::runtime::EmployeeCardChainRuntime",
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 96,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 14,
+          "startLine" : 96
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 97,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 14,
+        "startLine" : 92
+      }
+    },
+    "name" : "EmployeeCardChainService",
+    "owners" : [ ],
+    "package" : "demo::relation::service",
+    "pattern" : "/api/relation/employeeCards",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 140,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 87
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "employeeCardSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 138,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 5,
+        "startLine" : 100
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 110,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 13,
+                "startLine" : 107
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 110,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 13,
+              "startLine" : 107
+            }
+          },
+          "id" : "employeeH2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 110,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 11,
+            "startLine" : 106
+          }
+        }, {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::FirmRegistryData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 115,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 13,
+                "startLine" : 112
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 115,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 13,
+              "startLine" : 112
+            }
+          },
+          "id" : "firmRegistryH2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 115,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 11,
+            "startLine" : 111
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 117,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 7,
+          "startLine" : 102
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"name\":\"Alice\",\"employerName\":\"Acme Holdings\"},{\"name\":\"Bob\",\"employerName\":\"Beta Partners\"},{\"name\":\"Carol\",\"employerName\":\"Acme Holdings\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 133,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 19,
+              "startLine" : 129
+            }
+          },
+          "id" : "shouldResolveEmployerNameAcrossDatabasesThroughChain",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 134,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 15,
+            "startLine" : 126
+          }
+        } ],
+        "id" : "allEmployeeCards",
+        "keys" : [ ],
+        "serializationFormat" : "PURE",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 136,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 9,
+          "startLine" : 120
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

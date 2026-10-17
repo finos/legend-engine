@@ -1,0 +1,5 @@
+
+ModelChainConnection test::connection
+{
+  mappings: [test::someMapping];
+}

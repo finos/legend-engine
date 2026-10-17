@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "TradingRuntime",
+    "package" : "demo::relation::dates::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 42,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "store" : {
+          "path" : "demo::relation::dates::store::TradingDB",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 39,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::relation::dates::connection::TradingConnection",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 41,
+              "sourceId" : "runtime/runtime.pure",
+              "startColumn" : 11,
+              "startLine" : 41
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 41,
+            "sourceId" : "runtime/runtime.pure",
+            "startColumn" : 7,
+            "startLine" : 41
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::relation::dates::TradingMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 35,
+          "sourceId" : "runtime/runtime.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 44,
+        "sourceId" : "runtime/runtime.pure",
+        "startColumn" : 1,
+        "startLine" : 31
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "runtime/runtime.pure",
+      "startColumn" : 1,
+      "startLine" : 31
+    }
+  } ],
+  "imports" : [ ]
+}

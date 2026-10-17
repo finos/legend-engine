@@ -1,0 +1,15 @@
+
+Database demo::store::ShapeSingleDB
+(
+  Table ShapeTable
+  (
+    id INTEGER PRIMARY KEY,
+    kind VARCHAR(20),
+    name VARCHAR(200),
+    radius INTEGER,
+    side INTEGER
+  )
+
+  Filter CircleFilter(ShapeTable.kind = 'circle')
+  Filter SquareFilter(ShapeTable.kind = 'square')
+)

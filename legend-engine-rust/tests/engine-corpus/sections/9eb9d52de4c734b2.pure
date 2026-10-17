@@ -1,0 +1,6 @@
+
+function withPath::f(s: Integer[1]): String[1]
+{
+  false || (true && false);
+  'a';
+}

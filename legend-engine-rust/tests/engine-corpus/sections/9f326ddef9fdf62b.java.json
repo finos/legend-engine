@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ProductID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Product",
+        "primaryKey" : [ "ProductID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 10
+        },
+        "tag" : {
+          "profile" : "meta::pure::profiles::doc",
+          "profileSourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 10
+          },
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 10
+          },
+          "value" : "unknown"
+        },
+        "value" : "Schema documentation"
+      } ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ]
+  } ]
+}

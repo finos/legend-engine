@@ -1,0 +1,16 @@
+{
+  "elements" : [ {
+    "_type" : "text",
+    "content" : "a more complex test. let's start. the guy said \"We are going to open source! \" \n Here we are in a new line",
+    "name" : "myText",
+    "package" : "meta::pure",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "type" : "STRING"
+  } ]
+}

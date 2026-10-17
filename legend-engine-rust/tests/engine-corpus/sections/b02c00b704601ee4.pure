@@ -1,0 +1,36 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+      testData:
+        DataspaceTestData
+        #{
+          com::test::aDifferentDataspace
+        }#;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'some title';
+  description: 'some description';
+  executables:
+  [
+    {
+      title: 'Executable 1';
+      description: 'description';
+      executable: model::MyExecutable;
+    },
+    {
+      id: 1;
+      title: 'Template 1';
+      description: 'description';
+      query: |model::Firm.all()->project([x|$x.id, x|$x.employees.firstName], ['Id', 'Employees/First Name']);
+      executionContextKey: 'Context 1';
+    }
+  ];
+}

@@ -1,0 +1,230 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "mapping::SomeClass",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "and",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "firm",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 6
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 58,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "person",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 64,
+                  "startLine" : 6
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 72,
+                "startLine" : 6
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "firm",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 84,
+                  "startLine" : 6
+                }
+              } ],
+              "property" : "name",
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 90,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "person",
+                "sourceInformation" : {
+                  "endColumn" : 104,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 98,
+                  "startLine" : 6
+                }
+              } ],
+              "property" : "firmName",
+              "sourceInformation" : {
+                "endColumn" : 113,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 106,
+                "startLine" : 6
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 6
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 6
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::Firm",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 6
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 6
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "test::Person",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 6
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "person",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 6
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 114,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 50,
+          "startLine" : 6
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "test",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

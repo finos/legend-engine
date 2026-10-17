@@ -1,0 +1,181 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::PersonWithAddress",
+      "id" : "personWithAddr",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::PersonWithAddress",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "source" : "personWithAddr",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::PersonWithAddress",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "source" : "personWithAddr",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "id" : "addressSet",
+        "property" : {
+          "class" : "my::PersonWithAddress",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "propertyMappings" : [ ],
+        "source" : "personWithAddr",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 27
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personWithAddressFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 24
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::FullAddress",
+      "id" : "addressSet",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "STREET",
+        "property" : {
+          "class" : "my::FullAddress",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "addressSet",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "CITY",
+        "property" : {
+          "class" : "my::FullAddress",
+          "property" : "city",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "addressSet",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personWithAddressFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 31
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

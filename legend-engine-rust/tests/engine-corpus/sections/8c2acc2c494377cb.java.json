@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'dataProcessingUnits' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 8
+    }
+  }
+}

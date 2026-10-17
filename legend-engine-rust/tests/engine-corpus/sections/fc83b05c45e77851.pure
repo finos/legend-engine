@@ -1,0 +1,22 @@
+
+Elasticsearch7Cluster abc::abc::Store
+{
+  indices: [
+    index1: {
+      properties: [
+        prop1: Object {
+          properties: [
+            nested1: Keyword,
+            nested2: Keyword,
+            nestedObject: Object {
+              properties: [
+                nested1: Integer
+              ];
+            }
+          ];
+        }
+      ];
+    }
+  ];
+}
+

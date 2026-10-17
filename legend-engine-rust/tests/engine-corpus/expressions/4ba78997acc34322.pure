@@ -1,0 +1,21 @@
+|test::Person.all()->filter(
+  f|$f.name->startsWith('ok') &&
+    (true || (3 == 4))
+)->groupBy(
+  [],
+  [
+    agg(
+      x|$x.lastName,
+      x|$x->distinct()->someFunc(
+        true,
+        'someString',
+        90
+      ) + $x.lastName
+    )
+  ],
+  ['LastName']
+)->distinct()->sort(
+  [
+    asc('LastName')
+  ]
+)->take(30)

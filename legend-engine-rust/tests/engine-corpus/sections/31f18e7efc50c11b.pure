@@ -1,0 +1,15 @@
+
+DataQualityValidation meta::external::dataquality::PersonDataQualityValidation
+{
+    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');
+    validationTree: $[
+     Person<ageMustBePositive, 'nameMust \r\nNotBeBlank'>{
+       lastName,
+       name,
+       addresses{
+         addressId
+       }
+     }
+    ]$;
+    filter: p:Person[1] | p.age >= 18;
+}

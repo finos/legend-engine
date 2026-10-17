@@ -1,0 +1,134 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeFilterMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~func demo::relation::func::activeEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    allActiveSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        activeOnly:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnActiveRows:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    aliceOnlySuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.firstName == 'Alice')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        queryFilterStacked:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnAliceOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    activeCountByTypeSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->project(~[type: x | $x.employeeType->toString(), name: x | $x.firstName])
+                  ->groupBy(~type, ~headcount: x | $x.name : y | $y->count())
+                  ->sort([~type->ascending()]);
+      tests:
+      [
+        oneActiveEmployeePerType:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldCountActiveEmployeesByType:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"type":"CONTRACT","headcount":1},{"type":"FULL_TIME","headcount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

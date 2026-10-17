@@ -1,0 +1,13 @@
+
+Class test::Dog
+{
+   name : String[*];
+}
+Class test::B
+{
+   pet: test::Dog[1];
+}
+Class test::C
+{
+   xza(s: test::B[1]){$s.pet.dogMissing + 'ok'}:String[1];
+}

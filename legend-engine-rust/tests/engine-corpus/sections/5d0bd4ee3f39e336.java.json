@@ -1,0 +1,515 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Demographics",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 59
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 59,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 59
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 60
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "state",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 60,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 61,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 57
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "COVIDData",
+    "originalMilestonedProperties" : [ ],
+    "package" : "domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 65,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 65
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 65,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 65
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 66
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "fips",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 66
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 67
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "date",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 67
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 68
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "caseType",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 68
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 69
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "cases",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 69
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 70
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "lastReportedFlag",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 70,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 70
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "domain::Demographics",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 71,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 71
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "demographics",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 71,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 71
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 72,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 63
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "from",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "project",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "domain::COVIDData",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 76,
+              "sourceId" : "",
+              "startColumn" : 4,
+              "startLine" : 76
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 76
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 76
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "function1" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 49,
+                      "endLine" : 76,
+                      "sourceId" : "",
+                      "startColumn" : 48,
+                      "startLine" : 76
+                    }
+                  } ],
+                  "property" : "cases",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 76,
+                    "sourceId" : "",
+                    "startColumn" : 51,
+                    "startLine" : 76
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 76,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 76
+                }
+              },
+              "name" : "Cases",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 76,
+                "sourceId" : "",
+                "startColumn" : 39,
+                "startLine" : 76
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 76
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 77
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 78
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 60,
+        "startLine" : 76
+      }
+    } ],
+    "name" : "COVIDData_QueryFunctionRelation__Relation_1_",
+    "package" : "domain",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 108,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 74
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "relationType",
+          "columns" : [ {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Float",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 74,
+                  "sourceId" : "",
+                  "startColumn" : 102,
+                  "startLine" : 74
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "Cases",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 74,
+              "sourceId" : "",
+              "startColumn" : 96,
+              "startLine" : 74
+            }
+          } ]
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 80,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 74
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

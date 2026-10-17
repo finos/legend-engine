@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->filter(x|#>{a::A.other}#->exists(o|$o.oname == $x.name))
+}

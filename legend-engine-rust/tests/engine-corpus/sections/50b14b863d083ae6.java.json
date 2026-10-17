@@ -1,0 +1,86 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 107,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 22
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "test::class2",
+            "classSourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 75,
+              "startLine" : 22
+            },
+            "sourceInformation" : {
+              "endColumn" : 104,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 22
+            },
+            "url" : "my_url"
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 106,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 22
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 15
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  } ],
+  "imports" : [ ]
+}

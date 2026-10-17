@@ -1,0 +1,100 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 7
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 7
+            },
+            "values" : [ {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 7
+              },
+              "value" : 1
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 23,
+                "startLine" : 7
+              },
+              "value" : 2
+            } ]
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "a",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

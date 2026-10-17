@@ -1,0 +1,37 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::class[1]|$src.prop1;
+    mapping: test::mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::connection,
+          id2: #{
+            JsonModelConnection
+            {
+              class: test::class2;
+              url: 'my_url';
+            }
+          }#
+        ]
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

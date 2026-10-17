@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "EntityDatabase",
+    "package" : "com::entity",
+    "schemas" : [ {
+      "name" : "Entity",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ENTITY_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        }, {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "LegalEntity",
+        "primaryKey" : [ "ENTITY_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "ENTITY_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ENTITY_ID",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 14
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "com::entity::EntityDatabase",
+              "mainTableDb" : "com::entity::EntityDatabase",
+              "schema" : "Entity",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 14
+              },
+              "table" : "LegalEntity"
+            },
+            "tableAlias" : "LegalEntity"
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          }
+        }, {
+          "name" : "name",
+          "operation" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 15
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "com::entity::EntityDatabase",
+              "mainTableDb" : "com::entity::EntityDatabase",
+              "schema" : "Entity",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 15
+              },
+              "table" : "LegalEntity"
+            },
+            "tableAlias" : "LegalEntity"
+          },
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 15
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "LegalEntity_View",
+        "primaryKey" : [ "ENTITY_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

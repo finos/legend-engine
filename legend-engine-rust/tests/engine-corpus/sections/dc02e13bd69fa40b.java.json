@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://127.0.0.1:55037",
+      "element" : "meta::external::store::service::showcase::store::ServiceStoreWithPostServices",
+      "elementSourceInformation" : {
+        "endColumn" : 91,
+        "endLine" : 356,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 356
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 358,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 354
+      }
+    },
+    "name" : "serviceStoreConnection",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 358,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 354
+    }
+  } ],
+  "imports" : [ ]
+}

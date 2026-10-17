@@ -1,0 +1,20 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: test::ModelClass;
+      transactionScope: ALL_TARGETS;
+    }
+  }
+}

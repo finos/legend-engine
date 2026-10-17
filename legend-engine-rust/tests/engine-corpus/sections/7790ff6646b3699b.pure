@@ -1,0 +1,12 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: {|let l = #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime); $l->select(~FIRSTNAME);};
+    validations: [
+      {
+         name: 'nonEmptyDataset';
+         description: 'dataset cannot be empty';
+         assertion: {rel|let isEmpty = $rel->assertRelationNotEmpty(); isEmpty;};
+      }
+    ];
+}

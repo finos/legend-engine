@@ -1,0 +1,16 @@
+
+Service test::firm::model::myService
+{
+  pattern: '/showcase/binding';
+  title: 'my Service';
+  documentation: 'Showcase service with binding';
+  autoActivateUpdates: false;
+  execution: Single
+  {
+    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding2, #{test::firm::model::Firm{name, ranking}}#);
+  }
+  testSuites:
+  [
+
+  ]
+}

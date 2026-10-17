@@ -1,0 +1,32 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ContractEmployee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "mapping/unionMilestoningGraphFetchMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::relation::domain::Employee",
+      "sourceInformation" : {
+        "endColumn" : 87,
+        "endLine" : 17,
+        "sourceId" : "mapping/unionMilestoningGraphFetchMapping.pure",
+        "startColumn" : 56,
+        "startLine" : 17
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

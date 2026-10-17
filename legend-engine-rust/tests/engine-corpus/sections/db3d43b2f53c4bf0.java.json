@@ -1,0 +1,73 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "indexToTDS",
+      "parameters" : [ {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "abc::abc::Store",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 48
+        }
+      }, {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 48
+        },
+        "value" : "index1"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 48
+      }
+    } ],
+    "name" : "indexToTdsFunction__TabularDataSet_1_",
+    "package" : "abc::abc",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "TabularDataSet",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 47
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 40,
+      "endLine" : 48,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 47
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

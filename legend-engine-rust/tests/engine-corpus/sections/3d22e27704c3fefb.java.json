@@ -1,0 +1,86 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "firstName",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "jsonColumn",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 8
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

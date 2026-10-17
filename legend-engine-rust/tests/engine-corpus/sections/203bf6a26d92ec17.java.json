@@ -1,0 +1,398 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "meta::dataquality::Person",
+      "classSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 46
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRSTNAME",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 48
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::dataquality::db",
+            "mainTableDb" : "meta::dataquality::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 48
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 48
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 49
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AGE",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 49
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::dataquality::db",
+            "mainTableDb" : "meta::dataquality::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 49,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 49
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 49
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Person",
+          "property" : "addresses",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "meta::dataquality::db",
+            "name" : "Address_Person",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 50,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 50
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 50
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 50
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 46
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "meta::dataquality::Address",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Address",
+          "property" : "addressId",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 54
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 54
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::dataquality::db",
+            "mainTableDb" : "meta::dataquality::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 54,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 54
+            },
+            "table" : "addressTable"
+          },
+          "tableAlias" : "addressTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 54
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Address",
+          "property" : "location",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 55
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "meta::dataquality::db",
+            "name" : "Address_Location",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 55
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 55
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 55
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "meta::dataquality::Location",
+      "classSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 57
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Location",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 59
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "STREET",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 59
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::dataquality::db",
+            "mainTableDb" : "meta::dataquality::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 59
+            },
+            "table" : "locationTable"
+          },
+          "tableAlias" : "locationTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 59
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::dataquality::Location",
+          "property" : "locality",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LOCALITY",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 60
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::dataquality::db",
+            "mainTableDb" : "meta::dataquality::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 60
+            },
+            "table" : "locationTable"
+          },
+          "tableAlias" : "locationTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 60
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 57
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "dataqualitymappings",
+    "package" : "meta::dataquality",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 44
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,23 @@
+
+import meta::external::store::mongodb::showcase::domain::*;
+
+Class meta::external::store::mongodb::showcase::domain::Person
+{
+    firstName  : String[1];
+    lastName   : String[1];
+    middleName : String[0..1];
+    firm       : Firm[0..1];
+    _id        : String[0..1];
+}
+
+Class meta::external::store::mongodb::showcase::domain::Firm
+{
+    firmName : String[1];
+    firmId   : Integer[1];
+    address  : Address[*];
+}
+
+Class meta::external::store::mongodb::showcase::domain::Address
+{
+    street : String[1];
+}

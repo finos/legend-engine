@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Element has both documentation and an explicit doc.doc tagged value. Use one.",
+    "sourceInformation" : {
+      "endColumn" : 41,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 8,
+      "startLine" : 4
+    }
+  }
+}

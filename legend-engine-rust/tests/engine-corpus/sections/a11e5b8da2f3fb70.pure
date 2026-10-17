@@ -1,0 +1,18 @@
+
+'''
+A person in the system.
+Identity is established by name.
+'''
+Class model::Person
+{
+  '''
+  Given name.
+  Not guaranteed unique.
+  '''
+  firstName: String[1];
+  '''
+  Full legal name.
+  Derived, not stored.
+  '''
+  fullName() {$this.firstName}: String[1];
+}

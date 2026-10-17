@@ -1,0 +1,27 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "serviceStore",
+      "serviceStubMappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "toBytes",
+    "package" : "request::response::method::url::urlPath::headerParameters::queryParameters::bodyPatterns::body::all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

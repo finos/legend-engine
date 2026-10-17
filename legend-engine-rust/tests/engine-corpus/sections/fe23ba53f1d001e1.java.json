@@ -1,0 +1,114 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 10
+      },
+      "hideProperties" : true,
+      "id" : "ola",
+      "position" : {
+        "x" : -123.123,
+        "y" : 233.0
+      },
+      "rectangle" : {
+        "height" : -0.0,
+        "width" : 12.0
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      }
+    }, {
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 17
+      },
+      "hideProperties" : true,
+      "id" : "otis",
+      "position" : {
+        "x" : 0.123,
+        "y" : 220.0
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : -123.0
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 15
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "MyDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "anything::goes",
+        "property" : "milk",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 24
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "sourceView" : "ola",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 25
+      },
+      "targetView" : "otis",
+      "targetViewSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 26
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    }
+  } ],
+  "imports" : [ ]
+}

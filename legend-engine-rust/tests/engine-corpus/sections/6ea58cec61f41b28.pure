@@ -1,0 +1,12 @@
+
+Class test::Person
+{
+  firstName:String[1];
+  age: Integer[1];
+}
+
+function test::usePath(p:test::Person[1]):Boolean[1]
+{
+  let path = #/test::Person/firstName#;
+  test::Person.all()->project($path)->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age'))->isNotEmpty();
+}

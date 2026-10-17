@@ -1,0 +1,13 @@
+
+Class test::A
+{
+}
+function test::other(a:test::A[1]):String[1]
+{
+   test::f($a)
+}
+
+function test::f(a:test::A[*]):String[1]
+{
+   'bogus';
+}

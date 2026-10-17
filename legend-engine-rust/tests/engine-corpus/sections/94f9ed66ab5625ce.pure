@@ -1,0 +1,27 @@
+
+Mapping mapping::customerMapping
+(
+  domain::Customer: Relational
+  {
+    ~primaryKey
+    (
+      [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_ID
+    )
+    ~mainTable [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS
+    id: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_ID,
+    name: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_NAME,
+    birthDate: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_BIRTH_DATE,
+    time: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_TIME_FIELD,
+    strictDate: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_STRICT_DATE_FIELD,
+    boolean: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_BOOLEAN_FIELD,
+    number: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_NUMBER_FIELD,
+    float: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_FLOAT_FIELD,
+    decimal: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_DECIMAL_FIELD,
+    type: EnumerationMapping CustomerTypeMapping: [store::CustomerDataStore]SAMPLE_DATA.CUSTOMERS.CUSTOMER_TYPE
+  }
+  domain::CustomerType: EnumerationMapping CustomerTypeMapping
+  {
+    Member: ['MEMBER'],
+    Guest: ['GUEST']
+  }
+)

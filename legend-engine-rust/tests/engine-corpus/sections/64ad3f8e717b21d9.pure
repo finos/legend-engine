@@ -1,0 +1,45 @@
+
+Runtime model::dummyRuntime
+{
+  mappings:
+  [
+    model::dummyMapping,
+    model::dummyMapping2
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      id1:
+      #{
+        JsonModelConnection
+        {
+          class: model::animal::mammal::Mammal;
+          url: 'my_url';
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime model::dummyRuntime2
+{
+  mappings:
+  [
+    model::dummyMapping2
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      id1:
+      #{
+        JsonModelConnection
+        {
+          class: model::animal::mammal::Mammal;
+          url: 'my_url';
+        }
+      }#
+    ]
+  ];
+}

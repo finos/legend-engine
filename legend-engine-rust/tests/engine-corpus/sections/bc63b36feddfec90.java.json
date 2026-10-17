@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token ']'. Valid alternatives: ['all', 'let', 'allVersions', 'allVersionsInRange', 'toBytes']",
+    "sourceInformation" : {
+      "endColumn" : 11,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 11,
+      "startLine" : 6
+    }
+  }
+}

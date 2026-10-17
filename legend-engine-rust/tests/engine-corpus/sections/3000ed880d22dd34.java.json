@@ -1,0 +1,3757 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "PositiveInteractionTimeFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "greaterThan",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "time",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 78
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 78,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 78
+            },
+            "table" : "interactionTable"
+          },
+          "tableAlias" : "interactionTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 66,
+            "startLine" : 78
+          },
+          "value" : 0
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 78,
+          "sourceId" : "",
+          "startColumn" : 64,
+          "startLine" : 78
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 78,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 78
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "ProductSynonymFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "notEqual",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 79
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "productSchema",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 79,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 79
+            },
+            "table" : "synonymTable"
+          },
+          "tableAlias" : "synonymTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 66,
+            "startLine" : 79
+          },
+          "value" : 1
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 63,
+          "startLine" : 79
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 79,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 79
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "NonNegativeFactFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "greaterThan",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "fact",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 80
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 80
+            },
+            "table" : "orderFactTable"
+          },
+          "tableAlias" : "orderFactTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 80
+          },
+          "value" : 0
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 54,
+          "startLine" : 80
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 57,
+        "endLine" : 80,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 80
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "LessThanEqualZeroFactFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "lessThanEqual",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "fact",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 81
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 81
+            },
+            "table" : "orderFactTable"
+          },
+          "tableAlias" : "orderFactTable"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 63,
+            "startLine" : 81
+          },
+          "value" : 0
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 81
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 81
+      }
+    } ],
+    "includedStores" : [ {
+      "path" : "model::relational::tests::dbInc",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ {
+      "name" : "Product_Synonym",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "PRODID",
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 83
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "productSchema",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 83
+            },
+            "table" : "synonymTable"
+          },
+          "tableAlias" : "synonymTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 62,
+            "startLine" : 83
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "productSchema",
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 83
+            },
+            "table" : "productTable"
+          },
+          "tableAlias" : "productTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 83,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 83
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 91,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 83
+      }
+    }, {
+      "name" : "Trade_Product",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "prodId",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 84
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 84
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 84
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "productSchema",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 84
+            },
+            "table" : "productTable"
+          },
+          "tableAlias" : "productTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 84,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 84
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 84
+      }
+    }, {
+      "name" : "Trade_Account",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "accountID",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 85
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 85
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 85,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 85
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 85,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 85
+            },
+            "table" : "accountTable"
+          },
+          "tableAlias" : "accountTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 85,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 85
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 85
+      }
+    }, {
+      "name" : "Interaction_Source",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "sourceId",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 86,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 86
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 86,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 86
+            },
+            "table" : "interactionTable"
+          },
+          "tableAlias" : "interactionTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 86,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 86
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 86,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 86
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 86,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 86
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 86
+      }
+    }, {
+      "name" : "Interaction_Target",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "targetId",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 87
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 87,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 87
+            },
+            "table" : "interactionTable"
+          },
+          "tableAlias" : "interactionTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 87
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 87,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 87
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 87,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 87
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 71,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 87
+      }
+    }, {
+      "name" : "InteractionTable_InteractionViewMaxTime",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "sourceId",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 50,
+              "startLine" : 88
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 88,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 88
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          }, {
+            "_type" : "column",
+            "column" : "sourceId",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 78,
+              "startLine" : 88
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 88,
+                "sourceId" : "",
+                "startColumn" : 78,
+                "startLine" : 88
+              },
+              "table" : "interactionViewMaxTime"
+            },
+            "tableAlias" : "interactionViewMaxTime"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 108,
+            "endLine" : 88,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 88
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "targetId",
+            "sourceInformation" : {
+              "endColumn" : 172,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 114,
+              "startLine" : 88
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 88,
+                "sourceId" : "",
+                "startColumn" : 114,
+                "startLine" : 88
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          }, {
+            "_type" : "column",
+            "column" : "targetId",
+            "sourceInformation" : {
+              "endColumn" : 172,
+              "endLine" : 88,
+              "sourceId" : "",
+              "startColumn" : 142,
+              "startLine" : 88
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 163,
+                "endLine" : 88,
+                "sourceId" : "",
+                "startColumn" : 142,
+                "startLine" : 88
+              },
+              "table" : "interactionViewMaxTime"
+            },
+            "tableAlias" : "interactionViewMaxTime"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 172,
+            "endLine" : 88,
+            "sourceId" : "",
+            "startColumn" : 140,
+            "startLine" : 88
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 172,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 110,
+          "startLine" : 88
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 173,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 88
+      }
+    }, {
+      "name" : "Trade_TradeEvent",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 89
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 89,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 89
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        }, {
+          "_type" : "column",
+          "column" : "trade_id",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 89,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 89
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 89,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 89
+            },
+            "table" : "tradeEventTable"
+          },
+          "tableAlias" : "tradeEventTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 89,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 89
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 89
+      }
+    }, {
+      "name" : "Trade_TradeEventViewMaxTradeEventDate",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 90
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 90,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 90
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        }, {
+          "_type" : "column",
+          "column" : "trade_id",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 64,
+            "startLine" : 90
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 94,
+              "endLine" : 90,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 90
+            },
+            "table" : "tradeEventViewMaxTradeEventDate"
+          },
+          "tableAlias" : "tradeEventViewMaxTradeEventDate"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 103,
+          "endLine" : 90,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 90
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 104,
+        "endLine" : 90,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 90
+      }
+    }, {
+      "name" : "TradeEvent_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "person_id",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 91
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 91
+            },
+            "table" : "tradeEventTable"
+          },
+          "tableAlias" : "tradeEventTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 91,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 91
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 91
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 91,
+          "sourceId" : "",
+          "startColumn" : 54,
+          "startLine" : 91
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 91,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 91
+      }
+    }, {
+      "name" : "Interaction_Interaction",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "sourceId",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 92,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 92
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 92,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 92
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          }, {
+            "_type" : "column",
+            "column" : "sourceId",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 92,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 92
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 92,
+                "sourceId" : "",
+                "startColumn" : 62,
+                "startLine" : 92
+              },
+              "table" : "{target}"
+            },
+            "tableAlias" : "{target}"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 92
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "targetId",
+            "sourceInformation" : {
+              "endColumn" : 128,
+              "endLine" : 92,
+              "sourceId" : "",
+              "startColumn" : 84,
+              "startLine" : 92
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 99,
+                "endLine" : 92,
+                "sourceId" : "",
+                "startColumn" : 84,
+                "startLine" : 92
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          }, {
+            "_type" : "column",
+            "column" : "targetId",
+            "sourceInformation" : {
+              "endColumn" : 128,
+              "endLine" : 92,
+              "sourceId" : "",
+              "startColumn" : 112,
+              "startLine" : 92
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 92,
+                "sourceId" : "",
+                "startColumn" : 112,
+                "startLine" : 92
+              },
+              "table" : "{target}"
+            },
+            "tableAlias" : "{target}"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 110,
+            "startLine" : 92
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 128,
+          "endLine" : 92,
+          "sourceId" : "",
+          "startColumn" : 80,
+          "startLine" : 92
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 129,
+        "endLine" : 92,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 92
+      }
+    }, {
+      "name" : "Order_SalesPerson",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "accountID",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 93,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 93
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 93,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 93
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        }, {
+          "_type" : "column",
+          "column" : "ACCOUNT_ID",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 93,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 93
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 93,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 93
+            },
+            "table" : "salesPersonTable"
+          },
+          "tableAlias" : "salesPersonTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 93,
+          "sourceId" : "",
+          "startColumn" : 49,
+          "startLine" : 93
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 93,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 93
+      }
+    }, {
+      "name" : "Order_Account",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "accountID",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 94
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 94,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 94
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 94
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 94,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 94
+            },
+            "table" : "accountTable"
+          },
+          "tableAlias" : "accountTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 94,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 94
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 94,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 94
+      }
+    }, {
+      "name" : "OrderFactView_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ORDER_ID",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 95
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 95,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 95
+            },
+            "table" : "orderFactView"
+          },
+          "tableAlias" : "orderFactView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 55,
+            "startLine" : 95
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 95,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 95
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 95,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 95
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 95,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 95
+      }
+    }, {
+      "name" : "OrderFactViewOnView_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ORDER_ID",
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 96
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 96,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 96
+            },
+            "table" : "orderFactViewOnView"
+          },
+          "tableAlias" : "orderFactViewOnView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 67,
+            "startLine" : 96
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 96,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 96
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 96,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 96
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 80,
+        "endLine" : 96,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 96
+      }
+    }, {
+      "name" : "OrderNegativeFactView_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ORDER_ID",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 97
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 97,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 97
+            },
+            "table" : "orderNegativeFactView"
+          },
+          "tableAlias" : "orderNegativeFactView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 71,
+            "startLine" : 97
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 80,
+              "endLine" : 97,
+              "sourceId" : "",
+              "startColumn" : 71,
+              "startLine" : 97
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 83,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 69,
+          "startLine" : 97
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 97,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 97
+      }
+    }, {
+      "name" : "OrderNegativeFactViewOnView_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ORDER_ID",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 98
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 98,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 98
+            },
+            "table" : "orderNegativeFactViewOnView"
+          },
+          "tableAlias" : "orderNegativeFactViewOnView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 83,
+            "startLine" : 98
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 98,
+              "sourceId" : "",
+              "startColumn" : 83,
+              "startLine" : 98
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 95,
+          "endLine" : 98,
+          "sourceId" : "",
+          "startColumn" : 81,
+          "startLine" : 98
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 96,
+        "endLine" : 98,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 98
+      }
+    }, {
+      "name" : "OrderFactView_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "supportContactId",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 99,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 99
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 99,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 99
+            },
+            "table" : "orderFactView"
+          },
+          "tableAlias" : "orderFactView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 99,
+            "sourceId" : "",
+            "startColumn" : 64,
+            "startLine" : 99
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 99,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 99
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 99,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 99
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 99,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 99
+      }
+    }, {
+      "name" : "SalesPerson_PersonView",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "PERSON_ID",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 100
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 100
+            },
+            "table" : "salesPersonTable"
+          },
+          "tableAlias" : "salesPersonTable"
+        }, {
+          "_type" : "column",
+          "column" : "PERSON_ID",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 62,
+            "startLine" : 100
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 75,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 100
+            },
+            "table" : "PersonFirmView"
+          },
+          "tableAlias" : "PersonFirmView"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 100,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 100
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 86,
+        "endLine" : 100,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 100
+      }
+    }, {
+      "name" : "OrderFactTable_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ORDER_ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 101
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 101
+            },
+            "table" : "orderFactTable"
+          },
+          "tableAlias" : "orderFactTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 101,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 101
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 101
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 101,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 101
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 101,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 101
+      }
+    }, {
+      "name" : "AccountFactView_Account",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "accountId",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 102
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 102,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 102
+            },
+            "table" : "accountOrderFactView"
+          },
+          "tableAlias" : "accountOrderFactView"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 67,
+            "startLine" : 102
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 102,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 102
+            },
+            "table" : "accountTable"
+          },
+          "tableAlias" : "accountTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 102,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 102
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 82,
+        "endLine" : 102,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 102
+      }
+    }, {
+      "name" : "Person_OtherNames",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 103
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 103,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 103
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "PERSON_ID",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 103
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 103,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 103
+            },
+            "table" : "otherNamesTable"
+          },
+          "tableAlias" : "otherNamesTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 103,
+          "sourceId" : "",
+          "startColumn" : 43,
+          "startLine" : 103
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 103,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 103
+      }
+    } ],
+    "name" : "db",
+    "package" : "model::relational::tests",
+    "schemas" : [ {
+      "name" : "productSchema",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 76,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 73
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 75
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PRODID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 75
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "TYPE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 59,
+            "startLine" : 75
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 94,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 78,
+            "startLine" : 75
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "synonymTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 95,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 75
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "sourceId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 48,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "targetId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 62,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "time",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "active",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 102,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 86,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 1
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "interactionTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 103,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "prodId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "accountID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "quantity",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "tradeDate",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 85,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "settlementDateTime",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 101,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tradeTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 129,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 7
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "createDate",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 63,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "accountTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 8
+        }
+      }, {
+        "columns" : [ {
+          "name" : "EVENT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "trade_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "eventType",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 67,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        }, {
+          "name" : "eventDate",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 90,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "person_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 106,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tradeEventTable",
+        "primaryKey" : [ "EVENT_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 119,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "prodId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "accountID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 54,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "quantity",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "orderDate",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 83,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "settlementDateTime",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 99,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "orderTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 127,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ORDER_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "fact",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "from_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 64,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "thru_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "orderFactTable",
+        "primaryKey" : [ "ORDER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      }, {
+        "columns" : [ {
+          "name" : "PERSON_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ACCOUNT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 55,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 99,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 83,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "from_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 102,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "thru_z",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 115,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "salesPersonTable",
+        "primaryKey" : [ "PERSON_ID", "ACCOUNT_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 126,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        }
+      }, {
+        "columns" : [ {
+          "name" : "PERSON_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "OTHER_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherNamesTable",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 13
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "sourceId",
+          "operation" : {
+            "_type" : "column",
+            "column" : "sourceId",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 20,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 20
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 20,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 20
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 20
+          }
+        }, {
+          "name" : "targetId",
+          "operation" : {
+            "_type" : "column",
+            "column" : "targetId",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 21
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 21
+              },
+              "table" : "interactionTable"
+            },
+            "tableAlias" : "interactionTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 21
+          }
+        }, {
+          "name" : "maxTime",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "max",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "time",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 22,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 22
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 22,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 22
+                },
+                "table" : "interactionTable"
+              },
+              "tableAlias" : "interactionTable"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 22
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 22
+          }
+        } ],
+        "distinct" : false,
+        "filter" : {
+          "filter" : {
+            "db" : "model::relational::tests::db",
+            "name" : "PositiveInteractionTimeFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 18
+          }
+        },
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "sourceId",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 19
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 19
+            },
+            "table" : "interactionTable"
+          },
+          "tableAlias" : "interactionTable"
+        }, {
+          "_type" : "column",
+          "column" : "targetId",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 19
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 45,
+              "startLine" : 19
+            },
+            "table" : "interactionTable"
+          },
+          "tableAlias" : "interactionTable"
+        } ],
+        "name" : "interactionViewMaxTime",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 16
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "trade_id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "trade_id",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 28,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 28
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 28,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 28
+              },
+              "table" : "tradeEventTable"
+            },
+            "tableAlias" : "tradeEventTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 28
+          }
+        }, {
+          "name" : "maxTradeEventDate",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "max",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "eventDate",
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 29
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 29
+                },
+                "table" : "tradeEventTable"
+              },
+              "tableAlias" : "tradeEventTable"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 29
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 29
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "trade_id",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 27
+            },
+            "table" : "tradeEventTable"
+          },
+          "tableAlias" : "tradeEventTable"
+        } ],
+        "name" : "tradeEventViewMaxTradeEventDate",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 25
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "ORDER_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ORDER_ID",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 36
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 36,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 36
+              },
+              "table" : "orderFactTable"
+            },
+            "tableAlias" : "orderFactTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 36
+          }
+        }, {
+          "name" : "fact",
+          "operation" : {
+            "_type" : "column",
+            "column" : "fact",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 37
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 37
+              },
+              "table" : "orderFactTable"
+            },
+            "tableAlias" : "orderFactTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 37
+          }
+        }, {
+          "name" : "accountId",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 38
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_Account",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 38
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "ID",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 62,
+                "startLine" : 38
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 62,
+                  "startLine" : 38
+                },
+                "table" : "accountTable"
+              },
+              "tableAlias" : "accountTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 38
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 38
+          }
+        }, {
+          "name" : "supportContact",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 39
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_SalesPerson",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 39
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "NAME",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 39
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 39,
+                  "sourceId" : "",
+                  "startColumn" : 71,
+                  "startLine" : 39
+                },
+                "table" : "salesPersonTable"
+              },
+              "tableAlias" : "salesPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 39
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 39
+          }
+        }, {
+          "name" : "supportContactId",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 40
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_SalesPerson",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 52,
+                "startLine" : 40
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "PERSON_ID",
+              "sourceInformation" : {
+                "endColumn" : 98,
+                "endLine" : 40,
+                "sourceId" : "",
+                "startColumn" : 73,
+                "startLine" : 40
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 40,
+                  "sourceId" : "",
+                  "startColumn" : 73,
+                  "startLine" : 40
+                },
+                "table" : "salesPersonTable"
+              },
+              "tableAlias" : "salesPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 40
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 40
+          }
+        } ],
+        "distinct" : true,
+        "filter" : {
+          "filter" : {
+            "name" : "NonNegativeFactFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 34
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "orderFactView",
+        "primaryKey" : [ "ORDER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "ORDER_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ORDER_ID",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 45
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 45,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 45
+              },
+              "table" : "orderFactView"
+            },
+            "tableAlias" : "orderFactView"
+          },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 45
+          }
+        }, {
+          "name" : "fact",
+          "operation" : {
+            "_type" : "column",
+            "column" : "fact",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 46
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 46,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 46
+              },
+              "table" : "orderFactView"
+            },
+            "tableAlias" : "orderFactView"
+          },
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 46
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "orderFactViewOnView",
+        "primaryKey" : [ "ORDER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 43
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "ORDER_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ORDER_ID",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 53,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 53
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 53,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 53
+              },
+              "table" : "orderFactTable"
+            },
+            "tableAlias" : "orderFactTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 53
+          }
+        }, {
+          "name" : "fact",
+          "operation" : {
+            "_type" : "column",
+            "column" : "fact",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 54,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 54
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 54,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 54
+              },
+              "table" : "orderFactTable"
+            },
+            "tableAlias" : "orderFactTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 54
+          }
+        }, {
+          "name" : "accountId",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 55,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 55
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_Account",
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 55,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 55
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "ID",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 55,
+                "sourceId" : "",
+                "startColumn" : 62,
+                "startLine" : 55
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 55,
+                  "sourceId" : "",
+                  "startColumn" : 62,
+                  "startLine" : 55
+                },
+                "table" : "accountTable"
+              },
+              "tableAlias" : "accountTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 55,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 55
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 55
+          }
+        }, {
+          "name" : "supportContact",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 56,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 56
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_SalesPerson",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 56,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 56
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "NAME",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 56,
+                "sourceId" : "",
+                "startColumn" : 71,
+                "startLine" : 56
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 56,
+                  "sourceId" : "",
+                  "startColumn" : 71,
+                  "startLine" : 56
+                },
+                "table" : "salesPersonTable"
+              },
+              "tableAlias" : "salesPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 56,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 56
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 91,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 56
+          }
+        }, {
+          "name" : "supportContactId",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "model::relational::tests::db",
+              "name" : "OrderFactTable_Order",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 57,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 57
+              }
+            }, {
+              "db" : "model::relational::tests::db",
+              "name" : "Order_SalesPerson",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 57,
+                "sourceId" : "",
+                "startColumn" : 52,
+                "startLine" : 57
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "PERSON_ID",
+              "sourceInformation" : {
+                "endColumn" : 98,
+                "endLine" : 57,
+                "sourceId" : "",
+                "startColumn" : 73,
+                "startLine" : 57
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "model::relational::tests::db",
+                "mainTableDb" : "model::relational::tests::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 57,
+                  "sourceId" : "",
+                  "startColumn" : 73,
+                  "startLine" : 57
+                },
+                "table" : "salesPersonTable"
+              },
+              "tableAlias" : "salesPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 57,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 57,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 57
+          }
+        } ],
+        "distinct" : true,
+        "filter" : {
+          "filter" : {
+            "name" : "LessThanEqualZeroFactFilter"
+          },
+          "joins" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 51
+          }
+        },
+        "groupBy" : [ ],
+        "name" : "orderNegativeFactView",
+        "primaryKey" : [ "ORDER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 58,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 49
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "ORDER_ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ORDER_ID",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 62,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 62
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 62,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 62
+              },
+              "table" : "orderNegativeFactView"
+            },
+            "tableAlias" : "orderNegativeFactView"
+          },
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 62,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 62
+          }
+        }, {
+          "name" : "fact",
+          "operation" : {
+            "_type" : "column",
+            "column" : "fact",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 63,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 63
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 63,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 63
+              },
+              "table" : "orderNegativeFactView"
+            },
+            "tableAlias" : "orderNegativeFactView"
+          },
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 63,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 63
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "orderNegativeFactViewOnView",
+        "primaryKey" : [ "ORDER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 60
+        }
+      }, {
+        "columnMappings" : [ {
+          "name" : "accountId",
+          "operation" : {
+            "_type" : "column",
+            "column" : "accountID",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 69,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 69
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::db",
+              "mainTableDb" : "model::relational::tests::db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 69,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 69
+              },
+              "table" : "orderTable"
+            },
+            "tableAlias" : "orderTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 69
+          }
+        }, {
+          "name" : "orderFact",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "sum",
+            "parameters" : [ {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "model::relational::tests::db",
+                "name" : "OrderFactTable_Order",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 70,
+                  "sourceId" : "",
+                  "startColumn" : 25,
+                  "startLine" : 70
+                }
+              } ],
+              "relationalElement" : {
+                "_type" : "column",
+                "column" : "fact",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 70,
+                  "sourceId" : "",
+                  "startColumn" : 49,
+                  "startLine" : 70
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "model::relational::tests::db",
+                  "mainTableDb" : "model::relational::tests::db",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 70,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 70
+                  },
+                  "table" : "orderFactTable"
+                },
+                "tableAlias" : "orderFactTable"
+              },
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 70,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 70
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 70,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 70
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 70,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 70
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "accountID",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 68
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::db",
+            "mainTableDb" : "model::relational::tests::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 68,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 68
+            },
+            "table" : "orderTable"
+          },
+          "tableAlias" : "orderTable"
+        } ],
+        "name" : "accountOrderFactView",
+        "primaryKey" : [ "accountId" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 66
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 104,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

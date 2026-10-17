@@ -1,0 +1,5 @@
+
+XmlModelConnection test::connection
+{
+  class : test::someClass;  url : 'asd';
+}

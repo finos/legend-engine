@@ -1,0 +1,110 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "doc",
+    "package" : "meta::pure::profiles",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 18,
+        "startLine" : 3
+      },
+      "value" : "tests"
+    } ],
+    "tags" : [ {
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 4
+      },
+      "value" : "doc"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 4
+      },
+      "value" : "todo"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "ok",
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "stereotypes" : [ {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 8
+        },
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 8
+        },
+        "value" : "imMissing"
+      } ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,228 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "meta::this::class::has::path",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "e::R",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 100,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 107,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ {
+        "profile" : "equality",
+        "profileSourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "value" : "Key"
+      }, {
+        "profile" : "taggedValue",
+        "profileSourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 3
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 3
+        },
+        "value" : "test"
+      } ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 3
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 3
+          },
+          "value" : "doc"
+        },
+        "value" : "uyaguari's test"
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 91,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 69,
+          "startLine" : 3
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 73,
+            "startLine" : 3
+          },
+          "value" : "test2"
+        },
+        "value" : "m's test"
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "value" : "businesstemporal"
+    }, {
+      "profile" : "taggedValue",
+      "profileSourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 1
+      },
+      "value" : "Number2"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 80,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 59,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 59,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 63,
+          "startLine" : 1
+        },
+        "value" : "test1"
+      },
+      "value" : "test1's"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 105,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 83,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 83,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 91,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 87,
+          "startLine" : 1
+        },
+        "value" : "test2"
+      },
+      "value" : "m's test"
+    } ]
+  } ],
+  "imports" : [ ]
+}

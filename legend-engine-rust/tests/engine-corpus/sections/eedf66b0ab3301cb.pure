@@ -1,0 +1,13 @@
+
+SchemaSet test::SchemaSet
+{
+  format: FlatData;
+  schemas: [ { content: 'section A: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n\n  Record\n  {\n    alpha   : STRING;\n    beta    : BOOLEAN(optional);\n  }\n}'; } ];
+}
+
+Binding test::Binding
+{
+  schemaSet: test::SchemaSet;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [ test::model::A ];
+}

@@ -1,0 +1,82 @@
+
+Class demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile
+{
+}
+
+Class demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistRecordRecord
+{
+  SECURITY: String[1];
+  ERROR_COUNT: Integer[1];
+  FIELD_COUNT: Integer[1];
+  ID_BB_UNIQUE: String[1];
+  ID_BB_COMPANY: Integer[1];
+  ID_BB_SECURITY: Integer[1];
+  ID_BB_GLOBAL: String[1];
+  ID_ISIN: String[0..1];
+  ID_BB_SEC_NUM_DES: String[0..1];
+  FEED_SOURCE: String[0..1];
+  FLT_CPN_HIST_DT: StrictDate[1];
+  FLT_CPN_HIST_RT: Float[0..1];
+}
+
+Class demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistMetaRecord
+{
+  programname: String[1];
+  dateformat: String[1];
+  region: String[1];
+  type: String[1];
+  datarecords: Integer[1];
+  timestarted: DateTime[1];
+  timefinished: DateTime[1];
+}
+
+Class demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleRecord
+{
+  SECURITY: String[1];
+  ERROR_COUNT: Integer[1];
+  FIELD_COUNT: Integer[1];
+  ID_BB_UNIQUE: String[1];
+  ID_BB_COMPANY: Integer[1];
+  ID_BB_SECURITY: Integer[1];
+  ID_BB_GLOBAL: String[1];
+  ID_ISIN: String[0..1];
+  ID_BB_SEC_NUM_DES: String[0..1];
+  FEED_SOURCE: String[0..1];
+  CALL_SCHEDULE_DT: StrictDate[1];
+  CALL_SCHEDULE_PCT: Float[1];
+}
+
+Class demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleMetaRecord
+{
+  programname: String[1];
+  dateformat: String[1];
+  region: String[1];
+  type: String[1];
+  datarecords: Integer[1];
+  timestarted: DateTime[1];
+  timefinished: DateTime[1];
+}
+
+Association demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_CallScheduleRecord
+{
+  bloombergBulkFile: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile[1];
+  callSchedule: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleRecord[*];
+}
+Association demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_CallScheduleMetaRecord
+{
+  bloombergBulkFile: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile[1];
+  callScheduleMetaRecord: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleMetaRecord[*];
+}
+
+
+Association demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_FltCpnHistRecord
+{
+  bloombergBulkFile: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile[1];
+  fltCpnHist: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistRecordRecord[*];
+}
+
+Association demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_FltCpnHistMetaRecord
+{
+  bloombergBulkFile: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile[1];
+  fltCpnHistMetaRecord: demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistMetaRecord[*];
+}

@@ -1,0 +1,228 @@
+{
+  "elements" : [ {
+    "_type" : "dataQualityRelationComparison",
+    "additionalColumnsToPersist" : [ "lake_in_id", "source_specific_column", "target_specific_column" ],
+    "columnsToCompare" : [ "amount", "quantity" ],
+    "expectedMatch" : 0.99,
+    "keys" : [ "id", "name" ],
+    "name" : "testRecon",
+    "package" : "meta::external::dataquality",
+    "source" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 4
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "my::Store", "sourceTable" ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 4
+            }
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "c",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 53,
+                  "startLine" : 4
+                }
+              } ],
+              "property" : "active",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 4
+              },
+              "value" : true
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 63,
+              "startLine" : 4
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "c"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 44,
+          "startLine" : 4
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "src"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 4
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "strategy" : {
+      "_type" : "md5Hash",
+      "aggregatedHash" : true,
+      "sourceHashColumn" : "srcHash",
+      "targetHashColumn" : "tgtHash"
+    },
+    "target" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "filter",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 5
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "my::Store", "targetTable" ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 5
+            }
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "c",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 5,
+                  "sourceId" : "",
+                  "startColumn" : 53,
+                  "startLine" : 5
+                }
+              } ],
+              "property" : "active",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 5
+              }
+            }, {
+              "_type" : "boolean",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 66,
+                "startLine" : 5
+              },
+              "value" : true
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 63,
+              "startLine" : 5
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "c"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 5
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 44,
+          "startLine" : 5
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "tgt"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      }
+    }
+  } ]
+}

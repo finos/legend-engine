@@ -1,0 +1,15 @@
+
+Mapping model::test
+(
+  *model::firm: Pure
+  {
+    ~src model::_firm
+    legalName: $src.legalName,
+    employees[model_person]: $src.employeesAllVersions
+  }
+  *model::person: Pure
+  {
+    ~src model::_person
+    name: $src.name
+  }
+)

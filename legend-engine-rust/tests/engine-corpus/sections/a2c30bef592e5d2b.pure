@@ -1,0 +1,10 @@
+
+RelationalDatabaseConnection demo::relation::dates::connection::TradingConnection
+{
+  store: demo::relation::dates::store::TradingDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}

@@ -1,0 +1,66 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::service::FirmService;
+  serviceOutputTargets:
+  [
+    #/test::model::Firm/employees#
+    {
+      keys:
+      [
+        #/test::model::Firm/employees/lastName#
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: #/test::model::Firm/employees/isDeleted#;
+          deleteValues: ['Yes', 'true', '1'];
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    {
+    }
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected: 
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '{"Age":12, "Name":"dummy"}';
+                 }#;
+             }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+src: Integer[1]|$src->add(
+  1 - 1
+)

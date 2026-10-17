@@ -1,0 +1,18 @@
+
+Data meta::data::MyData
+{
+  my::database:
+    Relation
+    #{
+      default.PersonTable:
+          id, firstName, lastName
+          1 , John     , Doe;
+    }#;
+  my::database2:
+    Relation
+    #{
+      schema.FirmTable:
+          id, legalName
+          1 , financeCorp;
+    }#;
+}

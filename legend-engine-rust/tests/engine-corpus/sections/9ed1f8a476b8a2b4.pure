@@ -1,0 +1,7 @@
+
+FunctionJar model::NewActivator
+{
+   ownership : Deployment { identifier: '17' };
+   function : model::Firm_QueryFunction():Integer[1];
+   documentation : '';
+}

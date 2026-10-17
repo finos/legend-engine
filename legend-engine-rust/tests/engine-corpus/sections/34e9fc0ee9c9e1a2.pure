@@ -1,0 +1,4 @@
+
+Class demo::relation::domain::ContractEmployee extends demo::relation::domain::Employee
+{
+}

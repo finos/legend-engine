@@ -1,0 +1,13 @@
+
+Mapping model::myMap
+(
+    model::Firm: Relational
+          {
+             name : [model::db]firmTb.name
+          }
+    model::Person: Relational
+            {
+                firm:[model::db]@myJoin > @otherJoin,
+                name:[model::db]personTb.name
+            }
+)

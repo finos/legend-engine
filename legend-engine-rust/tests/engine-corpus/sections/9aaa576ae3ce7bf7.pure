@@ -1,0 +1,20 @@
+
+Database demo::store::SalesViewDB
+(
+  Table SALE_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    PRODUCT VARCHAR(100),
+    AMOUNT INTEGER
+  )
+
+  View BigSaleView
+  (
+    ~filter BigFilter
+    id: SALE_TABLE.ID PRIMARY KEY,
+    product: SALE_TABLE.PRODUCT,
+    amount: SALE_TABLE.AMOUNT
+  )
+
+  Filter BigFilter(SALE_TABLE.AMOUNT >= 100)
+)

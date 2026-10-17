@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "LAST_NAME", "FIRM_ID", "EMP_TYPE", "ACTIVE", "HIRE_DATE", "SALARY", "STREET", "CITY", "DEPARTMENT_ID", "ACTIVE_STATUS" ],
+        "paths" : [ "default", "EmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "Green", "1", "FULL_TIME", "1", "2020-01-15 00:00:00", "90000.0", "Main St", "London", "", "ACTIVE" ]
+        }, {
+          "values" : [ "2", "Bob", "Smith", "2", "CONTRACT", "1", "2021-06-01 00:00:00", "75000.0", "Oak Ave", "Paris", "", "ACTIVE" ]
+        }, {
+          "values" : [ "3", "Carol", "White", "1", "FULL_TIME", "0", "2019-03-10 00:00:00", "", "Pine Rd", "Berlin", "", "INACTIVE" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 24,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 25,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    },
+    "name" : "EmployeeEnumData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

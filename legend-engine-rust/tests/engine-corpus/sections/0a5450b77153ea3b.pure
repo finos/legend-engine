@@ -1,0 +1,22 @@
+
+SnowflakeM2MUdf <<a::A.test>> {a::A.val = 'ok'} xx::MyUDF
+{
+   udfName : 'MyUDF';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'pierre'};
+   deploymentSchema : 'legend_native_apps_1';
+   deploymentStage : 'snowflakeStage';
+   description : 'A super nice app!';
+   activationConfiguration : a::b::connection;
+}
+
+SnowflakeM2MUdf <<a::A.test>> {a::A.val = 'ok'} xx::MyUDF2
+{
+   udfName : 'MyUDF';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'pierre'};
+   deploymentSchema : 'legend_native_apps_1';
+   deploymentStage : 'snowflakeStage';
+   description : 'A super nice app!';
+   activationConfiguration : a::b::connection;
+}

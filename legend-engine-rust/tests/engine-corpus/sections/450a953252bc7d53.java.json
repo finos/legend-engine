@@ -1,0 +1,75 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ProductID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Product",
+        "primaryKey" : [ "ProductID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 10
+        },
+        "stereotypes" : [ {
+          "profile" : "meta::pure::profiles::storeType",
+          "profileSourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 10
+          },
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 43,
+            "startLine" : 10
+          },
+          "value" : "type2"
+        } ]
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ]
+  } ]
+}

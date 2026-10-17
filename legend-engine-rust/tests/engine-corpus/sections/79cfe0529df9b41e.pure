@@ -1,0 +1,5 @@
+
+MemSqlFunction x::A
+{
+   funcName : 'demoFunction';
+}

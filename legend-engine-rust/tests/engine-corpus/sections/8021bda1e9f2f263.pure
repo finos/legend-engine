@@ -1,0 +1,51 @@
+
+Mapping demo::dates::TradingMapping
+(
+  *demo::dates::Product: Relational
+  {
+    ~primaryKey
+    (
+      [demo::dates::store::TradingDB]PRODUCT.ID
+    )
+    ~mainTable [demo::dates::store::TradingDB]PRODUCT
+    id: [demo::dates::store::TradingDB]PRODUCT.ID,
+    name: [demo::dates::store::TradingDB]PRODUCT.NAME
+  }
+
+  *demo::dates::Account: Relational
+  {
+    ~primaryKey
+    (
+      [demo::dates::store::TradingDB]ACCOUNT.ID
+    )
+    ~mainTable [demo::dates::store::TradingDB]ACCOUNT
+    id: [demo::dates::store::TradingDB]ACCOUNT.ID,
+    status: [demo::dates::store::TradingDB]ACCOUNT.STATUS
+  }
+
+  *demo::dates::Rating: Relational
+  {
+    ~primaryKey
+    (
+      [demo::dates::store::TradingDB]RATING.ISSUER
+    )
+    ~mainTable [demo::dates::store::TradingDB]RATING
+    issuer: [demo::dates::store::TradingDB]RATING.ISSUER,
+    grade: [demo::dates::store::TradingDB]RATING.GRADE
+  }
+
+  *demo::dates::Trade: Relational
+  {
+    ~primaryKey
+    (
+      [demo::dates::store::TradingDB]TRADE.ID
+    )
+    ~mainTable [demo::dates::store::TradingDB]TRADE
+    id: [demo::dates::store::TradingDB]TRADE.ID,
+    tradeDate: [demo::dates::store::TradingDB]TRADE.TRADE_DATE,
+    executedAt: [demo::dates::store::TradingDB]TRADE.EXECUTED_AT,
+    quantity: [demo::dates::store::TradingDB]TRADE.QUANTITY,
+    product: [demo::dates::store::TradingDB]@Trade_Product,
+    account: [demo::dates::store::TradingDB]@Trade_Account
+  }
+)

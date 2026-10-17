@@ -1,0 +1,159 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "serialize",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "graphFetch",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 2,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 3
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::Address",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 3
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ {
+            "_type" : "subTypeGraphFetchTree",
+            "_type" : "subTypeGraphFetchTree",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 4
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "street",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 5
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeClass" : "test::Street",
+            "subTypeTrees" : [ ]
+          } ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::Address",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        },
+        "subTrees" : [ ],
+        "subTypeTrees" : [ {
+          "_type" : "subTypeGraphFetchTree",
+          "_type" : "subTypeGraphFetchTree",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 12
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 13
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeClass" : "test::Street",
+          "subTypeTrees" : [ ]
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 9
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 1,
+    "endLine" : 17,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

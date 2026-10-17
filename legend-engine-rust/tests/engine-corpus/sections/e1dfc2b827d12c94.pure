@@ -1,0 +1,8 @@
+
+Class test::C
+[
+  $this.id->isEmpty() || $this.id >= 0
+]
+{
+  id: Integer[0..1];
+}

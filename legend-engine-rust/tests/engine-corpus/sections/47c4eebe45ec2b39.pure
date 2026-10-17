@@ -1,0 +1,37 @@
+
+'''
+Product reference data.
+Loaded nightly.
+'''
+Database model::store::ProductDatabase
+(
+  '''
+  The product schema.
+  Owned by reference data.
+  '''
+  Schema productSchema
+  (
+    '''
+    One row per product.
+    Keyed by ID.
+    '''
+    Table productTable
+    (
+      '''
+      The product identifier.
+      Assigned upstream.
+      '''
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+  )
+
+  '''
+  Products, flattened.
+  For reporting only.
+  '''
+  View productView
+  (
+    id: productSchema.productTable.ID PRIMARY KEY
+  )
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'sink' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 14,
+      "startLine" : 8
+    }
+  }
+}

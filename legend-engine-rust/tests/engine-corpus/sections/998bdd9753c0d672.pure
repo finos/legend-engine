@@ -1,0 +1,15 @@
+
+DataQualityRelationComparison meta::external::dataquality::testRecon
+{
+    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);
+    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);
+    keys: [id, name];
+    columnsToCompare: [amount, quantity];
+    strategy: MD5Hash
+    {
+        sourceHashColumn: srcHash;
+        targetHashColumn: tgtHash;
+        aggregatedHash: true;
+    };
+    expectedMatch: 0.99;
+}

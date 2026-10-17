@@ -1,0 +1,8 @@
+
+'''
+Attached to the class.
+Everything else is untouched.
+'''
+Class <<access.private>> {meta::pure::profiles::doc.todo = 'x'} model::A
+{
+}

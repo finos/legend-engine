@@ -1,0 +1,12 @@
+
+Service test::Service
+{
+  pattern: '/url/myUrl/';
+  owners: ['ownerName'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::class.all()->project(x | $x.prop1, 'prop1');
+  }
+}

@@ -1,0 +1,22 @@
+
+Database test::DataTypesDB
+(
+    Table dataTable
+    (
+        pk INTEGER PRIMARY KEY,
+        ti TINYINT PRIMARY KEY,
+        si SMALLINT PRIMARY KEY,
+        int INTEGER PRIMARY KEY,
+        bi BIGINT PRIMARY KEY,
+        vc VARCHAR(200) PRIMARY KEY,
+        c CHAR(1) PRIMARY KEY,
+        date DATE PRIMARY KEY,
+        ts TIMESTAMP PRIMARY KEY,
+        f FLOAT PRIMARY KEY,
+        d DOUBLE PRIMARY KEY,
+        bit BIT PRIMARY KEY,
+        dec DECIMAL(38,15) PRIMARY KEY,
+        r REAL PRIMARY KEY,
+        n NUMERIC(38,15) PRIMARY KEY
+    )
+)

@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "PersonRuntime",
+    "package" : "demo",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 214,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 211
+        },
+        "store" : {
+          "path" : "demo::PersonDB",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 211,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 211
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::H2Connection",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 213,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 213
+            }
+          },
+          "id" : "c1",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 213,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 213
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::PersonMap",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 207,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 207
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 216,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 203
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 216,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 203
+    }
+  } ],
+  "imports" : [ ]
+}

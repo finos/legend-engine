@@ -1,0 +1,5 @@
+
+JsonModelConnection test::connection
+{
+  class : test::class;  url : 'asd';
+}

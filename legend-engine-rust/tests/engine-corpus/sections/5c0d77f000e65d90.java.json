@@ -1,0 +1,202 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::Trade",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Trade",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 32
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 32
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Trade",
+          "property" : "time",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "time",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 33
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 33
+            },
+            "table" : "tradeTable"
+          },
+          "tableAlias" : "tradeTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 33
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 31
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "test::Position",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Position",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 36
+            },
+            "table" : "positionTable"
+          },
+          "tableAlias" : "positionTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 36
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Map",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

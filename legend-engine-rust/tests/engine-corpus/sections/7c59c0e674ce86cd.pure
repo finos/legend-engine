@@ -1,0 +1,5 @@
+
+function my::booleanColumnFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FLAG:Boolean[1])>);
+}

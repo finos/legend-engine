@@ -1,0 +1,24 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "strictDate",
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "value" : "2010-10-20"
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 12,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

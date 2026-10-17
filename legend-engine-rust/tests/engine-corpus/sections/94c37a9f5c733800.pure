@@ -1,0 +1,4 @@
+
+Class {meta::pure::profiles::doc.doc = 'line one\nline two\n'} model::A
+{
+}

@@ -1,0 +1,194 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 18,
+            "sourceId" : "model/person.pure",
+            "startColumn" : 14,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 18,
+        "sourceId" : "model/person.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 19,
+            "sourceId" : "model/person.pure",
+            "startColumn" : 13,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "lastName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 19,
+        "sourceId" : "model/person.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "plus",
+        "parameters" : [ {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 3,
+            "upperBound" : 3
+          },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 20,
+            "sourceId" : "model/person.pure",
+            "startColumn" : 31,
+            "startLine" : 20
+          },
+          "values" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "this",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 20,
+                "sourceId" : "model/person.pure",
+                "startColumn" : 15,
+                "startLine" : 20
+              }
+            } ],
+            "property" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 20,
+              "sourceId" : "model/person.pure",
+              "startColumn" : 21,
+              "startLine" : 20
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 20,
+              "sourceId" : "model/person.pure",
+              "startColumn" : 33,
+              "startLine" : 20
+            },
+            "value" : " "
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "this",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 20,
+                "sourceId" : "model/person.pure",
+                "startColumn" : 39,
+                "startLine" : 20
+              }
+            } ],
+            "property" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 20,
+              "sourceId" : "model/person.pure",
+              "startColumn" : 45,
+              "startLine" : 20
+            }
+          } ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 20,
+          "sourceId" : "model/person.pure",
+          "startColumn" : 31,
+          "startLine" : 20
+        }
+      } ],
+      "name" : "fullName",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 20,
+            "sourceId" : "model/person.pure",
+            "startColumn" : 56,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 65,
+        "endLine" : 20,
+        "sourceId" : "model/person.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "model/person.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

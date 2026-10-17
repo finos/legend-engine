@@ -1,0 +1,21 @@
+
+Database app::myDb
+(
+    include app::dbInc
+    Table myTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
+    View myView
+    (
+       maxTradeEventDate : max(myTable.eventDate)
+    )
+    Filter EventFilter(myTable.eventType = 'myevent')
+)
+
+Database app::dbInc
+(
+    Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
+    View tradeEventViewMaxTradeEventDate
+    (
+       ~filter [app::myDb]EventFilter
+       maxTradeEventDate : max(tradeEventTable.eventDate)
+    )
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'firstName'. Valid alternatives: ['~func', '~src']",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 6
+    }
+  }
+}

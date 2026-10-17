@@ -1,0 +1,14 @@
+
+Class test::A
+{
+   s:String[1];
+}
+function test::other(a:test::A[1]):String[1]
+{
+   test::f($a)
+}
+
+function test::f(a:test::A[1]):String[1]
+{
+   $a.s;
+}

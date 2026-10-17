@@ -1,0 +1,8 @@
+
+Mapping mongo::test::mapping::MongoDBMapping
+(
+  *meta::external::mongo::mapping::SomeClass[id1]: MongoDB
+  {
+    ~mainCollection [mongo::test::db] PersonRecord
+  }
+)

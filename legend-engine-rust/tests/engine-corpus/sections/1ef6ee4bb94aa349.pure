@@ -1,0 +1,5 @@
+
+Class test::Person{name : String[1];}function test::f():Any[*]
+{
+   1->cast(@Relation<(name:String)>)->project(~[mycol:x|$x.name])
+}

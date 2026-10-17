@@ -1,0 +1,375 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "executionKey",
+      "executionParameters" : [ {
+        "key" : "keyOne",
+        "mapping" : "test::mapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 68,
+          "startLine" : 30
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 30
+        }
+      }, {
+        "key" : "keyTwo",
+        "mapping" : "test::mapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 49,
+          "startLine" : 32
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "test::runtime",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 32
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 29
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 40,
+              "startLine" : 29
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "col",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 48,
+                      "endLine" : 29,
+                      "sourceId" : "",
+                      "startColumn" : 47,
+                      "startLine" : 29
+                    }
+                  } ],
+                  "property" : "prop1",
+                  "sourceInformation" : {
+                    "endColumn" : 54,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 50,
+                    "startLine" : 29
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 29
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 29
+                },
+                "value" : "prop1"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 29
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 27
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/{executionKey}",
+    "postValidations" : [ {
+      "assertions" : [ {
+        "assertion" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "meta::legend::service::validation::assertTabularDataSetEmpty",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "tds",
+                "sourceInformation" : {
+                  "endColumn" : 49,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 46,
+                  "startLine" : 41
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "startsWith",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "row",
+                      "sourceInformation" : {
+                        "endColumn" : 66,
+                        "endLine" : 41,
+                        "sourceId" : "",
+                        "startColumn" : 63,
+                        "startLine" : 41
+                      }
+                    }, {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 88,
+                        "endLine" : 41,
+                        "sourceId" : "",
+                        "startColumn" : 78,
+                        "startLine" : 41
+                      },
+                      "value" : "firstName"
+                    } ],
+                    "property" : "getString",
+                    "sourceInformation" : {
+                      "endColumn" : 76,
+                      "endLine" : 41,
+                      "sourceId" : "",
+                      "startColumn" : 68,
+                      "startLine" : 41
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 105,
+                      "endLine" : 41,
+                      "sourceId" : "",
+                      "startColumn" : 103,
+                      "startLine" : 41
+                    },
+                    "value" : "T"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 101,
+                    "endLine" : 41,
+                    "sourceId" : "",
+                    "startColumn" : 92,
+                    "startLine" : 41
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "row"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 62,
+                  "startLine" : 41
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 57,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 52,
+                "startLine" : 41
+              }
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 222,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 171,
+                "startLine" : 41
+              },
+              "value" : "Expected no first names to begin with the letter T"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 169,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 110,
+              "startLine" : 41
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "TabularDataSet",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 41
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "tds",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 41
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 224,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 41
+          }
+        },
+        "id" : "testAssert",
+        "sourceInformation" : {
+          "endColumn" : 224,
+          "endLine" : 41,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 41
+        }
+      } ],
+      "description" : "A good description of the validation",
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 45,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

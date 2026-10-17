@@ -1,0 +1,6 @@
+
+import meta::pure::metamodel::relation::*;
+function my::personFunctionWithQuotedCol():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], 'FIRM ID':Integer[1], CITY:String[1])>);
+}

@@ -1,0 +1,136 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "assertRelationEmpty",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "rowsWithEmptyColumn",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "rel",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 1
+        },
+        "type" : "colSpec",
+        "value" : {
+          "name" : "annualSalary",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 1
+          }
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 122,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 68,
+        "startLine" : 1
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "id",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 69,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "age",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 81,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "emailAddress",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 85,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "annualSalary",
+          "sourceInformation" : {
+            "endColumn" : 109,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 98,
+            "startLine" : 1
+          }
+        }, {
+          "name" : "dateOfBirth",
+          "sourceInformation" : {
+            "endColumn" : 121,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 111,
+            "startLine" : 1
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 65,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 47,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "name" : "rel"
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 123,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 4,
+    "startLine" : 1
+  }
+}
+}

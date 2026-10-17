@@ -1,0 +1,249 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "dbInc",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "EVENT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "trade_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "eventType",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 87,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 67,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        }, {
+          "name" : "eventDate",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 90,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "person_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 118,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 106,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tradeEventTable",
+        "primaryKey" : [ "EVENT_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 119,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "trade_id",
+          "operation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "app::dbInc",
+              "name" : "MissingJoin",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 8
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "trade_id",
+              "sourceInformation" : {
+                "endColumn" : 57,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 8
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "app::dbInc",
+                "mainTableDb" : "app::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 8
+                },
+                "table" : "tradeEventTable"
+              },
+              "tableAlias" : "tradeEventTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 8
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 8
+          }
+        }, {
+          "name" : "maxTradeEventDate",
+          "operation" : {
+            "_type" : "dynaFunc",
+            "funcName" : "max",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "eventDate",
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 9
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "app::dbInc",
+                "mainTableDb" : "app::dbInc",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 46,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 9
+                },
+                "table" : "tradeEventTable"
+              },
+              "tableAlias" : "tradeEventTable"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 9
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 9
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ {
+          "_type" : "column",
+          "column" : "trade_id",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 7
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "app::dbInc",
+            "mainTableDb" : "app::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 7
+            },
+            "table" : "tradeEventTable"
+          },
+          "tableAlias" : "tradeEventTable"
+        } ],
+        "name" : "tradeEventViewMaxTradeEventDate",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 5
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,24 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "string",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 1,
+      "sourceId" : "good",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "value" : "good"
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 7,
+    "endLine" : 1,
+    "sourceId" : "good",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

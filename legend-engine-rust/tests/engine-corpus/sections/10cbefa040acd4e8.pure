@@ -1,0 +1,5 @@
+
+function withPath::f(s: Res(1)[1]): Res(1,'a')[0..1]
+{
+  []
+}

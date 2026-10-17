@@ -1,0 +1,10 @@
+
+import domain::*;
+
+function domain::wrappedQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  baseQuery()->from(
+    mapping::CovidDataMapping,
+    runtime::H2Runtime
+  )
+}

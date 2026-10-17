@@ -1,0 +1,645 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "AllTradeService",
+        "method" : "GET",
+        "path" : "/allTradesService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 382,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 382
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 383,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 377
+        }
+      }, {
+        "_type" : "service",
+        "id" : "AllTradeSpecialCharactersService",
+        "method" : "GET",
+        "path" : "/allTradesSpecialCharactersService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeSpecialCharactersServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 179,
+            "endLine" : 390,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 390
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 391,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 385
+        }
+      }, {
+        "_type" : "service",
+        "id" : "TradeByIdService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "PATH",
+          "name" : "trade id",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 399,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 399
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 399,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 399
+            }
+          }
+        } ],
+        "path" : "/{trade id}",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 402,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 402
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 403,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 393
+        }
+      }, {
+        "_type" : "service",
+        "id" : "TradeByTradeDetailsService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "trade.details",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 411,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 411
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 411,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 411
+            }
+          }
+        } ],
+        "path" : "/details",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 414,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 414
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 415,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 405
+        }
+      }, {
+        "_type" : "service",
+        "id" : "TradeByTraderDetailsService",
+        "method" : "GET",
+        "parameters" : [ {
+          "allowReserved" : true,
+          "location" : "QUERY",
+          "name" : "trader.details",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 423,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 423
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 423,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 423
+            }
+          }
+        } ],
+        "path" : "/traderDetails",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 426,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 426
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 427,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 417
+        }
+      } ],
+      "id" : "TradeServices",
+      "path" : "/trades",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 428,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 373
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "GetAllProductsService",
+        "method" : "GET",
+        "path" : "/getAllProducts",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 439,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 439
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 440,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 434
+        }
+      }, {
+        "_type" : "service",
+        "id" : "ProductByIdService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "PATH",
+          "name" : "id",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 448,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 448
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 448,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 448
+            }
+          }
+        } ],
+        "path" : "/getProductById/{id}",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 451,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 451
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 452,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 442
+        }
+      }, {
+        "_type" : "service",
+        "id" : "ProductByNameService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "name",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 460,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 460
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 460,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 460
+            }
+          }
+        } ],
+        "path" : "/getProductByName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 463,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 463
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 464,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 454
+        }
+      }, {
+        "_type" : "service",
+        "id" : "ProductByNameAndDescriptionService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "name",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 472,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 472
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 472,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 472
+            }
+          }
+        }, {
+          "location" : "QUERY",
+          "name" : "description",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 473,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 473
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 473,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 473
+            }
+          }
+        } ],
+        "path" : "/getProductByNameAndDescription",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 163,
+            "endLine" : 476,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 476
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Product"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 477,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 466
+        }
+      } ],
+      "id" : "ProductServices",
+      "path" : "/products",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 478,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 430
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "FirmByName",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "HEADER",
+          "name" : "name",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 490,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 490
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 490,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 490
+            }
+          }
+        } ],
+        "path" : "/getFirmByName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 158,
+            "endLine" : 493,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 493
+          },
+          "type" : "meta::external::store::service::showcase::domain::Firm"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 494,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 484
+        }
+      }, {
+        "_type" : "service",
+        "id" : "FirmsByNames",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "HEADER",
+          "name" : "name",
+          "serializationFormat" : {
+            "explode" : true,
+            "explodeSourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 502,
+              "sourceId" : "",
+              "startColumn" : 65,
+              "startLine" : 502
+            },
+            "style" : "simple",
+            "styleSourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 502,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 502
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 79,
+            "endLine" : 502,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 502
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : true,
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 502,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 502
+            }
+          }
+        } ],
+        "path" : "/getFirmsByNames",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::firmServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 158,
+            "endLine" : 505,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 505
+          },
+          "type" : "meta::external::store::service::showcase::domain::Firm"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 506,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 496
+        }
+      } ],
+      "id" : "FirmServices",
+      "path" : "/firms",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 507,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 480
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "PersonsByFirstAndMiddleName",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "firstName",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 519,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 519
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 519,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 519
+            }
+          }
+        }, {
+          "location" : "QUERY",
+          "name" : "middleName",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 520,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 520
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 520,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 520
+            }
+          }
+        } ],
+        "path" : "/getPersonsByFirstAndMiddleName",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::personServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 523,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 523
+          },
+          "type" : "meta::external::store::service::showcase::domain::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 524,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 513
+        }
+      } ],
+      "id" : "PersonServices",
+      "path" : "/persons",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 525,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 509
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "ShowcaseServiceStore",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 526,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 369
+    }
+  } ]
+}

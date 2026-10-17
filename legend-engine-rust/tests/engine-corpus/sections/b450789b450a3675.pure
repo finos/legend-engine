@@ -1,0 +1,27 @@
+
+import anything::*;
+Class <<goes.test>> {doc.doc = 'bla'} anything::A extends B
+[
+  $this.ok->toOne() == 1,
+  constraint2: if($this.ok == 'ok', |true, |false)
+]
+{
+  {goes.todo = 'bla'} name: B[*];
+  {goes.doc = 'bla'} ok: A[1..2];
+  dance: enumGoes[1..2];
+  <<goes.test>> {goes.doc = 'bla'} xza(s:B[1]) {$s.z + 'ok'}:String[1];
+  anotherOne() {$this.name->toOne()}: B[1];
+}
+
+Class anything::B
+{
+  z: String[1];
+}Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}Enum anything::enumGoes
+{
+  c
+}
+

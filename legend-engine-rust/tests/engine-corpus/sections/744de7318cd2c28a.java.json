@@ -1,0 +1,133 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "Database",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "schemaA",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "time_in",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "time_out",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 41
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 42,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "schemaB",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "OTHER",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 48
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "otherPersonTable",
+        "primaryKey" : [ "OTHER" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 46
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "stereotypes" : [ ]
+  } ]
+}

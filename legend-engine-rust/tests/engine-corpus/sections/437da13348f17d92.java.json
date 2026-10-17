@@ -1,0 +1,117 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "value" : ""
+    } ],
+    "name" : "MyFunc__String_1_",
+    "package" : "model",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ {
+      "_type" : "functionTestSuite",
+      "id" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 5
+      },
+      "testData" : [ ],
+      "tests" : [ {
+        "_type" : "functionTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 6
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 6
+          }
+        } ],
+        "id" : "testDuplicate",
+        "parameters" : [ {
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 6
+          },
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 6
+            },
+            "value" : "John"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

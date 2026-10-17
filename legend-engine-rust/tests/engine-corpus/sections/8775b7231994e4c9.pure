@@ -1,0 +1,12 @@
+
+Class demo::embedded::Address
+{
+  line1: String[1];
+  postcode: String[1];
+}
+
+Class demo::embedded::Employee
+{
+  name: String[1];
+  address: demo::embedded::Address[1];
+}

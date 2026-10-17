@@ -1,0 +1,13 @@
+
+Database chain::store::DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+

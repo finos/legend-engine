@@ -1,0 +1,8 @@
+
+Binding test::bind
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::class
+  ];
+}

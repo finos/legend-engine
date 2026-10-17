@@ -1,0 +1,103 @@
+
+Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  ownership: DID { identifier: '12345' };
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}
+
+Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle2
+{
+  pattern: 'url/myUrl2/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  ownership: UserList { users: ['12345', '789'] };
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+    ];
+  }
+}
+
+Service meta::pure::myServiceMulti
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: meta::myMapping1;
+      runtime: test::runtime;
+    }
+    executions['UAT']:
+    {
+      mapping: meta::myMapping2;
+      runtime: meta::myRuntime;
+    }
+  }
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+    tests['UAT']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+  }
+}

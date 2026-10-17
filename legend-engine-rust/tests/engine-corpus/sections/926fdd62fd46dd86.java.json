@@ -1,0 +1,738 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "executionParameters" : [ {
+        "key" : "PROD",
+        "mapping" : "mapping::CovidDataMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 77
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "runtime::H2Runtime",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 78,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 78
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 75
+        }
+      }, {
+        "key" : "DEV",
+        "mapping" : "mapping::CovidDataMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 82,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 82
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "runtime::H2Runtime",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 83
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 84,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 80
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 73,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 73
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 73
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 73
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 50,
+                    "endLine" : 73,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 73
+                  }
+                } ],
+                "property" : "cases",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 73,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 73
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 73,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 73
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 73,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 73
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 73,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 73
+              },
+              "value" : "Cases"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 73
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 73
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 85,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 71
+      }
+    },
+    "name" : "CovidDataMulti",
+    "owners" : [ "anonymous", "akphi" ],
+    "package" : "service",
+    "pattern" : "/9566f101-2108-408f-863f-6d7e154dc17a",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 86,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 61
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureMultiExecution",
+      "executionKey" : "env",
+      "executionParameters" : [ {
+        "key" : "PROD",
+        "mapping" : "mapping::CovidDataMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 104,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 104
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "runtime::SnowflakeRuntime",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 105,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 105
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 102
+        }
+      }, {
+        "key" : "DEV",
+        "mapping" : "mapping::CovidDataMapping",
+        "mappingSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 109,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 109
+        },
+        "runtime" : {
+          "_type" : "runtimePointer",
+          "runtime" : "runtime::SnowflakeRuntime",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 110,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 110
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 111,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 107
+        }
+      } ],
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 100,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 100
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 100
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 100
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 50,
+                    "endLine" : 100,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 100
+                  }
+                } ],
+                "property" : "cases",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 100,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 100
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 100,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 100
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 100
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 100,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 100
+              },
+              "value" : "Cases"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 100
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 100,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 100
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 112,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 98
+      }
+    },
+    "name" : "CovidDataMultiSnowflake",
+    "owners" : [ "anonymous", "akphi" ],
+    "package" : "service",
+    "pattern" : "/9566f101-2108-408f-863f-6d7e154dc17a",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 113,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 88
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 127,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 127
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 127,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 127
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 127,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 127
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 50,
+                    "endLine" : 127,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 127
+                  }
+                } ],
+                "property" : "cases",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 127,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 127
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 127,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 127
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 127,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 127
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 127,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 127
+              },
+              "value" : "Cases"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 127,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 127
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 127,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 127
+        }
+      },
+      "mapping" : "mapping::CovidDataMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 128,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 128
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 129,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 129
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 130,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 125
+      }
+    },
+    "name" : "CovidDataSingle",
+    "owners" : [ "anonymous", "akphi" ],
+    "package" : "service",
+    "pattern" : "/9566f101-2108-408f-863f-6d7e154dc17b",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 131,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 115
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 145,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 145
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 145,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 145
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 145,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 145
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 50,
+                    "endLine" : 145,
+                    "sourceId" : "",
+                    "startColumn" : 49,
+                    "startLine" : 145
+                  }
+                } ],
+                "property" : "cases",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 145,
+                  "sourceId" : "",
+                  "startColumn" : 52,
+                  "startLine" : 145
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 145,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 145
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 145,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 145
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 145,
+                "sourceId" : "",
+                "startColumn" : 61,
+                "startLine" : 145
+              },
+              "value" : "Cases"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 145,
+            "sourceId" : "",
+            "startColumn" : 38,
+            "startLine" : 145
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 145,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 145
+        }
+      },
+      "mapping" : "mapping::CovidDataMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 146,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 146
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "runtime::SnowflakeRuntime",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 147,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 147
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 148,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 143
+      }
+    },
+    "name" : "CovidDataSingleSnowflake",
+    "owners" : [ "anonymous", "akphi" ],
+    "package" : "service",
+    "pattern" : "/9566f101-2108-408f-863f-6d7e154dc17b",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 149,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 133
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

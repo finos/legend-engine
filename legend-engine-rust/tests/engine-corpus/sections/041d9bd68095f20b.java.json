@@ -1,0 +1,75 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "this is description of this COVIDDataspace",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "domain::wrappedQuery():TabularDataSet[1]",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 20
+        },
+        "type" : "FUNCTION"
+      },
+      "executionContextKey" : "dummyContext",
+      "id" : "1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "title" : "wrapper exec"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "COVIDDataspace",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "COVID Sample Data"
+  } ]
+}

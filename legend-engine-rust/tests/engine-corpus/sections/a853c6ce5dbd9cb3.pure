@@ -1,0 +1,15 @@
+
+Runtime demo::runtime::PersonRuntime
+{
+  mappings:
+  [
+    demo::PersonMapping
+  ];
+  connections:
+  [
+    demo::store::PersonDB:
+    [
+      h2: demo::connection::PersonH2Connection
+    ]
+  ];
+}

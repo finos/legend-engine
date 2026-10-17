@@ -1,0 +1,18 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "",
+    "executionContexts" : [ ],
+    "name" : "toBytes",
+    "package" : "DataSpace::stereotypes::tags::name::title::description::query::id::executionContextKey::executionContexts::defaultExecutionContext::mapping::mappingProvider::defaultRuntime::testData::diagrams::diagram::elements::executables::executable::sampleValues::supportInfo::documentationUrl::Email::address::Combined::emails::website::faqUrl::supportUrl::documentation::label::url::expertise::expertIds::operationalMetadata::coverageRegions::updateFrequency::groupId::artifactId::versionId::featuredDiagrams::all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token 'unknownProp'. Valid alternatives: ['enabled', 'disabled']",
+    "sourceInformation" : {
+      "endColumn" : 17,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 12
+    }
+  }
+}

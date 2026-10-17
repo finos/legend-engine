@@ -1,0 +1,23 @@
+
+Database test::myDB
+(
+    Table dataTable
+    (
+        pk INTEGER PRIMARY KEY,
+        ti TINYINT,
+        si SMALLINT,
+        int INTEGER,
+        bi BIGINT,
+        vc VARCHAR(200),
+        c CHAR(1),
+        date DATE,
+        ts TIMESTAMP,
+        f FLOAT,
+        d DOUBLE,
+        bit BIT,
+        dec DECIMAL(18,6),
+        r REAL,
+        n NUMERIC(18,6),
+        o OTHER
+    )
+)

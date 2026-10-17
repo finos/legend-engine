@@ -1,0 +1,6 @@
+
+Class demo::Shift
+{
+  id: Integer[1];
+  startedAt: DateTime[0..1];
+}

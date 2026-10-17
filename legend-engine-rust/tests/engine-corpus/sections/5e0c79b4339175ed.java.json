@@ -1,0 +1,562 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "AccountValue",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my::domainModel::migration::test::account",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "value",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "my::domainModel::migration::test::product::ProductCollection",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "productCollection",
+      "sourceInformation" : {
+        "endColumn" : 85,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "joinStrings",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 6
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 61,
+                  "startLine" : 6
+                },
+                "value" : "2020-02-02"
+              } ],
+              "property" : "productCollection",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 6
+              }
+            } ],
+            "property" : "productType",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 74,
+              "startLine" : 6
+            }
+          } ],
+          "property" : "category",
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 86,
+            "startLine" : 6
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 96,
+          "startLine" : 6
+        }
+      } ],
+      "name" : "getCategoryWithDatePropagation",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 117,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 112,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 121,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 2
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 38,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "Account class"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ProductCollection",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my::domainModel::migration::test::product",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 11
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "collectionName",
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 9
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ {
+      "path" : "my::domainModel::migration::test::product::Collections",
+      "sourceInformation" : {
+        "endColumn" : 187,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 134,
+        "startLine" : 9
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 38,
+        "startLine" : 9
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 9
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 9
+        },
+        "value" : "doc"
+      },
+      "value" : "Product class"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "ProductType",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my::domainModel::migration::test::product",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 15
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "category",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 15
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 13
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 13
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 13
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 38,
+        "startLine" : 13
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 13
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 13
+        },
+        "value" : "doc"
+      },
+      "value" : "Product class"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Collections",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my::domainModel::migration::test::product",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "my::domainModel::migration::test::product::ProductType",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "productType",
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 17
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 17
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 38,
+        "startLine" : 17
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 17
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 42,
+          "startLine" : 17
+        },
+        "value" : "doc"
+      },
+      "value" : "Product class"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Classification",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my::domainModel::migration::test::product",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "my::domainModel::migration::test::product::ProductType",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "productType",
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

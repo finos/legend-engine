@@ -1,0 +1,18 @@
+
+Database sample::test
+(
+  View SomeView
+  (
+    ~filter someFilter
+    ~groupBy
+    (
+      data.SOMETHING.TEST,
+      data.SOMETHING_ELSE.TEST
+    )
+    ~distinct
+    id: test.prop PRIMARY KEY,
+    name: test.prop,
+    site_url_namespace: [sample::test]@sites | public.sites.url_namespace,
+    prefix: plus('/prefix/t/', [sample::test]@sites | public.sites.url, '/w/', public.repository_url, '/')
+  )
+)

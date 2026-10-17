@@ -1,0 +1,13 @@
+
+DataSpace {meta::pure::profiles::doc.doc = 'text\n'} model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+}

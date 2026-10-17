@@ -1,0 +1,16 @@
+
+Runtime runtime::H2Runtime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    store::CovidDataStore:
+    [
+      connection_1: runtime::connection::H2Connection
+    ]
+  ];
+}
+

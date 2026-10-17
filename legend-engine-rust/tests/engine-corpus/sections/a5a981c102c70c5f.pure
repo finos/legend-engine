@@ -1,0 +1,15 @@
+
+'''
+Product reference data.
+Loaded nightly.
+'''
+Database <<equality.Key>> {doc.version = '1.0'} model::store::ProductDatabase
+(
+  Schema productSchema
+  (
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'test' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

@@ -1,0 +1,22 @@
+
+Service test::Service 
+{
+  pattern : 'test';
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: test::Person.all()->project([x | $x.name], ['Name']);
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings: [test::Mapping];      connections: [        test::TestDatabase: [connection1: test::ServiceConnection]
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts: [];
+  }
+}

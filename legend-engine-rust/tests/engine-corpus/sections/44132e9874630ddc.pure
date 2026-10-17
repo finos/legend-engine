@@ -1,0 +1,45 @@
+
+function showcase::query(): Any[1]
+{
+   {|meta::external::store::service::showcase::domain::Trade.all()
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Trade {
+               tradeId,
+               quantity,
+               trader {
+                   kerberos,
+                   firstName,
+                   lastName
+               },
+               product {
+                   productId,
+                   productName,
+                   description,
+                   synonyms {
+                       name,
+                       type
+                   }
+               }
+           }
+         }#, 10)
+       ->serialize(#{
+           meta::external::store::service::showcase::domain::Trade {
+               tradeId,
+               quantity,
+               trader {
+                   kerberos,
+                   firstName,
+                   lastName
+               },
+               product {
+                   productId,
+                   productName,
+                   description,
+                   synonyms {
+                       name,
+                       type
+                   }
+               }
+           }
+        }#)};
+}

@@ -1,0 +1,21 @@
+
+import abc::abc::*;
+Elasticsearch7Cluster import::Elasticsearch7Cluster::indices::properties::fields::Keyword::Text::Date::Short::Byte::Integer::Long::Float::HalfFloat::Double::Boolean::Object::Nested
+{
+  indices: [
+    index1: {
+      properties: [
+        prop1: Keyword,
+        prop2: Keyword {
+          fields: [
+            english: Keyword          ];
+        }
+      ];
+    },
+    'index-WrappedOnQuotes': {
+      properties: [
+        'prop1-wrapped': Keyword
+      ];
+    }
+  ];
+}

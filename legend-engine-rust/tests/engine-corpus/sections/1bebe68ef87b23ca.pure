@@ -1,0 +1,12 @@
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::TargetPerson
+{
+  fullName: String[1];
+}
+

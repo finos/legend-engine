@@ -1,0 +1,24 @@
+
+Diagram meta::pure::MyDiagram
+{
+  classView ola
+  {
+    class: anything::goes;
+    position: (123.123,23.23);
+    rectangle: (123.123,23.23);
+    hideProperties: true;
+  }
+  classView otis
+  {
+    class: anything::goes;
+    position: (123.123,23.23);
+    rectangle: (123.123,23.23);
+    hideProperties: true;
+  }
+  generalizationView
+  {
+    source: ola;
+    target: otiss;
+    points: [(.123,23.23),(123.123,23.23)];
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'explode' is required",
+    "sourceInformation" : {
+      "endColumn" : 73,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 10
+    }
+  }
+}

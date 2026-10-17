@@ -1,0 +1,59 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 59,
+        "endLine" : 47,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 47
+      },
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "FirmService",
+          "serviceStore" : "meta::external::store::service::showcase::store::FirmServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 86,
+            "startLine" : 49
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 49
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 47
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 45
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,14 @@
+
+Data demo::data::CustomerData
+{
+  Relational
+  #{
+    default.EuCustomerTable:
+      'id,name,region\n' +
+      '1,Alice,EMEA\n' +
+      '2,Bob,EMEA\n';
+    default.UsCustomerTable:
+      'id,name,region\n' +
+      '1,Carol,AMER\n';
+  }#
+}

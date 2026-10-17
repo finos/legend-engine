@@ -1,0 +1,8 @@
+
+function test::function(): Any[*]
+{
+  {|
+    let pName = test::Person.all()->filter(p | $p.name == 'Peter')->toOne().name;
+    test::Person.all()->filter(p | $p.name == $pName)->project(col(x | $x.age, 'age'));
+  };
+}

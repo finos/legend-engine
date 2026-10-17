@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ServiceStoreRuntime",
+    "package" : "meta::external::store::service::showcase::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 149,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 146
+        },
+        "store" : {
+          "path" : "meta::external::store::service::showcase::store::EmployeesServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 146
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "meta::external::store::service::showcase::connection::serviceStoreConnection",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 148,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 148
+            }
+          },
+          "id" : "connection_1",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 148,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 148
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "meta::external::store::service::showcase::mapping::ServiceStoreMapping",
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 142,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 142
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 151,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 138
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 151,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 138
+    }
+  } ],
+  "imports" : [ ]
+}

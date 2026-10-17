@@ -1,0 +1,9 @@
+
+Mapping mappingPackage::myMapping
+(
+    Person: Relational
+    {
+        firstName : [db]personTable.firstName,
+        firm : test::binding : [db]personTable.jsonColumn
+    }
+)

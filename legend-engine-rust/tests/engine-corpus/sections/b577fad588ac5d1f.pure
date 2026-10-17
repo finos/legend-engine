@@ -1,0 +1,30 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    +localProp : String[1];
+
+    ~service [test::ServiceStore] TestServiceGroup.TestService1
+    (
+      ~request
+      (
+        parameters
+        (
+          param = $this.localProp + $this.prop,
+          param2 = 1
+        )
+      )
+    )
+    ~service [test::ServiceStore] TestServiceGroup.TestService2
+    (
+      ~request
+      (
+        parameters
+        (
+          param1 = $this.localProp
+        )
+      )
+    )
+  }
+)

@@ -1,0 +1,48 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "collection",
+    "multiplicity" : {
+      "lowerBound" : 2,
+      "upperBound" : 2
+    },
+    "sourceInformation" : {
+      "endColumn" : 53,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "values" : [ {
+      "_type" : "dateTime",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 1
+      },
+      "value" : "2010-10-20T20:20:20.000"
+    }, {
+      "_type" : "dateTime",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 29,
+        "startLine" : 1
+      },
+      "value" : "2010-10-22T00:00:00.000"
+    } ]
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 53,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

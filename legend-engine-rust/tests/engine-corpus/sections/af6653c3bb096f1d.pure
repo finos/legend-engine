@@ -1,0 +1,13 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  queryTimeOutInSeconds: 5000;
+  type: H2;
+  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };
+  auth: DefaultH2;
+  queryGenerationConfigs: [
+    UnknownConfig{}
+  ];
+}
+

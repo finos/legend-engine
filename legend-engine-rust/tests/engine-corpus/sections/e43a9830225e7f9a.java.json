@@ -1,0 +1,370 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::animal::mammal::Mammal",
+      "classSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 187,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 187
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::animal::mammal::Mammal",
+          "property" : "noOfLegs",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 189,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 189
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 189,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 189
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 189,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 189
+            },
+            "value" : "41231"
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 190,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 187
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "model::animal::reptile::Reptile",
+      "classSourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 191,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 191
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "enumMappingId" : "model_animal_Family",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::animal::reptile::Reptile",
+          "property" : "family",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 194,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 194
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 194,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 194
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 56,
+                "endLine" : 194,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 194
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 194,
+              "sourceId" : "",
+              "startColumn" : 58,
+              "startLine" : 194
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 193,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 193
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 195,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 191
+      },
+      "srcClass" : "model::animal::reptile::Reptile"
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "UO",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "op"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "model::animal::Family",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 197,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 197
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 200,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 197
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "dummyMapping2",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 201,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 185
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::animal::Animal",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 205,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 205
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::animal::Animal",
+          "property" : "noOfLegs",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 207,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 207
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 207,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 207
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 207,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 207
+            },
+            "value" : 4
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 208,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 205
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "model::animal::Animal2",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 209,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 209
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::animal::Animal2",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 211,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 211
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 211,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 211
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 211,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 211
+            },
+            "value" : "asdasdasdasd"
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 212,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 209
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "model::animal::GenericAnimal",
+      "classSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 213,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 213
+      },
+      "propertyMappings" : [ ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 215,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 213
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "model::animal::GenericAnimal2",
+      "classSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 216,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 216
+      },
+      "propertyMappings" : [ ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 218,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 216
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "UO",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "uo"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "model::animal::Family",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 220,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 220
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 223,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 220
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "dummyMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 224,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 203
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

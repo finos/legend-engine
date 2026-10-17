@@ -1,0 +1,20 @@
+
+Mapping test::hierarchyXStoreMapping
+(
+   test::SpecificEntity[e]: Pure {
+      ~src test::SpecificEntity
+      id: $src.id,
+      name: $src.name
+   }
+   
+   test::Order[o]: Pure {
+      ~src test::Order
+      entityId: $src.entityId,
+      description: $src.description
+   }
+
+   test::EntityOrder: XStore {
+      entity: $this.entityId == $that.id,
+      orders: $this.id == $that.entityId
+   }
+)

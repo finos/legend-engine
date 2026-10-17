@@ -1,0 +1,69 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "chain::store",
+    "schemas" : [ {
+      "name" : "FIRM_SCHEMA",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 128,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 121
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 125,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 125
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRM_DETAILS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 126,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 126
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FIRM_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 127,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 123
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 129,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 119
+    },
+    "stereotypes" : [ ]
+  } ]
+}

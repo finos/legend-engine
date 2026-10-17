@@ -1,0 +1,5 @@
+
+SnowflakeApp x::A
+{
+   applicatioName : 'sass';
+}

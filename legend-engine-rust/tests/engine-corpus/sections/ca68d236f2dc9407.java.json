@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'dataProcessingUnits' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    }
+  }
+}

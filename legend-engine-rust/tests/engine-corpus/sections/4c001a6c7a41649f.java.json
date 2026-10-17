@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'assert' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 6
+    }
+  }
+}

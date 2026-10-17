@@ -1,0 +1,20 @@
+
+Elasticsearch7Cluster abc::abc::Store
+{
+  indices: [
+    'index-WrappedOnQuotes': {
+      properties: [
+        'prop1-wrapped': Keyword {
+          fields: [
+            english: Keyword {
+              fields: [
+                'nested-wrapped': Keyword
+              ];
+            }
+          ];
+        }
+      ];
+    }
+  ];
+}
+

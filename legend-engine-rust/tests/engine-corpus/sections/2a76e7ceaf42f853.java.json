@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token '}'. Valid alternatives: ['sourceHashColumn', 'targetHashColumn', 'aggregatedHash']",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 9
+    }
+  }
+}

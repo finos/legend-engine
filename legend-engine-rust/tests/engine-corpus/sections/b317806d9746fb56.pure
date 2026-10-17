@@ -1,0 +1,23 @@
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::person
+{
+  name: String[1];
+}
+
+Class model::firm
+{
+  legalName: String[1];
+  employees: model::person[*];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::_person
+{
+  name: String[1];
+}
+
+Class model::_firm
+{
+  legalName: String[1];
+  employees: model::_person[*];
+}
+

@@ -1,0 +1,6 @@
+
+function example::testMaxInteger(input: Integer[1]):Integer[1]
+{
+   assert($input > 0, {|'Input must be greater than 0'}) && assert($input > 0, 'Input must be greater than 0');
+   [1,$input]->max();
+}

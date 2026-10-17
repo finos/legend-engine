@@ -1,0 +1,35 @@
+
+Mapping testing::mapping
+(
+  *testing::Person[testing_Person]: Pure
+  {
+    ~src testing::other::NPerson
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":["john doe"]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

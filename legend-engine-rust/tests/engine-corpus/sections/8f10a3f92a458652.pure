@@ -1,0 +1,26 @@
+
+Class demo::ssc::Person
+{
+  firstName: String[1];
+  firm: demo::ssc::Firm[1];
+}
+
+Class demo::ssc::Firm
+{
+  legalName: String[1];
+  // Collection of primitives.
+  otherNames: String[*];
+  // Collection of objects, each holding a further collection.
+  addresses: demo::ssc::Address[*];
+}
+
+Class demo::ssc::Address
+{
+  name: String[1];
+  lines: demo::ssc::AddressLine[*];
+}
+
+Class demo::ssc::AddressLine
+{
+  detail: String[1];
+}

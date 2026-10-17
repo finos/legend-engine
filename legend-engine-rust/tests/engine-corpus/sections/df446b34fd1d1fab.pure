@@ -1,0 +1,9 @@
+
+Mapping my::srcMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~src my::personFunctionTyped()
+    firstName: FIRSTNAME
+  }
+)

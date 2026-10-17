@@ -1,0 +1,24 @@
+
+Mapping mapping::CovidDataMapping
+(
+  domain::COVIDData: Relational
+  {
+    ~primaryKey
+    (
+      [store::CovidDataStore]COVID_DATA.ID
+    )
+    ~mainTable [store::CovidDataStore]COVID_DATA
+    id: [store::CovidDataStore]COVID_DATA.ID,
+    fips: [store::CovidDataStore]COVID_DATA.FIPS,
+    date: [store::CovidDataStore]COVID_DATA.DATE,
+    caseType: [store::CovidDataStore]COVID_DATA.CASE_TYPE,
+    cases: [store::CovidDataStore]COVID_DATA.CASES,
+    lastReportedFlag: [store::CovidDataStore]COVID_DATA.LAST_REPORTED_FLAG,
+    empty: EnumerationMapping EmptyEnumMapping: [store::CovidDataStore]COVID_DATA.CASE_TYPE
+  }
+
+  model::EmptyEnum: EnumerationMapping EmptyEnumMapping
+  {
+  }
+)
+

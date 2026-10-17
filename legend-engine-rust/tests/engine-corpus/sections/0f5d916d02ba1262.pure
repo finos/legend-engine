@@ -1,0 +1,16 @@
+
+Class test::A {}
+Class test::B {}
+Association test::C
+{
+   property1: test::A[0..1];
+   property1: test::B[1];
+}
+Class test::D
+{
+   property : Integer[0..1];
+   property : String[1];
+   other : String[1];
+   ok : String[1];
+   other: String[1];
+}

@@ -1,0 +1,6 @@
+
+SchemaSet test::Example1
+{
+  format: FlatData;
+  schemas: [ { content: 'section sameSectionName: DelimitedWithHeadings\n{\n  scope.untilEof;\n\n  Record\n  {\n    HEADING1: STRING;\n  }\n}\nsection sameSectionName: DelimitedWithHeadings\n{\n  scope.foNumberOfLines: 1;\n\n  Record\n  {\n      HEADING1: STRING;\n  }\n}'; } ];
+}

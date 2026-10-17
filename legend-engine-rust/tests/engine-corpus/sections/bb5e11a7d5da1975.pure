@@ -1,0 +1,13 @@
+
+Class test::A
+{
+   names : String[0..1];
+   prop() {$this.names + 'ok'} : String[1];
+}
+Class test::B
+[
+   $this.names->at(0)
+]
+{
+   names : String[*];
+}

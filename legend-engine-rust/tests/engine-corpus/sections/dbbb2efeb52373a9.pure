@@ -1,0 +1,6 @@
+
+Runtime meta::mySimpleRuntime
+{
+  mappings: [meta::mySimpleMapping];
+}
+

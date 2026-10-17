@@ -1,0 +1,8 @@
+
+Binding meta::external::store::service::showcase::store::FirmResponseSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [
+                    meta::external::store::service::showcase::domain::Firm
+                  ];
+}

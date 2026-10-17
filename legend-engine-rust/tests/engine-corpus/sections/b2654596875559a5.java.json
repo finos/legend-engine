@@ -1,0 +1,69 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "FlatData",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "section Z: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: '|';\n\n  Record\n  {\n    omega : STRING;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 148,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 19
+      },
+      "id" : "fd1",
+      "sourceInformation" : {
+        "endColumn" : 150,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 19
+      }
+    }, {
+      "content" : "section A: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: ',';\n\n  Record\n  {\n    alpha   : STRING;\n    beta    : BOOLEAN(optional);\n    gamma   : INTEGER;\n    delta   : INTEGER;\n    epsilon : INTEGER;\n    zeta    : DECIMAL;\n    eta     : DECIMAL;\n    theta   : DATE;\n    iota    : DATETIME;\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 350,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 20
+      },
+      "id" : "fd2",
+      "sourceInformation" : {
+        "endColumn" : 352,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/x.flatdata",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::model::A" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaId" : "fd2",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    }
+  } ],
+  "imports" : [ ]
+}

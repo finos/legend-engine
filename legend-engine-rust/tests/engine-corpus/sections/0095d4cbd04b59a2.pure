@@ -1,0 +1,26 @@
+
+Class model::Firm
+{
+  type: model::IncType[1];
+  employees: model::Person[1];
+}
+
+Class model::Person
+{
+}
+
+Class model::_Firm
+{
+  _type: String[1];
+  em: model::_Person[1];
+}
+
+Class model::_Person
+{
+}
+
+Enum model::IncType
+{
+  CORP
+}
+

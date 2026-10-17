@@ -1,0 +1,7 @@
+
+ServiceStoreConnection import::store::baseUrl
+{
+  store: test::serviceStore;
+  baseUrl: 'http://dummyurl';
+}
+

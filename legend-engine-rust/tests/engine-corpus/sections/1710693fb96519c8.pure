@@ -1,0 +1,39 @@
+
+import meta::external::store::service::showcase::domain::*;
+
+Class meta::external::store::service::showcase::domain::ApiResponse
+{
+    metadata  : Metadata[1];
+    employees : Person[*];
+    firms     : Firm[*];
+}
+
+Class meta::external::store::service::showcase::domain::Metadata
+{
+    noOfRecords : Integer[1];
+}
+
+Class meta::external::store::service::showcase::domain::Person
+{
+    firstName  : String[1];
+    lastName   : String[1];
+    middleName : String[0..1];
+}
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+    firmName : String[1];
+    firmId   : Integer[1];
+    address  : Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Address
+{
+    street : String[1];
+}
+
+Association meta::external::store::service::showcase::domain::Employment
+{
+    employees : Person[*];
+    firm      : Firm[0..1];
+}

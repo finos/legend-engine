@@ -1,0 +1,9 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+    *meta::external::store::service::showcase::domain::Firm: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::FirmServiceStore] FirmService
+    }
+)
+

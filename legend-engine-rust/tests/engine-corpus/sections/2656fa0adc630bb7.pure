@@ -1,0 +1,18 @@
+
+RelationalDatabaseConnection simple::StaticConnection
+{
+  store: apps::pure::studio::relational::tests::dbInc;
+  type: SqlServer;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: '1234trfdgh/';
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}

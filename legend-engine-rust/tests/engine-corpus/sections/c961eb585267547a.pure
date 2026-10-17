@@ -1,0 +1,30 @@
+
+Database com::entity::EntityDatabase
+(
+  Schema Entity
+  (
+    Table LegalEntity
+    (
+      ENTITY_ID VARCHAR(32) PRIMARY KEY,
+      name VARCHAR(32) NOT NULL,
+      description VARCHAR(100),
+      status VARCHAR(20)
+    )
+
+    View LegalEntity_View1
+    (
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,
+      name: Entity.LegalEntity.name,
+      name: Entity.LegalEntity.name
+    )
+
+    View LegalEntity_View2
+    (
+      description: Entity.LegalEntity.description,
+      description: Entity.LegalEntity.description,
+      status: Entity.LegalEntity.status,
+      status: Entity.LegalEntity.status
+    )
+  )
+)

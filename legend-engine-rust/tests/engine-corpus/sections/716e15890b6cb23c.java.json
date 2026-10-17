@@ -1,0 +1,66 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+      "profileSourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 16
+      },
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 71,
+        "startLine" : 16
+      },
+      "value" : "InDevelopment"
+    } ],
+    "taggedValues" : [ ]
+  } ]
+}

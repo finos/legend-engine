@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "mySimpleRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 5
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    }
+  } ],
+  "imports" : [ "a::b", "runtime::a1", "runtime::a::e" ]
+}

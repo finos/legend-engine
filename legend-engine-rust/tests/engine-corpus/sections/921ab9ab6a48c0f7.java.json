@@ -1,0 +1,52 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "demo::ssn::Firm" ]
+    },
+    "name" : "FirmBinding",
+    "package" : "demo::ssn",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 72,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 66
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "demo::ssn::Tag" ]
+    },
+    "name" : "TagBinding",
+    "package" : "demo::ssn",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 80,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 74
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "demo::ssn::Participant" ]
+    },
+    "name" : "ParticipantBinding",
+    "package" : "demo::ssn",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 88,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 82
+    }
+  } ],
+  "imports" : [ ]
+}

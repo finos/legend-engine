@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->rename(~id, ~newId)->filter(i|$i.id == 'ok')
+}

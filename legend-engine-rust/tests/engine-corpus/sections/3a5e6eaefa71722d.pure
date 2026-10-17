@@ -1,0 +1,12 @@
+
+Enum demo::EmployeeType
+{
+  FULL_TIME,
+  CONTRACT
+}
+
+Class demo::Employee
+{
+  firstName: String[1];
+  type: demo::EmployeeType[1];
+}

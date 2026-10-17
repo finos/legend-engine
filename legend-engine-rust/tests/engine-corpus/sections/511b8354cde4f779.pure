@@ -1,0 +1,9 @@
+
+Mapping test::mapping
+(
+   TestScopeCM : Relational
+   {
+      feeAmount : divide(if(equal([testSTORE]@test_JOIN > (OUTER) [testSTORE]@TER_JOIN | toString([testSTORE]SOMETHING.something.toValue), '09001'), 0.0,
+                         [testSTORE]@test_JOIN > (INNER) [testSTORE]@Sample | parseFloat([testSTORE]CAR.PAINT.FeeAmount)), if(isEmpty(factor), 1.0, divide(1, factor)))
+   }
+)

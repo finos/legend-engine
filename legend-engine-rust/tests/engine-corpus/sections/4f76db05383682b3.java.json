@@ -1,0 +1,49 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationalCSVData",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 28,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "tables" : [ {
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 23,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        },
+        "table" : "EMPLOYEE",
+        "values" : "ID,NAME,DEPT_ID\n1,Alice,10\n2,Bob,20\n"
+      }, {
+        "schema" : "SALES",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        },
+        "table" : "SALE",
+        "values" : "ID,EMP_ID,AMOUNT\n100,1,500\n200,2,300\n"
+      } ]
+    },
+    "name" : "CrossSchemaData",
+    "package" : "demo::joins::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,24 @@
+
+Database test::DB
+(
+  Table PERSON (
+    fullName VARCHAR(100) PRIMARY KEY,
+    firmName VARCHAR(100),
+    addressName VARCHAR(100),
+    birthTime TIMESTAMP
+  )
+  Table Address(
+    name VARCHAR(255) PRIMARY KEY
+  )
+
+  Table Street(
+    name VARCHAR(255) PRIMARY KEY,
+    address_name VARCHAR(255) 
+  )
+  Table Location(
+    id VARCHAR(200) PRIMARY KEY,
+    city VARCHAR(200) 
+  )
+Join Address_Street(Address.name = Street.address_name)
+)
+

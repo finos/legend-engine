@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unknown permission scheme 'WHATSCHEME'",
+    "sourceInformation" : {
+      "endColumn" : 33,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 5
+    }
+  }
+}

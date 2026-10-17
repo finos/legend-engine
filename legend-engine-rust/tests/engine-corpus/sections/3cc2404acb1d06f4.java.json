@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "Example1",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"stringField\": {\n      \"type\": \"string\"\n    },\n    \"floatField\": {\n      \"type\": \"number\"\n    },\n    \"decimalField\": {\n      \"type\": \"number\"\n    },\n    \"integerField\": {\n      \"type\": \"integer\"\n    },\n    \"dateField\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"dateTimeField\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"strictDateField\": {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"booleanField\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"booleanField\"\n  ]\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 700,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 6
+      },
+      "location" : "example/jsonSchema/Test.json",
+      "sourceInformation" : {
+        "endColumn" : 702,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 5
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,147 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 13
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 15
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 15
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::store::db",
+            "mainTableDb" : "model::store::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 15
+            },
+            "table" : "myTable"
+          },
+          "tableAlias" : "myTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 15
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 16
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "property" : "localProp",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 16
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 16
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::store::db",
+            "mainTableDb" : "model::store::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 51,
+              "startLine" : 16
+            },
+            "table" : "myTable"
+          },
+          "tableAlias" : "myTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 16
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 13
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMap",
+    "package" : "model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

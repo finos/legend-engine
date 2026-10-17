@@ -1,0 +1,176 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "CustomerDataStore",
+    "package" : "store",
+    "schemas" : [ {
+      "name" : "SAMPLE_DATA",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 122,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 107
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "CUSTOMER_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 111
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "CUSTOMER_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 112,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 112
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 40
+          }
+        }, {
+          "name" : "CUSTOMER_BIRTH_DATE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 113
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "CUSTOMER_TIME_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 114,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 114
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "CUSTOMER_STRICT_DATE_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 115
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "CUSTOMER_BOOLEAN_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 116,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 116
+          },
+          "type" : {
+            "_type" : "Binary",
+            "size" : 1
+          }
+        }, {
+          "name" : "CUSTOMER_NUMBER_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 117,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 117
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "CUSTOMER_FLOAT_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 118
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "CUSTOMER_DECIMAL_FIELD",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 119,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 119
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "CUSTOMER_TYPE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 120
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "CUSTOMERS",
+        "primaryKey" : [ "CUSTOMER_ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 121,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 109
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 123,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 105
+    },
+    "stereotypes" : [ ]
+  } ]
+}

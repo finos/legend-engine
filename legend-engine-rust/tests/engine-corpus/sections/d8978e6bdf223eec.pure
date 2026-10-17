@@ -1,0 +1,7 @@
+
+function my::func(): Any[*]
+{
+  #>{my::Store.SchemaMissing.myTable}#->filter(
+    c|$c.name == 'ok'
+  )
+}

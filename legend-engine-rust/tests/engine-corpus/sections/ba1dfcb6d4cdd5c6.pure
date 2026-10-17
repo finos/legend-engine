@@ -1,0 +1,13 @@
+
+Class test::model::A
+{
+  alpha   : String[1];
+  beta    : Boolean[0..1];
+  gamma   : Integer[1];
+  delta   : Float[1];
+  epsilon : Decimal[1];
+  zeta    : Float[1];
+  eta     : Decimal[1];
+  theta   : StrictDate[1];
+  iota    : DateTime[1];
+}

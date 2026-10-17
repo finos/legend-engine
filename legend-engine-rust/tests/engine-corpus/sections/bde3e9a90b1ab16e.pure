@@ -1,0 +1,65 @@
+
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+  testSuites:
+    [
+      testSuite1:
+      {
+        function: |model::Firm.all()->project(~['Employees/First Name': x|$x.employees.firstName, 'Employees/Last Name': x|$x.employees.lastName, 'Legal Name': x|$x.legalName]);
+        tests:
+        [
+          test1:
+          {
+            data:
+            [
+              store::TestDB:
+  Relation
+  #{
+    default.PersonTable:
+      id,firm_id,firstName,lastName
+      1,1,John,Doe
+      2,1,Nicole,Smith
+      3,2,Time,Smith;
+
+    default.FirmTable:
+      id,legal_name
+      1,Finos
+      2,Apple;
+  }#
+            ];
+            asserts:
+            [
+              shouldPass:
+                Relation
+                #{
+                  Employees/First Name, Employees/Last Name, Legal Name
+                  John                , Doe                , Finos
+                  Nicole              , Smith              , Finos
+                  Time                , Smith              , Apple;
+                }#
+            ];
+          }
+        ];
+      }
+    ]
+)

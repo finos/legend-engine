@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "deephavenStore",
+    "includedStores" : [ ],
+    "name" : "foo",
+    "package" : "test::Store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tables" : [ {
+      "columns" : [ {
+        "_type" : "column",
+        "name" : "prop1",
+        "type" : {
+          "_type" : "stringType",
+          "_type" : "stringType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop2",
+        "type" : {
+          "_type" : "intType",
+          "_type" : "intType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop3",
+        "type" : {
+          "_type" : "booleanType",
+          "_type" : "booleanType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop4",
+        "type" : {
+          "_type" : "dateTimeType",
+          "_type" : "dateTimeType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop5",
+        "type" : {
+          "_type" : "floatType",
+          "_type" : "floatType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop6",
+        "type" : {
+          "_type" : "doubleType",
+          "_type" : "doubleType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop7",
+        "type" : {
+          "_type" : "timestampType",
+          "_type" : "timestampType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop8",
+        "type" : {
+          "_type" : "decimalType",
+          "_type" : "decimalType",
+          "precision" : 10,
+          "scale" : 2
+        }
+      } ],
+      "name" : "xyz"
+    } ]
+  } ],
+  "imports" : [ ]
+}

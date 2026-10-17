@@ -1,0 +1,1 @@
+r: meta::pure::metamodel::relation::Relation<(a:Integer[0..1], b:Integer[0..1])>[1]|$r

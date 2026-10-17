@@ -1,0 +1,1494 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "A relation of accounts as recorded at a processing date-time, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::dates::Account",
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 29,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 13,
+                  "startLine" : 29
+                }
+              }, {
+                "_type" : "dateTime",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 29,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 48,
+                  "startLine" : 29
+                },
+                "value" : "2025-07-02T15:00:00+0000"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 29,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 43,
+                "startLine" : 29
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 118,
+                "endLine" : 29,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 85,
+                "startLine" : 29
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "a",
+                        "sourceInformation" : {
+                          "endColumn" : 93,
+                          "endLine" : 29,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 92,
+                          "startLine" : 29
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 96,
+                        "endLine" : 29,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 95,
+                        "startLine" : 29
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "a"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 96,
+                      "endLine" : 29,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 91,
+                      "startLine" : 29
+                    }
+                  },
+                  "name" : "Id",
+                  "sourceInformation" : {
+                    "endColumn" : 96,
+                    "endLine" : 29,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 86,
+                    "startLine" : 29
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "a",
+                        "sourceInformation" : {
+                          "endColumn" : 110,
+                          "endLine" : 29,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 109,
+                          "startLine" : 29
+                        }
+                      } ],
+                      "property" : "status",
+                      "sourceInformation" : {
+                        "endColumn" : 117,
+                        "endLine" : 29,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 112,
+                        "startLine" : 29
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "a"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 117,
+                      "endLine" : 29,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 108,
+                      "startLine" : 29
+                    }
+                  },
+                  "name" : "Status",
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 29,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 99,
+                    "startLine" : 29
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 82,
+              "endLine" : 29,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 76,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "func",
+            "function" : "ascending",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 139,
+                "endLine" : 29,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 138,
+                "startLine" : 29
+              },
+              "type" : "colSpec",
+              "value" : {
+                "name" : "Id",
+                "sourceInformation" : {
+                  "endColumn" : 139,
+                  "endLine" : 29,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 138,
+                  "startLine" : 29
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 135,
+              "endLine" : 29,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 127,
+              "startLine" : 29
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 125,
+            "endLine" : 29,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 122,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 141,
+          "endLine" : 29,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 12,
+          "startLine" : 29
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 30,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 30
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 31,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 14,
+          "startLine" : 31
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 27
+      }
+    },
+    "name" : "AccountAsOfRelationLiteral",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/accounts/relation",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "service/relationServices.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "accountSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 68,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 5,
+        "startLine" : 35
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 45,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 13,
+                "startLine" : 42
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 45,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 13,
+              "startLine" : 42
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 45,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 11,
+            "startLine" : 41
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 47,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 7,
+          "startLine" : 37
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"FROZEN\"},{\"Id\":2,\"Status\":\"OPEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 63,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 59
+            }
+          },
+          "id" : "shouldReadTheStatusRecordedThen",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 64,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 56
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 66,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 50
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "A relation of accounts as recorded at a processing date-time, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::dates::Account",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 79,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 41,
+                  "startLine" : 79
+                }
+              }, {
+                "_type" : "var",
+                "name" : "processingDate",
+                "sourceInformation" : {
+                  "endColumn" : 90,
+                  "endLine" : 79,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 76,
+                  "startLine" : 79
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 79,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 71,
+                "startLine" : 79
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 79,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 103,
+                "startLine" : 79
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "a",
+                        "sourceInformation" : {
+                          "endColumn" : 111,
+                          "endLine" : 79,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 110,
+                          "startLine" : 79
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 114,
+                        "endLine" : 79,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 113,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "a"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 114,
+                      "endLine" : 79,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 109,
+                      "startLine" : 79
+                    }
+                  },
+                  "name" : "Id",
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 79,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 104,
+                    "startLine" : 79
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "a",
+                        "sourceInformation" : {
+                          "endColumn" : 128,
+                          "endLine" : 79,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 127,
+                          "startLine" : 79
+                        }
+                      } ],
+                      "property" : "status",
+                      "sourceInformation" : {
+                        "endColumn" : 135,
+                        "endLine" : 79,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 130,
+                        "startLine" : 79
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "a"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 135,
+                      "endLine" : 79,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 126,
+                      "startLine" : 79
+                    }
+                  },
+                  "name" : "Status",
+                  "sourceInformation" : {
+                    "endColumn" : 135,
+                    "endLine" : 79,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 117,
+                    "startLine" : 79
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 100,
+              "endLine" : 79,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 94,
+              "startLine" : 79
+            }
+          }, {
+            "_type" : "func",
+            "function" : "ascending",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 157,
+                "endLine" : 79,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 156,
+                "startLine" : 79
+              },
+              "type" : "colSpec",
+              "value" : {
+                "name" : "Id",
+                "sourceInformation" : {
+                  "endColumn" : 157,
+                  "endLine" : 79,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 156,
+                  "startLine" : 79
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 153,
+              "endLine" : 79,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 145,
+              "startLine" : 79
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 143,
+            "endLine" : 79,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 140,
+            "startLine" : 79
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 79,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 29,
+                "startLine" : 79
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "processingDate",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 79,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 13,
+            "startLine" : 79
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 159,
+          "endLine" : 79,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 40,
+          "startLine" : 79
+        }
+      },
+      "mapping" : "demo::relation::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 50,
+        "endLine" : 80,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 80
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::relation::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 81,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 14,
+          "startLine" : 81
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 82,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 77
+      }
+    },
+    "name" : "AccountAsOfRelationParameter",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/accounts/relation/{processingDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 145,
+      "sourceId" : "service/relationServices.pure",
+      "startColumn" : 1,
+      "startLine" : 72
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "accountSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 143,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 5,
+        "startLine" : 85
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 95,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 13,
+                "startLine" : 92
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 95,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 13,
+              "startLine" : 92
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 95,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 11,
+            "startLine" : 91
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 97,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 7,
+          "startLine" : 87
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"FROZEN\"},{\"Id\":2,\"Status\":\"OPEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 117,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 113
+            }
+          },
+          "id" : "shouldReadTheStatusRecordedThen",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 118,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 110
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 105,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 30,
+              "startLine" : 105
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 120,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 100
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"OPEN\"},{\"Id\":2,\"Status\":\"PENDING\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 138,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 134
+            }
+          },
+          "id" : "shouldReadTheEarlierStatus",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 139,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 131
+          }
+        } ],
+        "id" : "earlyMorningInNewYork",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 126,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 30,
+              "startLine" : 126
+            },
+            "value" : "2025-07-02T06:00:00-0400"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 141,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 121
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades read from the table directly, executed before a moment, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sort",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "select",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "filter",
+                "parameters" : [ {
+                  "_type" : "classInstance",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 158,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 13,
+                    "startLine" : 158
+                  },
+                  "type" : ">",
+                  "value" : {
+                    "path" : [ "demo::relation::dates::store::TradingDB", "TRADE" ],
+                    "sourceInformation" : {
+                      "endColumn" : 62,
+                      "endLine" : 158,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 13,
+                      "startLine" : 158
+                    }
+                  }
+                }, {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "lessThan",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 75,
+                          "endLine" : 158,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 74,
+                          "startLine" : 158
+                        }
+                      } ],
+                      "property" : "EXECUTED_AT",
+                      "sourceInformation" : {
+                        "endColumn" : 87,
+                        "endLine" : 158,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 77,
+                        "startLine" : 158
+                      }
+                    }, {
+                      "_type" : "dateTime",
+                      "sourceInformation" : {
+                        "endColumn" : 115,
+                        "endLine" : 158,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 91,
+                        "startLine" : 158
+                      },
+                      "value" : "2025-07-02T15:00:00+0000"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 115,
+                      "endLine" : 158,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 89,
+                      "startLine" : 158
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 115,
+                    "endLine" : 158,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 73,
+                    "startLine" : 158
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 158,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 65,
+                  "startLine" : 158
+                }
+              }, {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 143,
+                  "endLine" : 158,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 127,
+                  "startLine" : 158
+                },
+                "type" : "colSpecArray",
+                "value" : {
+                  "colSpecs" : [ {
+                    "name" : "ID",
+                    "sourceInformation" : {
+                      "endColumn" : 129,
+                      "endLine" : 158,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 128,
+                      "startLine" : 158
+                    }
+                  }, {
+                    "name" : "EXECUTED_AT",
+                    "sourceInformation" : {
+                      "endColumn" : 142,
+                      "endLine" : 158,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 132,
+                      "startLine" : 158
+                    }
+                  } ]
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 124,
+                "endLine" : 158,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 119,
+                "startLine" : 158
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 164,
+                  "endLine" : 158,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 163,
+                  "startLine" : 158
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "ID",
+                  "sourceInformation" : {
+                    "endColumn" : 164,
+                    "endLine" : 158,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 163,
+                    "startLine" : 158
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 160,
+                "endLine" : 158,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 152,
+                "startLine" : 158
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 150,
+              "endLine" : 158,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 147,
+              "startLine" : 158
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "demo::relation::dates::runtime::TradingRuntime",
+            "sourceInformation" : {
+              "endColumn" : 219,
+              "endLine" : 158,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 174,
+              "startLine" : 158
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 172,
+            "endLine" : 158,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 169,
+            "startLine" : 158
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 220,
+          "endLine" : 158,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 12,
+          "startLine" : 158
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 159,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 156
+      }
+    },
+    "name" : "TradesExecutedBeforeDirectLiteral",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/before/direct",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 197,
+      "sourceId" : "service/relationServices.pure",
+      "startColumn" : 1,
+      "startLine" : 151
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 195,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 5,
+        "startLine" : 162
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 172,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 13,
+                "startLine" : 169
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 172,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 13,
+              "startLine" : 169
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 172,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 11,
+            "startLine" : 168
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 174,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 7,
+          "startLine" : 164
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1,\"EXECUTED_AT\":\"2025-07-01T16:00:00.000000000+0000\"},{\"ID\":2,\"EXECUTED_AT\":\"2025-07-02T09:00:00.000000000+0000\"},{\"ID\":3,\"EXECUTED_AT\":\"2025-07-02T10:45:00.000000000+0000\"},{\"ID\":4,\"EXECUTED_AT\":\"2025-07-02T13:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 190,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 186
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 191,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 183
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 193,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 177
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades read from the table directly, executed before a moment, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sort",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "select",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "filter",
+                "parameters" : [ {
+                  "_type" : "classInstance",
+                  "sourceInformation" : {
+                    "endColumn" : 82,
+                    "endLine" : 206,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 33,
+                    "startLine" : 206
+                  },
+                  "type" : ">",
+                  "value" : {
+                    "path" : [ "demo::relation::dates::store::TradingDB", "TRADE" ],
+                    "sourceInformation" : {
+                      "endColumn" : 82,
+                      "endLine" : 206,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 33,
+                      "startLine" : 206
+                    }
+                  }
+                }, {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "lessThan",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "r",
+                        "sourceInformation" : {
+                          "endColumn" : 95,
+                          "endLine" : 206,
+                          "sourceId" : "service/relationServices.pure",
+                          "startColumn" : 94,
+                          "startLine" : 206
+                        }
+                      } ],
+                      "property" : "EXECUTED_AT",
+                      "sourceInformation" : {
+                        "endColumn" : 107,
+                        "endLine" : 206,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 97,
+                        "startLine" : 206
+                      }
+                    }, {
+                      "_type" : "var",
+                      "name" : "cutoff",
+                      "sourceInformation" : {
+                        "endColumn" : 117,
+                        "endLine" : 206,
+                        "sourceId" : "service/relationServices.pure",
+                        "startColumn" : 111,
+                        "startLine" : 206
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 117,
+                      "endLine" : 206,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 109,
+                      "startLine" : 206
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 206,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 93,
+                    "startLine" : 206
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 90,
+                  "endLine" : 206,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 85,
+                  "startLine" : 206
+                }
+              }, {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 145,
+                  "endLine" : 206,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 129,
+                  "startLine" : 206
+                },
+                "type" : "colSpecArray",
+                "value" : {
+                  "colSpecs" : [ {
+                    "name" : "ID",
+                    "sourceInformation" : {
+                      "endColumn" : 131,
+                      "endLine" : 206,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 130,
+                      "startLine" : 206
+                    }
+                  }, {
+                    "name" : "EXECUTED_AT",
+                    "sourceInformation" : {
+                      "endColumn" : 144,
+                      "endLine" : 206,
+                      "sourceId" : "service/relationServices.pure",
+                      "startColumn" : 134,
+                      "startLine" : 206
+                    }
+                  } ]
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 126,
+                "endLine" : 206,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 121,
+                "startLine" : 206
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 166,
+                  "endLine" : 206,
+                  "sourceId" : "service/relationServices.pure",
+                  "startColumn" : 165,
+                  "startLine" : 206
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "ID",
+                  "sourceInformation" : {
+                    "endColumn" : 166,
+                    "endLine" : 206,
+                    "sourceId" : "service/relationServices.pure",
+                    "startColumn" : 165,
+                    "startLine" : 206
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 162,
+                "endLine" : 206,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 154,
+                "startLine" : 206
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 206,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 149,
+              "startLine" : 206
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "demo::relation::dates::runtime::TradingRuntime",
+            "sourceInformation" : {
+              "endColumn" : 221,
+              "endLine" : 206,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 176,
+              "startLine" : 206
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 174,
+            "endLine" : 206,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 171,
+            "startLine" : 206
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 206,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 21,
+                "startLine" : 206
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "cutoff",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 206,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 13,
+            "startLine" : 206
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 222,
+          "endLine" : 206,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 32,
+          "startLine" : 206
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 207,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 14,
+        "startLine" : 204
+      }
+    },
+    "name" : "TradesExecutedBeforeDirectParameter",
+    "owners" : [ ],
+    "package" : "demo::relation::dates::service",
+    "pattern" : "/api/relation/dates/trades/before/direct/{cutoff}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 270,
+      "sourceId" : "service/relationServices.pure",
+      "startColumn" : 1,
+      "startLine" : 199
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 268,
+        "sourceId" : "service/relationServices.pure",
+        "startColumn" : 5,
+        "startLine" : 210
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 220,
+                "sourceId" : "service/relationServices.pure",
+                "startColumn" : 13,
+                "startLine" : 217
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 220,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 13,
+              "startLine" : 217
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 220,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 11,
+            "startLine" : 216
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 222,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 7,
+          "startLine" : 212
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1,\"EXECUTED_AT\":\"2025-07-01T16:00:00.000000000+0000\"},{\"ID\":2,\"EXECUTED_AT\":\"2025-07-02T09:00:00.000000000+0000\"},{\"ID\":3,\"EXECUTED_AT\":\"2025-07-02T10:45:00.000000000+0000\"},{\"ID\":4,\"EXECUTED_AT\":\"2025-07-02T13:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 242,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 238
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 243,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 235
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "cutoff",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 230,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 22,
+              "startLine" : 230
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 245,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 225
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1,\"EXECUTED_AT\":\"2025-07-01T16:00:00.000000000+0000\"},{\"ID\":2,\"EXECUTED_AT\":\"2025-07-02T09:00:00.000000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 263,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 19,
+              "startLine" : 259
+            }
+          },
+          "id" : "shouldReturnTradesExecutedEarlier",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 264,
+            "sourceId" : "service/relationServices.pure",
+            "startColumn" : 15,
+            "startLine" : 256
+          }
+        } ],
+        "id" : "earlyMorningInNewYork",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "cutoff",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 251,
+              "sourceId" : "service/relationServices.pure",
+              "startColumn" : 22,
+              "startLine" : 251
+            },
+            "value" : "2025-07-02T06:00:00-0400"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 266,
+          "sourceId" : "service/relationServices.pure",
+          "startColumn" : 9,
+          "startLine" : 246
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+import meta::external::store::service::showcase::domain::*;
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+    firmName     : String[1];
+    firmId       : Integer[1];
+    subsidiaries : Firm[*];
+}

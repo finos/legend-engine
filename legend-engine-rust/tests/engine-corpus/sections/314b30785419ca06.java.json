@@ -1,0 +1,467 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::dyna::Product",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::ProductDB",
+        "mainTableDb" : "demo::store::ProductDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "ProductView"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::ProductDB",
+          "mainTableDb" : "demo::store::ProductDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "ProductView"
+        },
+        "tableAlias" : "ProductView"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::dyna::Product",
+          "property" : "label",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "label",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 12,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 36,
+              "startLine" : 25
+            },
+            "table" : "ProductView"
+          },
+          "tableAlias" : "ProductView"
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 10,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::dyna::Product",
+          "property" : "total",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "total",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 12,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 36,
+              "startLine" : 26
+            },
+            "table" : "ProductView"
+          },
+          "tableAlias" : "ProductView"
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 10,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ProductMapping",
+    "package" : "demo::dyna",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dyna::Product",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 33,
+                  "sourceId" : "demo::dyna::ProductMapping",
+                  "startColumn" : 18,
+                  "startLine" : 33
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 37,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 33,
+                    "sourceId" : "demo::dyna::ProductMapping",
+                    "startColumn" : 56,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "label",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 33,
+                  "sourceId" : "demo::dyna::ProductMapping",
+                  "startColumn" : 59,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 54,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 33,
+              "sourceId" : "demo::dyna::ProductMapping",
+              "startColumn" : 45,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 33,
+              "sourceId" : "demo::dyna::ProductMapping",
+              "startColumn" : 75,
+              "startLine" : 33
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 33,
+                    "sourceId" : "demo::dyna::ProductMapping",
+                    "startColumn" : 80,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "label",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 33,
+                  "sourceId" : "demo::dyna::ProductMapping",
+                  "startColumn" : 83,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 78,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 33,
+                    "sourceId" : "demo::dyna::ProductMapping",
+                    "startColumn" : 94,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "total",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 33,
+                  "sourceId" : "demo::dyna::ProductMapping",
+                  "startColumn" : 97,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 101,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 92,
+                "startLine" : 33
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 33,
+              "sourceId" : "demo::dyna::ProductMapping",
+              "startColumn" : 105,
+              "startLine" : 33
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 112,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 106,
+                "startLine" : 33
+              },
+              "value" : "Label"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 33,
+                "sourceId" : "demo::dyna::ProductMapping",
+                "startColumn" : 115,
+                "startLine" : 33
+              },
+              "value" : "Total"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 33,
+            "sourceId" : "demo::dyna::ProductMapping",
+            "startColumn" : 67,
+            "startLine" : 33
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 123,
+          "endLine" : 33,
+          "sourceId" : "demo::dyna::ProductMapping",
+          "startColumn" : 17,
+          "startLine" : 33
+        }
+      },
+      "id" : "dynaFunctionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 61,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 31
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Label\":\"P-Gadget\",\"Total\":205},{\"Label\":\"P-Widget\",\"Total\":103}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 56,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 52
+            }
+          },
+          "id" : "shouldComputeConcatAndSum",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 49
+          }
+        } ],
+        "id" : "computedColumns",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 59,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 36
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dyna::data::ProductData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 44,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 41
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 44,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 44,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 40
+          },
+          "store" : {
+            "path" : "demo::store::ProductDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 40,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 40
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

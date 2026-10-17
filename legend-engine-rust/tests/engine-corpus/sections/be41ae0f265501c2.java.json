@@ -1,0 +1,150 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "TradeByTraderDetailsService",
+        "method" : "GET",
+        "parameters" : [ {
+          "allowReserved" : true,
+          "location" : "QUERY",
+          "name" : "trader.details",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 87
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 87,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 87
+            }
+          }
+        } ],
+        "path" : "/traderDetails",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 90,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 90
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 91,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 81
+        }
+      }, {
+        "_type" : "service",
+        "id" : "TradesByRegionService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "region",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 99,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 99
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 99,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 99
+            }
+          }
+        }, {
+          "location" : "QUERY",
+          "name" : "requiredParam",
+          "required" : true,
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 100,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 100
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 100,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 100
+            }
+          }
+        } ],
+        "path" : "/allTradesByRegion",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding",
+          "list" : true,
+          "sourceInformation" : {
+            "endColumn" : 162,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 103
+          },
+          "type" : "meta::external::store::service::showcase::domain::S_Trade"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 104,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 93
+        }
+      } ],
+      "id" : "TradeServices",
+      "path" : "/trades",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 105,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 77
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "TradeProductServiceStore",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 106,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 73
+    }
+  } ]
+}

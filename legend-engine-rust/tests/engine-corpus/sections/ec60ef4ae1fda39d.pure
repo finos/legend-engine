@@ -1,0 +1,23 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  title: 'my Service';
+  owners: ['ownerName'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src:    test::class[1]|$src.prop1;
+      mapping: test::mapping;
+      runtime: test::runtime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+      {['parameter1', %23:12:8.54, true, 440, 13.23, 88, -54, 2.3, [1, 2], %2019-05-24T00:00:00, %2019-05-24],1+280+1}
+    ];
+  }
+}

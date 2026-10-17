@@ -1,0 +1,31 @@
+
+Diagram model::Diag
+{
+  classView 24ec35ba-8656-4561-93c5-c77a84ba5f4f
+  {
+    class: model::C1;
+    position: (342.0,136.0);
+    rectangle: (68.30224609375,44.0);
+  }
+  classView 8ce9f436-2a96-4015-9572-cc3aeeeec404
+  {
+    class: model::C2;
+    position: (532.0,237.0);
+    rectangle: (35.33984375,30.0);
+  }
+  propertyView
+  {
+    property: model::A.c1;
+    source: 8ce9f436-2a96-4015-9572-cc3aeeeec404;
+    target: 24ec35ba-8656-4561-93c5-c77a84ba5f4f;
+    points: [(549.669921875,252.0),(376.151123046875,158.0)];
+  }
+  propertyView
+  {
+    property: model::A.c2;
+    source: 24ec35ba-8656-4561-93c5-c77a84ba5f4f;
+    target: 8ce9f436-2a96-4015-9572-cc3aeeeec404;
+    points: [(376.151123046875,158.0),(549.669921875,252.0)];
+  }
+}
+

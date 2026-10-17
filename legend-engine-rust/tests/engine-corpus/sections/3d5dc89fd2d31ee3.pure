@@ -1,0 +1,12 @@
+
+'''
+A person in the system.
+Identity is established by name.
+'''
+Class model::Person
+{
+  '''
+  Given name.
+  '''
+  firstName: String[1];
+}

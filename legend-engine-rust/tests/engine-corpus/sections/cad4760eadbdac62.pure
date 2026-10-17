@@ -1,0 +1,6 @@
+
+SnowflakeM2MUdf x::A
+{
+   udfName : 'MyApp';
+   ownership : Deployment { identifier: 'pierre'};
+}

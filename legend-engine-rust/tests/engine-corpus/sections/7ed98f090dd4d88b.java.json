@@ -1,0 +1,346 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stereotypes" : [ {
+        "profile" : "equality",
+        "profileSourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 4
+        },
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 4
+        },
+        "value" : "Key"
+      } ],
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "col1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "stereotypes" : [ {
+            "profile" : "equality",
+            "profileSourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 8
+            },
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 8
+            },
+            "value" : "Key"
+          } ],
+          "taggedValues" : [ {
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 8
+            },
+            "tag" : {
+              "profile" : "doc",
+              "profileSourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 8
+              },
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 8
+              },
+              "value" : "doc"
+            },
+            "value" : "col"
+          } ],
+          "type" : {
+            "_type" : "Char",
+            "size" : 32
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "table1",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "stereotypes" : [ {
+          "profile" : "equality",
+          "profileSourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 6
+          },
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 6
+          },
+          "value" : "Key"
+        } ],
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 29,
+            "startLine" : 6
+          },
+          "tag" : {
+            "profile" : "doc",
+            "profileSourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 6
+            },
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 6
+            },
+            "value" : "doc"
+          },
+          "value" : "table"
+        } ]
+      } ],
+      "tabularFunctions" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 4
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 4
+          },
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 4
+          },
+          "value" : "doc"
+        },
+        "value" : "schema"
+      } ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "col1",
+          "operation" : {
+            "_type" : "column",
+            "column" : "col1",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 14
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "test::db",
+              "mainTableDb" : "test::db",
+              "schema" : "mySchema",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 14
+              },
+              "table" : "table1"
+            },
+            "tableAlias" : "table1"
+          },
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 14
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "view1",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 12
+        },
+        "stereotypes" : [ {
+          "profile" : "equality",
+          "profileSourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 12
+          },
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 19,
+            "startLine" : 12
+          },
+          "value" : "Key"
+        } ],
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 12
+          },
+          "tag" : {
+            "profile" : "doc",
+            "profileSourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 12
+            },
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 12
+            },
+            "value" : "doc"
+          },
+          "value" : "view"
+        } ]
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "equality",
+      "profileSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 2
+      },
+      "value" : "Key"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "schema"
+    } ]
+  } ]
+}

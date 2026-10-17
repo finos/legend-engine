@@ -1,0 +1,276 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "my::class",
+      "classSourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "enumMappingId" : "RegionMapping",
+        "property" : {
+          "class" : "my::class",
+          "property" : "cusipRegion",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "case",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "or",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "equal",
+              "parameters" : [ {
+                "_type" : "elemtWithJoins",
+                "joins" : [ {
+                  "db" : "test::db",
+                  "name" : "joinName",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 76,
+                    "startLine" : 6
+                  }
+                } ],
+                "relationalElement" : {
+                  "_type" : "column",
+                  "column" : "region",
+                  "sourceInformation" : {
+                    "endColumn" : 109,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 88,
+                    "startLine" : 6
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "test::db",
+                    "mainTableDb" : "test::db",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 102,
+                      "endLine" : 6,
+                      "sourceId" : "",
+                      "startColumn" : 98,
+                      "startLine" : 6
+                    },
+                    "table" : "Table"
+                  },
+                  "tableAlias" : "Table"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 109,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 6
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 114,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 112,
+                  "startLine" : 6
+                },
+                "value" : "Y"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 60,
+                "startLine" : 6
+              }
+            }, {
+              "_type" : "dynaFunc",
+              "funcName" : "equal",
+              "parameters" : [ {
+                "_type" : "elemtWithJoins",
+                "joins" : [ {
+                  "db" : "test::db",
+                  "name" : "joinName",
+                  "sourceInformation" : {
+                    "endColumn" : 142,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 134,
+                    "startLine" : 6
+                  }
+                } ],
+                "relationalElement" : {
+                  "_type" : "column",
+                  "column" : "region",
+                  "sourceInformation" : {
+                    "endColumn" : 167,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 146,
+                    "startLine" : 6
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "test::db",
+                    "mainTableDb" : "test::db",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 160,
+                      "endLine" : 6,
+                      "sourceId" : "",
+                      "startColumn" : 156,
+                      "startLine" : 6
+                    },
+                    "table" : "Table"
+                  },
+                  "tableAlias" : "Table"
+                },
+                "sourceInformation" : {
+                  "endColumn" : 167,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 124,
+                  "startLine" : 6
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 172,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 170,
+                  "startLine" : 6
+                },
+                "value" : "N"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 173,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 118,
+                "startLine" : 6
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 174,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "test::db",
+              "name" : "joinName",
+              "sourceInformation" : {
+                "endColumn" : 195,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 187,
+                "startLine" : 6
+              }
+            } ],
+            "relationalElement" : {
+              "_type" : "column",
+              "column" : "region",
+              "sourceInformation" : {
+                "endColumn" : 227,
+                "endLine" : 6,
+                "sourceId" : "",
+                "startColumn" : 199,
+                "startLine" : 6
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "milestoning::db",
+                "mainTableDb" : "milestoning::db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 220,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 216,
+                  "startLine" : 6
+                },
+                "table" : "Table"
+              },
+              "tableAlias" : "Table"
+            },
+            "sourceInformation" : {
+              "endColumn" : 227,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 177,
+              "startLine" : 6
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 238,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 230,
+              "startLine" : 6
+            },
+            "value" : "UNKNOWN"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 239,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 6
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 239,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 6
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "map",
+    "package" : "milestoning",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

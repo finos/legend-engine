@@ -1,0 +1,14 @@
+
+Database app::db
+(
+  Table ProductTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(30)
+  )
+  View <<meta::pure::profiles::storeType.type3>> ProductView
+  (
+    id: ProductTable.id,
+    name: ProductTable.name
+  )
+)

@@ -1,0 +1,194 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ {
+      "enforcementLevel" : "Error",
+      "externalId" : "abc",
+      "functionDefinition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "eq",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "divide",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 8
+                }
+              } ],
+              "property" : "var2",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 8
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 32,
+                  "startLine" : 8
+                }
+              } ],
+              "property" : "var1",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 38,
+                "startLine" : 8
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 8
+            }
+          }, {
+            "_type" : "func",
+            "function" : "divide",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 8
+                }
+              } ],
+              "property" : "var4",
+              "sourceInformation" : {
+                "endColumn" : 53,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 8
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 8,
+                  "sourceId" : "",
+                  "startColumn" : 57,
+                  "startLine" : 8
+                }
+              } ],
+              "property" : "var3",
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 63,
+                "startLine" : 8
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 66,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 8
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 8
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "this"
+        } ]
+      },
+      "name" : "myConstraint",
+      "owner" : "abc",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "TestClass",
+    "originalMilestonedProperties" : [ ],
+    "package" : "my",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 13
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "var1",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 13
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

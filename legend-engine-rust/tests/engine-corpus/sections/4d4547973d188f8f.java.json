@@ -1,0 +1,79 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "mapping::SomeClass",
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "boolean",
+            "sourceInformation" : {
+              "endColumn" : 11,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 8,
+              "startLine" : 6
+            },
+            "value" : true
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "mapping::SomeClass",
+          "property" : "p",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        },
+        "target" : ""
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "test",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

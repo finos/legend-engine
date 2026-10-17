@@ -1,0 +1,191 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 48
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "class" : "my::Person",
+          "property" : "concatenated",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 48
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 48
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 3,
+                "upperBound" : 3
+              },
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 48
+              },
+              "values" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 48,
+                    "sourceId" : "",
+                    "startColumn" : 31,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "FIRSTNAME",
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 36,
+                  "startLine" : 48
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 50,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 48
+                },
+                "value" : " "
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 48,
+                    "sourceId" : "",
+                    "startColumn" : 54,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "FIRSTNAME",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 59,
+                  "startLine" : 48
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 48
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 51
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 46
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

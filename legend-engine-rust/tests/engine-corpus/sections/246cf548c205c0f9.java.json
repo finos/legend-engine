@@ -1,0 +1,32 @@
+{
+  "elements" : [ {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ ],
+    "name" : "somethingelse",
+    "package" : "anything",
+    "schemaMappers" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tableMappers" : [ ]
+  }, {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ ],
+    "name" : "somethingelse",
+    "package" : "anything",
+    "schemaMappers" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "tableMappers" : [ ]
+  } ],
+  "imports" : [ ]
+}

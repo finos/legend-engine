@@ -1,0 +1,40 @@
+
+Mapping test::mapping
+(
+  EmbeddedCM[dummy]: Relational
+  {
+    something() Inline[TEST_Id],
+    prop1WithEmbedded
+    (
+      testProp2
+      (
+        size: 1,
+        testProp2
+        (
+          size: 1,
+          testProp2
+          (
+            size: 1
+          ),
+          size: 1
+        )
+      ),
+      contractId() Inline[TEST_Id],
+      something() Inline[TEST_Id],
+      prop6: EnumerationMapping testEnumerationMapping: 'SOME_CONSTANT',
+      prop3[id1]: [TEST_Store]@SOME_JOIN1 > [TEST_Store]@SOME_JOIN2,
+      prop4[id2]: [TEST_Store]@SOME_JOIN
+    ),
+    something() Inline[TEST_Id],
+    something() Inline[TEST_Id],
+    client
+    (
+      id: [DummyStore]test.RESULT.CLIENT_ID,
+      size: 1,
+      testProp2
+      (
+        size: 1
+      )
+    ) Otherwise ([part_TEST]: [DummyStore]@Testing)
+  }
+)

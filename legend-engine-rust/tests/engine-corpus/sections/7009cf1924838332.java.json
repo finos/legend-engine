@@ -1,0 +1,55 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "my::data::MyData2",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "my::data::MyData3",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 5
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      }
+    } ],
+    "name" : "MyData",
+    "package" : "meta::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

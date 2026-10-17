@@ -1,0 +1,841 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::joins::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 22,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 22
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 28,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 28
+        },
+        "table" : "EMPLOYEE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 26,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 26
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 26,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 26
+          },
+          "table" : "EMPLOYEE"
+        },
+        "tableAlias" : "EMPLOYEE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 29,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 29,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 29
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 29,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 29
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 29,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "department",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 30,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::JoinsDB",
+            "name" : "Emp_Dept",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 30,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 30
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 30,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 17,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 30,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 15,
+          "startLine" : 30
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 22
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::joins::Department",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 33,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 33
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 39,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 39
+        },
+        "table" : "DEPARTMENT"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 37,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 37
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 37,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 37
+          },
+          "table" : "DEPARTMENT"
+        },
+        "tableAlias" : "DEPARTMENT"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Department",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 40,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 40,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 40
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 40,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 40
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 40,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 40
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Department",
+          "property" : "location",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 41,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 41
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LOCATION",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 41,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 41
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 41,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 41
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        },
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 41,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 41
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 42,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 33
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::joins::Sale",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 44,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 44
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "SALES",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 50,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 50
+        },
+        "table" : "SALE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 48,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 48
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "SALES",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 48,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 48
+          },
+          "table" : "SALE"
+        },
+        "tableAlias" : "SALE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Sale",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 51,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AMOUNT",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 51,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 51
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "SALES",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 51,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 51
+            },
+            "table" : "SALE"
+          },
+          "tableAlias" : "SALE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 51,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Sale",
+          "property" : "seller",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 52,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::JoinsDB",
+            "name" : "Emp_Sale",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 52,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 52
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 52,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 52
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 52,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 52
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 53,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "NestedJoinMapping",
+    "package" : "demo::joins",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 89,
+      "sourceId" : "mapping/nestedJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::joins::Sale",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 59,
+                  "sourceId" : "demo::joins::NestedJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 59
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 35,
+                "startLine" : 59
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 59,
+                    "sourceId" : "demo::joins::NestedJoinMapping",
+                    "startColumn" : 54,
+                    "startLine" : 59
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 59,
+                  "sourceId" : "demo::joins::NestedJoinMapping",
+                  "startColumn" : 57,
+                  "startLine" : 59
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 52,
+                "startLine" : 59
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 59,
+              "sourceId" : "demo::joins::NestedJoinMapping",
+              "startColumn" : 43,
+              "startLine" : 59
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 139,
+              "endLine" : 59,
+              "sourceId" : "demo::joins::NestedJoinMapping",
+              "startColumn" : 74,
+              "startLine" : 59
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 59,
+                      "sourceId" : "demo::joins::NestedJoinMapping",
+                      "startColumn" : 79,
+                      "startLine" : 59
+                    }
+                  } ],
+                  "property" : "seller",
+                  "sourceInformation" : {
+                    "endColumn" : 87,
+                    "endLine" : 59,
+                    "sourceId" : "demo::joins::NestedJoinMapping",
+                    "startColumn" : 82,
+                    "startLine" : 59
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 59,
+                  "sourceId" : "demo::joins::NestedJoinMapping",
+                  "startColumn" : 89,
+                  "startLine" : 59
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 92,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 77,
+                "startLine" : 59
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 100,
+                        "endLine" : 59,
+                        "sourceId" : "demo::joins::NestedJoinMapping",
+                        "startColumn" : 99,
+                        "startLine" : 59
+                      }
+                    } ],
+                    "property" : "seller",
+                    "sourceInformation" : {
+                      "endColumn" : 107,
+                      "endLine" : 59,
+                      "sourceId" : "demo::joins::NestedJoinMapping",
+                      "startColumn" : 102,
+                      "startLine" : 59
+                    }
+                  } ],
+                  "property" : "department",
+                  "sourceInformation" : {
+                    "endColumn" : 118,
+                    "endLine" : 59,
+                    "sourceId" : "demo::joins::NestedJoinMapping",
+                    "startColumn" : 109,
+                    "startLine" : 59
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 123,
+                  "endLine" : 59,
+                  "sourceId" : "demo::joins::NestedJoinMapping",
+                  "startColumn" : 120,
+                  "startLine" : 59
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 97,
+                "startLine" : 59
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 131,
+                    "endLine" : 59,
+                    "sourceId" : "demo::joins::NestedJoinMapping",
+                    "startColumn" : 130,
+                    "startLine" : 59
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 138,
+                  "endLine" : 59,
+                  "sourceId" : "demo::joins::NestedJoinMapping",
+                  "startColumn" : 133,
+                  "startLine" : 59
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 138,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 128,
+                "startLine" : 59
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 169,
+              "endLine" : 59,
+              "sourceId" : "demo::joins::NestedJoinMapping",
+              "startColumn" : 142,
+              "startLine" : 59
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 150,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 143,
+                "startLine" : 59
+              },
+              "value" : "Seller"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 158,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 153,
+                "startLine" : 59
+              },
+              "value" : "Dept"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 168,
+                "endLine" : 59,
+                "sourceId" : "demo::joins::NestedJoinMapping",
+                "startColumn" : 161,
+                "startLine" : 59
+              },
+              "value" : "Amount"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 59,
+            "sourceId" : "demo::joins::NestedJoinMapping",
+            "startColumn" : 66,
+            "startLine" : 59
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 170,
+          "endLine" : 59,
+          "sourceId" : "demo::joins::NestedJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 59
+        }
+      },
+      "id" : "nestedJoinSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 87,
+        "sourceId" : "mapping/nestedJoinMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 57
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Seller\":\"Bob\",\"Dept\":\"Sales\",\"Amount\":300},{\"Seller\":\"Alice\",\"Dept\":\"Engineering\",\"Amount\":500}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 82,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 78
+            }
+          },
+          "id" : "shouldResolveSellerDepartmentAcrossTwoJoins",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 83,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 75
+          }
+        } ],
+        "id" : "chainedThroughTwoJoins",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 85,
+          "sourceId" : "mapping/nestedJoinMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 62
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::joins::data::NestedJoinData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 70,
+                "sourceId" : "mapping/nestedJoinMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 67
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 70,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 67
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 70,
+            "sourceId" : "mapping/nestedJoinMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 66
+          },
+          "store" : {
+            "path" : "demo::store::JoinsDB",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 66,
+              "sourceId" : "mapping/nestedJoinMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 66
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

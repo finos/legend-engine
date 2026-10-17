@@ -1,0 +1,93 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "abs",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "val",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "functionParent_Integer_$0_1$__String_1_",
+    "package" : "my",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "val",
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 29,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 49,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

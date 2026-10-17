@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "DOC" ],
+        "paths" : [ "default", "T" ],
+        "rows" : [ {
+          "values" : [ "1", "\"{\"\"tags\"\":[\"\"red\"\",\"\"blue\"\"],\"\"divisions\"\":[{\"\"name\"\":\"\"Alpha\"\",\"\"headcount\"\":9},{\"\"name\"\":\"\"Beta\"\",\"\"headcount\"\":100}]}\"" ]
+        }, {
+          "values" : [ "2", "\"{\"\"tags\"\":[],\"\"divisions\"\":[{\"\"name\"\":\"\"Gamma\"\",\"\"headcount\"\":50}]}\"" ]
+        }, {
+          "values" : [ "3", "\"{}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 28,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    },
+    "name" : "D",
+    "package" : "arr::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 29,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

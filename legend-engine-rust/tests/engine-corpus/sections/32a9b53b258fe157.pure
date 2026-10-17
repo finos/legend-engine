@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   names : String[*];
+   prop() {$this.names} : String[1];
+}

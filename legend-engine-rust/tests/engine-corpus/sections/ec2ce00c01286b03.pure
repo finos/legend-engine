@@ -1,0 +1,11 @@
+
+Class test::A
+{
+  stringProperty: String[1] = 'default';
+  booleanProperty: Boolean[1] = false;
+}
+
+function f(): Any[1]
+{
+  let x = ^test::A(booleanProperty=true)
+}

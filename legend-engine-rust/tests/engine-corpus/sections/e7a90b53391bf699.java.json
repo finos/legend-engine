@@ -1,0 +1,646 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::union::Customer",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 18,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "euCustomer",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::CustomerDB",
+        "mainTableDb" : "demo::store::CustomerDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 24,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 41,
+          "startLine" : 24
+        },
+        "table" : "EuCustomerTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 22,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::CustomerDB",
+          "mainTableDb" : "demo::store::CustomerDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 22,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 32,
+            "startLine" : 22
+          },
+          "table" : "EuCustomerTable"
+        },
+        "tableAlias" : "EuCustomerTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::union::Customer",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 25,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::CustomerDB",
+            "mainTableDb" : "demo::store::CustomerDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 25,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 25
+            },
+            "table" : "EuCustomerTable"
+          },
+          "tableAlias" : "EuCustomerTable"
+        },
+        "source" : "euCustomer",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 25,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::union::Customer",
+          "property" : "region",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 26,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "region",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 26,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::CustomerDB",
+            "mainTableDb" : "demo::store::CustomerDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 26,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 38,
+              "startLine" : 26
+            },
+            "table" : "EuCustomerTable"
+          },
+          "tableAlias" : "EuCustomerTable"
+        },
+        "source" : "euCustomer",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 26,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 26
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::union::Customer",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 29,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "usCustomer",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::CustomerDB",
+        "mainTableDb" : "demo::store::CustomerDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 35,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 41,
+          "startLine" : 35
+        },
+        "table" : "UsCustomerTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 33,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::CustomerDB",
+          "mainTableDb" : "demo::store::CustomerDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 33,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 32,
+            "startLine" : 33
+          },
+          "table" : "UsCustomerTable"
+        },
+        "tableAlias" : "UsCustomerTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::union::Customer",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 36,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 55,
+            "endLine" : 36,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::CustomerDB",
+            "mainTableDb" : "demo::store::CustomerDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 36,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 36
+            },
+            "table" : "UsCustomerTable"
+          },
+          "tableAlias" : "UsCustomerTable"
+        },
+        "source" : "usCustomer",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 36,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::union::Customer",
+          "property" : "region",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 37,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "region",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 37,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::CustomerDB",
+            "mainTableDb" : "demo::store::CustomerDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 37,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 38,
+              "startLine" : 37
+            },
+            "table" : "UsCustomerTable"
+          },
+          "tableAlias" : "UsCustomerTable"
+        },
+        "source" : "usCustomer",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 37,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 37
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "demo::union::Customer",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 40,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 40
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "euCustomer", "usCustomer" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "CustomerStoreUnionMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "mapping/customerMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::union::Customer",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 49,
+                  "sourceId" : "demo::CustomerStoreUnionMapping",
+                  "startColumn" : 18,
+                  "startLine" : 49
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 39,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 49,
+                    "sourceId" : "demo::CustomerStoreUnionMapping",
+                    "startColumn" : 56,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 49,
+                  "sourceId" : "demo::CustomerStoreUnionMapping",
+                  "startColumn" : 59,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 55,
+                "startLine" : 49
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 49,
+              "sourceId" : "demo::CustomerStoreUnionMapping",
+              "startColumn" : 47,
+              "startLine" : 49
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 97,
+              "endLine" : 49,
+              "sourceId" : "demo::CustomerStoreUnionMapping",
+              "startColumn" : 74,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 78,
+                    "endLine" : 49,
+                    "sourceId" : "demo::CustomerStoreUnionMapping",
+                    "startColumn" : 77,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 49,
+                  "sourceId" : "demo::CustomerStoreUnionMapping",
+                  "startColumn" : 80,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 83,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 76,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 89,
+                    "endLine" : 49,
+                    "sourceId" : "demo::CustomerStoreUnionMapping",
+                    "startColumn" : 88,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "region",
+                "sourceInformation" : {
+                  "endColumn" : 96,
+                  "endLine" : 49,
+                  "sourceId" : "demo::CustomerStoreUnionMapping",
+                  "startColumn" : 91,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 96,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 87,
+                "startLine" : 49
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 117,
+              "endLine" : 49,
+              "sourceId" : "demo::CustomerStoreUnionMapping",
+              "startColumn" : 100,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 101,
+                "startLine" : 49
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 49,
+                "sourceId" : "demo::CustomerStoreUnionMapping",
+                "startColumn" : 109,
+                "startLine" : 49
+              },
+              "value" : "Region"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 49,
+            "sourceId" : "demo::CustomerStoreUnionMapping",
+            "startColumn" : 66,
+            "startLine" : 49
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 118,
+          "endLine" : 49,
+          "sourceId" : "demo::CustomerStoreUnionMapping",
+          "startColumn" : 17,
+          "startLine" : 49
+        }
+      },
+      "id" : "storeUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 77,
+        "sourceId" : "mapping/customerMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 47
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Alice\",\"Region\":\"EMEA\"},{\"Name\":\"Bob\",\"Region\":\"EMEA\"},{\"Name\":\"Carol\",\"Region\":\"AMER\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 72,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 68
+            }
+          },
+          "id" : "shouldUnion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 73,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 65
+          }
+        } ],
+        "id" : "unionsBothTables",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 75,
+          "sourceId" : "mapping/customerMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 52
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::CustomerData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 60,
+                "sourceId" : "mapping/customerMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 57
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 60,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 60,
+            "sourceId" : "mapping/customerMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 56
+          },
+          "store" : {
+            "path" : "demo::store::CustomerDB",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 56,
+              "sourceId" : "mapping/customerMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 56
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

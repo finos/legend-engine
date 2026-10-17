@@ -1,0 +1,14 @@
+
+MongoDBConnection test::testConnection
+{
+  database: legend_db;
+  store: mongo::test::db;
+  serverURLs: [f12345-001.ab.com:27071, j982345-001.ab.com:27071];
+  authentication: # UserPassword {
+    username: 'mongo_ro';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'sys.prop.name';
+    };
+  }#;
+}

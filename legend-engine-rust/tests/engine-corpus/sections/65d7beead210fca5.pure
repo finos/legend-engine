@@ -1,0 +1,47 @@
+
+Class demo::ssn::Firm
+{
+  legalName: String[1];
+}
+
+Class demo::ssn::Person
+{
+  name: String[1];
+  profileJson: String[1];
+  firm: demo::ssn::Firm[1];
+}
+
+Class demo::ssn::TextPerson
+{
+  name: String[1];
+  firm: demo::ssn::Firm[1];
+}
+
+Class demo::ssn::Staff
+{
+  name: String[1];
+  profileJson: String[1];
+  // Staff with no manager still appear, with no value here.
+  managerFirm: demo::ssn::Firm[0..1];
+}
+
+// The bound property is itself to-many: the source yields a JSON array and each
+// element becomes an object. Two sibling arrays under one column are typed by two
+// different bindings.
+Class demo::ssn::Tag
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class demo::ssn::Participant
+{
+  party: String[1];
+}
+
+Class demo::ssn::Record
+{
+  reference: String[1];
+  tags: demo::ssn::Tag[*];
+  participants: demo::ssn::Participant[*];
+}

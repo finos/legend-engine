@@ -1,0 +1,13 @@
+
+Database my::db
+(
+  Table temporalTable
+  (
+    milestoning(business(BUS_FROM=from, BUS_THRU=thru, INFINITY_DATE=%9999-12-31))
+    col1 INTEGER PRIMARY KEY,
+    col2 INTEGER PRIMARY KEY,
+    from DATE,
+    thru DATE
+  )
+)
+ 

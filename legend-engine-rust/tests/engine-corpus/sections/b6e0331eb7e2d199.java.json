@@ -1,0 +1,128 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "test doc",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "bitemporalSnapshot",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 13
+        },
+        "transactionMilestoning" : {
+          "_type" : "batchIdAndDateTimeTransactionMilestoning",
+          "batchIdInName" : "batchIdIn",
+          "batchIdOutName" : "batchIdOut",
+          "dateTimeInName" : "inZ",
+          "dateTimeOutName" : "outZ",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 15
+          }
+        },
+        "validityMilestoning" : {
+          "_type" : "dateTimeValidityMilestoning",
+          "dateTimeFromName" : "FROM_Z",
+          "dateTimeThruName" : "THRU_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesFromDateTime",
+            "sourceDateTimeFromField" : "sourceFrom",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 26
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 22
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 11
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      },
+      "targetShape" : {
+        "_type" : "flatTarget",
+        "deduplicationStrategy" : {
+          "_type" : "noDeduplicationStrategy"
+        },
+        "modelClass" : "test::ModelClass",
+        "partitionFields" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 32
+        },
+        "targetName" : "TestDataset1"
+      }
+    },
+    "service" : {
+      "path" : "test::service::Service",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

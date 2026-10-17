@@ -1,0 +1,23 @@
+
+Database stores::DB
+(
+  Schema mySchema
+  (
+  Table Person
+  (
+    id INTEGER
+  )
+  )
+  Schema mySchema
+  (
+  Table Order
+  (
+    id INTEGER
+  )
+  )
+)
+Database stores::SimpleDB
+(
+  include stores::DB
+  Join Person_Order([stores::DB]mySchema.Person.id = [stores::DB]mySchema.Order.id)
+)

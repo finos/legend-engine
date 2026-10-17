@@ -1,0 +1,33 @@
+{
+  "elements" : [ {
+    "_type" : "memSqlFunction",
+    "actions" : [ ],
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "functionName" : "demoFunction",
+    "name" : "A",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "testDeployment"
+    },
+    "package" : "xx",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

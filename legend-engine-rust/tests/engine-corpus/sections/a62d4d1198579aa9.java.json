@@ -1,0 +1,218 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "meta::something::tests::csv::model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::something::tests::csv::model::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "stateProvNameTXT",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 8
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "meta::something::tests::csv::store::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::Database::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding::scope",
+            "mainTableDb" : "meta::something::tests::csv::store::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::Database::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding::scope",
+            "schema" : "TEST",
+            "sourceInformation" : {
+              "endColumn" : 576,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 565,
+              "startLine" : 6
+            },
+            "table" : "another"
+          },
+          "tableAlias" : "another"
+        },
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "meta::something::tests::csv::model::Person",
+          "property" : "subdivisionCategory",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "if",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "substring",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "stateProv",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 9
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "meta::something::tests::csv::store::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::Database::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding::scope",
+                  "mainTableDb" : "meta::something::tests::csv::store::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::Database::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding::scope",
+                  "schema" : "TEST",
+                  "sourceInformation" : {
+                    "endColumn" : 576,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 565,
+                    "startLine" : 6
+                  },
+                  "table" : "another"
+                },
+                "tableAlias" : "another"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 58,
+                  "startLine" : 9
+                },
+                "value" : 1
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 61,
+                  "startLine" : 9
+                },
+                "value" : 2
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 37,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 9
+              },
+              "value" : "US"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 72,
+              "startLine" : 9
+            },
+            "value" : "STATE"
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlNull",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 81,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 9
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 9
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "scope",
+    "package" : "Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::Database::Table::Schema::View::TabularFunction::Filter::MultiGrainFilter::Join::and::or::milestoning::business::BUS_FROM::BUS_THRU::THRU_IS_INCLUSIVE::BUS_SNAPSHOT_DATE::processing::PROCESSING_IN::PROCESSING_OUT::OUT_IS_INCLUSIVE::INFINITY_DATE::PROCESSING_SNAPSHOT_DATE::AssociationMapping::EnumerationMapping::Otherwise::Inline::Binding",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

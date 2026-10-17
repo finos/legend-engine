@@ -1,0 +1,12 @@
+
+Database sample::test
+(
+  Schema SomeView
+  (
+    View TEST_JOIN
+    (
+      id: SomeView.test.prop PRIMARY KEY,
+      join_test: ([sample::test] (INNER) @TestDemographics > (INNER) [sample::test]@sites > (INNER) [sample::test]@sites)
+    )
+  )
+)

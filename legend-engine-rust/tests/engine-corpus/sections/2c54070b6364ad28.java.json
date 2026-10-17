@@ -1,0 +1,67 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "mySimpleRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "meta::mySimpleConnection",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 26
+        },
+        "storePointers" : [ {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 27
+          }
+        } ]
+      } ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "meta::mySimpleMapping",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 31
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 22
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 22
+    }
+  } ],
+  "imports" : [ "meta" ]
+}

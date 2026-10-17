@@ -1,0 +1,103 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "NAME", "FROM_Z", "THRU_Z" ],
+        "paths" : [ "default", "PRODUCT" ],
+        "rows" : [ {
+          "values" : [ "1", "Widget", "2025-01-01", "2025-07-02" ]
+        }, {
+          "values" : [ "1", "Widget Mk2", "2025-07-02", "9999-12-31" ]
+        }, {
+          "values" : [ "2", "Gadget", "2025-01-01", "9999-12-31" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 27,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      }, {
+        "columns" : [ "ID", "STATUS", "IN_Z", "OUT_Z" ],
+        "paths" : [ "default", "ACCOUNT" ],
+        "rows" : [ {
+          "values" : [ "1", "OPEN", "2025-01-01 00:00:00", "2025-07-02 12:00:00" ]
+        }, {
+          "values" : [ "1", "FROZEN", "2025-07-02 12:00:00", "9999-12-31 23:59:59" ]
+        }, {
+          "values" : [ "2", "PENDING", "2025-01-01 00:00:00", "2025-07-02 10:30:00" ]
+        }, {
+          "values" : [ "2", "OPEN", "2025-07-02 10:30:00", "9999-12-31 23:59:59" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 33,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "columns" : [ "ISSUER", "GRADE", "IN_Z", "OUT_Z", "FROM_Z", "THRU_Z" ],
+        "paths" : [ "default", "RATING" ],
+        "rows" : [ {
+          "values" : [ "Acme", "A", "2025-01-01 00:00:00", "2025-07-02 12:00:00", "2025-01-01 00:00:00", "2025-07-01 12:00:00" ]
+        }, {
+          "values" : [ "Acme", "AA", "2025-07-02 12:00:00", "9999-12-31 23:59:59", "2025-01-01 00:00:00", "2025-07-01 12:00:00" ]
+        }, {
+          "values" : [ "Acme", "A-", "2025-01-01 00:00:00", "2025-07-02 12:00:00", "2025-07-01 12:00:00", "9999-12-31 23:59:59" ]
+        }, {
+          "values" : [ "Acme", "BBB", "2025-07-02 12:00:00", "9999-12-31 23:59:59", "2025-07-01 12:00:00", "9999-12-31 23:59:59" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 95,
+          "endLine" : 39,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      }, {
+        "columns" : [ "ID", "PRODUCT_ID", "ACCOUNT_ID", "TRADE_DATE", "EXECUTED_AT", "QUANTITY" ],
+        "paths" : [ "default", "TRADE" ],
+        "rows" : [ {
+          "values" : [ "1", "1", "1", "2025-07-01", "2025-07-01 16:00:00", "100" ]
+        }, {
+          "values" : [ "2", "1", "2", "2025-07-02", "2025-07-02 09:00:00", "200" ]
+        }, {
+          "values" : [ "3", "2", "1", "2025-07-02", "2025-07-02 10:45:00", "300" ]
+        }, {
+          "values" : [ "4", "2", "2", "2025-07-02", "2025-07-02 13:00:00", "400" ]
+        }, {
+          "values" : [ "5", "1", "1", "2025-07-03", "2025-07-03 09:30:00", "500" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 46,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 40
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 47,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    },
+    "name" : "TradingData",
+    "package" : "demo::relation::dates::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

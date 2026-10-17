@@ -1,0 +1,27 @@
+
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Mirrors relationMappingSetup.pure's MixedCaseAssociationChainMapping: the root class
+// (Employee) is mapped via classic Relational here (not ~func) while Firm stays
+// ~func-mapped, and the Employment association is wired XStore across that
+// Relational/Relation store-type boundary — the same pattern the reference test uses for
+// Person(Relational)<->Firm(Relation). EmployeeDepartment is a new, model-local
+// association (Employee/Department aren't already linked by an association in the
+// shared domain) reusing the DepartmentEmployeeJoin declared on the shared DB.
+//
+// departmentId is [0..1] (DEPARTMENT_ID is a nullable column) rather than [1] — the
+// #4941 multiplicity validator requires a NOT NULL column (or ->toOne()) for a [1]
+// property, and DEPARTMENT_ID must stay nullable for the 12+ other models that don't
+// populate it.

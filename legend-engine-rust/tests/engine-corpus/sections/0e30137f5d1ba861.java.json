@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'filterDuplicates' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

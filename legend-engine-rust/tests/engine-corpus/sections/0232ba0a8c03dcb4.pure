@@ -1,0 +1,10 @@
+
+Mapping a::mapping
+(
+   test::IncType : EnumerationMapping a
+   {
+       CORP : [4],
+       LLC : [7,7,7,7,7,test::Other.bla],
+       LLC2 : [3]
+   }
+)

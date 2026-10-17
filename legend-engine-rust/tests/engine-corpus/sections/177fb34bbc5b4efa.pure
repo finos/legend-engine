@@ -1,0 +1,18 @@
+
+Database test::OrganizationsDB
+(
+  Schema Org
+  (
+    Table Org
+    (
+      OrgId VARCHAR(30) PRIMARY KEY
+    )
+  )
+  Schema Product
+  (
+    Table Product
+    (
+      ProductId VARCHAR(30) PRIMARY KEY
+    )
+  )
+)

@@ -1,0 +1,6 @@
+
+Database app::db
+(
+    Table personTable    (       milestoning(processing(PROCESSING_SNAPSHOT_DATE = dummy))       ID INT PRIMARY KEY, MANAGERID INT
+    )
+)

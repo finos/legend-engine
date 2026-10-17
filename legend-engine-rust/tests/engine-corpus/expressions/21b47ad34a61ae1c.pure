@@ -1,0 +1,1 @@
+|model::Person.all()->project(~['Person Name':x|$x.name, 'Person Age Sum': x|$x.age])->groupBy(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'name documentation'} 'Person Name'], ~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'age documentation'} 'Person Age Sum': x|$x.'Person Age Sum':x|$x->sum()])

@@ -1,0 +1,32 @@
+
+Database com::trade::TradeDatabase
+(
+  Schema Trade
+  (
+    Table Trade
+    (
+      id VARCHAR(32) PRIMARY KEY,
+      value INTEGER NOT NULL,
+      ENTITY_ID_FK VARCHAR(32) NOT NULL
+    )
+  )
+)
+
+Database com::entity::EntityDatabase
+(
+  Schema Entity
+  (
+    Table LegalEntity
+    (
+      ENTITY_ID VARCHAR(32) PRIMARY KEY,
+      name VARCHAR(32) NOT NULL
+    )
+
+    View LegalEntity_View
+    (
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,
+      name: Entity.LegalEntity.name PRIMARY KEY
+    )
+  )
+)

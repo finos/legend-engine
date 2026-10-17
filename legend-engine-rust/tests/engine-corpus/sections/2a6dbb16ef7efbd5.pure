@@ -1,0 +1,12 @@
+
+Mapping model::mapping1
+(
+  include model::mapping2
+  *model::Firm: Pure
+  {
+    ~src model::_Firm
+    employees[model_Person_1]: $src.em,
+    type: EnumerationMapping model_IncType2: $src._type
+  }
+)
+

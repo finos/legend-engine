@@ -1,0 +1,59 @@
+
+Mapping demo::joins::CrossSchemaMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME
+  }
+
+  *demo::joins::Sale: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]SALES.SALE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]SALES.SALE
+    amount: [demo::store::JoinsDB]SALES.SALE.AMOUNT,
+    seller: [demo::store::JoinsDB]@Emp_Sale
+  }
+
+  testSuites:
+  [
+    crossSchemaSuite:
+    {
+      function: |demo::joins::Sale.all()->sortBy(x | $x.amount)->project([x | $x.seller.name, x | $x.amount], ['Seller', 'Amount']);
+      tests:
+      [
+        joinsAcrossSchemas:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::CrossSchemaData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoinAcrossSchemas:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Seller":"Bob","Amount":300},{"Seller":"Alice","Amount":500}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

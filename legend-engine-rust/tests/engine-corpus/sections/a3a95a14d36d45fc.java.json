@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'derivation' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 31,
+      "startLine" : 22
+    }
+  }
+}

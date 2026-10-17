@@ -1,0 +1,5 @@
+
+Runtime model::MyRuntime
+{
+  mappings: [model::MyMapping];
+}

@@ -1,0 +1,7 @@
+
+Measure anything::somethingelse
+{
+   *UnitOne: x -> $x;
+   UnitTwo: x -> $x * 1000;
+   UnitThree: x -> $x * 400;
+}

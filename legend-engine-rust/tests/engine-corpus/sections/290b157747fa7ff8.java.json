@@ -1,0 +1,142 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 61
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 55
+        },
+        "testDataSetupSqls" : [ "Drop table if exists firmTable;\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\nInsert into firmTable (FirmCode, FirmName) values (101,'finos');\nInsert into firmTable (FirmCode, FirmName) values (200,'goldman_Sachs');" ]
+      },
+      "element" : "relational::graphFetch::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 53
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 51
+      },
+      "type" : "H2"
+    },
+    "name" : "RelationalConnection",
+    "package" : "relational::graphFetch",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 51
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 74
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 68
+        },
+        "testDataSetupSqls" : [ "Drop table if exists firmTable;\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\nInsert into firmTable (FirmCode, FirmName) values (001,'Alloy_Engineering');\nInsert into firmTable (FirmCode, FirmName) values (102,'legend-engine');\n" ]
+      },
+      "element" : "relational::graphFetch::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 66,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 66
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 64
+      },
+      "type" : "H2"
+    },
+    "name" : "SecondRelationalConnection",
+    "package" : "relational::graphFetch",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 75,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "relational::graphFetch::Relational_Mapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 79
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 77
+      }
+    },
+    "name" : "OneMappingConnection",
+    "package" : "relational::graphFetch",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 82,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 77
+    }
+  } ],
+  "imports" : [ ]
+}

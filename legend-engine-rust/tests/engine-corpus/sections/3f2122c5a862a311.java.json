@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'type' is required",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "values" : [ ]
+    } ],
+    "name" : "func1__Relation_$0_1$_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "relationType",
+          "columns" : [ {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Number",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 2,
+                  "sourceId" : "",
+                  "startColumn" : 71,
+                  "startLine" : 2
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "num",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 2,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 2
+            }
+          }, {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Varchar",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 2,
+                  "sourceId" : "",
+                  "startColumn" : 88,
+                  "startLine" : 2
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 2,
+                  "sourceId" : "",
+                  "startColumn" : 96,
+                  "startLine" : 2
+                },
+                "value" : 222
+              } ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "other",
+            "sourceInformation" : {
+              "endColumn" : 99,
+              "endLine" : 2,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 2
+            }
+          } ]
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 0
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "values" : [ ]
+    } ],
+    "name" : "func2__Relation_$0_1$_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 6
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "relationType",
+          "columns" : [ {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Number",
+                "sourceInformation" : {
+                  "endColumn" : 76,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 71,
+                  "startLine" : 6
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "name" : "num",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 67,
+              "startLine" : 6
+            }
+          }, {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Varchar",
+                "sourceInformation" : {
+                  "endColumn" : 99,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 88,
+                  "startLine" : 6
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 6,
+                  "sourceId" : "",
+                  "startColumn" : 96,
+                  "startLine" : 6
+                },
+                "value" : 222
+              } ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "other",
+            "sourceInformation" : {
+              "endColumn" : 99,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 6
+            }
+          } ]
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

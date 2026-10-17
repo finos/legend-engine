@@ -1,0 +1,8 @@
+
+Class apps::Trade
+{
+   time : StrictTime[1];
+   testStrictTime(){
+       $this.time == %10:12:22.88;
+   } : Boolean[1];
+}

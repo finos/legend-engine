@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'mergeStrategy' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

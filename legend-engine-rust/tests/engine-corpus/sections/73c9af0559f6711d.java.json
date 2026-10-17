@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "storeType",
+    "package" : "meta::pure::profiles",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ {
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 22
+      },
+      "value" : "type1"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 22
+      },
+      "value" : "type2"
+    } ],
+    "tags" : [ ]
+  } ],
+  "imports" : [ ]
+}

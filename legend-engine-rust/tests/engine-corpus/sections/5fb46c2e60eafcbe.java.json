@@ -1,0 +1,138 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : false,
+    "documentation" : "this is just for context",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 52,
+                "startLine" : 9
+              }
+            } ],
+            "property" : "a",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "meta::myMapping",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 65,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "meta::myRuntime",
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 82,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 9
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::transform::tests::Address",
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 9
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 9
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 97,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 51,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      }
+    },
+    "name" : "myServiceSingle",
+    "owners" : [ ],
+    "package" : "meta::pure",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 11
+      }
+    }
+  } ],
+  "imports" : [ ]
+}

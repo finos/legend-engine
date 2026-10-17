@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "model::firm::Person",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 56
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 58,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 54
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 54
+    }
+  } ],
+  "imports" : [ ]
+}

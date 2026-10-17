@@ -1,0 +1,130 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "prod",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::MyMapping",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "prod",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 99,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 9
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 9
+        },
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 70,
+          "startLine" : 9
+        },
+        "value" : "vendorLicenseStatus"
+      },
+      "value" : "ACTIVE"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 217,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 112,
+        "startLine" : 9
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 168,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 112,
+          "startLine" : 9
+        },
+        "sourceInformation" : {
+          "endColumn" : 192,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 170,
+          "startLine" : 9
+        },
+        "value" : "vendorRelationshipOwner"
+      },
+      "value" : "jane.doe@example.org"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 323,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 230,
+        "startLine" : 9
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 286,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 230,
+          "startLine" : 9
+        },
+        "sourceInformation" : {
+          "endColumn" : 305,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 288,
+          "startLine" : 9
+        },
+        "value" : "vendorProviderName"
+      },
+      "value" : "Acme Data Co."
+    } ]
+  } ]
+}

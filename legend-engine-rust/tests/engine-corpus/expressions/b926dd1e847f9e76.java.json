@@ -1,0 +1,48 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "collection",
+    "multiplicity" : {
+      "lowerBound" : 2,
+      "upperBound" : 2
+    },
+    "sourceInformation" : {
+      "endColumn" : 14,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "values" : [ {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 1
+      },
+      "value" : "ok"
+    }, {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "value" : "ok2"
+    } ]
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 14,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

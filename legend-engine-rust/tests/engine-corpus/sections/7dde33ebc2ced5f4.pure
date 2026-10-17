@@ -1,0 +1,14 @@
+
+Class test::Order{
+   orderEvents : test::OrderEvents[*];
+}
+Class <<temporal.businesstemporal>> test::OrderEvents{
+   classification : test::Classification[1];
+}
+Class  <<temporal.businesstemporal>> test::Classification{
+   classificationType : String[1];
+}
+function main::walkTree(): Any[*]
+{
+   {|test::Order.all().orderEvents(%2016-5-1).classification.classificationType}
+}

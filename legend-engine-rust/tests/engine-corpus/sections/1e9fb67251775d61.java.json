@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Request Body should not be specified for GET end point",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

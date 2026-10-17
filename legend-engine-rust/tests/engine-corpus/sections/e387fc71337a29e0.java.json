@@ -1,0 +1,76 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "prod",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::MyMapping",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "prod",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      }
+    } ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 177,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 9
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 9
+        },
+        "sourceInformation" : {
+          "endColumn" : 75,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 70,
+          "startLine" : 9
+        },
+        "value" : "topics"
+      },
+      "value" : "  Securities  ,,Fixed-Income , Equities & ETFs ,,,FX/Rates ,  Alt's (Private) , ,Backslash\\Path"
+    } ]
+  } ]
+}

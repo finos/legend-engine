@@ -1,0 +1,25 @@
+
+RelationalDatabaseConnection demo::relation::connection::EmployeeH2Connection
+{
+  store: demo::relation::db::EmployeeDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::relation::connection::FirmRegistryH2Connection
+{
+  store: demo::relation::db::FirmRegistryDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+ModelChainConnection demo::relation::connection::EmployeeCardModelChainConnection
+{
+  mappings: [ demo::relation::mapping::EmployeeFirmCrossDatabaseMapping ];
+}

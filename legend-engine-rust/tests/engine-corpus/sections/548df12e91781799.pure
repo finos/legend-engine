@@ -1,0 +1,11 @@
+
+Class test::Trade
+{
+  id: Integer[1];
+  time: DateTime[1];
+}
+
+Class <<temporal.processingtemporal>> test::Position
+{
+  id: Integer[1];
+}

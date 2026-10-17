@@ -1,0 +1,7 @@
+
+Text meta::pure::myText
+{
+  content: 'this is just for context';
+  type: STRING;
+  content: 'this is just for context';
+}

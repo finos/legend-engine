@@ -1,0 +1,111 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "A",
+    "package" : "a",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 9
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          },
+          "taggedValues" : [ {
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 13
+            },
+            "tag" : {
+              "profile" : "test::SampleProfile",
+              "profileSourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 13
+              },
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 29,
+                "startLine" : 13
+              },
+              "value" : "doc"
+            },
+            "value" : "This is a documentation"
+          }, {
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 13
+            },
+            "tag" : {
+              "profile" : "test::SampleProfile",
+              "profileSourceInformation" : {
+                "endColumn" : 80,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 62,
+                "startLine" : 13
+              },
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 13,
+                "sourceId" : "",
+                "startColumn" : 82,
+                "startLine" : 13
+              },
+              "value" : "version"
+            },
+            "value" : "1.0"
+          } ],
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "tb",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 11
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ]
+  } ]
+}

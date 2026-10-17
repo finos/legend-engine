@@ -1,0 +1,17 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "somethingelse",
+    "package" : "anything",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "tags" : [ ]
+  } ],
+  "imports" : [ ]
+}

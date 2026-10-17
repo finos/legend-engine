@@ -1,0 +1,148 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "prod",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::MyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 20
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::MyMapping",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 19
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "prod",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      }
+    } ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+      "profileSourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 9
+      },
+      "sourceInformation" : {
+        "endColumn" : 78,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 71,
+        "startLine" : 9
+      },
+      "value" : "Verified"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 92,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 10
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 10
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 10
+        },
+        "value" : "topics"
+      },
+      "value" : "Securities, Equities"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 100,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 11
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 11
+        },
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 11
+        },
+        "value" : "relatedDataSpaces"
+      },
+      "value" : "model::OtherSpace"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 102,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 12
+      },
+      "tag" : {
+        "profile" : "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+        "profileSourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 12
+        },
+        "sourceInformation" : {
+          "endColumn" : 78,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 12
+        },
+        "value" : "deprecationNotice"
+      },
+      "value" : "Use model::NewSpace"
+    } ],
+    "title" : "My Space"
+  } ]
+}

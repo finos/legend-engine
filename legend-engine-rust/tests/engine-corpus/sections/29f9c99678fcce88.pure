@@ -1,0 +1,7 @@
+
+Class model::A
+{
+  fullName() {'''
+  Formatted name.
+  '''}: String[1];
+}

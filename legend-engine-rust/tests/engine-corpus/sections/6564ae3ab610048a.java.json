@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Mapping Test Suite requires a query function",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 12
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Mapping test object 'input type' is missing. Possible values: JSON, XML",
+    "sourceInformation" : {
+      "endColumn" : 67,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 10,
+      "startLine" : 13
+    }
+  }
+}

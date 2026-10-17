@@ -1,0 +1,1343 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "CM1",
+      "classSourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "stateProvNameTXT",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 6
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_SCOPE",
+            "mainTableDb" : "TEST_SCOPE",
+            "schema" : "TEST",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 6,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 6
+            },
+            "table" : "another"
+          },
+          "tableAlias" : "another"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 6
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "subdivisionCategory",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "if",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "substring",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "stateProv",
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 7
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "TEST_SCOPE",
+                  "mainTableDb" : "TEST_SCOPE",
+                  "schema" : "TEST",
+                  "sourceInformation" : {
+                    "endColumn" : 68,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 57,
+                    "startLine" : 7
+                  },
+                  "table" : "another"
+                },
+                "tableAlias" : "another"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 81,
+                  "startLine" : 7
+                },
+                "value" : 1
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 7,
+                  "sourceId" : "",
+                  "startColumn" : 84,
+                  "startLine" : 7
+                },
+                "value" : 2
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 7
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 88,
+                "startLine" : 7
+              },
+              "value" : "US"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 92,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 7
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 95,
+              "startLine" : 7
+            },
+            "value" : "STATE"
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlNull",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 7
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 113,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 7
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "code",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "nodeCODE",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 8
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "TEST_SCOPE",
+            "mainTableDb" : "TEST_SCOPE",
+            "schema" : "TEST",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 8
+            },
+            "table" : "something"
+          },
+          "tableAlias" : "something"
+        },
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "scheme",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "TEST_SCOPE",
+            "name" : "join_1",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 9
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 9
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 9
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "parent",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "TEST_SCOPE",
+            "name" : "join_2",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 10
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 10
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 10
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "hierarchyLevel",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "case",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "test_val",
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "TEST_SCOPE",
+                "mainTableDb" : "TEST_SCOPE",
+                "schema" : "TEST",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 11
+                },
+                "table" : "something"
+              },
+              "tableAlias" : "something"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 69,
+                "startLine" : 11
+              },
+              "value" : 20
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 74,
+              "startLine" : 11
+            },
+            "value" : 1
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "test_val",
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 83,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "TEST_SCOPE",
+                "mainTableDb" : "TEST_SCOPE",
+                "schema" : "TEST",
+                "sourceInformation" : {
+                  "endColumn" : 108,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 95,
+                  "startLine" : 11
+                },
+                "table" : "something"
+              },
+              "tableAlias" : "something"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 120,
+                "startLine" : 11
+              },
+              "value" : 30
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 77,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 125,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 125,
+              "startLine" : 11
+            },
+            "value" : 2
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "test_val",
+              "sourceInformation" : {
+                "endColumn" : 168,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 134,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "TEST_SCOPE",
+                "mainTableDb" : "TEST_SCOPE",
+                "schema" : "TEST",
+                "sourceInformation" : {
+                  "endColumn" : 159,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 146,
+                  "startLine" : 11
+                },
+                "table" : "something"
+              },
+              "tableAlias" : "something"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 172,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 171,
+                "startLine" : 11
+              },
+              "value" : 40
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 173,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 128,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 176,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 176,
+              "startLine" : 11
+            },
+            "value" : 3
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "test_val",
+              "sourceInformation" : {
+                "endColumn" : 219,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 185,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "TEST_SCOPE",
+                "mainTableDb" : "TEST_SCOPE",
+                "schema" : "TEST",
+                "sourceInformation" : {
+                  "endColumn" : 210,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 197,
+                  "startLine" : 11
+                },
+                "table" : "something"
+              },
+              "tableAlias" : "something"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 223,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 222,
+                "startLine" : 11
+              },
+              "value" : 55
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 224,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 179,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 227,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 227,
+              "startLine" : 11
+            },
+            "value" : 4
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "equal",
+            "parameters" : [ {
+              "_type" : "column",
+              "column" : "test_val",
+              "sourceInformation" : {
+                "endColumn" : 270,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 236,
+                "startLine" : 11
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "TEST_SCOPE",
+                "mainTableDb" : "TEST_SCOPE",
+                "schema" : "TEST",
+                "sourceInformation" : {
+                  "endColumn" : 261,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 248,
+                  "startLine" : 11
+                },
+                "table" : "something"
+              },
+              "tableAlias" : "something"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 274,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 273,
+                "startLine" : 11
+              },
+              "value" : 60
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 275,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 230,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 278,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 278,
+              "startLine" : 11
+            },
+            "value" : 5
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "sqlNull",
+            "parameters" : [ ],
+            "sourceInformation" : {
+              "endColumn" : 289,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 281,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 290,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 11
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 290,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 11
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "divide",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "if",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "equal",
+              "parameters" : [ {
+                "_type" : "elemtWithJoins",
+                "joins" : [ {
+                  "db" : "TEST_DB2",
+                  "name" : "join_1",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 12
+                  }
+                }, {
+                  "db" : "TEST_DB2",
+                  "joinType" : "OUTER",
+                  "name" : "join_2",
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 66,
+                    "startLine" : 12
+                  }
+                } ],
+                "relationalElement" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "toString",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "toValue",
+                    "sourceInformation" : {
+                      "endColumn" : 121,
+                      "endLine" : 12,
+                      "sourceId" : "",
+                      "startColumn" : 85,
+                      "startLine" : 12
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "TEST_DB2",
+                      "mainTableDb" : "TEST_DB2",
+                      "schema" : "SOMETHING",
+                      "sourceInformation" : {
+                        "endColumn" : 113,
+                        "endLine" : 12,
+                        "sourceId" : "",
+                        "startColumn" : 95,
+                        "startLine" : 12
+                      },
+                      "table" : "something"
+                    },
+                    "tableAlias" : "something"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 122,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 76,
+                    "startLine" : 12
+                  }
+                },
+                "sourceInformation" : {
+                  "endColumn" : 122,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 12
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 130,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 125,
+                  "startLine" : 12
+                },
+                "value" : "0903"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 131,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 12
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 134,
+                "startLine" : 12
+              },
+              "value" : 0.0
+            }, {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "TEST_DB2",
+                "name" : "join_3",
+                "sourceInformation" : {
+                  "endColumn" : 155,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 149,
+                  "startLine" : 12
+                }
+              }, {
+                "db" : "TEST_DB2",
+                "joinType" : "INNER",
+                "name" : "join_4",
+                "sourceInformation" : {
+                  "endColumn" : 183,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 177,
+                  "startLine" : 12
+                }
+              } ],
+              "relationalElement" : {
+                "_type" : "dynaFunc",
+                "funcName" : "parseFloat",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "col3",
+                  "sourceInformation" : {
+                    "endColumn" : 226,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 198,
+                    "startLine" : 12
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "TEST_DB2",
+                    "mainTableDb" : "TEST_DB2",
+                    "schema" : "schema1",
+                    "sourceInformation" : {
+                      "endColumn" : 221,
+                      "endLine" : 12,
+                      "sourceId" : "",
+                      "startColumn" : 208,
+                      "startLine" : 12
+                    },
+                    "table" : "table2"
+                  },
+                  "tableAlias" : "table2"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 227,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 187,
+                  "startLine" : 12
+                }
+              },
+              "sourceInformation" : {
+                "endColumn" : 227,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 139,
+                "startLine" : 12
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 228,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 12
+            }
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "if",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "isEmpty",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "factor",
+                "sourceInformation" : {
+                  "endColumn" : 274,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 242,
+                  "startLine" : 12
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "TEST_SCOPE",
+                  "mainTableDb" : "TEST_SCOPE",
+                  "schema" : "TEST",
+                  "sourceInformation" : {
+                    "endColumn" : 267,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 254,
+                    "startLine" : 12
+                  },
+                  "table" : "something"
+                },
+                "tableAlias" : "something"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 275,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 234,
+                "startLine" : 12
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 280,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 278,
+                "startLine" : 12
+              },
+              "value" : 1.0
+            }, {
+              "_type" : "dynaFunc",
+              "funcName" : "divide",
+              "parameters" : [ {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 290,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 290,
+                  "startLine" : 12
+                },
+                "value" : 1
+              }, {
+                "_type" : "column",
+                "column" : "factor",
+                "sourceInformation" : {
+                  "endColumn" : 325,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 293,
+                  "startLine" : 12
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "TEST_SCOPE",
+                  "mainTableDb" : "TEST_SCOPE",
+                  "schema" : "TEST",
+                  "sourceInformation" : {
+                    "endColumn" : 318,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 305,
+                    "startLine" : 12
+                  },
+                  "table" : "something"
+                },
+                "tableAlias" : "something"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 326,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 283,
+                "startLine" : 12
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 327,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 231,
+              "startLine" : 12
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 328,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 12
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 328,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 12
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "part",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "TEST_SCOPE",
+            "name" : "join_1",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 13
+            }
+          }, {
+            "db" : "TEST_SCOPE",
+            "name" : "join_2",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 13,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 13
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 13
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 13
+        },
+        "target" : "part_TEST"
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "CM1",
+          "property" : "prop1",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 14
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "divide",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "if",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "equal",
+              "parameters" : [ {
+                "_type" : "elemtWithJoins",
+                "joins" : [ {
+                  "db" : "TEST_DB2",
+                  "name" : "join_1",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 38,
+                    "startLine" : 14
+                  }
+                }, {
+                  "db" : "TEST_DB2",
+                  "joinType" : "OUTER",
+                  "name" : "join_2",
+                  "sourceInformation" : {
+                    "endColumn" : 72,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 66,
+                    "startLine" : 14
+                  }
+                } ],
+                "relationalElement" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "toString",
+                  "parameters" : [ {
+                    "_type" : "column",
+                    "column" : "toValue",
+                    "sourceInformation" : {
+                      "endColumn" : 121,
+                      "endLine" : 14,
+                      "sourceId" : "",
+                      "startColumn" : 85,
+                      "startLine" : 14
+                    },
+                    "table" : {
+                      "_type" : "Table",
+                      "database" : "TEST_DB2",
+                      "mainTableDb" : "TEST_DB2",
+                      "schema" : "SOMETHING",
+                      "sourceInformation" : {
+                        "endColumn" : 113,
+                        "endLine" : 14,
+                        "sourceId" : "",
+                        "startColumn" : 95,
+                        "startLine" : 14
+                      },
+                      "table" : "something"
+                    },
+                    "tableAlias" : "something"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 122,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 76,
+                    "startLine" : 14
+                  }
+                },
+                "sourceInformation" : {
+                  "endColumn" : 122,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 14
+                }
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 130,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 125,
+                  "startLine" : 14
+                },
+                "value" : "0903"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 131,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 14
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 134,
+                "startLine" : 14
+              },
+              "value" : 0.0
+            }, {
+              "_type" : "elemtWithJoins",
+              "joins" : [ {
+                "db" : "TEST_DB2",
+                "name" : "join_3",
+                "sourceInformation" : {
+                  "endColumn" : 155,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 149,
+                  "startLine" : 14
+                }
+              }, {
+                "db" : "TEST_DB2",
+                "joinType" : "INNER",
+                "name" : "join_4",
+                "sourceInformation" : {
+                  "endColumn" : 183,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 177,
+                  "startLine" : 14
+                }
+              } ],
+              "relationalElement" : {
+                "_type" : "dynaFunc",
+                "funcName" : "parseFloat",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "col3",
+                  "sourceInformation" : {
+                    "endColumn" : 226,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 198,
+                    "startLine" : 14
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "TEST_DB2",
+                    "mainTableDb" : "TEST_DB2",
+                    "schema" : "schema1",
+                    "sourceInformation" : {
+                      "endColumn" : 221,
+                      "endLine" : 14,
+                      "sourceId" : "",
+                      "startColumn" : 208,
+                      "startLine" : 14
+                    },
+                    "table" : "table2"
+                  },
+                  "tableAlias" : "table2"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 227,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 187,
+                  "startLine" : 14
+                }
+              },
+              "sourceInformation" : {
+                "endColumn" : 227,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 139,
+                "startLine" : 14
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 228,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 14
+            }
+          }, {
+            "_type" : "dynaFunc",
+            "funcName" : "if",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "isEmpty",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "factor",
+                "sourceInformation" : {
+                  "endColumn" : 253,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 242,
+                  "startLine" : 14
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 246,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 242,
+                    "startLine" : 14
+                  },
+                  "table" : "table"
+                },
+                "tableAlias" : "table"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 254,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 234,
+                "startLine" : 14
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 259,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 257,
+                "startLine" : 14
+              },
+              "value" : 1.0
+            }, {
+              "_type" : "dynaFunc",
+              "funcName" : "divide",
+              "parameters" : [ {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 269,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 269,
+                  "startLine" : 14
+                },
+                "value" : 1
+              }, {
+                "_type" : "column",
+                "column" : "factor",
+                "sourceInformation" : {
+                  "endColumn" : 283,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 272,
+                  "startLine" : 14
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 276,
+                    "endLine" : 14,
+                    "sourceId" : "",
+                    "startColumn" : 272,
+                    "startLine" : 14
+                  },
+                  "table" : "table"
+                },
+                "tableAlias" : "table"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 284,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 262,
+                "startLine" : 14
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 285,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 231,
+              "startLine" : 14
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 286,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 14
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 286,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 14
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

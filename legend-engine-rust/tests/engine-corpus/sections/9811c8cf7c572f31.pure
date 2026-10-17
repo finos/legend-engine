@@ -1,0 +1,7 @@
+
+Class demo::relation::domain::Department
+{
+  id: Integer[1];
+  name: String[1];
+  code: String[1];
+}

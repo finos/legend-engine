@@ -1,0 +1,150 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST NAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 7
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 7
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "AGE",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 8
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 8
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "my::FirmBinding"
+        },
+        "column" : "firmDetails",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 9
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 9
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRMID",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 0,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 10
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 10
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 10
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::testFunc():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 6
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,7 @@
+
+Class meta::external::store::service::showcase::domain::S_Trade
+{
+  s_tradeId       : String[1];
+  s_traderDetails : String[1];
+  s_tradeDetails  : String[1];
+}

@@ -1,0 +1,354 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "Firm",
+      "classSourceInformation" : {
+        "endColumn" : 8,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "firm1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 39
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 39
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 39
+            },
+            "table" : "FirmInfoTable"
+          },
+          "tableAlias" : "FirmInfoTable"
+        },
+        "source" : "firm1",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 39
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Firm",
+          "property" : "otherInformation",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "other",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 40,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 40
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 40,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 40
+            },
+            "table" : "FirmInfoTable"
+          },
+          "tableAlias" : "FirmInfoTable"
+        },
+        "source" : "firm1",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 40
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 37
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "Person",
+      "classSourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 42
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "alias1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 44
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 44
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "db",
+            "mainTableDb" : "db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 44
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        },
+        "source" : "alias1",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "otherwiseEmbeddedPropertyMapping",
+        "classMapping" : {
+          "_type" : "embedded",
+          "primaryKey" : [ {
+            "_type" : "column",
+            "column" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 47
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "db",
+              "mainTableDb" : "db",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 30,
+                "startLine" : 47
+              },
+              "table" : "employeeFirmDenormTable"
+            },
+            "tableAlias" : "employeeFirmDenormTable"
+          } ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "property" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 48
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "legalName",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 48
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "db",
+                "mainTableDb" : "db",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 29,
+                  "startLine" : 48
+                },
+                "table" : "employeeFirmDenormTable"
+              },
+              "tableAlias" : "employeeFirmDenormTable"
+            },
+            "source" : "alias1",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 48
+            }
+          } ],
+          "root" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 46
+          }
+        },
+        "otherwisePropertyMapping" : {
+          "_type" : "relationalPropertyMapping",
+          "property" : {
+            "class" : "Person",
+            "property" : "firm",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 45
+            }
+          },
+          "relationalOperation" : {
+            "_type" : "elemtWithJoins",
+            "joins" : [ {
+              "db" : "db",
+              "name" : "PersonFirmJoin",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 49,
+                "sourceId" : "",
+                "startColumn" : 35,
+                "startLine" : 49
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 49,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 49
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 49
+          },
+          "target" : "firm1"
+        },
+        "property" : {
+          "class" : "Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 45
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 49
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 50,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 42
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myMapping",
+    "package" : "mappingPackage",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 51,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 35
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ "other", "mapping" ]
+}

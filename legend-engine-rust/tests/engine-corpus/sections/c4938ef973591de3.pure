@@ -1,0 +1,5 @@
+
+function model::Firm_QueryFunction(): Integer[1]
+{
+  1 + 1;
+}

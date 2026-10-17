@@ -1,0 +1,22 @@
+
+RelationalDatabaseConnection simple::H2Connection
+{
+  store: model::relational::tests::dbInc;
+  type: H2;
+  quoteIdentifiers: true;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: Test
+  {
+  };
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: ['USE_DB_NATIVE_IMPLICIT_NULL_ORDERING'];
+    }
+  ];
+}

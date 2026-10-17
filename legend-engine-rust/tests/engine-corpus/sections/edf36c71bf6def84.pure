@@ -1,0 +1,11 @@
+
+'''
+A person in the system.
+'''
+Class model::Person
+{
+  '''
+  Given name.
+  '''
+  firstName: String[1];
+}

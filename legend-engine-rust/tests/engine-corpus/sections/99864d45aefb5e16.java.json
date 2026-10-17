@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'transactionScope' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 18,
+      "startLine" : 14
+    }
+  }
+}

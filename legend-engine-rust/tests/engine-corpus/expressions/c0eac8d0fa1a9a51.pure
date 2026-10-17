@@ -1,0 +1,13 @@
+|test::Address.all()->graphFetch(
+  #{
+    test::Address{
+      Id
+    }
+  }#
+)->serialize(
+  #{
+    test::Address{
+      Id
+    }
+  }#
+)

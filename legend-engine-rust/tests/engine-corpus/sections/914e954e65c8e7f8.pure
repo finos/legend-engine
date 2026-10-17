@@ -1,0 +1,28 @@
+
+DataSpace model::dataSpace{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  elements: [model::element, model, -model::sub];
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: src: model::sub::element[1]|$src;
+      executionContextKey: 'random 1';
+    },
+    {
+      id: 2;
+      title: 'Template 2';
+      query: src: model::sub::element[1]|$srssc;
+    }
+  ];
+}

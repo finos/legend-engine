@@ -1,0 +1,10 @@
+
+Binding demo::ssc::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssc::Firm,
+    demo::ssc::Address,
+    demo::ssc::AddressLine
+  ];
+}

@@ -1,0 +1,9 @@
+
+Mapping test::Map
+(
+  *test::Employee: Relational
+  {
+    ~mainTable [test::DB]employee
+    type: [test::DB]employee.type
+  }
+)

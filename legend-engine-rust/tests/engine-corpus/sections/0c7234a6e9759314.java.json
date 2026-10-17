@@ -1,0 +1,1421 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "AFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "aName",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 86,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 86
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 86,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 86
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 86,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 86
+          },
+          "value" : "aName1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 86,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 86
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 86,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 86
+      }
+    }, {
+      "_type" : "filter",
+      "name" : "CFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "cName",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 87
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 87,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 87
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 87,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 87
+          },
+          "value" : "cName1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 87,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 87
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 87,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 87
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "AE",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 79
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 79,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 79
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 79,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 79
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 79,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 79
+            },
+            "table" : "DEF"
+          },
+          "tableAlias" : "DEF"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 79
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 79,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 79
+      }
+    }, {
+      "name" : "BH",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 80
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 80
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 80
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 80
+            },
+            "table" : "GHI"
+          },
+          "tableAlias" : "GHI"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 80
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 80,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 80
+      }
+    }, {
+      "name" : "CK",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 81
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 81
+            },
+            "table" : "ABC"
+          },
+          "tableAlias" : "ABC"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 81,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 81
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 22,
+              "endLine" : 81,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 81
+            },
+            "table" : "JKL"
+          },
+          "tableAlias" : "JKL"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 81,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 81
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 81
+      }
+    }, {
+      "name" : "A2E2",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 82,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 82
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 82,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 82
+            },
+            "table" : "ABC2"
+          },
+          "tableAlias" : "ABC2"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 82,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 82
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 82,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 82
+            },
+            "table" : "DEF2"
+          },
+          "tableAlias" : "DEF2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 82,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 82
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 82
+      }
+    }, {
+      "name" : "B2H2",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 83
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 83
+            },
+            "table" : "ABC2"
+          },
+          "tableAlias" : "ABC2"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 83,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 83
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 83,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 83
+            },
+            "table" : "GHI2"
+          },
+          "tableAlias" : "GHI2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 83,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 83
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 83
+      }
+    }, {
+      "name" : "C2K2",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 84
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 84
+            },
+            "table" : "ABC2"
+          },
+          "tableAlias" : "ABC2"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 84
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::test::testDatabase",
+            "mainTableDb" : "store::test::testDatabase",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 84
+            },
+            "table" : "JKL2"
+          },
+          "tableAlias" : "JKL2"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 84,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 84
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 84
+      }
+    } ],
+    "name" : "testDatabase",
+    "package" : "store::test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 88,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "aName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "bName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "cName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "m1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m3Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m4Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 14
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 15
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n3Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "o1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "o2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ABC",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "dName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "eName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "fName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "DEF",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 20
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "gName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "hName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "iName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "GHI",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "jName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "kName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "lName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "JKL",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 34
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 43
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "aName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 44
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "bName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 45
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "cName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 46
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "m1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 48
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m3Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 49
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "m4Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 51
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 52
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "n3Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 53
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "o1Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 54,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 54
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "o2Id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 55,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 55
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ABC2",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 41
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 59
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "dName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 60
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "eName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 61
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "fName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 62,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 62
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "DEF2",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 57
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 66
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "gName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 67
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "hName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 68,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 68
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "iName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 69,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 69
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "GHI2",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 64
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 73
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "jName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 74
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "kName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 75,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 75
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "lName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 76
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "JKL2",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 71
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 88,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "my",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 100,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 90
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 94
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PersonTable",
+        "primaryKey" : [ "NAME" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 95,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 92
+        }
+      }, {
+        "columns" : [ {
+          "name" : "FIRMNAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 98
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EmployeeTable",
+        "primaryKey" : [ "FIRMNAME" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 99,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 96
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 100,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 90
+    },
+    "stereotypes" : [ ]
+  } ]
+}

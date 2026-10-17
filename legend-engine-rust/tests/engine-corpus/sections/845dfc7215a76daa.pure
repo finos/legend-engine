@@ -1,0 +1,7 @@
+
+Measure 'some measure'
+{
+  *'Unit One': x -> $x;
+  'Unit Two': x -> $x * 1000;
+  'Unit Three': x -> $x * 400;
+}

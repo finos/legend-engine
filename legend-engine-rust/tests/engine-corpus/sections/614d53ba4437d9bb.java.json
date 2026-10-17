@@ -1,0 +1,99 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 44
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 44,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 44
+              }
+            } ],
+            "property" : "FIRST NAME",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 44,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 44
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 46
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunctionQuoted():Relation<('FIRST NAME':String[1],AGE:Integer[1])>[1]",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 43
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 41
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "explicitQuotedMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 39
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

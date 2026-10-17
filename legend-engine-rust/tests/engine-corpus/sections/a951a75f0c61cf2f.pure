@@ -1,0 +1,25 @@
+
+Mapping test::mapping
+(
+  CM1[CM1]: Relational
+  {
+    ~filter [TEST_DB]filter_1
+    ~distinct
+    ~groupBy
+    (
+      [TEST_DB2]test_1.test_2.test_3,
+      [TEST_DB3]test_1.test_1
+    )
+    ~primaryKey
+    (
+      [TEST_DB]test1.test2.test3,
+      [TEST_DB]test4.test6
+    )
+    ~mainTable [TEST_DB00]test1.test2
+    +prop1: test::Class[*]: [TEST_DB]test.someCol,
+    +prop2: test::Class[0..1]: [TEST_DB]test.someCol,
+    +prop3: Integer[7]: [TEST_DB]test.someCol,
+    prop4: [TEST_DB]test.someCol,
+    prop5: [TEST_DB]test.someCol
+  }
+)

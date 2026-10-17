@@ -1,0 +1,227 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 20,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::TestDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 36,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 55,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        },
+        "table" : "personTable",
+        "temporality" : {
+          "_type" : "bitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "batchId",
+            "batchIdIn" : "BATCH_IN",
+            "batchIdOut" : "BATCH_OUT",
+            "sourceInformation" : {
+              "endColumn" : 8,
+              "endLine" : 43,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 28,
+              "startLine" : 39
+            }
+          },
+          "sourceDerivedDimension" : {
+            "_type" : "sourceDerivedTime",
+            "sourceInformation" : {
+              "endColumn" : 7,
+              "endLine" : 53,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 31,
+              "startLine" : 44
+            },
+            "sourceTimeFields" : {
+              "_type" : "sourceTimeStartAndEnd",
+              "endField" : "SOURCE_THROUGH",
+              "sourceInformation" : {
+                "endColumn" : 9,
+                "endLine" : 52,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 23,
+                "startLine" : 48
+              },
+              "startField" : "SOURCE_FROM"
+            },
+            "timeEnd" : "THRU_Z",
+            "timeStart" : "FROM_Z"
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 54,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 18,
+            "startLine" : 37
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "noActionIndicator",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 29,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 24,
+              "startLine" : 29
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 30,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 18,
+            "startLine" : 27
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 26,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 26
+          }
+        },
+        "keys" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 31,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 3,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 55,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 94,
+      "sourceId" : "persistence.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 92,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 4,
+        "startLine" : 59
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"AMOUNT\":100, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":2, \"AMOUNT\":200, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999},{\"ID\":3, \"AMOUNT\":400, \"FROM_Z\": \"2022-01-01 00:00:00.0\", \"THRU_Z\": \"2022-01-02 00:00:00.0\", \"BATCH_IN\":1, \"BATCH_OUT\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 86,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 18,
+              "startLine" : 82
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 87,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 14,
+            "startLine" : 79
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 89,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 8,
+          "startLine" : 63
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"AMOUNT\":100, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":2, \"AMOUNT\":200, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"},{\"ID\":3, \"AMOUNT\":400, \"SOURCE_FROM\": \"2022-01-01 00:00:00.0\", \"SOURCE_THROUGH\": \"2022-01-02 00:00:00.0\"}]",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 73,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 14,
+                "startLine" : 69
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 74,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 12,
+              "startLine" : 67
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 75,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 10,
+            "startLine" : 65
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

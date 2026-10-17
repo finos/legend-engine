@@ -1,0 +1,295 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "description" : "some description",
+    "diagrams" : [ {
+      "description" : "some information about the context",
+      "diagram" : {
+        "path" : "model::SomeDiag1",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 32
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 29
+      },
+      "title" : "Diag 1"
+    }, {
+      "diagram" : {
+        "path" : "model::SomeDiag2",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 36
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 34
+      },
+      "title" : "Diag 2"
+    } ],
+    "elements" : [ {
+      "path" : "model::Class1",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 41
+      }
+    }, {
+      "path" : "model::Class2",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 42
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model",
+      "sourceInformation" : {
+        "endColumn" : 10,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 43
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::Enum2",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 44
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::Assoc",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 45
+      }
+    } ],
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "description" : "some information about the context",
+      "executable" : {
+        "path" : "model::SomeExec1",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 52
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 49
+      },
+      "title" : "Exec 1"
+    }, {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "model::SomeExec2",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 56
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 57,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 54
+      },
+      "title" : "Exec 2"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 10
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 16
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 15
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "testData" : {
+        "_type" : "reference",
+        "dataElement" : {
+          "path" : "com::model::someDataElement",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 18
+          },
+          "type" : "DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 18
+        }
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::typemodifiers",
+      "profileSourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 49,
+        "startLine" : 2
+      },
+      "value" : "abstract"
+    } ],
+    "supportInfo" : {
+      "_type" : "combined",
+      "documentationUrl" : "https://example.org",
+      "emails" : [ "someEmail@test.org", "someEmail2@test.org" ],
+      "faqUrl" : "https://example.org/faq",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 59
+      },
+      "supportUrl" : "https://example.org/support",
+      "website" : "https://example.org/website"
+    },
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 61,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 61,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ],
+    "title" : "some title"
+  } ]
+}

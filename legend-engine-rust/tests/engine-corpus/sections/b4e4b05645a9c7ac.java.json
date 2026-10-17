@@ -1,0 +1,467 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::view::BigSale",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::SalesViewDB",
+        "mainTableDb" : "demo::store::SalesViewDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 42,
+          "startLine" : 24
+        },
+        "table" : "BigSaleView"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::SalesViewDB",
+          "mainTableDb" : "demo::store::SalesViewDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 33,
+            "startLine" : 22
+          },
+          "table" : "BigSaleView"
+        },
+        "tableAlias" : "BigSaleView"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::view::BigSale",
+          "property" : "product",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "product",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::SalesViewDB",
+            "mainTableDb" : "demo::store::SalesViewDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 40,
+              "startLine" : 25
+            },
+            "table" : "BigSaleView"
+          },
+          "tableAlias" : "BigSaleView"
+        },
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::view::BigSale",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::SalesViewDB",
+            "mainTableDb" : "demo::store::SalesViewDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 39,
+              "startLine" : 26
+            },
+            "table" : "BigSaleView"
+          },
+          "tableAlias" : "BigSaleView"
+        },
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 11,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "BigSaleMapping",
+    "package" : "demo::view",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::view::BigSale",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 33,
+                  "sourceId" : "demo::view::BigSaleMapping",
+                  "startColumn" : 18,
+                  "startLine" : 33
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 37,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 33,
+                    "sourceId" : "demo::view::BigSaleMapping",
+                    "startColumn" : 56,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "product",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 33,
+                  "sourceId" : "demo::view::BigSaleMapping",
+                  "startColumn" : 59,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 54,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 33,
+              "sourceId" : "demo::view::BigSaleMapping",
+              "startColumn" : 45,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 33,
+              "sourceId" : "demo::view::BigSaleMapping",
+              "startColumn" : 77,
+              "startLine" : 33
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 33,
+                    "sourceId" : "demo::view::BigSaleMapping",
+                    "startColumn" : 82,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "product",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 33,
+                  "sourceId" : "demo::view::BigSaleMapping",
+                  "startColumn" : 85,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 91,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 80,
+                "startLine" : 33
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 99,
+                    "endLine" : 33,
+                    "sourceId" : "demo::view::BigSaleMapping",
+                    "startColumn" : 98,
+                    "startLine" : 33
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 33,
+                  "sourceId" : "demo::view::BigSaleMapping",
+                  "startColumn" : 101,
+                  "startLine" : 33
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 96,
+                "startLine" : 33
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 33,
+              "sourceId" : "demo::view::BigSaleMapping",
+              "startColumn" : 110,
+              "startLine" : 33
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 111,
+                "startLine" : 33
+              },
+              "value" : "Product"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 33,
+                "sourceId" : "demo::view::BigSaleMapping",
+                "startColumn" : 122,
+                "startLine" : 33
+              },
+              "value" : "Amount"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 33,
+            "sourceId" : "demo::view::BigSaleMapping",
+            "startColumn" : 69,
+            "startLine" : 33
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 33,
+          "sourceId" : "demo::view::BigSaleMapping",
+          "startColumn" : 17,
+          "startLine" : 33
+        }
+      },
+      "id" : "inlineViewSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 61,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 31
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Product\":\"Gadget\",\"Amount\":250},{\"Product\":\"Widget\",\"Amount\":100}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 56,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 52
+            }
+          },
+          "id" : "shouldReturnOnlyRowsAboveThreshold",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 49
+          }
+        } ],
+        "id" : "onlyBigSales",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 59,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 36
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::view::data::SaleData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 44,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 41
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 44,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 41
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 44,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 40
+          },
+          "store" : {
+            "path" : "demo::store::SalesViewDB",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 40,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 40
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

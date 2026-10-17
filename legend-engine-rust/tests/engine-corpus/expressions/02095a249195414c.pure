@@ -1,0 +1,31 @@
+var: String[1]|Person.all()->filter(
+  p|$p.firstName ==
+    $var
+)->project(
+  [
+    col(
+      p|$p.firstName,
+      'firstName'
+    ),
+    col(
+      p|$p.lastName,
+      'lastName'
+    ),
+    col(
+      p|$p.lastName->length(),
+      'age'
+    )
+  ]
+)->olapGroupBy(
+  ['firstName'],
+  desc('lastName'),
+  y|$y->rank(),
+  'testCol1'
+)->olapGroupBy(
+  ['firstName'],
+  asc('lastName'),
+  'age'->func(
+    y|$y->sum()
+  ),
+  'testCol3'
+)

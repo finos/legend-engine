@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 20,
+        "sourceId" : "mappingFunction/firms.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "FirmTable" ],
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 20,
+          "sourceId" : "mappingFunction/firms.pure",
+          "startColumn" : 3,
+          "startLine" : 20
+        }
+      }
+    } ],
+    "name" : "firms__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 18,
+          "sourceId" : "mappingFunction/firms.pure",
+          "startColumn" : 41,
+          "startLine" : 18
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 85,
+            "endLine" : 18,
+            "sourceId" : "mappingFunction/firms.pure",
+            "startColumn" : 83,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "mappingFunction/firms.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

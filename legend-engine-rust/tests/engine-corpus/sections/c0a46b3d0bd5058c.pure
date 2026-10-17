@@ -1,0 +1,14 @@
+
+function model::MyFunc(): String[1]
+{
+  ''
+}
+{
+  testSuite1
+  (
+      testFail | MyFunc() => (JSON) '[]';
+      testPass | MyFunc() => (JSON) '[]';
+  )
+  testFail | MyFunc() => (JSON) '[]';
+  testPass | MyFunc() => (JSON) '[]';
+}

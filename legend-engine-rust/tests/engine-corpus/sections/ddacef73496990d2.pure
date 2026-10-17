@@ -1,0 +1,50 @@
+
+Mapping demo::AccountLiteralMapping
+(
+  *demo::literal::Account: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::LiteralDB]AccountTable.id
+    )
+    ~mainTable [demo::store::LiteralDB]AccountTable
+    name: [demo::store::LiteralDB]AccountTable.name,
+    source: 'LEGEND',
+    tier: case(equal([demo::store::LiteralDB]AccountTable.code, 'A'), 'PREMIUM', 'STANDARD')
+  }
+
+  testSuites:
+  [
+    literalSuite:
+    {
+      function: |demo::literal::Account.all()->sortBy(x|$x.name)->project([x|$x.name, x|$x.source, x|$x.tier], ['Name', 'Source', 'Tier']);
+      tests:
+      [
+        constantAndListLiterals:
+        {
+          data:
+          [
+            demo::store::LiteralDB:
+              Reference
+              #{
+                demo::data::AccountData
+              }#
+          ];
+          asserts:
+          [
+            shouldEmitLiterals:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Acme","Source":"LEGEND","Tier":"PREMIUM"},{"Name":"Beta","Source":"LEGEND","Tier":"STANDARD"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

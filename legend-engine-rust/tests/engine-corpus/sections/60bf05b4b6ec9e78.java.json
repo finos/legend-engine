@@ -1,0 +1,580 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::joins::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 18,
+        "sourceId" : "mapping/crossSchemaMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "HR",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 24,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 24
+        },
+        "table" : "EMPLOYEE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 22,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "HR",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 22,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 22
+          },
+          "table" : "EMPLOYEE"
+        },
+        "tableAlias" : "EMPLOYEE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Employee",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 25,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 25,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 25
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 25,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "mapping/crossSchemaMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::joins::Sale",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 28,
+        "sourceId" : "mapping/crossSchemaMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 28
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::JoinsDB",
+        "mainTableDb" : "demo::store::JoinsDB",
+        "schema" : "SALES",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 34,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 34
+        },
+        "table" : "SALE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 32,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 32
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::JoinsDB",
+          "mainTableDb" : "demo::store::JoinsDB",
+          "schema" : "SALES",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 32,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 32
+          },
+          "table" : "SALE"
+        },
+        "tableAlias" : "SALE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Sale",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 35,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AMOUNT",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 35,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 35
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "SALES",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 35,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 35
+            },
+            "table" : "SALE"
+          },
+          "tableAlias" : "SALE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 35,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joins::Sale",
+          "property" : "seller",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 36,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::JoinsDB",
+            "name" : "Emp_Sale",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 36,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 36
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 36,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 36,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 36
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/crossSchemaMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "CrossSchemaMapping",
+    "package" : "demo::joins",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 73,
+      "sourceId" : "mapping/crossSchemaMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::joins::Sale",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 43,
+                  "sourceId" : "demo::joins::CrossSchemaMapping",
+                  "startColumn" : 18,
+                  "startLine" : 43
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 35,
+                "startLine" : 43
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 55,
+                    "endLine" : 43,
+                    "sourceId" : "demo::joins::CrossSchemaMapping",
+                    "startColumn" : 54,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 43,
+                  "sourceId" : "demo::joins::CrossSchemaMapping",
+                  "startColumn" : 57,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 62,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 52,
+                "startLine" : 43
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 43,
+              "sourceId" : "demo::joins::CrossSchemaMapping",
+              "startColumn" : 43,
+              "startLine" : 43
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 43,
+              "sourceId" : "demo::joins::CrossSchemaMapping",
+              "startColumn" : 74,
+              "startLine" : 43
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 43,
+                      "sourceId" : "demo::joins::CrossSchemaMapping",
+                      "startColumn" : 79,
+                      "startLine" : 43
+                    }
+                  } ],
+                  "property" : "seller",
+                  "sourceInformation" : {
+                    "endColumn" : 87,
+                    "endLine" : 43,
+                    "sourceId" : "demo::joins::CrossSchemaMapping",
+                    "startColumn" : 82,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 43,
+                  "sourceId" : "demo::joins::CrossSchemaMapping",
+                  "startColumn" : 89,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 92,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 77,
+                "startLine" : 43
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 100,
+                    "endLine" : 43,
+                    "sourceId" : "demo::joins::CrossSchemaMapping",
+                    "startColumn" : 99,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 43,
+                  "sourceId" : "demo::joins::CrossSchemaMapping",
+                  "startColumn" : 102,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 107,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 97,
+                "startLine" : 43
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 43,
+              "sourceId" : "demo::joins::CrossSchemaMapping",
+              "startColumn" : 111,
+              "startLine" : 43
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 112,
+                "startLine" : 43
+              },
+              "value" : "Seller"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 43,
+                "sourceId" : "demo::joins::CrossSchemaMapping",
+                "startColumn" : 122,
+                "startLine" : 43
+              },
+              "value" : "Amount"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 43,
+            "sourceId" : "demo::joins::CrossSchemaMapping",
+            "startColumn" : 66,
+            "startLine" : 43
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 43,
+          "sourceId" : "demo::joins::CrossSchemaMapping",
+          "startColumn" : 17,
+          "startLine" : 43
+        }
+      },
+      "id" : "crossSchemaSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 71,
+        "sourceId" : "mapping/crossSchemaMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 41
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Seller\":\"Bob\",\"Amount\":300},{\"Seller\":\"Alice\",\"Amount\":500}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 66,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 62
+            }
+          },
+          "id" : "shouldJoinAcrossSchemas",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 67,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 59
+          }
+        } ],
+        "id" : "joinsAcrossSchemas",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 69,
+          "sourceId" : "mapping/crossSchemaMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 46
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::joins::data::CrossSchemaData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 54,
+                "sourceId" : "mapping/crossSchemaMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 51
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 54,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 51
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 54,
+            "sourceId" : "mapping/crossSchemaMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 50
+          },
+          "store" : {
+            "path" : "demo::store::JoinsDB",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 50,
+              "sourceId" : "mapping/crossSchemaMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 50
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,8 @@
+
+Database test::DB2
+(
+  Table firmTable (
+    name VARCHAR(100) PRIMARY KEY,
+    addressName VARCHAR(100)
+  )
+)

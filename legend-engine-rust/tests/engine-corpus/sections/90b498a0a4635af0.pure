@@ -1,0 +1,8 @@
+
+
+PersistenceContext test::TestPersistenceContext 
+{
+  persistence: test::TestPersistence;
+  platform: Default;
+  platform: Default;
+}

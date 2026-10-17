@@ -1,0 +1,24 @@
+
+RelationalDatabaseConnection simple::StaticConnection
+{
+  store: model::relational::tests::dbInc;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehouseName';
+    region: 'us-east2';
+    proxyHost: 'sampleHost';
+    proxyPort: 'samplePort';
+    nonProxyHosts: 'sample';
+    accountType: MultiTenant;
+    organization: 'sampleOrganization';
+    role: 'DB_ROLE_123';
+  };
+  auth: SnowflakePublic
+  {       publicUserName: 'name';
+       privateKeyVaultReference: 'privateKey';
+       passPhraseVaultReference: 'passPhrase';
+  };
+}

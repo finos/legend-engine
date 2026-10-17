@@ -1,0 +1,23 @@
+
+Database simple::dbInc
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER,
+    CEOID INTEGER
+  )
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+)
+

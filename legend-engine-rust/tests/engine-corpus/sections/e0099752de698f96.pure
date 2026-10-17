@@ -1,0 +1,32 @@
+
+DataSpace domain::COVIDDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::H2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'this is description of this COVIDDataspace';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'this is template';
+      description: 'Some more exec description';
+      executable: domain::COVIDData_QueryFunctionRelation():Relation[1];
+      executionContextKey: 'dummyContext';
+    },
+    {
+      id: 2;
+      title: 'this is template2';
+      executable: domain::COVIDData_QueryFunctionRelation():Relation[1];
+      executionContextKey: 'dummyContext';
+    }
+  ];
+}
+

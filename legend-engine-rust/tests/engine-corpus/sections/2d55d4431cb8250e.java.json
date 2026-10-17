@@ -1,0 +1,126 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "model::firm::Person",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection1",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "XmlModelConnection",
+      "class" : "model::firm::Person",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 10
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "url" : "my_url"
+    },
+    "name" : "mySimpleConnection2",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "mapping::MyMapping1", "mapping::MyMapping2" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      }
+    },
+    "name" : "modelChainConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 22
+      }
+    },
+    "name" : "modelChainConnection2",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 22
+    }
+  } ],
+  "imports" : [ ]
+}

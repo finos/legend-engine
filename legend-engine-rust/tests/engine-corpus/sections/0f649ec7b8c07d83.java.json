@@ -1,0 +1,92 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "string",
+      "sourceInformation" : {
+        "endColumn" : 82,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 80,
+        "startLine" : 2
+      },
+      "value" : "x"
+    } ],
+    "name" : "a_Varchar_1__String_1_",
+    "package" : "x",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::precisePrimitives::Varchar",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 56,
+            "startLine" : 2
+          },
+          "value" : "200"
+        } ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "x",
+      "sourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 2
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 67,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 84,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,6 @@
+
+SchemaSet test::Example1
+{
+  format: FlatData;
+  schemas: [ { content: 'section sectionName: DelimitedWithHeadings\n{\n  scope.untilEof;\n\n  Record\n  {\n    HEADING1: BOOLEAN(trueString=\'Y\', trueString=\'true\');\n  }\n}'; } ];
+}

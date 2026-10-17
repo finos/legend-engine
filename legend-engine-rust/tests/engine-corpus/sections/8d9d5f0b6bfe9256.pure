@@ -1,0 +1,7 @@
+
+Mapping test::PrimitiveMapping (
+  test::A : Pure
+  {
+     ~src StrictDate
+  }
+)

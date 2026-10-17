@@ -1,0 +1,26 @@
+
+Mapping test::M1 (
+   *test::A[1]: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+)
+Mapping test::M2 (
+   *test::A[2]: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+)
+
+Mapping test::M3 (
+   include test::M1
+   include test::M2
+   *test::A: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+   test::A[f]: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+)

@@ -1,0 +1,63 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "EmployeeWithStatus",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::ActiveStatus",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 20,
+            "sourceId" : "mapping/enumMapping.pure",
+            "startColumn" : 17,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "activeStatus",
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 20,
+        "sourceId" : "mapping/enumMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "mapping/enumMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "demo::relation::domain::Employee",
+      "sourceInformation" : {
+        "endColumn" : 89,
+        "endLine" : 18,
+        "sourceId" : "mapping/enumMapping.pure",
+        "startColumn" : 58,
+        "startLine" : 18
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

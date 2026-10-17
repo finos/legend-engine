@@ -1,0 +1,6 @@
+
+Profile test::A
+{
+   tags : [doc, doc];
+   stereotypes : [modifier, modifier, accessorType, accessorType];
+}

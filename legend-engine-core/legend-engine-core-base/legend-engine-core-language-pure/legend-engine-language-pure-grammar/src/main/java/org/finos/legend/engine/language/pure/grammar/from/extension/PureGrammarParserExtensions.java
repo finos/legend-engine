@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -35,6 +36,9 @@ public class PureGrammarParserExtensions
 
     private final ImmutableList<PureGrammarParserExtension> extensions;
     private final MapIterable<String, SectionParser> sectionParsers;
+    private final MapIterable<String, SectionParserOverride> sectionParserOverrides;
+    private final ExpressionParserOverride expressionParserOverride;
+    private final ModelParserOverride modelParserOverride;
     private final MapIterable<String, ConnectionValueParser> connectionParsers;
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
@@ -48,6 +52,9 @@ public class PureGrammarParserExtensions
     {
         this.extensions = Lists.immutable.withAll(extensions);
         this.sectionParsers = indexExtraSectionParsers(this.extensions);
+        this.sectionParserOverrides = indexSectionParserOverrides(this.extensions);
+        this.expressionParserOverride = findExpressionParserOverride(this.extensions);
+        this.modelParserOverride = findModelParserOverride(this.extensions);
         this.connectionParsers = indexExtraConnectionValueParsers(this.extensions);
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
@@ -65,6 +72,37 @@ public class PureGrammarParserExtensions
     public SectionParser getExtraSectionParser(String type)
     {
         return this.sectionParsers.get(type);
+    }
+
+    /**
+     * The override taking over a section type, if an extension has one.
+     *
+     * @param type the section type
+     * @return the override, or {@code null}
+     */
+    public SectionParserOverride getSectionParserOverride(String type)
+    {
+        return this.sectionParserOverrides.get(type);
+    }
+
+    /**
+     * The override taking over standalone expressions, if an extension has one.
+     *
+     * @return the override, or {@code null}
+     */
+    public ExpressionParserOverride getExpressionParserOverride()
+    {
+        return this.expressionParserOverride;
+    }
+
+    /**
+     * The override taking over whole models, if an extension has one.
+     *
+     * @return the override, or {@code null}
+     */
+    public ModelParserOverride getModelParserOverride()
+    {
+        return this.modelParserOverride;
     }
 
     public ConnectionValueParser getConnectionValueParser(String type)
@@ -136,6 +174,33 @@ public class PureGrammarParserExtensions
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraSectionParsers),
                 SectionParser::getSectionTypeName,
                 "Conflicting parsers for section type");
+    }
+
+    private static MapIterable<String, SectionParserOverride> indexSectionParserOverrides(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getSectionParserOverrides),
+                SectionParserOverride::getSectionTypeName,
+                "Conflicting overrides for section type");
+    }
+
+    private static ExpressionParserOverride findExpressionParserOverride(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        MutableList<ExpressionParserOverride> overrides = Lists.mutable.withAll(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExpressionParserOverrides));
+        if (overrides.size() > 1)
+        {
+            throw new IllegalArgumentException("Conflicting expression parser overrides: " + overrides.size());
+        }
+        return overrides.getFirst();
+    }
+
+    private static ModelParserOverride findModelParserOverride(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        MutableList<ModelParserOverride> overrides = Lists.mutable.withAll(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getModelParserOverrides));
+        if (overrides.size() > 1)
+        {
+            throw new IllegalArgumentException("Conflicting model parser overrides: " + overrides.size());
+        }
+        return overrides.getFirst();
     }
 
     private static MapIterable<String, ConnectionValueParser> indexExtraConnectionValueParsers(Iterable<? extends PureGrammarParserExtension> extensions)

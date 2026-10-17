@@ -1,0 +1,311 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "test",
+    "package" : "sample",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 3
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "prop1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 7
+          },
+          "type" : {
+            "_type" : "Char",
+            "size" : 32
+          }
+        }, {
+          "name" : "prop2",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 32
+          }
+        }, {
+          "name" : "prop3",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : {
+            "_type" : "Numeric",
+            "precision" : 32,
+            "scale" : 23
+          }
+        }, {
+          "name" : "prop4",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 10
+          },
+          "type" : {
+            "_type" : "Decimal",
+            "precision" : 32,
+            "scale" : 23
+          }
+        }, {
+          "name" : "prop5",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 11
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "prop6",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Double"
+          }
+        }, {
+          "name" : "prop7",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Real"
+          }
+        }, {
+          "name" : "prop8",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "prop9",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 15
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "prop10",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 16
+          },
+          "type" : {
+            "_type" : "BigInt"
+          }
+        }, {
+          "name" : "prop11",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "SmallInt"
+          }
+        }, {
+          "name" : "prop12",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "TinyInt"
+          }
+        }, {
+          "name" : "prop13",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 19
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "prop14",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "prop15",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Binary",
+            "size" : 1
+          }
+        }, {
+          "name" : "prop16",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varbinary",
+            "size" : 1
+          }
+        }, {
+          "name" : "prop17",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 23
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        }, {
+          "name" : "prop18",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 24
+          },
+          "type" : {
+            "_type" : "Other"
+          }
+        }, {
+          "name" : "prop19",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Other"
+          }
+        }, {
+          "name" : "prop20",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "table",
+        "primaryKey" : [ "prop6", "prop11" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 5
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'asserts' is required",
+    "sourceInformation" : {
+      "endColumn" : 9,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 17
+    }
+  }
+}

@@ -1,0 +1,19 @@
+
+function test::fetch(): Any[*]
+{
+  count:Integer[1] | meta::relational::tests::model::simple::Person.all()
+    ->sortBy(#/meta::relational::tests::model::simple::Person/lastName!last#)
+    ->limit($count)
+    ->graphFetch(#{
+      meta::relational::tests::model::simple::Person {
+        firstName,
+        lastName
+      }
+    }#)
+    ->serialize(#{
+      meta::relational::tests::model::simple::Person {
+        firstName,
+        lastName
+      }
+    }#)
+}

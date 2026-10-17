@@ -1,0 +1,6 @@
+
+Database app::db
+(
+    Table personTable    (       milestoning(business(BUS_SNAPSHOT_DATE = dummy))       ID INT PRIMARY KEY, MANAGERID INT
+    )
+)

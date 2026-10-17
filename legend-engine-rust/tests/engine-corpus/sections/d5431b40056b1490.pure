@@ -1,0 +1,15 @@
+
+Database model::Test
+(
+  Table TestTable1
+  (
+    prop1_source INTEGER
+  )
+  Table TestTable2
+  (
+    prop2_source INTEGER
+  )
+
+  Join RandomJoin(TestTable1.prop1_source = TestTable2.prop2_source)
+)
+

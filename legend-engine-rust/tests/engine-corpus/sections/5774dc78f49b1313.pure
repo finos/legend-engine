@@ -1,0 +1,38 @@
+
+Mapping test::map
+(
+  test::Person: Pure
+  {
+    ~src test::Person
+    name: $src.name
+  }
+  test::DiscountedProduct[PR]: AggregationAware 
+  {
+    Views: [
+      (
+        ~modelOperation: {
+          ~canAggregate true,
+          ~groupByFunctions (
+            $this.id
+          ),
+          ~aggregateValues (
+            ( ~mapFn:$this.price , ~aggregateFn: $mapped->sum() )
+          )
+        },
+        ~aggregateMapping: Pure
+        {
+          ~src test::Service
+          price: $src.price,
+          producer: $src.provider
+        }
+      )
+    ],
+    ~mainMapping: Pure
+    {
+      ~src test::DiscountedProduct
+      price: $src.price,
+      producer: $src.producer,
+      discount: $src.discount
+    }
+  }
+)

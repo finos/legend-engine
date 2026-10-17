@@ -1,0 +1,9 @@
+
+Mapping test::convertMapping
+(
+  *test::PersonWithPound: Pure
+  {
+    ~src test::Person
+    weight: $src.weight->convert(test::Mass~Pound)->cast(@test::Mass~Pound)
+  }
+)

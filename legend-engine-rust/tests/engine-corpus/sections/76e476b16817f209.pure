@@ -1,0 +1,28 @@
+
+function showcase::query(): Any[1]
+{
+   {productId:String[1]|meta::external::store::service::showcase::domain::S_Product.all()
+       ->filter(p | $p.s_productId == $productId)
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description,
+               s_synonyms {
+                   s_name,
+                   s_type
+               }
+           }
+         }#)
+       ->serialize(#{
+           meta::external::store::service::showcase::domain::S_Product {
+               s_productId,
+               s_productName,
+               s_description,
+               s_synonyms {
+                   s_name,
+                   s_type
+               }
+           }
+        }#)};
+}

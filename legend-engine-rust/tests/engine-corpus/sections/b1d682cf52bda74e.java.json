@@ -1,0 +1,72 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "passPhrase",
+        "privateKeyVaultReference" : "privateKey",
+        "publicUserName" : "name",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 88,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 84
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "accountType" : "MultiTenant",
+        "databaseName" : "test",
+        "nonProxyHosts" : "sample",
+        "organization" : "sampleOrganization",
+        "proxyHost" : "sampleHost",
+        "proxyPort" : "samplePort",
+        "region" : "us-east2",
+        "role" : "DB_ROLE_123",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 83,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 69
+        },
+        "tempTableDb" : "temp_table_db",
+        "tempTableSchema" : "temp_table_schema",
+        "warehouseName" : "warehouseName"
+      },
+      "element" : "model::relational::tests::dbInc",
+      "elementSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 67
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 89,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 65
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "StaticConnection",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 89,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    }
+  } ],
+  "imports" : [ ]
+}

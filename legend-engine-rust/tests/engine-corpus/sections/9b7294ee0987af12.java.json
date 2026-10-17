@@ -1,0 +1,142 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "supportInfo" : {
+      "_type" : "full",
+      "documentation" : {
+        "label" : "Docs",
+        "sourceInformation" : {
+          "endColumn" : 70,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 14
+        },
+        "url" : "https://docs.example.org"
+      },
+      "emails" : [ {
+        "address" : "steward@example.org",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 20
+        },
+        "title" : "Data Steward"
+      }, {
+        "address" : "oncall@example.org",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "title" : "On-call"
+      } ],
+      "expertise" : [ {
+        "description" : "Fixed Income SMEs",
+        "expertIds" : [ "jdoe", "asmith" ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 31
+        }
+      }, {
+        "description" : "Risk Analytics",
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 35
+        }
+      } ],
+      "faqUrl" : {
+        "label" : "FAQ",
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 16
+        },
+        "url" : "https://example.org/faq"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 13
+      },
+      "supportUrl" : {
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 17
+        },
+        "url" : "https://example.org/support"
+      },
+      "website" : {
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 15
+        },
+        "url" : "https://example.org"
+      }
+    },
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,270 @@
+{
+  "elements" : [ {
+    "_type" : "dataqualityRelationValidation",
+    "name" : "testvalidation",
+    "package" : "meta::external::dataquality",
+    "query" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "from",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "filter",
+          "parameters" : [ {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 4
+            },
+            "type" : ">",
+            "value" : {
+              "path" : [ "my::Store", "myTable" ],
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 4
+              }
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "equal",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "c",
+                  "sourceInformation" : {
+                    "endColumn" : 46,
+                    "endLine" : 4,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 4
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 51,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 48,
+                  "startLine" : 4
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 56,
+                  "startLine" : 4
+                },
+                "value" : "ok"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 53,
+                "startLine" : 4
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "c"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 4
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 4
+          }
+        }, {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "dq::dqDevRuntime",
+          "sourceInformation" : {
+            "endColumn" : 83,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 68,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 63,
+          "startLine" : 4
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 4
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 44,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "dataQualityRelationValidationTestSuite",
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 13
+      },
+      "testData" : {
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 15
+        },
+        "testData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "my::embedded::data",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 18
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 18
+            }
+          },
+          "packageableElementPointer" : {
+            "path" : "my::Store",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 13,
+              "startLine" : 17
+            },
+            "type" : "STORE"
+          },
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 17
+          }
+        } ]
+      },
+      "tests" : [ {
+        "_type" : "dataQualityRelationValidationTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[]",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 33
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 30
+          }
+        } ],
+        "id" : "test1",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 25
+        }
+      } ]
+    } ],
+    "validations" : [ {
+      "assertion" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "assertRelationNotEmpty",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "rel",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 8
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 8
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "rel"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 8
+        }
+      },
+      "name" : "testValidation"
+    } ]
+  } ]
+}

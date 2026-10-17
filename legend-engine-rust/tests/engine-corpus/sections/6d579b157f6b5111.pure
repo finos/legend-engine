@@ -1,0 +1,8 @@
+
+Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData
+{
+  Reference
+  #{
+    meta::data::MyData
+  }#
+}

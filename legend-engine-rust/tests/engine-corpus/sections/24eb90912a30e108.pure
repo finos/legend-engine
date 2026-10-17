@@ -1,0 +1,14 @@
+
+Database my::Store
+(
+  Schema mySchema
+  (
+    Table myTable
+    (
+      id INTEGER,
+      name VARCHAR(200)
+    )
+  )
+
+)
+

@@ -1,0 +1,190 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : false,
+    "documentation" : "Showcase service with binding",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "externalize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "internalize",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::firm::model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 80
+              }
+            }, {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::firm::model::TestBinding1",
+              "sourceInformation" : {
+                "endColumn" : 95,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 80
+              }
+            }, {
+              "_type" : "var",
+              "name" : "data",
+              "sourceInformation" : {
+                "endColumn" : 102,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 98,
+                "startLine" : 80
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 80
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "test::firm::model::TestBinding1",
+            "sourceInformation" : {
+              "endColumn" : 148,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 118,
+              "startLine" : 80
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 175,
+              "endLine" : 80,
+              "sourceId" : "",
+              "startColumn" : 153,
+              "startLine" : 80
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "test::firm::model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 175,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 153,
+                "startLine" : 80
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 180,
+                  "endLine" : 80,
+                  "sourceId" : "",
+                  "startColumn" : 177,
+                  "startLine" : 80
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "ranking",
+                "sourceInformation" : {
+                  "endColumn" : 189,
+                  "endLine" : 80,
+                  "sourceId" : "",
+                  "startColumn" : 183,
+                  "startLine" : 80
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 116,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 106,
+            "startLine" : 80
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "String",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 80,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 80
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 80,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 80
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 193,
+          "endLine" : 80,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 80
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 81,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 78
+      }
+    },
+    "name" : "myService",
+    "owners" : [ ],
+    "package" : "test::firm::model",
+    "pattern" : "/showcase/binding",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 86,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 72
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

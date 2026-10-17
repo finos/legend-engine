@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', [~id->ascending()]))
+}

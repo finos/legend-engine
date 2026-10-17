@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'privateKeyVaultReference' is required",
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 13
+    }
+  }
+}

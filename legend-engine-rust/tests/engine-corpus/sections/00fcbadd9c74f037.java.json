@@ -1,0 +1,65 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "meta::external::store::service::showcase::mapping::ServiceStoreMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 443,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 440
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 444,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 438
+      }
+    },
+    "name" : "modelChainConnection",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 444,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 438
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 68,
+        "endLine" : 449,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 449
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 451,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 447
+      },
+      "url" : "data:application/json,{\"firstName\":\"FirstName Model\", \"lastName\" : \"LastName Model\", \"firmId\":\"Model\"}"
+    },
+    "name" : "jsonModelConnection",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 451,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 447
+    }
+  } ],
+  "imports" : [ ]
+}

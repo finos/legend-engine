@@ -1,0 +1,14 @@
+rel|$rel->rowsWithValueOutsideRange(
+  ~id,
+  -1d,
+  5d
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName,
+     age,
+     emailAddress,
+     annualSalary,
+     dateOfBirth
+   ]
+)

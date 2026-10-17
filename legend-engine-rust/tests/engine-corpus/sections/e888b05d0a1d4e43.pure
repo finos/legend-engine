@@ -1,0 +1,44 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    firstName: firstName
+  }
+
+  testSuites:
+  [
+    personSuite:
+    {
+      function: |my::Person.all()->graphFetch(#{my::Person{firstName}}#);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            store::TestDB:
+              Reference
+              #{
+                my::data::PersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"John"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

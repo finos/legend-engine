@@ -1,0 +1,78 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "runtime",
+    "package" : "test",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 23
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 23
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection2",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 23,
+              "sourceId" : "",
+              "startColumn" : 27,
+              "startLine" : 23
+            }
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 23,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 23
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 19
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 15
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    }
+  } ],
+  "imports" : [ ]
+}

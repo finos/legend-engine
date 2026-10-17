@@ -1,0 +1,8 @@
+
+Class apps::Trade
+{
+   date : StrictDate[1];
+   testStrictDate(){
+       $this.date == %2020-01-01;
+   } : Boolean[1];
+}

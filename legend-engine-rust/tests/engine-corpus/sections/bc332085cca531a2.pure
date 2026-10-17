@@ -1,0 +1,7 @@
+
+import example::*;
+function example::test::go():Any[0..1]
+{
+   testMaxInteger(1);
+   testMaxInteger();
+}

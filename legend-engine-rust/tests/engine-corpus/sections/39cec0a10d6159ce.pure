@@ -1,0 +1,11 @@
+
+Database demo::store::EmbeddedDB
+(
+  Table EmployeeTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    addressLine1 VARCHAR(200),
+    addressPostcode VARCHAR(20)
+  )
+)

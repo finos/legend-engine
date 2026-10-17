@@ -1,0 +1,5 @@
+
+GenerationSpecification model::GenerationSpecification
+{
+  generationNodes: [{ generationElement: model::MyElement1;}];  generationNodes: [{ generationElement: model::MyElement2;}];}
+

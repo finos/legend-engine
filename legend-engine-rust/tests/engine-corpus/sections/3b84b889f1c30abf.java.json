@@ -1,0 +1,98 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "description" : "Short blurb shown in the catalog.",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 14
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 13
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::typemodifiers",
+      "profileSourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 7
+      },
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 49,
+        "startLine" : 7
+      },
+      "value" : "abstract"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Covers trading positions across desks.\n\nSourced from the overnight batch."
+      }
+    } ]
+  } ]
+}

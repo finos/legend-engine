@@ -1,0 +1,140 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id", "firstName", "lastName" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "1", "John", "Doe" ]
+          }, {
+            "values" : [ "2", "Jane", "Doe" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 19,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 19
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 19
+      }
+    } ],
+    "name" : "RelationalData",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "data::RelationalData",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 30
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      }
+    }, {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id", "legalname" ],
+          "paths" : [ "default", "FirmTable" ],
+          "rows" : [ {
+            "values" : [ "1", "financeInc" ]
+          }, {
+            "values" : [ "2", "devCorp" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      },
+      "elementPointer" : {
+        "path" : "store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 31
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 31
+      }
+    } ],
+    "name" : "RelationalData2",
+    "package" : "data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 39,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 28
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

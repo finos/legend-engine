@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "DeephavenApp",
+    "actions" : [ ],
+    "applicationName" : "MyTestApp",
+    "description" : "A test app",
+    "function" : {
+      "path" : "test::myFunc():Any[*]",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 5
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "MyApp",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "owner123"
+    },
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

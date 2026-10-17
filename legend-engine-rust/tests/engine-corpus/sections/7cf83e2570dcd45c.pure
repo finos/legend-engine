@@ -1,0 +1,6 @@
+
+Association demo::relation::domain::Employment
+{
+  employer: demo::relation::domain::Firm[1];
+  employees: demo::relation::domain::Employee[*];
+}

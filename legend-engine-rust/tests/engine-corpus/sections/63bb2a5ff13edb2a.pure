@@ -1,0 +1,27 @@
+
+Data meta::data::MyData
+{
+  ModelStore #{
+    my::Person: [
+      ^my::Person(
+        givenNames  = ['Fred', 'William'],
+        lastName    = 'Bloggs',
+        dateOfBirth = %2001-03-12,
+        timeOfBirth = %12:23,
+        timeOfDeath = %2020-09-11T12:56:24.487,
+        isAlive     = false,
+        height      = 1.76,
+        girth       = 0.98D,
+        shoeSize    = 10,
+        score1      = -1,
+        score2      = -1.3,
+        score3      = -1.8D,
+        gender      = enums::Gender.MALE,
+        address     = ^my::Address(street = 'A Road')
+      ),
+      ^my::Address(
+        street = 'B Road'
+      )
+    ]
+  }#
+}

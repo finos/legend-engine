@@ -1,0 +1,8 @@
+
+Class test::A  {
+  prop1: String[1];
+}
+
+Class test::S_A {
+  prop1: String[1];
+}

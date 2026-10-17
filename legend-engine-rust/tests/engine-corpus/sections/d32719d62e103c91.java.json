@@ -1,0 +1,124 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "from",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "select",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "test::Store::foo", "xyz" ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 5,
+              "startLine" : 26
+            }
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 26
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "prop1",
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 41,
+                "startLine" : 26
+              }
+            }, {
+              "name" : "prop2",
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 26,
+                "sourceId" : "",
+                "startColumn" : 48,
+                "startLine" : 26
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "test::DeephavenRuntime",
+        "sourceInformation" : {
+          "endColumn" : 83,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 62,
+          "startLine" : 26
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 57,
+        "startLine" : 26
+      }
+    } ],
+    "name" : "myFunc__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 24
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

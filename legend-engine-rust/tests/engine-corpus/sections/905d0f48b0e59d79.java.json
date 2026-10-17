@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'assertion' is required",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

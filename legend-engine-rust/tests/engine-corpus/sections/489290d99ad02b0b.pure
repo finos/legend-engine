@@ -1,0 +1,16 @@
+
+Class A
+[
+  $this.ok->toOne() == 1,
+  named: if($this.ok == 'ok', |true, |false),
+  $this.ok->toOne()->toString() == $this.name
+]
+{
+  name: String[45..*];
+  ok: Integer[1..2];
+  xza(s: String[1]) {$s + 'ok'}: String[1];
+}
+
+Profile meta::pure::profiles::doc
+{
+}

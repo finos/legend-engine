@@ -1,0 +1,28 @@
+
+Binding demo::externalFormat::flatdata::bloomberg::bulkFiles::binding::BloombergBulkFileBinding
+{
+  schemaSet: demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet::BloombergBulkFileSchemaSet;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistRecordRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::FltCpnHistMetaRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::CallScheduleMetaRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_CallScheduleRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_CallScheduleMetaRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_FltCpnHistRecord,
+    demo::externalFormat::flatdata::bloomberg::bulkFiles::models::BloombergBulkFile_FltCpnHistMetaRecord
+  ];
+}
+
+SchemaSet demo::externalFormat::flatdata::bloomberg::singleFile::schemaSet::BloombergBulkFileSchemaSet
+{
+  format: FlatData;
+  schemas: [
+    {
+      id: 'default.flatdata';
+      content: 'section fltCpnHist: BloombergData\n{\n  filter: \'DATA=FLT_CPN_HIST\';\n\n  Record\n  {\n    SECURITY: STRING;\n    ERROR_COUNT: INTEGER;\n    FIELD_COUNT: INTEGER;\n    ID_BB_UNIQUE: STRING;\n    ID_BB_COMPANY: INTEGER;\n    ID_BB_SECURITY: INTEGER;\n    ID_BB_GLOBAL: STRING;\n    ID_ISIN: STRING(optional);\n    ID_BB_SEC_NUM_DES: STRING(optional);\n    FEED_SOURCE: STRING(optional);\n    FLT_CPN_HIST_DT: DATE;\n    FLT_CPN_HIST_RT: DECIMAL(optional);\n  }\n}\nsection fltCpnHistMetaRecord: BloombergMetadata\n{\n  Record\n  {\n    PROGRAMNAME  : STRING;\n    DATEFORMAT   : STRING;\n    REGION       : STRING;\n    TYPE         : STRING;\n    DATARECORDS  : INTEGER;\n    TIMESTARTED  : DATETIME(format=\'EEE MMM d HH:mm:ss zz yyyy\');\n    TIMEFINISHED : DATETIME(format=\'EEE MMM d HH:mm:ss zz yyyy\');\n  }\n}\nsection callSchedule: BloombergData\n{\n  filter: \'DATA=CALL_SCHEDULE\';\n\n  Record\n  {\n    SECURITY: STRING;\n    ERROR_COUNT: INTEGER;\n    FIELD_COUNT: INTEGER;\n    ID_BB_UNIQUE: STRING;\n    ID_BB_COMPANY: INTEGER;\n    ID_BB_SECURITY: INTEGER;\n    ID_BB_GLOBAL: STRING;\n    ID_ISIN: STRING(optional);\n    ID_BB_SEC_NUM_DES: STRING(optional);\n    FEED_SOURCE: STRING(optional);\n    CALL_SCHEDULE_DT: DATE;\n    CALL_SCHEDULE_PCT: DECIMAL;\n  }\n}\nsection callScheduleMetaRecord: BloombergMetadata\n{\n  Record\n  {\n    PROGRAMNAME  : STRING;\n    DATEFORMAT   : STRING;\n    REGION       : STRING;\n    TYPE         : STRING;\n    DATARECORDS  : INTEGER;\n    TIMESTARTED  : DATETIME(format=\'EEE MMM d HH:mm:ss zz yyyy\');\n    TIMEFINISHED : DATETIME(format=\'EEE MMM d HH:mm:ss zz yyyy\');\n  }\n}';
+    }
+  ];
+}

@@ -1,0 +1,25 @@
+
+ServiceStore meta::external::store::service::showcase::store::EmployeesServiceStore
+(
+   description : 'Showcase Service Store Fragment support';
+
+   Service EmployeesService
+   (
+      path     : '/employees';
+      method   : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::ApiResponse <- meta::external::store::service::showcase::store::ApiResponseSchemaBinding];
+   )
+
+   Service EmployeesServiceByFirmId
+   (
+      path     : '/employeesByFirmId/{firmId}';
+      method   : GET;
+      parameters :
+      (
+         firmId : Integer (location = path)
+      );
+      security : [];
+      response : [meta::external::store::service::showcase::domain::ApiResponse <- meta::external::store::service::showcase::store::ApiResponseSchemaBinding];
+   )
+)

@@ -1,0 +1,684 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Report",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "country",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "city",
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 41,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 64,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "year",
+      "sourceInformation" : {
+        "endColumn" : 74,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 58,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 89,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "treePlanted",
+      "sourceInformation" : {
+        "endColumn" : 99,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 76,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 100,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "filter",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "cast",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "pivot",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "test::Report",
+                "sourceInformation" : {
+                  "endColumn" : 15,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 4,
+                  "startLine" : 4
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 7,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 33,
+                "startLine" : 4
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 21,
+                          "endLine" : 5,
+                          "sourceId" : "",
+                          "startColumn" : 20,
+                          "startLine" : 5
+                        }
+                      } ],
+                      "property" : "country",
+                      "sourceInformation" : {
+                        "endColumn" : 29,
+                        "endLine" : 5,
+                        "sourceId" : "",
+                        "startColumn" : 23,
+                        "startLine" : 5
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 29,
+                      "endLine" : 5,
+                      "sourceId" : "",
+                      "startColumn" : 19,
+                      "startLine" : 5
+                    }
+                  },
+                  "name" : "country",
+                  "sourceInformation" : {
+                    "endColumn" : 29,
+                    "endLine" : 5,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 5
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 19,
+                          "endLine" : 6,
+                          "sourceId" : "",
+                          "startColumn" : 18,
+                          "startLine" : 6
+                        }
+                      } ],
+                      "property" : "city",
+                      "sourceInformation" : {
+                        "endColumn" : 24,
+                        "endLine" : 6,
+                        "sourceId" : "",
+                        "startColumn" : 21,
+                        "startLine" : 6
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 24,
+                      "endLine" : 6,
+                      "sourceId" : "",
+                      "startColumn" : 17,
+                      "startLine" : 6
+                    }
+                  },
+                  "name" : "city",
+                  "sourceInformation" : {
+                    "endColumn" : 24,
+                    "endLine" : 6,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 6
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 25,
+                          "endLine" : 7,
+                          "sourceId" : "",
+                          "startColumn" : 24,
+                          "startLine" : 7
+                        }
+                      } ],
+                      "property" : "treePlanted",
+                      "sourceInformation" : {
+                        "endColumn" : 37,
+                        "endLine" : 7,
+                        "sourceId" : "",
+                        "startColumn" : 27,
+                        "startLine" : 7
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 37,
+                      "endLine" : 7,
+                      "sourceId" : "",
+                      "startColumn" : 23,
+                      "startLine" : 7
+                    }
+                  },
+                  "name" : "treePlanted",
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 7,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 7
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "x",
+                        "sourceInformation" : {
+                          "endColumn" : 18,
+                          "endLine" : 8,
+                          "sourceId" : "",
+                          "startColumn" : 17,
+                          "startLine" : 8
+                        }
+                      } ],
+                      "property" : "year",
+                      "sourceInformation" : {
+                        "endColumn" : 23,
+                        "endLine" : 8,
+                        "sourceId" : "",
+                        "startColumn" : 20,
+                        "startLine" : 8
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 23,
+                      "endLine" : 8,
+                      "sourceId" : "",
+                      "startColumn" : 16,
+                      "startLine" : 8
+                    }
+                  },
+                  "name" : "year",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 8,
+                    "sourceId" : "",
+                    "startColumn" : 9,
+                    "startLine" : 8
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 4
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 9
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "name" : "country",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 9
+                }
+              }, {
+                "name" : "city",
+                "sourceInformation" : {
+                  "endColumn" : 31,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 9
+                }
+              } ]
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 9
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 47,
+                        "endLine" : 9,
+                        "sourceId" : "",
+                        "startColumn" : 46,
+                        "startLine" : 9
+                      }
+                    } ],
+                    "property" : "treePlanted",
+                    "sourceInformation" : {
+                      "endColumn" : 59,
+                      "endLine" : 9,
+                      "sourceId" : "",
+                      "startColumn" : 49,
+                      "startLine" : 9
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 9
+                  }
+                },
+                "function2" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "sum",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 66,
+                        "endLine" : 9,
+                        "sourceId" : "",
+                        "startColumn" : 65,
+                        "startLine" : 9
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 71,
+                      "endLine" : 9,
+                      "sourceId" : "",
+                      "startColumn" : 69,
+                      "startLine" : 9
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 73,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 64,
+                    "startLine" : 9
+                  }
+                },
+                "name" : "total",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 9
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 9
+          }
+        }, {
+          "_type" : "genericTypeInstance",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "meta::pure::metamodel::relation::Relation",
+              "sourceInformation" : {
+                "endColumn" : 141,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 84,
+                "startLine" : 9
+              }
+            },
+            "typeArguments" : [ {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "relationType",
+                "columns" : [ {
+                  "genericType" : {
+                    "multiplicityArguments" : [ ],
+                    "rawType" : {
+                      "_type" : "packageableType",
+                      "fullPath" : "Integer",
+                      "sourceInformation" : {
+                        "endColumn" : 139,
+                        "endLine" : 9,
+                        "sourceId" : "",
+                        "startColumn" : 133,
+                        "startLine" : 9
+                      }
+                    },
+                    "typeArguments" : [ ],
+                    "typeVariableValues" : [ ]
+                  },
+                  "multiplicity" : {
+                    "lowerBound" : 0,
+                    "upperBound" : 1
+                  },
+                  "name" : "year2",
+                  "sourceInformation" : {
+                    "endColumn" : 139,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 127,
+                    "startLine" : 9
+                  }
+                } ]
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ ]
+            } ],
+            "typeVariableValues" : [ ]
+          },
+          "sourceInformation" : {
+            "endColumn" : 141,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 83,
+            "startLine" : 9
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 78,
+          "startLine" : 9
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 155,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 154,
+                "startLine" : 9
+              }
+            } ],
+            "property" : "year2",
+            "sourceInformation" : {
+              "endColumn" : 161,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 157,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 169,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 166,
+              "startLine" : 9
+            },
+            "value" : 2000
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 164,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 163,
+            "startLine" : 9
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 169,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 153,
+          "startLine" : 9
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 150,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 145,
+        "startLine" : 9
+      }
+    } ],
+    "name" : "f__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 122,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 120,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 101,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

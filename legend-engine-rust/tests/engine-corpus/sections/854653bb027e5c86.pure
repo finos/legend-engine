@@ -1,0 +1,11 @@
+
+Mapping a::localPropertyMapping
+(
+   
+   test::Firm : Pure
+   {
+       ~src test::Firm
+       +prop1: String[1]: $src.name,
+       name : $src.name
+   }
+)

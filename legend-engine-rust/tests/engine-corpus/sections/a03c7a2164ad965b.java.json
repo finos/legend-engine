@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Documentation must be written as a multi-line ('''...''') literal",
+    "sourceInformation" : {
+      "endColumn" : 13,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  }
+}

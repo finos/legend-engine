@@ -1,0 +1,82 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: FieldBased
+        {
+          partitionFields:
+          [
+            foo1, bar2
+          ];
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: version;
+      }
+    }
+    ->
+    Relational
+    #{
+      database: test::Database;
+      table: personTable;
+      temporality: Unitemporal
+      {
+        processingDimension: DateTime
+        {
+          dateTimeIn: time_in;
+          dateTimeOut: time_out;
+        }
+      }
+    }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected: 
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '{"Age":12, "Name":"dummy"}';
+                 }#;
+             }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "serviceOutput" : {
+        "_type" : "tdsServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForTds",
+            "deleteField" : "toBeDeleted",
+            "deleteValues" : [ "Yes", "true" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 17
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 15
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForTds",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 23
+          },
+          "versionField" : "version"
+        },
+        "keys" : [ "foo", "bar" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 9
+      }
+    }, {
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForGraphFetch",
+            "deleteFieldPath" : {
+              "path" : [ {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "prop",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 87,
+                  "startLine" : 41
+                }
+              }, {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "toBeDeleted",
+                "sourceInformation" : {
+                  "endColumn" : 103,
+                  "endLine" : 41,
+                  "sourceId" : "",
+                  "startColumn" : 92,
+                  "startLine" : 41
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 108,
+                "endLine" : 41,
+                "sourceId" : "",
+                "startColumn" : 65,
+                "startLine" : 41
+              },
+              "startType" : "test::example::MyType"
+            },
+            "deleteValues" : [ "Yes", "true" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 43,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 39
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 37
+          }
+        },
+        "deduplication" : {
+          "_type" : "maxVersionForGraphFetch",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 45
+          },
+          "versionFieldPath" : {
+            "path" : [ {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "prop",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 82,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "propertyPath",
+              "parameters" : [ ],
+              "property" : "version",
+              "sourceInformation" : {
+                "endColumn" : 94,
+                "endLine" : 47,
+                "sourceId" : "",
+                "startColumn" : 87,
+                "startLine" : 47
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 99,
+              "endLine" : 47,
+              "sourceId" : "",
+              "startColumn" : 60,
+              "startLine" : 47
+            },
+            "startType" : "test::example::MyType"
+          }
+        },
+        "keys" : [ {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 64,
+              "startLine" : 35
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "foo",
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 69,
+              "startLine" : 35
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 35
+          },
+          "startType" : "test::example::MyType"
+        }, {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 103,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 35
+            }
+          }, {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "bar",
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 104,
+              "startLine" : 35
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 112,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 35
+          },
+          "startType" : "test::example::MyType"
+        } ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "prop",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 56,
+              "startLine" : 31
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 31
+          },
+          "startType" : "test::example::MyType"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 31
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 31
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 54,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

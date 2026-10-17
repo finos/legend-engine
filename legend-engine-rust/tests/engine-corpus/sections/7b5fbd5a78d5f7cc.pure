@@ -1,0 +1,11 @@
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Profile meta::pure::profiles::devStatus
+{
+  stereotypes: [inProgress];
+}

@@ -1,0 +1,7 @@
+
+Class demo::relation::domain::ExtendedEmployee extends demo::relation::domain::Employee
+{
+  salaryDoubled: Float[0..1];
+  fullGreeting: String[1];
+  address: demo::relation::domain::Address[0..1];
+}

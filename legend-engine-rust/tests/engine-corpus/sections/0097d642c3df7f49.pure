@@ -1,0 +1,23 @@
+
+import other::*;
+import mapping::*;
+Mapping mappingPackage::myMapping
+(
+    Person: Relational
+    {
+        name : [db]employeeFirmDenormTable.name,
+        firm
+        (
+            ~primaryKey ([db]employeeFirmDenormTable.legalName)
+            legalName : [db]employeeFirmDenormTable.legalName,
+            address
+            (
+                line1: [db]employeeFirmDenormTable.address
+            )
+        ),
+        address
+        (
+            line1: [db]employeeFirmDenormTable.address
+        )
+    }
+)

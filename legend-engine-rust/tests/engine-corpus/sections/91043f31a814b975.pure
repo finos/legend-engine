@@ -1,0 +1,34 @@
+
+Database demo::sse::store::TradingDB
+(
+  Schema TRADING
+  (
+    Table BLOCKS
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      ACCOUNT VARCHAR(100),
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table ORDERS
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      ORDER_NAME VARCHAR(100)
+    )
+
+    // The view exists to supply the column that gets exploded. That is the only way a
+    // view takes part: explodeSemiStructured is legal solely inside a join operation,
+    // and its operand must be a plain column of a table or a view.
+    View ACTIVE_BLOCKS
+    (
+      ID: TRADING.BLOCKS.ID PRIMARY KEY,
+      ACCOUNT: TRADING.BLOCKS.ACCOUNT,
+      BLOCKDATA: TRADING.BLOCKS.BLOCKDATA
+    )
+  )
+
+  // Fans the JSON array into one row per element, then equi-joins each element's
+  // scalar to a real table. The explode expression is repeated, which is allowed:
+  // the one-explode-per-join check runs after duplicates are removed.
+  Join Block_Order(extractFromSemiStructured(explodeSemiStructured(TRADING.ACTIVE_BLOCKS.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
+    and extractFromSemiStructured(explodeSemiStructured(TRADING.ACTIVE_BLOCKS.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = TRADING.ORDERS.ID)
+)

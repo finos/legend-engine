@@ -1,0 +1,92 @@
+
+ServiceStore test::testServiceStoreGrammarWithSingleService
+(
+  Service TestService1
+  (
+    path : '/testService/{param2}';
+    requestBody : [ExampleClass <- tests::store::exampleBinding];
+    method : POST;
+    parameters :
+    (
+      param1 : String ( location = query ),
+      param2 : String ( location = path )
+    );
+    response : ExampleClass <- tests::store::exampleBinding;
+    security : [];
+  )
+  Service TestService2
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )
+    );
+    response : ExampleClass <- tests::store::exampleBinding;
+    security : [];
+  )
+  ServiceGroup TestServices3
+  (
+    path : '/testServices1';
+
+    Service NestedService
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : ExampleClass <- tests::store::exampleBinding;
+      security : [];
+    )
+  )
+  ServiceGroup TestServices4
+  (
+    path : '/testServices1';
+
+    ServiceGroup NestedServiceGroup
+    (
+      path : '/testServices1';
+
+      Service NestedService
+      (
+        path : '/testService';
+        method : GET;
+        parameters :
+        (
+          serializationFormat : String ( location = query )
+        );
+        response : ExampleClass <- tests::store::exampleBinding;
+        security : [];
+      )
+    )
+  )
+  ServiceGroup TestServices6
+  (
+    path : '/testServices2';
+
+    Service TestService1
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : ExampleClass <- tests::store::exampleBinding;
+      security : [];
+    )
+    Service TestService2
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : ExampleClass <- tests::store::exampleBinding;
+      security : [];
+    )
+  )
+)

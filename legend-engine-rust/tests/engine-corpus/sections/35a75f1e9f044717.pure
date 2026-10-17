@@ -1,0 +1,20 @@
+
+RelationalMapper test::testMapper
+(
+   DatabaseMappers:
+   [
+      [test::AccountDB.alloytest, test::AccountDB.default] -> 'SnowflakeOrgDB',
+      [test::AccountDB.alloytest1] -> 'SnowflakeOrgDBNew'
+   ];
+   SchemaMappers:
+   [
+      test::AccountDB.alloytest -> 'AlloySchema',
+      test::AccountDB.alloytest -> 'AlloySchemaNew'
+   ];
+   TableMappers:
+   [
+      test::AccountDB.alloytest.ACCOUNT -> 'AccountTable',
+      test::AccountDB.alloytest.ACCOUNT1 -> 'AccountTableNew'
+   ];
+)
+

@@ -1,0 +1,22 @@
+
+Data demo::relation::data::ChainedModelJoinData
+{
+  Relation
+  #{
+    default.FirmTable:
+      ID,LEGAL_NAME
+      1,Acme
+      2,Beta;
+    default.DepartmentTable:
+      ID,FIRM_ID,NAME,CODE
+      10,1,Engineering,ENG
+      20,1,Marketing,MKT
+      30,2,Research,RES;
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY,DEPARTMENT_ID
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London,10
+      2,Carol,White,1,FULL_TIME,1,2019-03-10 00:00:00,60000.0,Pine Rd,Berlin,10
+      3,Bob,Smith,1,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris,20
+      4,Dave,Brown,2,FULL_TIME,1,2018-09-20 00:00:00,85000.0,Elm St,Madrid,30;
+  }#
+}

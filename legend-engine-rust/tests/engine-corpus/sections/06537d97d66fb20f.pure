@@ -1,0 +1,2 @@
+
+Class test::Person{lastName:String[1];}

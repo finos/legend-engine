@@ -1,0 +1,13 @@
+
+Class test::A extends test::B
+{
+   ok : Integer[0..1];
+}
+Class test::B extends test::C
+{
+   ok : Integer[0..1];
+}
+Class test::C extends test::A
+{
+   ok : Integer[0..1];
+}

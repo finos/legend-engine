@@ -1,0 +1,6 @@
+
+function test::f(): String[1]
+{
+  '''
+  '''
+}

@@ -1,0 +1,17 @@
+{
+  "elements" : [ {
+    "_type" : "generationSpecification",
+    "fileGenerations" : [ ],
+    "generationNodes" : [ ],
+    "name" : "id",
+    "package" : "GenerationSpecification::import::generationElement::generationNodes::fileGenerations",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

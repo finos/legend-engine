@@ -1,0 +1,298 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 7
+      },
+      "type" : "SQL",
+      "value" : {
+        "sql" : "select * from var('r')"
+      }
+    } ],
+    "name" : "func3_Relation_1__Relation_1_",
+    "package" : "pack",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Relation",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "relationType",
+            "columns" : [ {
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "Integer",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 5,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 5
+                  }
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "multiplicity" : {
+                "lowerBound" : 0,
+                "upperBound" : 1
+              },
+              "name" : "a",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 5
+              }
+            }, {
+              "genericType" : {
+                "multiplicityArguments" : [ ],
+                "rawType" : {
+                  "_type" : "packageableType",
+                  "fullPath" : "Integer",
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 5,
+                    "sourceId" : "",
+                    "startColumn" : 53,
+                    "startLine" : 5
+                  }
+                },
+                "typeArguments" : [ ],
+                "typeVariableValues" : [ ]
+              },
+              "multiplicity" : {
+                "lowerBound" : 0,
+                "upperBound" : 1
+              },
+              "name" : "b",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 51,
+                "startLine" : 5
+              }
+            } ]
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        } ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "r",
+      "sourceInformation" : {
+        "endColumn" : 70,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 5
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Relation",
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 73,
+          "startLine" : 5
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 82,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      },
+      "type" : "SQL",
+      "value" : {
+        "sql" : "select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from csv('a,b\n1,2\n3,4')))"
+      }
+    } ],
+    "name" : "func4__Relation_1_",
+    "package" : "pack",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Relation",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 10
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 10
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 109,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "type" : "SQL",
+      "value" : {
+        "sql" : "select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from tb('pack::DB.myTab')))"
+      }
+    } ],
+    "name" : "func5__Relation_1_",
+    "package" : "pack",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Relation",
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 16
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 19,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

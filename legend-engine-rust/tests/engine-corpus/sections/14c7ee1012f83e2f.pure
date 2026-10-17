@@ -1,0 +1,15 @@
+
+ServiceStore test::ServiceStore
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      serializationFormat : String ( location = query, enum = test::SerializationFormat )
+    );
+    response : test::model::A <- test::Binding;
+    security : [];
+  )
+)

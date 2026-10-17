@@ -1,0 +1,8 @@
+
+Binding simple::TestBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    simple::Firm
+  ];
+}

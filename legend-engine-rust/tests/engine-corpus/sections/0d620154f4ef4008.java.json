@@ -1,0 +1,74 @@
+{
+  "elements" : [ {
+    "_type" : "executionEnvironmentInstance",
+    "executionParameters" : [ {
+      "_type" : "singleExecutionParameters",
+      "key" : "UAT",
+      "mapping" : "test::myMapping1",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 8
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::myRuntime1",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    }, {
+      "_type" : "singleExecutionParameters",
+      "key" : "PROD",
+      "mapping" : "test::myMapping2",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 13
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "test::myRuntime2",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 14
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "executionEnvironment",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

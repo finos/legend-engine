@@ -1,0 +1,15 @@
+
+Mapping my::testMapping
+(
+  *my::PersonWithAddress[personWithAddr]: Relation
+  {
+    ~func my::personWithAddressFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+)

@@ -1,0 +1,131 @@
+
+Mapping demo::relation::mapping::TemporalEmployeeMapping
+(
+  *demo::relation::domain::TemporalEmployee: Relation
+  {
+    ~func demo::relation::func::temporalEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  *demo::relation::domain::BusinessTemporalEmployee: Relation
+  {
+    ~func demo::relation::func::businessTemporalEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  testSuites:
+  [
+    allVersionsSuite:
+    {
+      function: |demo::relation::domain::TemporalEmployee.allVersions()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        allRows:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::TemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnAllVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice"},{"First Name":"Bob"},{"First Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    pointInTimeSuite:
+    {
+      function: |demo::relation::domain::TemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        activeAtDate:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::TemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterByDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice"},{"First Name":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    businessTemporalPointInTimeSuite:
+    {
+      function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        activeAtDate:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::BusinessTemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterByBusinessDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Dave"},{"First Name":"Eve"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

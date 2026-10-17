@@ -1,0 +1,15 @@
+
+Class demo::shape::Shape
+{
+  name: String[1];
+}
+
+Class demo::shape::Circle extends demo::shape::Shape
+{
+  radius: Integer[1];
+}
+
+Class demo::shape::Square extends demo::shape::Shape
+{
+  side: Integer[1];
+}

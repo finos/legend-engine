@@ -1,0 +1,13 @@
+
+DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::A, model::B',           meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::C'} model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+}

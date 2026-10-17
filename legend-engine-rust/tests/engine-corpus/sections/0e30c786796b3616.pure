@@ -1,0 +1,11 @@
+
+DataQualityValidation meta::dataquality::PersonDataQualityValidation
+{
+    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);
+    filter: p:meta::dataquality::Person[1] | $p.name=='John';
+    validationTree: $[
+      meta::dataquality::Person<mustBeOfLegalAge>{
+        name
+      }
+    ]$;
+}

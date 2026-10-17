@@ -1,0 +1,552 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "domain::Demographics",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 103,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 103
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "store::CovidDataStore",
+        "mainTableDb" : "store::CovidDataStore",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 109,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 109
+        },
+        "table" : "DEMOGRAPHICS"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "FIPS",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 107,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 107
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "store::CovidDataStore",
+          "mainTableDb" : "store::CovidDataStore",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 107
+          },
+          "table" : "DEMOGRAPHICS"
+        },
+        "tableAlias" : "DEMOGRAPHICS"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::Demographics",
+          "property" : "fips",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 110,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 110
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIPS",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 110,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 110
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 45,
+              "endLine" : 110,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 110
+            },
+            "table" : "DEMOGRAPHICS"
+          },
+          "tableAlias" : "DEMOGRAPHICS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 110,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 110
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::Demographics",
+          "property" : "state",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 111
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "STATE",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 111
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 111,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 111
+            },
+            "table" : "DEMOGRAPHICS"
+          },
+          "tableAlias" : "DEMOGRAPHICS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 111,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 111
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 112,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 103
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "domain::COVIDData",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 113,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 113
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "store::CovidDataStore",
+        "mainTableDb" : "store::CovidDataStore",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 119,
+          "sourceId" : "",
+          "startColumn" : 39,
+          "startLine" : 119
+        },
+        "table" : "COVID_DATA"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 117,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 117
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "store::CovidDataStore",
+          "mainTableDb" : "store::CovidDataStore",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 117,
+            "sourceId" : "",
+            "startColumn" : 30,
+            "startLine" : 117
+          },
+          "table" : "COVID_DATA"
+        },
+        "tableAlias" : "COVID_DATA"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 120
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 120,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 120
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 120,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 120
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 120,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 120
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "fips",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 121,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 121
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIPS",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 121,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 121
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 121,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 121
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 121,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 121
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "date",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 122
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "DATE",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 122
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 122,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 122
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 122,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 122
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "caseType",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 123
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "CASE_TYPE",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 123
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 123,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 123
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 123,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 123
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "cases",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 124,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 124
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "CASES",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 124,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 124
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 124,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 124
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 124,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 124
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "lastReportedFlag",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 125
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LAST_REPORTED_FLAG",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 125,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 125
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::CovidDataStore",
+            "mainTableDb" : "store::CovidDataStore",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 125,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 125
+            },
+            "table" : "COVID_DATA"
+          },
+          "tableAlias" : "COVID_DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 125,
+          "sourceId" : "",
+          "startColumn" : 21,
+          "startLine" : 125
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "domain::COVIDData",
+          "property" : "demographics",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 126
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "store::CovidDataStore",
+            "name" : "CovidDataDemographicsJoin",
+            "sourceInformation" : {
+              "endColumn" : 88,
+              "endLine" : 126,
+              "sourceId" : "",
+              "startColumn" : 63,
+              "startLine" : 126
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 88,
+            "endLine" : 126,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 126
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 88,
+          "endLine" : 126,
+          "sourceId" : "",
+          "startColumn" : 38,
+          "startLine" : 126
+        },
+        "target" : "domain_Demographics"
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 127,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 113
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "CovidDataMapping",
+    "package" : "mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 128,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 101
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

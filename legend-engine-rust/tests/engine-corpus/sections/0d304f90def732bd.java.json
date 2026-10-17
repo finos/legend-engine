@@ -1,0 +1,97 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 12
+          },
+          "value" : ""
+        } ],
+        "parameters" : [ ]
+      },
+      "mapping" : "anything::somethingelse",
+      "mappingSourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 13
+      },
+      "runtime" : {
+        "_type" : "engineRuntime",
+        "connectionStores" : [ ],
+        "connections" : [ ],
+        "mappings" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 16
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 10
+      }
+    },
+    "name" : "class",
+    "owners" : [ "test" ],
+    "package" : "anything",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 4
+    },
+    "stereotypes" : [ {
+      "profile" : "NoProfile",
+      "profileSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 4
+      },
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 4
+      },
+      "value" : "NoKey"
+    } ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 19
+      }
+    }
+  } ],
+  "imports" : [ ]
+}

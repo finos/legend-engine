@@ -1,0 +1,15 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName'];
+  ownership: UserList { users: ['user1', 'user2'] };
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src:    test::class[1]|$src.prop1;
+      mapping: test::mapping;
+      runtime: test::runtime;
+  }
+}

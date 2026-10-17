@@ -1,0 +1,918 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "meta::external::store::service::showcase::domain::S_Trade",
+      "classSourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 106
+      },
+      "id" : "s_trade_set",
+      "operation" : "ROUTER_UNION",
+      "parameters" : [ "s_trade_set1", "s_trade_set2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 109,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 106
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Trade",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 111,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 111
+      },
+      "id" : "s_trade_set1",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TradeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 113,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 113
+            }
+          },
+          "service" : "AllTradeService1",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 123,
+            "endLine" : 113,
+            "sourceId" : "",
+            "startColumn" : 108,
+            "startLine" : 113
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 123,
+          "endLine" : 113,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 113
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 114,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 111
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Trade",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 116
+      },
+      "id" : "s_trade_set2",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TradeServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 106,
+              "endLine" : 118,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 118
+            }
+          },
+          "service" : "AllTradeService2",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 123,
+            "endLine" : 118,
+            "sourceId" : "",
+            "startColumn" : 108,
+            "startLine" : 118
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 123,
+          "endLine" : 118,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 118
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 119,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 116
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "meta::external::store::service::showcase::domain::S_Product",
+      "classSourceInformation" : {
+        "endColumn" : 64,
+        "endLine" : 121,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 121
+      },
+      "id" : "s_product_set",
+      "operation" : "ROUTER_UNION",
+      "parameters" : [ "s_product_set1", "s_product_set2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 124,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 121
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Product",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 126,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 126
+      },
+      "id" : "s_product_set1",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 128,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 128
+            }
+          },
+          "service" : "AllProductsService1",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 128,
+            "sourceId" : "",
+            "startColumn" : 110,
+            "startLine" : 128
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 128,
+          "endLine" : 128,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 128
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "id",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 136,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 136
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 136,
+                      "sourceId" : "",
+                      "startColumn" : 26,
+                      "startLine" : 136
+                    }
+                  } ],
+                  "property" : "s_productId",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 136,
+                    "sourceId" : "",
+                    "startColumn" : 32,
+                    "startLine" : 136
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 136,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 136
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 137,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 134
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 138,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 132
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 130,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 130
+            }
+          },
+          "service" : "ProductByIdService1",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 130,
+            "sourceId" : "",
+            "startColumn" : 110,
+            "startLine" : 130
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 139,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 130
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 140,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 126
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::S_Product",
+      "classSourceInformation" : {
+        "endColumn" : 63,
+        "endLine" : 142,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 142
+      },
+      "id" : "s_product_set2",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 144,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 144
+            }
+          },
+          "service" : "AllProductsService2",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 144,
+            "sourceId" : "",
+            "startColumn" : 110,
+            "startLine" : 144
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 128,
+          "endLine" : 144,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 144
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "id",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 152,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 152
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 152,
+                      "sourceId" : "",
+                      "startColumn" : 26,
+                      "startLine" : 152
+                    }
+                  } ],
+                  "property" : "s_productId",
+                  "sourceInformation" : {
+                    "endColumn" : 42,
+                    "endLine" : 152,
+                    "sourceId" : "",
+                    "startColumn" : 32,
+                    "startLine" : 152
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 42,
+                  "endLine" : 152,
+                  "sourceId" : "",
+                  "startColumn" : 26,
+                  "startLine" : 152
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 153,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 150
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 154,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 148
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "ProductServices",
+            "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 146,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 146
+            }
+          },
+          "service" : "ProductByIdService2",
+          "serviceStore" : "meta::external::store::service::showcase::store::TradeProductServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 128,
+            "endLine" : 146,
+            "sourceId" : "",
+            "startColumn" : 110,
+            "startLine" : 146
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 155,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 146
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 156,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 142
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 158,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 158
+      },
+      "id" : "person_set",
+      "operation" : "ROUTER_UNION",
+      "parameters" : [ "person_set1", "person_set2" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 161,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 158
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 163,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 163
+      },
+      "id" : "person_set1",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 104,
+            "endLine" : 165,
+            "sourceId" : "",
+            "startColumn" : 90,
+            "startLine" : 165
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 104,
+          "endLine" : 165,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 165
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 166,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 163
+      }
+    }, {
+      "_type" : "pureInstance",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 168,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 168
+      },
+      "id" : "person_set2",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 172,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 172
+          }
+        },
+        "source" : "person_set2",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 172,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 172
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 172,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 172
+              }
+            } ],
+            "property" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 172,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 172
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 173,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 173
+          }
+        },
+        "source" : "person_set2",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 173,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 173
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 173,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 173
+              }
+            } ],
+            "property" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 173,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 173
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "meta::external::store::service::showcase::domain::Person",
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 174,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 174
+          }
+        },
+        "source" : "person_set2",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 174,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 174
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 174,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 174
+              }
+            } ],
+            "property" : "firmId",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 174,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 174
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 69,
+        "endLine" : 170,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 170
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 175,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 168
+      },
+      "srcClass" : "meta::external::store::service::showcase::domain::Person"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 176,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 61,
+        "endLine" : 180,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 180
+      },
+      "id" : "person_set",
+      "operation" : "ROUTER_UNION",
+      "parameters" : [ "person_set1", "person_set2", "person_set3", "person_set4", "person_set5" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 183,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 180
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 185,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 185
+      },
+      "id" : "person_set1",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore1",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 187,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 187
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 187,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 187
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 188,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 185
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 190,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 190
+      },
+      "id" : "person_set2",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore2",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 192,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 192
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 192,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 192
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 193,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 190
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 195,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 195
+      },
+      "id" : "person_set3",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore3",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 197,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 197
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 197,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 197
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 198,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 195
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 200,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 200
+      },
+      "id" : "person_set4",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore4",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 202,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 202
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 202,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 202
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 203,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 200
+      }
+    }, {
+      "_type" : "serviceStore",
+      "class" : "meta::external::store::service::showcase::domain::Person",
+      "classSourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 205,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 205
+      },
+      "id" : "person_set5",
+      "localMappingProperties" : [ ],
+      "root" : false,
+      "servicesMapping" : [ {
+        "service" : {
+          "service" : "EmployeeService",
+          "serviceStore" : "meta::external::store::service::showcase::store::EmployeeServiceStore5",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 207,
+            "sourceId" : "",
+            "startColumn" : 91,
+            "startLine" : 207
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 105,
+          "endLine" : 207,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 207
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 208,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 205
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ServiceStoreMapping2",
+    "package" : "meta::external::store::service::showcase::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 209,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 178
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

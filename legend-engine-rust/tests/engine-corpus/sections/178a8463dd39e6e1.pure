@@ -1,0 +1,11 @@
+
+Measure test::NewNonConvertibleMeasure
+{
+   UnitOne;
+   UnitTwo;
+   UnitThree;
+}Class test::A
+{
+   unitOne : test::NewNonConvertibleMeasure~UnitOne[0..1];
+   unitTwo : test::NewNonConvertibleMeasure~UnitTwo[0..1];
+}

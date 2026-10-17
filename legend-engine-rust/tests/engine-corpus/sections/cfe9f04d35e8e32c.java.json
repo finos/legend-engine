@@ -1,0 +1,53 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "legend-local-snowflake-passphraseVaultReference-store-Store",
+        "privateKeyVaultReference" : "legend-local-snowflake-privateKeyVaultReference-store-Store",
+        "publicUserName" : "legend-local-snowflake-publicuserName-store-Store"
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "legend-local-snowflake-accountName-store-Store",
+        "cloudType" : "legend-local-snowflake-cloudType-store-Store",
+        "databaseName" : "legend-local-snowflake-databaseName-store-Store",
+        "region" : "legend-local-snowflake-region-store-Store",
+        "role" : "legend-local-snowflake-role-store-Store",
+        "warehouseName" : "legend-local-snowflake-warehouseName-store-Store"
+      },
+      "element" : "store::Store",
+      "elementSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "localMode" : true,
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

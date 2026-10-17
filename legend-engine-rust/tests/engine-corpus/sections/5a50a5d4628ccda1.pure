@@ -1,0 +1,4 @@
+
+FunctionJar anything::Name
+{   ownership : Deployment { identifier: '17' };
+   documentation : 'blah';   function : a::f():String[1];}

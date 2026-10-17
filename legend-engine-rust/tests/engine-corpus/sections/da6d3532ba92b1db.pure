@@ -1,0 +1,16 @@
+
+SchemaSet test::SchemaSet
+{
+  format: FlatData;
+  schemas: [ 
+    { id: fd1; content: 'section header: DelimitedWithoutHeadings\n{\n  delimiter: \' \';\n  scope.forNumberOfLines: 1;\n\n  Record\n  {\n    closeOfBusiness {3}: DATE(format=\'yyyyMMdd\');\n  }\n}\n\nsection dataRows: DelimitedWithoutHeadings\n{\n  recordSeparator: \'\\r\\n\';\n  scope.untilEof;\n  delimiter: \'~\';\n\n  Record\n  {\n    Account_ID   {1}: INTEGER;\n    Synonym_Type {2}: STRING;\n    Synonym      {3}: STRING;\n    Currency     {4}: STRING;\n    Close_Price  {9}: DECIMAL;\n  }\n}\n'; }
+ ];
+}
+
+Binding test::Binding
+{
+  schemaSet: test::SchemaSet;
+  schemaId: fd1;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [ test::WholeLoanPriceFile, test::Header, test::PriceRow, test::PriceRow2, test::File_Header, test::File_PriceRow ];
+}

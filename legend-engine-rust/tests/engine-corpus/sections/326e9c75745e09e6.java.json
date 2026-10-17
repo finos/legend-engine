@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 20,
+        "sourceId" : "mappingFunction/employeesWithAddresss.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "EmployeeTable" ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 20,
+          "sourceId" : "mappingFunction/employeesWithAddresss.pure",
+          "startColumn" : 3,
+          "startLine" : 20
+        }
+      }
+    } ],
+    "name" : "employeesWithAddress__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 18,
+          "sourceId" : "mappingFunction/employeesWithAddresss.pure",
+          "startColumn" : 56,
+          "startLine" : 18
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 100,
+            "endLine" : 18,
+            "sourceId" : "mappingFunction/employeesWithAddresss.pure",
+            "startColumn" : 98,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "mappingFunction/employeesWithAddresss.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

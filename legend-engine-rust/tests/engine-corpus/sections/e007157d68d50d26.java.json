@@ -1,0 +1,1540 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 32,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 32
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 32,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 32,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 32
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 32,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 32
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 32,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 32
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 32,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 32
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 32,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 32
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 32,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 32
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 32,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 32
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 32,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 32
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 32,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 32
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 32,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 32
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 32,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 32
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 32,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 32
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 33,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 33
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftGmtRuntime",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 34,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 34
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 30
+      }
+    },
+    "name" : "ShiftGmtService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/gmt",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 60,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 38
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T13:10:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 55,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 51
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 56,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 48
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 58,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 42
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 73,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 73
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 73,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 73
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 73,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 73
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 73,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 73
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 73,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 73
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 73,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 73
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 73,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 73
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 73,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 73
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 73,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 73
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 73,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 73
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 73,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 73
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 73,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 73
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 73,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 73
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 73,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 73
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 74,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 74
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftRegionRuntime",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 75,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 75
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 76,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 71
+      }
+    },
+    "name" : "ShiftRegionService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/region",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 103,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 66
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 101,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 79
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T03:10:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 96,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 92
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 97,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 89
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 99,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 83
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 116,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 116
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 116,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 116
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 116,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 116
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 116,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 116
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 116,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 116
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 116,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 116
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 116,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 116
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 116,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 116
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 116,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 116
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 116,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 116
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 116,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 116
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 116,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 116
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 116,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 116
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 116,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 116
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 117,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 117
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftOffsetRuntime",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 118,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 118
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 119,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 114
+      }
+    },
+    "name" : "ShiftOffsetService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/offset",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 146,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 109
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 144,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 122
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T03:10:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 139,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 135
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 140,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 132
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 142,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 126
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 158,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 158
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 158,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 158
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 158,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 158
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 158,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 158
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 158,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 158
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 158,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 158
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 158,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 158
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 158,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 158
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 158,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 158
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 158,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 158
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 158,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 158
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 158,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 158
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 158,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 158
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 158,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 158
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 159,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 159
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftUtcPrefixedOffsetRuntime",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 160,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 160
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 161,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 156
+      }
+    },
+    "name" : "ShiftUtcPrefixedOffsetService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/utcprefixedoffset",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 188,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 151
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 186,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 164
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T03:10:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 181,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 177
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 182,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 174
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 184,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 168
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 199,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 199
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 199,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 199
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 199,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 199
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 199,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 199
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 199,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 199
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 199,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 199
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 199,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 199
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 199,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 199
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 199,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 199
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 199,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 199
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 199,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 199
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 199,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 199
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 199,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 199
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 199,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 199
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 200,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 200
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftHalfHourOffsetRuntime",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 201,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 201
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 202,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 197
+      }
+    },
+    "name" : "ShiftHalfHourOffsetService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/halfhouroffset",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 229,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 192
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 227,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 205
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T07:40:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 222,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 218
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 223,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 215
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 225,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 209
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Shifts read through a connection naming its time zone one way.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Shift",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 240,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 13,
+                "startLine" : 240
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 240,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 24,
+              "startLine" : 240
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 240,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 40,
+              "startLine" : 240
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 240,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 43,
+                    "startLine" : 240
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 47,
+                  "endLine" : 240,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 46,
+                  "startLine" : 240
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 240,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 42,
+                "startLine" : 240
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 240,
+                    "sourceId" : "service/services.pure",
+                    "startColumn" : 52,
+                    "startLine" : 240
+                  }
+                } ],
+                "property" : "startedAt",
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 240,
+                  "sourceId" : "service/services.pure",
+                  "startColumn" : 55,
+                  "startLine" : 240
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 240,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 51,
+                "startLine" : 240
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 240,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 67,
+              "startLine" : 240
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 240,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 68,
+                "startLine" : 240
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 240,
+                "sourceId" : "service/services.pure",
+                "startColumn" : 74,
+                "startLine" : 240
+              },
+              "value" : "Started At"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 240,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 32,
+            "startLine" : 240
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 87,
+          "endLine" : 240,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 12,
+          "startLine" : 240
+        }
+      },
+      "mapping" : "demo::ShiftMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 241,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 241
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::runtime::ShiftDaylightSavingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 242,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 14,
+          "startLine" : 242
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 243,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 14,
+        "startLine" : 238
+      }
+    },
+    "name" : "ShiftDaylightSavingService",
+    "owners" : [ ],
+    "package" : "demo::service",
+    "pattern" : "/api/shifts/daylightsaving",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 270,
+      "sourceId" : "service/services.pure",
+      "startColumn" : 1,
+      "startLine" : 233
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "shiftSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 268,
+        "sourceId" : "service/services.pure",
+        "startColumn" : 5,
+        "startLine" : 246
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Started At\":\"2012-05-20T17:10:52.501000000+0000\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 263,
+              "sourceId" : "service/services.pure",
+              "startColumn" : 19,
+              "startLine" : 259
+            }
+          },
+          "id" : "shouldReadTheStoredWallClockAsThatMoment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 264,
+            "sourceId" : "service/services.pure",
+            "startColumn" : 15,
+            "startLine" : 256
+          }
+        } ],
+        "id" : "startedAt",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 266,
+          "sourceId" : "service/services.pure",
+          "startColumn" : 9,
+          "startLine" : 250
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,4 @@
+
+Class model::Person {
+   name:String[1];
+}

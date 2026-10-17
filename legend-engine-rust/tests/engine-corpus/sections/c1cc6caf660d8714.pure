@@ -1,0 +1,14 @@
+
+Mapping mapping::CovidDataMapping
+(
+  domain::COVIDData: Relational
+  {
+    ~primaryKey
+    (
+      [store::CovidDataStore]COVID_DATA.ID
+    )
+    ~mainTable [store::CovidDataStore]COVID_DATA
+    id: [store::CovidDataStore]COVID_DATA.ID,
+    cases: [store::CovidDataStore]COVID_DATA.CASES
+  }
+)

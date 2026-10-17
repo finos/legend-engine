@@ -1,0 +1,8 @@
+
+Database app::db
+(
+  Table Product
+  (
+    ProductID <<meta::pure::profiles::storeType.type3>> VARCHAR(30) PRIMARY KEY
+  )
+)

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Embedded connection must not be empty",
+    "sourceInformation" : {
+      "endColumn" : 15,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 12,
+      "startLine" : 12
+    }
+  }
+}

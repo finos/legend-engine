@@ -1,0 +1,6 @@
+
+Elasticsearch7ClusterConnection abc::abc::Connection
+{
+  store: test::esStore;
+  clusterDetails: # URL { http://dummyurl.com:1234/api }#;
+}

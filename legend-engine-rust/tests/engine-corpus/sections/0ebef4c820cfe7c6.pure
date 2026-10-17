@@ -1,0 +1,34 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  owners: ['ownerName'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: src:    test::class[1]|$src.prop1;
+    key: 'env';
+    executions['PROD']:
+    {
+      mapping: test::mapping2;
+      runtime: test::runtime;
+    }
+    executions['QA']:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    }
+  }
+  test: Multi
+  {
+    tests['PROD']:
+    {
+      data: 'testData';
+    }
+    tests['QA']:
+    {
+      data: 'testData';
+    }
+  }
+}

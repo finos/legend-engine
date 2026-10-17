@@ -1,0 +1,5 @@
+
+Mapping A
+(
+ include test::B
+)

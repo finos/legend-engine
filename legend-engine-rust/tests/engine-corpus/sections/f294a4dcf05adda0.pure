@@ -1,0 +1,38 @@
+
+Avro model::AvroConfig
+{
+  scopeElements: [model::MyClass, model];
+  generationOutputPath: 'myAvroRoot';
+  includeNamespace: true;
+  propertyProfile: ['model::myProfile', 'model::nextProfile'];
+}
+
+Java model::JavaConfig
+{
+  scopeElements: [model::MyClass, model];
+  useJavaPrimitives: true;
+  optionals: true;
+}
+
+Protobuf model::ProtobufConfig
+{
+  generationOutputPath: 'myProtobufRoot/wrapperDirc';
+  test: 2;
+}
+
+JsonSchema model::JSONSchemaConfig
+{
+}
+
+Slang model::SlangConfig
+{
+  scopeElements: [model::MyClass, model];
+  _flags: ['flag1', 'flag2', 'flag3'];
+  includeAllRelatedClasses: true;
+  useArrayType: true;
+}
+
+Cdm model::CDMConfig
+{
+  scopeElements: [model::MyClass, model];
+}

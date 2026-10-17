@@ -1,0 +1,160 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "BaseDB",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "PeopleSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 37
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firm_id",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "People",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ {
+      "path" : "stores::BaseDB",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ ],
+    "name" : "ExtendedDB",
+    "package" : "stores",
+    "schemas" : [ {
+      "name" : "FirmSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 49
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 50
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Firms",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 51,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "stereotypes" : [ ]
+  } ]
+}

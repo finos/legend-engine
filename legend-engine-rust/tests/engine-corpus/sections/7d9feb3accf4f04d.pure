@@ -1,0 +1,11 @@
+
+Class anything::goes
+{
+  name: String[*];
+}
+
+Enum anything::else::goes
+{
+  b
+}
+

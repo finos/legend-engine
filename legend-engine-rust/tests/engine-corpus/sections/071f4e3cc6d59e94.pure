@@ -1,0 +1,9 @@
+
+Data test::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{"name":"john doe","id":"77"}';
+  }#
+}

@@ -1,0 +1,14 @@
+
+Data demo::data::ProductData
+{
+  Relational
+  #{
+    default.ListedProductTable:
+      'id,code,description\n' +
+      '1,LST-1,Listed Future\n' +
+      '2,LST-2,Listed Option\n';
+    default.OtcProductTable:
+      'id,code,description\n' +
+      '1,OTC-1,Interest Rate Swap\n';
+  }#
+}

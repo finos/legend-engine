@@ -1,0 +1,54 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ {
+      "name" : "person-records",
+      "validator" : {
+        "validationAction" : "warn",
+        "validationLevel" : "strict",
+        "validatorExpression" : {
+          "_type" : "jsonSchemaExpression",
+          "schemaExpression" : {
+            "_type" : "schema",
+            "_enum" : [ ],
+            "additionalPropertiesAllowed" : true,
+            "allOf" : [ ],
+            "anyOf" : [ ],
+            "oneOf" : [ ],
+            "properties" : [ {
+              "key" : "name",
+              "value" : {
+                "_type" : "stringType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "age",
+              "value" : {
+                "_type" : "longType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            } ],
+            "required" : [ ]
+          }
+        }
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testQuotedCollectionName",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

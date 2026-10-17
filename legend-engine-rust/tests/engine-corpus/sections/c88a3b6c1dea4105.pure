@@ -1,0 +1,92 @@
+
+ServiceStore test::testServiceStoreCompilationWithMultipleServicesAndServiceGroups
+(
+  Service TestService1
+  (
+    path : '/testService/{param2}';
+    requestBody : test::Person <- test::TestBinding;
+    method : POST;
+    parameters :
+    (
+      param1 : String ( location = query ),
+      param2 : String ( location = path )
+    );
+    response : test::Person <- test::TestBinding;
+    security : [];
+  )
+  Service TestService2
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      serializationFormat : [Integer] ( location = query, style = simple, explode = true, enum = test::Enum )
+    );
+    response : test::Person <- test::TestBinding;
+    security : [];
+  )
+  ServiceGroup TestServices1
+  (
+    path : '/testServices1';
+
+    Service NestedService
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : test::Person <- test::TestBinding;
+      security : [];
+    )
+  )
+  ServiceGroup TestServices2
+  (
+    path : '/testServices1';
+
+    ServiceGroup NestedServiceGroup
+    (
+      path : '/testServices1';
+
+      Service NestedService
+      (
+        path : '/testService';
+        method : GET;
+        parameters :
+        (
+          serializationFormat : String ( location = query )
+        );
+        response : test::Person <- test::TestBinding;
+        security : [];
+      )
+    )
+  )
+  ServiceGroup TestServices3
+  (
+    path : '/testServices2';
+
+    Service TestService1
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : test::Person <- test::TestBinding;
+      security : [];
+    )
+    Service TestService2
+    (
+      path : '/testService';
+      method : GET;
+      parameters :
+      (
+        serializationFormat : String ( location = query )
+      );
+      response : test::Person <- test::TestBinding;
+      security : [];
+    )
+  )
+)

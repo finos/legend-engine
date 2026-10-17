@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "hideProperties" : true,
+      "id" : "firstTimeIsNotAlwaysTheHardest",
+      "position" : {
+        "x" : 123.123,
+        "y" : 23.23
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : 123.123
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "MyDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

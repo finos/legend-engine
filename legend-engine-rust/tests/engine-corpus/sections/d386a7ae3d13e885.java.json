@@ -1,0 +1,42 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "FirmService",
+      "method" : "GET",
+      "path" : "/firms",
+      "response" : {
+        "_type" : "complex",
+        "binding" : "meta::external::store::service::showcase::store::FirmResponseSchemaBinding",
+        "list" : true,
+        "sourceInformation" : {
+          "endColumn" : 151,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 30
+        },
+        "type" : "meta::external::store::service::showcase::domain::Firm"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 25
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "FirmServiceStore",
+    "package" : "meta::external::store::service::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 23
+    }
+  } ]
+}

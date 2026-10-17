@@ -1,0 +1,61 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "LAST_NAME", "FIRM_ID", "EMP_TYPE", "ACTIVE", "HIRE_DATE", "SALARY", "STREET", "CITY" ],
+        "paths" : [ "default", "EmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "Green", "1", "FULL_TIME", "1", "2020-01-15 00:00:00", "50000.0", "Main St", "London" ]
+        }, {
+          "values" : [ "2", "Bob", "Smith", "1", "CONTRACT", "1", "2021-06-01 00:00:00", "70000.0", "Oak Ave", "Paris" ]
+        }, {
+          "values" : [ "3", "Carol", "White", "2", "FULL_TIME", "1", "2019-03-10 00:00:00", "60000.0", "Pine Rd", "Berlin" ]
+        }, {
+          "values" : [ "4", "David", "Jones", "2", "FULL_TIME", "1", "2018-05-20 00:00:00", "80000.0", "High St", "Madrid" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 20
+        }
+      }, {
+        "columns" : [ "ID", "LEGAL_NAME" ],
+        "paths" : [ "default", "FirmTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Acme" ]
+        }, {
+          "values" : [ "2", "Beta" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 29,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 26
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 30,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 20
+      }
+    },
+    "name" : "RankedEmployeeData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

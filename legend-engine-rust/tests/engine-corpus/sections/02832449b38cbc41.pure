@@ -1,0 +1,15 @@
+
+'''
+Documented with a documentation literal.
+'''
+Class model::Sugared
+{
+  '''
+  Given name.
+  '''
+  firstName: String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Documented with a documentation literal.'} model::Explicit
+{
+}

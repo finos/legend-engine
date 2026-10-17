@@ -1,0 +1,21 @@
+
+Class test::Address
+{
+  zipCode : String[1];
+}
+
+Class test::City extends test::Address
+{
+  cityName: String[1];
+}
+
+function my::test():Any[*]
+{
+  #{
+    test::Address {
+      ->subType(@test::City) {
+         fakeProperty
+      }
+    }
+  }#
+}

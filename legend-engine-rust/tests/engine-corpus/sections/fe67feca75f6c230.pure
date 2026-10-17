@@ -1,0 +1,7 @@
+
+Class <<temporal.processingtemporal>> demo::relation::domain::TemporalDepartment
+{
+  id: Integer[1];
+  name: String[1];
+  employeeId: Integer[1];
+}

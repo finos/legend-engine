@@ -1,0 +1,5 @@
+
+Class test::A
+{
+   p(){[1,2]->map(a|$a+1)}:Integer[*];
+}

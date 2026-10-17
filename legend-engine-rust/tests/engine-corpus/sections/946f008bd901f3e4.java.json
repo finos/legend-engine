@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token ':'. Valid alternatives: ['EnumerationMapping', 'all', 'let', 'allVersions', 'allVersionsInRange', 'toBytes', '(']",
+    "sourceInformation" : {
+      "endColumn" : 19,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 19,
+      "startLine" : 7
+    }
+  }
+}

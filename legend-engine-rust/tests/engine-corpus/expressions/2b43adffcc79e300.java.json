@@ -1,0 +1,85 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 35,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 1
+    },
+    "type" : "colSpecArray",
+    "value" : {
+      "colSpecs" : [ {
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Integer",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 6,
+              "startLine" : 1
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 0,
+          "upperBound" : 1
+        },
+        "name" : "a",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 1
+        }
+      }, {
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Integer",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 1
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 0,
+          "upperBound" : 1
+        },
+        "name" : "b",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 1
+        }
+      } ]
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 35,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

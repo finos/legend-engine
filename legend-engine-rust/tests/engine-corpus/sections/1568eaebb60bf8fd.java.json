@@ -1,0 +1,320 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 93,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 93
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 95
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRSTNAME",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 95
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 95,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 95
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 95,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 95
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 96
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LASTNAME",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 96
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 96,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 96
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 96,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 96
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "age",
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 97
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "AGE",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 97
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 97,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 97
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 97,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 97
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 98
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "model::relational::tests::dbInc",
+            "name" : "Firm_Person",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 98,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 98
+            }
+          } ],
+          "relationalElement" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 98,
+              "sourceId" : "",
+              "startColumn" : 58,
+              "startLine" : 98
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "model::relational::tests::dbInc",
+              "mainTableDb" : "model::relational::tests::dbInc",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 98,
+                "sourceId" : "",
+                "startColumn" : 58,
+                "startLine" : 98
+              },
+              "table" : "firmTable"
+            },
+            "tableAlias" : "firmTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 98
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 98,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 98
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 99,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 93
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 100,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 100
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "model::Firm",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 102
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LEGALNAME",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 102
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "model::relational::tests::dbInc",
+            "mainTableDb" : "model::relational::tests::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 102,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 102
+            },
+            "table" : "firmTable"
+          },
+          "tableAlias" : "firmTable"
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 102,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 102
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 103,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 100
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "myRelationalMapping",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 104,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 91
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

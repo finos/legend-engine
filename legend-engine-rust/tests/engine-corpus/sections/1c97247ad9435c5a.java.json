@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'schemaFrom' is required",
+    "sourceInformation" : {
+      "endColumn" : 50,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 9,
+      "startLine" : 15
+    }
+  }
+}

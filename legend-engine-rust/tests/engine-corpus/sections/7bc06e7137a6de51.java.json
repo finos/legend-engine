@@ -1,0 +1,216 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "PersonDB",
+    "package" : "demo",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 109,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 89
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 93,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 93
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FULL_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 94
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "AGE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 95,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 95
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "EMAIL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 96,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 96
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "SALARY",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 97,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 97
+          },
+          "type" : {
+            "_type" : "Decimal",
+            "precision" : 10,
+            "scale" : 2
+          }
+        }, {
+          "name" : "DOB",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 98,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 98
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_TBL",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 99,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 91
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 102
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "STR_COL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 103,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 103
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "INT_COL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 104,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 104
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FLOAT_COL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 105,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 105
+          },
+          "type" : {
+            "_type" : "Float"
+          }
+        }, {
+          "name" : "DATE_COL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 106
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "BOOL_COL",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 107
+          },
+          "type" : {
+            "_type" : "Bit"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "SAMPLE_VAL_TBL",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 108,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 100
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 109,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 89
+    },
+    "stereotypes" : [ ]
+  } ]
+}

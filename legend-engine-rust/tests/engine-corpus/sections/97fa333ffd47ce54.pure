@@ -1,0 +1,65 @@
+
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+  legalName : String[1];
+  addresses : meta::external::store::service::showcase::domain::Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Employee
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  kerberos    : String[1];
+  id          : String[1];
+  designation : String[1];
+  age         : Integer[1];
+  addresses   : meta::external::store::service::showcase::domain::Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Address
+{
+  street  : String[1];
+  city    : String[1];
+  country : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::FirmSearch
+{
+  legalNames : String[*];
+}
+
+Class meta::external::store::service::showcase::domain::EmployeeSearch
+{
+  designationsToSearch : String[*];
+  ids : String[*];
+}
+
+Class meta::external::store::service::showcase::domain::EmployeeSearchByFilters
+{
+  nameFilters        : meta::external::store::service::showcase::domain::NameFilter[*];
+  designationFilters : meta::external::store::service::showcase::domain::DesignationFilter[*];
+  idFilters          : meta::external::store::service::showcase::domain::IdFilter[*];
+}
+
+Class meta::external::store::service::showcase::domain::NameFilter
+{
+  firstName   : String[1];
+  lastName    : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::DesignationFilter
+{
+  designation : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::IdFilter
+{
+  id          : String[1];
+}
+
+Association meta::external::store::service::showcase::domain::Employment
+{
+  firm      : meta::external::store::service::showcase::domain::Firm[0..1];
+  employees : meta::external::store::service::showcase::domain::Employee[*];
+}

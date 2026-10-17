@@ -1,0 +1,368 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::TestDb",
+        "mainTableDb" : "test::TestDb",
+        "schema" : "TESTDB",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 24
+        },
+        "table" : "PERSON_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "test::TestDb",
+          "mainTableDb" : "test::TestDb",
+          "schema" : "TESTDB",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 22
+          },
+          "table" : "PERSON_TABLE"
+        },
+        "tableAlias" : "PERSON_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::model::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRSTNAME",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::TestDb",
+            "mainTableDb" : "test::TestDb",
+            "schema" : "TESTDB",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 25,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 25
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::model::Person",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "LASTNAME",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::TestDb",
+            "mainTableDb" : "test::TestDb",
+            "schema" : "TESTDB",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 26
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "TestMapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ {
+      "assert" : {
+        "_type" : "expectedOutputMappingTestAssert",
+        "expectedOutput" : "[{\"values\":[\"John\",\"Doe\"]}]",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 52
+        }
+      },
+      "inputData" : [ {
+        "_type" : "relational",
+        "data" : "create schema if not exists TESTDB;\ncreate table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from TESTDB.PERSON_TABLE;\ninsert into TESTDB.PERSON_TABLE values(1,'John','Doe');\n",
+        "database" : "test::TestDb",
+        "inputType" : "SQL",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 45
+        }
+      } ],
+      "name" : "test_1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::model::Person",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 33,
+                "sourceId" : "test::TestMapping",
+                "startColumn" : 15,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 33,
+              "sourceId" : "test::TestMapping",
+              "startColumn" : 34,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 3,
+              "endLine" : 37,
+              "sourceId" : "test::TestMapping",
+              "startColumn" : 3,
+              "startLine" : 34
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 8,
+                    "endLine" : 35,
+                    "sourceId" : "test::TestMapping",
+                    "startColumn" : 7,
+                    "startLine" : 35
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 18,
+                  "endLine" : 35,
+                  "sourceId" : "test::TestMapping",
+                  "startColumn" : 10,
+                  "startLine" : 35
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 18,
+                "endLine" : 35,
+                "sourceId" : "test::TestMapping",
+                "startColumn" : 6,
+                "startLine" : 35
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 8,
+                    "endLine" : 36,
+                    "sourceId" : "test::TestMapping",
+                    "startColumn" : 7,
+                    "startLine" : 36
+                  }
+                } ],
+                "property" : "lastName",
+                "sourceInformation" : {
+                  "endColumn" : 17,
+                  "endLine" : 36,
+                  "sourceId" : "test::TestMapping",
+                  "startColumn" : 10,
+                  "startLine" : 36
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 36,
+                "sourceId" : "test::TestMapping",
+                "startColumn" : 6,
+                "startLine" : 36
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 3,
+              "endLine" : 41,
+              "sourceId" : "test::TestMapping",
+              "startColumn" : 3,
+              "startLine" : 38
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 39,
+                "sourceId" : "test::TestMapping",
+                "startColumn" : 5,
+                "startLine" : 39
+              },
+              "value" : "First Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 40,
+                "sourceId" : "test::TestMapping",
+                "startColumn" : 5,
+                "startLine" : 40
+              },
+              "value" : "Last Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 33,
+            "sourceId" : "test::TestMapping",
+            "startColumn" : 42,
+            "startLine" : 33
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 1,
+          "endLine" : 42,
+          "sourceId" : "test::TestMapping",
+          "startColumn" : 14,
+          "startLine" : 33
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 53,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 31
+      }
+    } ]
+  } ],
+  "imports" : [ ]
+}

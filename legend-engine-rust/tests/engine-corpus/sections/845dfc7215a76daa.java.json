@@ -1,0 +1,171 @@
+{
+  "elements" : [ {
+    "_type" : "measure",
+    "canonicalUnit" : {
+      "conversionFunction" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "x",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 3
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ]
+      },
+      "measure" : "some measure",
+      "name" : "Unit One",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      }
+    },
+    "name" : "some measure",
+    "nonCanonicalUnits" : [ {
+      "conversionFunction" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "times",
+          "parameters" : [ {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 4
+            },
+            "values" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 20,
+                "startLine" : 4
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 25,
+                "startLine" : 4
+              },
+              "value" : 1000
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 4
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ]
+      },
+      "measure" : "some measure",
+      "name" : "Unit Two",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "conversionFunction" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "times",
+          "parameters" : [ {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 5
+            },
+            "values" : [ {
+              "_type" : "var",
+              "name" : "x",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 5
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 5,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 5
+              },
+              "value" : 400
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 5
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "x"
+        } ]
+      },
+      "measure" : "some measure",
+      "name" : "Unit Three",
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      }
+    } ],
+    "package" : "",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "imports" : [ ]
+}

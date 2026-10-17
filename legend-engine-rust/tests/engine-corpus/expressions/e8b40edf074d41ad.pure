@@ -1,0 +1,1 @@
+|Person.all()->filter(f|$f.name->startsWith('ok'))->project([col(p|$p.name, 'ok')])

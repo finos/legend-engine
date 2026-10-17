@@ -1,0 +1,13 @@
+
+Mapping model::mapping2
+(
+  model::Person[model_Person_1]: Pure
+  {
+    ~src model::_Person
+  }
+
+  model::IncType: EnumerationMapping model_IncType2
+  {
+    CORP: ['corporation']
+  }
+)

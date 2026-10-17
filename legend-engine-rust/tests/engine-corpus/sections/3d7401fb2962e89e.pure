@@ -1,0 +1,10 @@
+
+Class <<temporal.businesstemporal>> test::Product{
+   classification : test::Classification[*];
+}
+Class  <<temporal.businesstemporal>> test::Classification{
+   classificationName : String[1];
+}
+function main::walkTree(): Any[*]
+{
+   let bdVar=%2022-11-12;   {|test::Product.all($bdVar).classification.classificationName};}

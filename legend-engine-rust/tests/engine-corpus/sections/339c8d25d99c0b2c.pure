@@ -1,0 +1,35 @@
+
+Class meta::test::TestClass1
+{
+  name: String[1];
+  admin: meta::test::Person[1];
+  owner: meta::test::Person[1];
+  version: Integer[1];
+}
+
+Class meta::test::Person
+{
+  name: String[1];
+  propertyA: String[1];
+  propertyB: String[1];
+  sourceIn: DateTime[1];
+  sourceOut: DateTime[1];
+  sourceFrom: DateTime[1];
+  sourceThru: DateTime[1];
+  timeIn: DateTime[1];
+  timeOut: DateTime[1];
+  updateDateTime: DateTime[1];
+  effectiveFrom: DateTime[1];
+  effectiveThru: DateTime[1];
+  version: Integer[1];
+  deleted: Boolean[1];
+}
+
+Class meta::test::TestClass2
+{
+  name: String[1];
+  property1: meta::test::Person[1];
+  property2: meta::test::Person[1];
+  property3: meta::test::Person[1];
+}
+

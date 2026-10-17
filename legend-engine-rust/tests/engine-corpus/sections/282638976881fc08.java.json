@@ -1,0 +1,173 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::model::ChildClass",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 43
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::stores::Db",
+        "mainTableDb" : "demo::stores::Db",
+        "schema" : "First",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 49
+        },
+        "table" : "Source"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "accountNumber",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 47
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::stores::Db",
+          "mainTableDb" : "demo::stores::Db",
+          "schema" : "First",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 47
+          },
+          "table" : "Source"
+        },
+        "tableAlias" : "Source"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::model::ChildClass",
+          "property" : "Name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 50
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::stores::Db",
+            "mainTableDb" : "demo::stores::Db",
+            "schema" : "First",
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 50,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 50
+            },
+            "table" : "Source"
+          },
+          "tableAlias" : "Source"
+        },
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 50
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::model::ChildClass",
+          "property" : "accountNumber",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "accountNumber",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 51
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::stores::Db",
+            "mainTableDb" : "demo::stores::Db",
+            "schema" : "First",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 51,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 51
+            },
+            "table" : "Source"
+          },
+          "tableAlias" : "Source"
+        },
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 51,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 51
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Map1",
+    "package" : "demo::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 41
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

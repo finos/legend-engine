@@ -1,0 +1,653 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Product",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 23,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 7,
+            "startLine" : 23
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 23,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 24,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 9,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 24,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 21,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 21
+      },
+      "sourceInformation" : {
+        "endColumn" : 33,
+        "endLine" : 21,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 21
+      },
+      "value" : "businesstemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Account",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 29,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 7,
+            "startLine" : 29
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 29,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 30,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 11,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "status",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 30,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 27,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 27
+      },
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 27,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 27
+      },
+      "value" : "processingtemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Rating",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 35,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 11,
+            "startLine" : 35
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "issuer",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 35,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 36,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 10,
+            "startLine" : 36
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "grade",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 36,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 33
+    },
+    "stereotypes" : [ {
+      "profile" : "temporal",
+      "profileSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 33,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 33
+      },
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 33,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 9,
+        "startLine" : 33
+      },
+      "value" : "bitemporal"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Trade",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 41,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 7,
+            "startLine" : 41
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 41,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 41
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 42,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 14,
+            "startLine" : 42
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "productId",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 42,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 42
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 43,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 14,
+            "startLine" : 43
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "accountId",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 43,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 43
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "StrictDate",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 44,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 14,
+            "startLine" : 44
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "tradeDate",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 44,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 44
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "DateTime",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 45,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 15,
+            "startLine" : 45
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "executedAt",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 45,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 45
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 46,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 13,
+            "startLine" : 46
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "quantity",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 46,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 46
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 47,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 39
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "TradeProduct",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::dates::Trade",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 51,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 18,
+            "startLine" : 51
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "productTrades",
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 51,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::dates::Product",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 52,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 12,
+            "startLine" : 52
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "product",
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 52,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 52
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 49
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "TradeAccount",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::dates",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::dates::Trade",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 57,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 18,
+            "startLine" : 57
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "accountTrades",
+      "sourceInformation" : {
+        "endColumn" : 49,
+        "endLine" : 57,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 57
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::dates::Account",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 58,
+            "sourceId" : "model/model.pure",
+            "startColumn" : 12,
+            "startLine" : 58
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "account",
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 58,
+        "sourceId" : "model/model.pure",
+        "startColumn" : 3,
+        "startLine" : 58
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 59,
+      "sourceId" : "model/model.pure",
+      "startColumn" : 1,
+      "startLine" : 55
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

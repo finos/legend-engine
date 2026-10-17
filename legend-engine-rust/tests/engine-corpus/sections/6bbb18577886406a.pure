@@ -1,0 +1,13 @@
+
+function pack::f2(): Relation<Any>[1]
+{
+  #SQL{select a from csv('a,b
+1,2
+3,4')}#
+}
+
+function pack::f(): String[1]
+{
+  #SQL{select * from func('pack::f2__Relation_1_')}#;
+  '';
+}

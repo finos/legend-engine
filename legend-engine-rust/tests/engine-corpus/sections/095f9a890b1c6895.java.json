@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Mapping test object input data does not support format 'FUNK_UNKNOWN_FORMAT'. Possible values: JSON, XML",
+    "sourceInformation" : {
+      "endColumn" : 44,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 26,
+      "startLine" : 10
+    }
+  }
+}

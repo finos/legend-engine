@@ -1,0 +1,5 @@
+
+ServiceStoreConnection simple::serviceStoreConnection
+{
+  store: test::serviceStore;
+}

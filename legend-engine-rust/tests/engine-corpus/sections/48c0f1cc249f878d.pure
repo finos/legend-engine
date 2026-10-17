@@ -1,0 +1,8 @@
+
+Mapping mapping::test
+(
+  mapping::SomeClass: XStore
+  {
+    ~src Something
+  }
+)

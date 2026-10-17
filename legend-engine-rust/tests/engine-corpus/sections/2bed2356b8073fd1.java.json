@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'testDataSetupCsv' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 6
+    }
+  }
+}

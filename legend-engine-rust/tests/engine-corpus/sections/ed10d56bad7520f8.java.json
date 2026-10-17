@@ -1,0 +1,70 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "FirmRegistryDB",
+    "package" : "demo::relation::db",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 24,
+        "sourceId" : "store/firmRegistryDb.pure",
+        "startColumn" : 1,
+        "startLine" : 17
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 21,
+            "sourceId" : "store/firmRegistryDb.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "LEGAL_NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 22,
+            "sourceId" : "store/firmRegistryDb.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FirmRegistryTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 23,
+          "sourceId" : "store/firmRegistryDb.pure",
+          "startColumn" : 3,
+          "startLine" : 19
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "store/firmRegistryDb.pure",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ]
+  } ]
+}

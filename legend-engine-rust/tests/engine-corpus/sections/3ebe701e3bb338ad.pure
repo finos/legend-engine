@@ -1,0 +1,18 @@
+
+DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>>
+  {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.topics = 'Securities, Equities',
+   meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::OtherSpace',
+   meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.deprecationNotice = 'Use model::NewSpace'}
+  model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+  title: 'My Space';
+}

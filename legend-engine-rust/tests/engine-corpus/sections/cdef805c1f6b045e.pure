@@ -1,0 +1,8 @@
+
+Mapping my::testMapping
+(
+  *my::Person[person]: Relation
+  {
+    firstName: FIRSTNAME
+  }
+)

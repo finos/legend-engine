@@ -1,0 +1,60 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "meta::pure::functions::relation::select",
+    "parameters" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 2,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "type" : "TDS",
+      "value" : {
+        "tdsString" : "\na:Integer[0..1],b:Integer[0..1]\n1,2\n3,4\n"
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 46,
+        "startLine" : 5
+      },
+      "type" : "colSpecArray",
+      "value" : {
+        "colSpecs" : [ {
+          "name" : "a",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 5
+          }
+        } ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 43,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 5
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 49,
+    "endLine" : 5,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

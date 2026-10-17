@@ -1,0 +1,6 @@
+
+function pack::f():Boolean[1]
+{
+   #SQL{select a from csv('a,b
+1,2
+3,4')}#->filter(x|$x.ba == 1);   true;}

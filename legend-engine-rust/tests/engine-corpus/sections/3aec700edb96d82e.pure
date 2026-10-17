@@ -1,0 +1,5 @@
+
+function withPath::f(s: Result<String>[1]): Result<String>[0..1]
+{
+  []
+}

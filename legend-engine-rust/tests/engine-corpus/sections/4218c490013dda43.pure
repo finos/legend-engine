@@ -1,0 +1,6 @@
+
+SnowflakeM2MUdf x::A
+{
+   function : a::f():String[1];   ownership : Deployment{identifier:'testDeployment'};   udfName : 'sass';
+   deploymentSchema : 'legend_native_schema_1';
+}

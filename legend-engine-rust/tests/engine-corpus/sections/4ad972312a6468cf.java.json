@@ -1,0 +1,1353 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 339,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 339
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 338,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 338
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 340,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 336
+      }
+    } ],
+    "name" : "dataspaceWithNoExecutables",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 343,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 332
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 332,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 332
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 332,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 332
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::dummyService",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 360,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 360
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 361,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 358
+      },
+      "title" : "Executable 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 352,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 352
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 351,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 351
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 353,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 349
+      }
+    } ],
+    "name" : "dataspaceWithoutPowerBIStereotype",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 363,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 345
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::dummyMultiService",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 380,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 380
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 381,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 378
+      },
+      "title" : "Executable 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 372,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 372
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 371,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 371
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 373,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 369
+      }
+    } ],
+    "name" : "dataspaceWithMultiExecutionService",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 383,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 365
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 365,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 365
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 365,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 365
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::nonTDSService",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 400,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 400
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 401,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 398
+      },
+      "title" : "Non TDS Service"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 392,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 392
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 391,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 391
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 393,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 389
+      }
+    } ],
+    "name" : "dataspaceWithNonTDSService",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 403,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 385
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 385,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 385
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 385,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 385
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "functions::parameterizedFunction_String_1__TabularDataSet_1_",
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 420,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 420
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 421,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 418
+      },
+      "title" : "Parameterized Function"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 412,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 412
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 411,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 411
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 413,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 409
+      }
+    } ],
+    "name" : "dataspaceWithParametrizedFunctionExecutable",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 423,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 405
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 405,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 405
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 405,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 405
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::serviceWithLocalVar",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 440,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 440
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 441,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 438
+      },
+      "title" : "Service With Local VAR"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 432,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 432
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 431,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 431
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 433,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 429
+      }
+    } ],
+    "name" : "dataspaceWithExecutableLocalVars",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 443,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 425
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 425,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 425
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 425,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 425
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::dummyService",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 460,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 460
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 461,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 458
+      },
+      "title" : "Dummy Service"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 452,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 452
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 451,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 451
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 453,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 449
+      }
+    } ],
+    "name" : "dataspaceWithNonSnowflakeRuntime",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 463,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 445
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 445,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 445
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 445,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 445
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::dummyCustomerService",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 485,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 485
+        }
+      },
+      "executionContextKey" : "execCont 2",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 487,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 483
+      },
+      "title" : "Dummy Service"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 472,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 472
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 471,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 471
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 473,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 469
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::snowflakeRuntimeWithoutRole",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 477,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 477
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 476,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 476
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 2",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 478,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 474
+      }
+    } ],
+    "name" : "dataspaceWithSnowflakeRuntimeWithoutRole",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 489,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 465
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 465,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 465
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 465,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 465
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "functions::functionWithEnumOutput__TabularDataSet_1_",
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 516,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 516
+        }
+      },
+      "executionContextKey" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 518,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 514
+      },
+      "title" : "Customer Type Function"
+    }, {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::customerService",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 521,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 521
+        }
+      },
+      "executionContextKey" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 523,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 519
+      },
+      "title" : "Customer Service"
+    }, {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "execCont 3",
+      "id" : "InlineQueryExecutable",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::Customer",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 527,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 527
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 527,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 527
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 527,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 527
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 527,
+                    "sourceId" : "",
+                    "startColumn" : 56,
+                    "startLine" : 527
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 60,
+                  "endLine" : 527,
+                  "sourceId" : "",
+                  "startColumn" : 59,
+                  "startLine" : 527
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 527,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 527
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 66,
+                    "endLine" : 527,
+                    "sourceId" : "",
+                    "startColumn" : 65,
+                    "startLine" : 527
+                  }
+                } ],
+                "property" : "type",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 527,
+                  "sourceId" : "",
+                  "startColumn" : 68,
+                  "startLine" : 527
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 527,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 527
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 111,
+              "endLine" : 527,
+              "sourceId" : "",
+              "startColumn" : 75,
+              "startLine" : 527
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 527,
+                "sourceId" : "",
+                "startColumn" : 76,
+                "startLine" : 527
+              },
+              "value" : "Customer ID"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 527,
+                "sourceId" : "",
+                "startColumn" : 91,
+                "startLine" : 527
+              },
+              "value" : "Customer Type Enum"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 527,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 527
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 527,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 527
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 529,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 524
+      },
+      "title" : "Inline Query Executable"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 498,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 498
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 497,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 497
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 499,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 495
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::snowflakeRuntimeWithoutRole",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 503,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 503
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 502,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 502
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 2",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 504,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 500
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::snowflakeRuntime",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 508,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 508
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 507,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 507
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 509,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 505
+      }
+    } ],
+    "name" : "dataspaceWithValidExecutables",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 531,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 491
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 491,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 491
+      },
+      "sourceInformation" : {
+        "endColumn" : 79,
+        "endLine" : 491,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 491
+      },
+      "value" : "Import"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "execCont 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "functions::functionWithEnumOutput__TabularDataSet_1_",
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 558,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 558
+        }
+      },
+      "executionContextKey" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 560,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 556
+      },
+      "title" : "Customer Type Function"
+    }, {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "services::customerService",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 563,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 563
+        }
+      },
+      "executionContextKey" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 565,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 561
+      },
+      "title" : "Customer Service"
+    }, {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "execCont 3",
+      "id" : "InlineQueryExecutable",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::Customer",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 569,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 569
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 569,
+              "sourceId" : "",
+              "startColumn" : 37,
+              "startLine" : 569
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 72,
+              "endLine" : 569,
+              "sourceId" : "",
+              "startColumn" : 53,
+              "startLine" : 569
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 569,
+                    "sourceId" : "",
+                    "startColumn" : 56,
+                    "startLine" : 569
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 60,
+                  "endLine" : 569,
+                  "sourceId" : "",
+                  "startColumn" : 59,
+                  "startLine" : 569
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 60,
+                "endLine" : 569,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 569
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 66,
+                    "endLine" : 569,
+                    "sourceId" : "",
+                    "startColumn" : 65,
+                    "startLine" : 569
+                  }
+                } ],
+                "property" : "type",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 569,
+                  "sourceId" : "",
+                  "startColumn" : 68,
+                  "startLine" : 569
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 569,
+                "sourceId" : "",
+                "startColumn" : 64,
+                "startLine" : 569
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 111,
+              "endLine" : 569,
+              "sourceId" : "",
+              "startColumn" : 75,
+              "startLine" : 569
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 569,
+                "sourceId" : "",
+                "startColumn" : 76,
+                "startLine" : 569
+              },
+              "value" : "Customer ID"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 569,
+                "sourceId" : "",
+                "startColumn" : 91,
+                "startLine" : 569
+              },
+              "value" : "Customer Type Enum"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 569,
+            "sourceId" : "",
+            "startColumn" : 45,
+            "startLine" : 569
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 112,
+          "endLine" : 569,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 569
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 571,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 566
+      },
+      "title" : "Inline Query Executable"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 540,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 540
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 539,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 539
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 1",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 541,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 537
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::snowflakeRuntimeWithoutRole",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 545,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 545
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 544,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 544
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 2",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 546,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 542
+      }
+    }, {
+      "defaultRuntime" : {
+        "path" : "runtime::snowflakeRuntime",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 550,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 550
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::customerMapping",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 549,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 549
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "execCont 3",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 551,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 547
+      }
+    } ],
+    "name" : "dataspaceWithValidExecutablesDirectQueryMode",
+    "package" : "spaces",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 573,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 533
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::external::powerbi::profiles::PowerBIArtifactGeneration",
+      "profileSourceInformation" : {
+        "endColumn" : 72,
+        "endLine" : 533,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 533
+      },
+      "sourceInformation" : {
+        "endColumn" : 84,
+        "endLine" : 533,
+        "sourceId" : "",
+        "startColumn" : 74,
+        "startLine" : 533
+      },
+      "value" : "DirectQuery"
+    } ],
+    "taggedValues" : [ ]
+  } ]
+}

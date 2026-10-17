@@ -1,0 +1,2 @@
+
+Database my::Store(   Table myTable   (       id INT,       name VARCHAR(200)   ))

@@ -1,0 +1,10 @@
+
+Class test::firm::model::TargetPerson2
+{
+  fullName : String[1];
+}
+Class test::firm::model::TargetPerson
+{
+  fullName : String[1];
+}
+

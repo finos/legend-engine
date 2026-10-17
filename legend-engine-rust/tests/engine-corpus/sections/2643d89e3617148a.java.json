@@ -1,0 +1,275 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Address_Street",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 21,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 45
+            },
+            "table" : "Address"
+          },
+          "tableAlias" : "Address"
+        }, {
+          "_type" : "column",
+          "column" : "address_name",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 45,
+            "sourceId" : "",
+            "startColumn" : 36,
+            "startLine" : 45
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 45,
+              "sourceId" : "",
+              "startColumn" : 36,
+              "startLine" : 45
+            },
+            "table" : "Street"
+          },
+          "tableAlias" : "Street"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 45
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 45,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 45
+      }
+    } ],
+    "name" : "DB",
+    "package" : "test",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 46,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 25
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "fullName",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "firmName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 29
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "addressName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "birthTime",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON",
+        "primaryKey" : [ "fullName" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Address",
+        "primaryKey" : [ "name" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 33
+        }
+      }, {
+        "columns" : [ {
+          "name" : "name",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        }, {
+          "name" : "address_name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 255
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Street",
+        "primaryKey" : [ "name" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 40,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 37
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 42,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 42
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "city",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 43
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Location",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 41
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ]
+  } ]
+}

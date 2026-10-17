@@ -1,0 +1,34 @@
+
+RelationalDatabaseConnection relational::graphFetch::RelationalConnection
+{
+  store: relational::graphFetch::dbInc;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists firmTable;\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\nInsert into firmTable (FirmCode, FirmName) values (101,\'finos\');\nInsert into firmTable (FirmCode, FirmName) values (200,\'goldman_Sachs\');'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection
+{
+  store: relational::graphFetch::dbInc;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists firmTable;\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\nInsert into firmTable (FirmCode, FirmName) values (001,\'Alloy_Engineering\');\nInsert into firmTable (FirmCode, FirmName) values (102,\'legend-engine\');\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+ModelChainConnection relational::graphFetch::OneMappingConnection
+{
+  mappings: [
+    relational::graphFetch::Relational_Mapping
+  ];
+}
+

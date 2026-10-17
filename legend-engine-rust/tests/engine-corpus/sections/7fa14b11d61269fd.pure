@@ -1,0 +1,5 @@
+
+function test::f(): String[1]
+{
+  'x'
+}

@@ -1,0 +1,9 @@
+
+Class {doc.doc = 'test'} test::doc {
+
+}
+
+Class test2::doc {
+prop: Any[1];
+}
+

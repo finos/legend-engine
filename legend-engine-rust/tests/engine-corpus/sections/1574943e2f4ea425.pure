@@ -1,0 +1,17 @@
+
+RelationalDatabaseConnection chain::connection::FirmH2Connection
+{
+  store: chain::store::DB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+// What makes the mapping chain a chain: reads of the model-to-model mapping's source class are
+// served by the relational mapping rather than by an external-format payload.
+ModelChainConnection chain::connection::FirmModelChainConnection
+{
+  mappings: [ chain::mapping::Relational ];
+}

@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "MongoDB",
+      "bindingPath" : "mongo::test::PersonBinding",
+      "class" : "meta::external::mongo::mapping",
+      "id" : "id1",
+      "mainCollectionName" : "PersonRecord",
+      "root" : true,
+      "storePath" : "mongo::test::db"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "toBytes",
+    "package" : "all::let::allVersions::allVersionsInRange",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

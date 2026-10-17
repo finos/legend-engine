@@ -1,0 +1,16 @@
+
+Class test::model::A
+{
+  prop1 : String[1];
+  prop2 : String[1];
+  prop3 : String[1];
+}
+
+Class test::model::B
+{
+  prop1 : String[1];
+  prop2 : test::model::C[1];}
+Class test::model::C
+{
+  prop1 : String[1];
+}

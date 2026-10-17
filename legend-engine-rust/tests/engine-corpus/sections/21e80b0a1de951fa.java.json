@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "hostedService",
+    "actions" : [ ],
+    "autoActivateUpdates" : true,
+    "documentation" : "blah",
+    "function" : {
+      "path" : "a::f():String[1]",
+      "sourceInformation" : {
+        "endColumn" : 76,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 61,
+        "startLine" : 7
+      },
+      "type" : "FUNCTION"
+    },
+    "generateLineage" : false,
+    "name" : "Name",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "anything",
+    "pattern" : "/a/b",
+    "sourceInformation" : {
+      "endColumn" : 108,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "storeModel" : false,
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

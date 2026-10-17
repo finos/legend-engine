@@ -1,0 +1,66 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "test::store::S_Firm",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 61,
+        "sourceId" : "support.pure",
+        "startColumn" : 10,
+        "startLine" : 61
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 63,
+        "sourceId" : "support.pure",
+        "startColumn" : 1,
+        "startLine" : 59
+      },
+      "url" : "executor:default"
+    },
+    "name" : "SFirmConnection",
+    "package" : "test::runtime",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "support.pure",
+      "startColumn" : 1,
+      "startLine" : 59
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "test::store::S_Person",
+      "classSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 66,
+        "sourceId" : "support.pure",
+        "startColumn" : 10,
+        "startLine" : 66
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 68,
+        "sourceId" : "support.pure",
+        "startColumn" : 1,
+        "startLine" : 64
+      },
+      "url" : "executor:default"
+    },
+    "name" : "SPersonConnection",
+    "package" : "test::runtime",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 68,
+      "sourceId" : "support.pure",
+      "startColumn" : 1,
+      "startLine" : 64
+    }
+  } ],
+  "imports" : [ ]
+}

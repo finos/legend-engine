@@ -1,0 +1,160 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Sugared",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        },
+        "tag" : {
+          "profile" : "meta::pure::profiles::doc",
+          "profileSourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 6
+          },
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 6
+          },
+          "value" : "doc"
+        },
+        "value" : {
+          "_type" : "string",
+          "multiLine" : true,
+          "value" : "Given name."
+        }
+      } ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Documented with a documentation literal."
+      }
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Explicit",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 12
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 81,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 12
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 12
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 12
+        },
+        "value" : "doc"
+      },
+      "value" : "Documented with a documentation literal."
+    } ]
+  } ],
+  "imports" : [ ]
+}

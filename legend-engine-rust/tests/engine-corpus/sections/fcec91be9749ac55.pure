@@ -1,0 +1,14 @@
+
+Class test::Target { name: String[1]; }
+Class test::TargetSrc { name: String[1]; }
+Class test::Parent {
+  label: String[1];
+  opt: test::Target[0..1];
+}
+Class test::Parent2 {
+  label: String[1];
+  required: test::Target[1];
+}
+Class test::ParentSrc {
+  label: String[1];
+}

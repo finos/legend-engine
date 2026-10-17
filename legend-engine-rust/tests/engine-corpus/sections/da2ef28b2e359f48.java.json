@@ -1,0 +1,88 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "goes",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 13
+      },
+      "hideProperties" : true,
+      "id" : "1a0ac401-d443-4388-8ade-08a458f735e9",
+      "position" : {
+        "x" : 123.123,
+        "y" : 23.23
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : 123.123
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 11
+      }
+    } ],
+    "generalizationViews" : [ ],
+    "name" : "MyDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 123.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "property" : {
+        "class" : "goes",
+        "property" : "name",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 15,
+          "startLine" : 20
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "sourceView" : "1a0ac401-d443-4388-8ade-08a458f735e9",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 21
+      },
+      "targetView" : "1a0ac401-d443-4388-8ade-08a458f735e9",
+      "targetViewSourceInformation" : {
+        "endColumn" : 48,
+        "endLine" : 22,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 22
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 25,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    }
+  } ],
+  "imports" : [ "anything" ]
+}

@@ -1,0 +1,6 @@
+
+function xx::myFunc() : Boolean[1] {
+   ^Pair<Integer,Integer>(first = 1, second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])
+               ->meta::pure::tds::extensions::extendWithDigestOnColumns('digest');
+   true;
+}

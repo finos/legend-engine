@@ -1,0 +1,102 @@
+
+Mapping demo::relation::mapping::EmployeePlainSrcMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~src demo::relation::func::employeeSource()
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME
+  }
+
+  testSuites:
+  [
+    plainSrcSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnAll:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"},{"First Name":"Carol","Last Name":"White"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+Mapping demo::relation::mapping::EmployeeFilteredSrcMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~src demo::relation::func::activeEmployeeSource()
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME
+  }
+
+  testSuites:
+  [
+    filteredSrcSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        activeEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnActiveOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

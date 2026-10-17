@@ -1,0 +1,19 @@
+
+Database stores::DB1
+(
+  Table People()
+)
+Database stores::DB2
+(
+  Table Order()
+)
+Database stores::testDB1
+(
+  include stores::DB1
+  include storeTypeABC stores::DB2
+)
+Database stores::testDB2
+(
+  include storeTypeABC stores::DB2
+  include stores::DB1
+)

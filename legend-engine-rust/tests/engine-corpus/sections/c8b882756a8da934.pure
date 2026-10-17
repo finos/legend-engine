@@ -1,0 +1,18 @@
+
+Class my::PersonWithAddress
+{
+  firstName: String[1];
+  age: Integer[1];
+  address: my::FullAddress[1];
+}
+
+Class my::FullAddress
+{
+  street: String[1];
+  city: String[1];
+}
+
+function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);
+}

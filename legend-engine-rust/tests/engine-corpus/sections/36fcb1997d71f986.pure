@@ -1,0 +1,44 @@
+
+import other::*;
+import mapping::*;
+Mapping mappingPackage::myMapping
+(
+    Person[per1]: Relational
+    {
+        name : [db]employeeFirmDenormTable.name,
+        firm
+        (
+            ~primaryKey ([db]employeeFirmDenormTable.legalName)
+            legalName : [db]employeeFirmDenormTable.legalName,
+            address
+            (
+                line1: [db]employeeFirmDenormTable.address
+            )
+        ),
+        address
+        (
+            line1: [db]employeeFirmDenormTable.address
+        )
+    }
+    Person[per2]: Relational
+    {
+        name : [db]employeeFirmDenormTable2.name,
+        firm
+        (
+            ~primaryKey ([db]employeeFirmDenormTable2.legalName)
+            legalName : [db]employeeFirmDenormTable2.legalName,
+            address
+            (
+                line1: [db]employeeFirmDenormTable2.address
+            )
+        ),
+        address
+        (
+            line1: [db]employeeFirmDenormTable2.address
+        )
+    }
+    *Person : Operation
+    {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_( per1, per2 )   
+    }
+)

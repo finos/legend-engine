@@ -1,0 +1,15 @@
+
+ServiceStore test::testServiceStoreCompilationWithSingleService
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      "abc.xyz" : String ( location = query )
+    );
+    response : [ test::Person <- test::TestBinding ];
+    security : [];
+  )
+)

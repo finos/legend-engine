@@ -1,0 +1,176 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "chain::source::S_FirmRow",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 20,
+        "sourceId" : "mapping/relationalMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "chain::store::DB",
+        "mainTableDb" : "chain::store::DB",
+        "schema" : "FIRM_SCHEMA",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 26,
+          "sourceId" : "mapping/relationalMapping.pure",
+          "startColumn" : 34,
+          "startLine" : 26
+        },
+        "table" : "FIRM_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 24,
+          "sourceId" : "mapping/relationalMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "chain::store::DB",
+          "mainTableDb" : "chain::store::DB",
+          "schema" : "FIRM_SCHEMA",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 24,
+            "sourceId" : "mapping/relationalMapping.pure",
+            "startColumn" : 25,
+            "startLine" : 24
+          },
+          "table" : "FIRM_TABLE"
+        },
+        "tableAlias" : "FIRM_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "chain::source::S_FirmRow",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 27,
+            "sourceId" : "mapping/relationalMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 27,
+            "sourceId" : "mapping/relationalMapping.pure",
+            "startColumn" : 9,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "chain::store::DB",
+            "mainTableDb" : "chain::store::DB",
+            "schema" : "FIRM_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 48,
+              "endLine" : 27,
+              "sourceId" : "mapping/relationalMapping.pure",
+              "startColumn" : 27,
+              "startLine" : 27
+            },
+            "table" : "FIRM_TABLE"
+          },
+          "tableAlias" : "FIRM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 27,
+          "sourceId" : "mapping/relationalMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "chain::store::FirmBinding"
+        },
+        "property" : {
+          "class" : "chain::source::S_FirmRow",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 28,
+            "sourceId" : "mapping/relationalMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRM_DETAILS",
+          "sourceInformation" : {
+            "endColumn" : 99,
+            "endLine" : 28,
+            "sourceId" : "mapping/relationalMapping.pure",
+            "startColumn" : 47,
+            "startLine" : 28
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "chain::store::DB",
+            "mainTableDb" : "chain::store::DB",
+            "schema" : "FIRM_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 28,
+              "sourceId" : "mapping/relationalMapping.pure",
+              "startColumn" : 65,
+              "startLine" : 28
+            },
+            "table" : "FIRM_TABLE"
+          },
+          "tableAlias" : "FIRM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 28,
+          "sourceId" : "mapping/relationalMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 28
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "mapping/relationalMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Relational",
+    "package" : "chain::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "mapping/relationalMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,19 @@
+
+Database mapping::db(
+   Table employeeFirmDenormTable
+   (
+    id INT PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INT,
+    legalName VARCHAR(200),
+    address1 VARCHAR(200),
+    postcode VARCHAR(10)
+   )
+   Table FirmInfoTable
+   (
+    id INT PRIMARY KEY,
+    name VARCHAR(200),
+    other VARCHAR(200)
+   )
+   Join PersonFirmJoin(employeeFirmDenormTable.firmId = FirmInfoTable.id)
+)

@@ -42,25 +42,32 @@ import java.util.Map;
  * Both are compared only against an entry recorded on this same environment. A run on a machine the
  * baseline does not know reports its numbers and checks nothing, so record one there with --rebase,
  * or feed that run's results file back with --record.
+ *
+ * The parser suite parses only, with the Java parser and the Rust one, and keeps its own baseline
+ * file (perf-baseline-parser.json), since a baseline file holds one suite.
  */
 public class PerfSuite
 {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String DEFAULT_BASELINE = "perf-baseline.json";
+    private static final String PARSER_SUITE = "parser";
     private static final int SCHEMA_VERSION = 1;
 
     public static int run(String[] args) throws Exception
     {
         Map<String, String> options = options(args);
         String suiteName = options.getOrDefault("suite", "default");
-        int iterations = Integer.parseInt(options.getOrDefault("iters", "5"));
-        int warmup = Integer.parseInt(options.getOrDefault("warmup", "2"));
+        // Parsing alone is cheap, the Java parser takes a few iterations to settle, and the Rust
+        // phases run to tens of milliseconds, so the parser suite runs longer and looks closer.
+        boolean parserSuite = PARSER_SUITE.equals(suiteName);
+        int iterations = Integer.parseInt(options.getOrDefault("iters", parserSuite ? "20" : "5"));
+        int warmup = Integer.parseInt(options.getOrDefault("warmup", parserSuite ? "10" : "2"));
         String out = options.get("out");
-        String baselinePath = options.getOrDefault("baseline", DEFAULT_BASELINE);
+        String baselinePath = options.getOrDefault("baseline", parserSuite ? "perf-baseline-parser.json" : DEFAULT_BASELINE);
         boolean rebase = options.containsKey("rebase");
         double margin = Double.parseDouble(options.getOrDefault("margin", "0.5"));
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
-        long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", "25"));
+        long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", parserSuite ? "5" : "25"));
         boolean allowImprovement = options.containsKey("allow-improvement");
 
         String record = options.get("record");
@@ -77,7 +84,12 @@ public class PerfSuite
         results.put("schemaVersion", 1);
         results.put("suite", suiteName);
         results.put("generatedAt", Instant.now().toString());
-        results.put("environment", Environment.capture());
+        Map<String, Object> environment = Environment.capture();
+        if (parserSuite)
+        {
+            environment.put("rustParser", Environment.rustParser());
+        }
+        results.put("environment", environment);
 
         List<Map<String, Object>> workloadResults = new ArrayList<>();
         for (BenchConfig config : workloads)
@@ -216,6 +228,14 @@ public class PerfSuite
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
         }
+        else if (suiteName.equals(PARSER_SUITE))
+        {
+            configs.add(parseWorkload(workload("simple", 1000)));
+            configs.add(parseWorkload(workload("simple", 3000)));
+            configs.add(parseWorkload(relationWorkload("simple", 200)));
+            configs.add(parseWorkload(unionWorkload("join2", 10, 40)));
+            configs.add(parseWorkload(workload("graph4", 30)));
+        }
         else
         {
             throw new IllegalArgumentException("Unknown suite: " + suiteName);
@@ -251,6 +271,16 @@ public class PerfSuite
     }
 
     /**
+     * Parse phases only, with the Rust parser as well as the Java one.
+     */
+    private static BenchConfig parseWorkload(BenchConfig config)
+    {
+        config.parseOnly = true;
+        config.rust = true;
+        return config;
+    }
+
+    /**
      * Ratios between two workloads in the same run. Each one guards a dimension where a phase could
      * silently change complexity class; the pair is chosen so the ratio grows if that happens.
      */
@@ -269,6 +299,13 @@ public class PerfSuite
                 "per-column lambda compilation in Relation mappings"));
         canaries.add(ratio(workloads, "javaBindGraphDepth", "javaBind", "graph4@scale30/H2", "graph1@scale30/H2",
                 "platform binder growth in graph-fetch tree size"));
+        // On the larger model: the Java parser's time on the smaller one varies too much between runs.
+        canaries.add(phaseRatio(workloads, "rustParseVsJava", "simple@scale3000/H2", "parseRust", "parse",
+                "the Rust parser's cost against the Java parser's"));
+        canaries.add(phaseRatio(workloads, "rustNativeShare", "simple@scale3000/H2", "rustNative", "parseRust",
+                "the share of the Rust parse spent in the native call rather than reading its JSON in Java"));
+        canaries.add(ratio(workloads, "rustParseVsModelSize", "parseRust", "simple@scale3000/H2", "simple@scale1000/H2",
+                "superlinear terms in the Rust parser and its protocol conversion"));
         canaries.removeIf(canary -> canary.get("value") == null);
         return canaries;
     }
@@ -283,6 +320,24 @@ public class PerfSuite
         canary.put("phase", phase);
         canary.put("numerator", numeratorId);
         canary.put("denominator", denominatorId);
+        canary.put("guards", guards);
+        canary.put("value", numerator == null || denominator == null || denominator == 0.0 ? null : round(numerator / denominator));
+        return canary;
+    }
+
+    /**
+     * A ratio between two phases of one workload, where ratio() compares one phase across two.
+     */
+    private static Map<String, Object> phaseRatio(List<Map<String, Object>> workloads, String name, String workloadId,
+                                                  String numeratorPhase, String denominatorPhase, String guards)
+    {
+        Double numerator = phaseValue(workloads, workloadId, numeratorPhase);
+        Double denominator = phaseValue(workloads, workloadId, denominatorPhase);
+        Map<String, Object> canary = new LinkedHashMap<>();
+        canary.put("name", name);
+        canary.put("phase", numeratorPhase + "/" + denominatorPhase);
+        canary.put("numerator", workloadId);
+        canary.put("denominator", workloadId);
         canary.put("guards", guards);
         canary.put("value", numerator == null || denominator == null || denominator == 0.0 ? null : round(numerator / denominator));
         return canary;

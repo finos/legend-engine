@@ -1,0 +1,4 @@
+
+function test::f(x:meta::pure::metamodel::relation::Relation<(x:Integer(2))>[1]):Any[*]
+{
+   []}

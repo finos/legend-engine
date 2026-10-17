@@ -1,0 +1,55 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ {
+      "name" : "firm-data",
+      "validator" : {
+        "validationAction" : "error",
+        "validationLevel" : "strict",
+        "validatorExpression" : {
+          "_type" : "jsonSchemaExpression",
+          "schemaExpression" : {
+            "_type" : "schema",
+            "_enum" : [ ],
+            "additionalPropertiesAllowed" : false,
+            "allOf" : [ ],
+            "anyOf" : [ ],
+            "oneOf" : [ ],
+            "properties" : [ ],
+            "required" : [ ]
+          }
+        }
+      }
+    }, {
+      "name" : "Address",
+      "validator" : {
+        "validationAction" : "warn",
+        "validationLevel" : "moderate",
+        "validatorExpression" : {
+          "_type" : "jsonSchemaExpression",
+          "schemaExpression" : {
+            "_type" : "schema",
+            "_enum" : [ ],
+            "additionalPropertiesAllowed" : false,
+            "allOf" : [ ],
+            "anyOf" : [ ],
+            "oneOf" : [ ],
+            "properties" : [ ],
+            "required" : [ ]
+          }
+        }
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "mixedCollectionNames",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

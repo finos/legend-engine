@@ -1,0 +1,18 @@
+
+RelationalDatabaseConnection simple::StaticConnection
+{
+  store: asasmodel::relational::tests::dbInc;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'value';
+    userNameVaultReference: 'value';
+    passwordVaultReference: 'value';
+  };
+}

@@ -1,0 +1,6 @@
+
+function test::qoutedParams(): String[0..1]
+{
+  let '1,2,3' = [1, 2, 3];
+  $'1,2,3'->map(n|$n->toString())->joinStrings(',');
+}

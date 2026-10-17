@@ -1,0 +1,1 @@
+|Customer.all()->project(~['Company Name':x|$x.companyName, companyTitle:x|$x.companyTitle, contactName:x|$x.contactName, faxNumber:x|$x.faxNumber, id:x|$x.id, telephoneNumber:x|$x.telephoneNumber])

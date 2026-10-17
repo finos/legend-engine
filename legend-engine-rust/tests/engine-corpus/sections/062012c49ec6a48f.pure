@@ -1,0 +1,80 @@
+
+Runtime test::runtime1
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+}
+
+Runtime test::runtime2
+{
+  mappings:
+  [
+    test::mapping::someMapping,
+    test::mapping::someMapping2
+  ];
+}
+
+Runtime test::runtime3
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+  connections:
+  [
+    test::someStore:
+    [
+      id1: test::connection
+    ]
+  ];
+}
+
+Runtime test::runtime4
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+  connections:
+  [
+    test::someStore:
+    [
+      id1: test::connection,
+      id2: test::connection
+    ],
+    test::someStore2:
+    [
+      id3: test::connection
+    ]
+  ];
+}
+
+Runtime test::runtime5
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+  connections:
+  [
+    test::someStore:
+    [
+      id1: test::connection,
+      id2: test::connection
+    ],
+    test::someStore2:
+    [
+      id3: test::connection
+    ]
+  ];
+  connectionStores:
+  [
+    test::connection:
+    [
+      test::com::store1,
+      test::com::store2
+    ]
+  ];
+}

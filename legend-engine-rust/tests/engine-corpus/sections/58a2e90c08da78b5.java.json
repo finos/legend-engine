@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'parts' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 18,
+      "startLine" : 14
+    }
+  }
+}

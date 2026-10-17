@@ -1,0 +1,19 @@
+
+Class test::C
+{
+   name : String[1];
+}
+
+Class test::D
+{
+   z(){test::C.all()->project([col(c|$c.naxme, 'c')])}:meta::pure::tds::TabularDataSet[1];
+}
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];
+}

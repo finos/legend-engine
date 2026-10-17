@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "hostedService",
+    "actions" : [ ],
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "function" : {
+      "path" : "model::Firm_QueryFunction():Integer[1]",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 6
+      },
+      "type" : "FUNCTION"
+    },
+    "generateLineage" : false,
+    "name" : "NewActivator",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : ""
+    },
+    "package" : "model",
+    "pattern" : "/pattern",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "storeModel" : false,
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

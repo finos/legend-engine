@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Data space execution context must define either 'mapping' or 'mappingProvider'",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 5,
+      "startLine" : 5
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Path parameters should be specified in path as '{param_name}'. [serializationFormat] parameters were not found in path /testService",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 14,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

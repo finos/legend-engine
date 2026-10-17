@@ -1,0 +1,58 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 125,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 125
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 124,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 119
+        },
+        "testDataSetupSqls" : [ "DROP TABLE IF EXISTS COVID_DATA;" ]
+      },
+      "element" : "store::CovidDataStore",
+      "elementSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 117,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 117
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 126,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 115
+      },
+      "type" : "H2"
+    },
+    "name" : "H2Connection",
+    "package" : "runtime::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 126,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 115
+    }
+  } ],
+  "imports" : [ ]
+}

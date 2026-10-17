@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "model::MyService",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 54
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 54
+      },
+      "title" : "MyExec"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 50,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 50
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 49,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 49
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 46
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 43
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

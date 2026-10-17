@@ -1,0 +1,213 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "if",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "equal",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "int",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 3
+          }
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 3
+          },
+          "value" : 0
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "toString",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "int",
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 3
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 3
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 3
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "model::FunctionA",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "minus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 3,
+                "sourceId" : "",
+                "startColumn" : 59,
+                "startLine" : 3
+              },
+              "values" : [ {
+                "_type" : "var",
+                "name" : "int",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 3,
+                  "sourceId" : "",
+                  "startColumn" : 54,
+                  "startLine" : 3
+                }
+              }, {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 3,
+                  "sourceId" : "",
+                  "startColumn" : 61,
+                  "startLine" : 3
+                },
+                "value" : 1
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 3,
+              "sourceId" : "",
+              "startColumn" : 59,
+              "startLine" : 3
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 3
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 62,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 36,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "FunctionA_Integer_1__String_1_",
+    "package" : "model",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 1
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "int",
+      "sourceInformation" : {
+        "endColumn" : 41,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 27,
+        "startLine" : 1
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 45,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

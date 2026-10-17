@@ -1,0 +1,13 @@
+
+DataSpace model::dataSpace
+{
+  title: 'some title';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::element.all()->withMapping(model::dummyMapping);
+    }
+  ];
+}

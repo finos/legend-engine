@@ -1,0 +1,16 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  documentation: 'this is just for context';
+  execution: Single
+  {
+    query: src: meta::transform::tests::Address[1]|$src.a;
+    runtime: meta::myRuntime;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts: [];
+  }
+}

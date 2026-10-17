@@ -1,0 +1,172 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "SFirmRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 83,
+          "sourceId" : "support.pure",
+          "startColumn" : 5,
+          "startLine" : 80
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 80,
+            "sourceId" : "support.pure",
+            "startColumn" : 5,
+            "startLine" : 80
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SFirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 82,
+              "sourceId" : "support.pure",
+              "startColumn" : 20,
+              "startLine" : 82
+            }
+          },
+          "id" : "connection1",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 82,
+            "sourceId" : "support.pure",
+            "startColumn" : 7,
+            "startLine" : 82
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 76,
+          "sourceId" : "support.pure",
+          "startColumn" : 5,
+          "startLine" : 76
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 85,
+        "sourceId" : "support.pure",
+        "startColumn" : 1,
+        "startLine" : 72
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 85,
+      "sourceId" : "support.pure",
+      "startColumn" : 1,
+      "startLine" : 72
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "SFirmAndSPersonRuntime",
+    "package" : "test::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 98,
+          "sourceId" : "support.pure",
+          "startColumn" : 5,
+          "startLine" : 94
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 94,
+            "sourceId" : "support.pure",
+            "startColumn" : 5,
+            "startLine" : 94
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SFirmConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 96,
+              "sourceId" : "support.pure",
+              "startColumn" : 20,
+              "startLine" : 96
+            }
+          },
+          "id" : "connection1",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 96,
+            "sourceId" : "support.pure",
+            "startColumn" : 7,
+            "startLine" : 96
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::runtime::SPersonConnection",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 97,
+              "sourceId" : "support.pure",
+              "startColumn" : 20,
+              "startLine" : 97
+            }
+          },
+          "id" : "connection2",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 97,
+            "sourceId" : "support.pure",
+            "startColumn" : 7,
+            "startLine" : 97
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "test::mapping::FirmMapping",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 90,
+          "sourceId" : "support.pure",
+          "startColumn" : 5,
+          "startLine" : 90
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 100,
+        "sourceId" : "support.pure",
+        "startColumn" : 1,
+        "startLine" : 86
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 100,
+      "sourceId" : "support.pure",
+      "startColumn" : 1,
+      "startLine" : 86
+    }
+  } ],
+  "imports" : [ ]
+}

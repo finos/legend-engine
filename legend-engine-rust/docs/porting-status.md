@@ -1,0 +1,352 @@
+# Grammar porting status
+
+Which engine grammars the Rust parser reads, in the order they are ported.
+A section type is taken over by the engine as soon as the linked library
+parses it (see `engine-integration.md`, "Engine Java side"); a section that
+holds grammar not ported yet is `unsupported`, so the engine parses it with
+Java. Each port is checked against the golden corpus and the shadow harness
+over the corpus suites before it is marked done.
+
+## Steps
+
+| Step | Grammar | Rust crate | Status |
+|---|---|---|---|
+| 0 | Section and expression override hooks; corpus for any section type | `api` (+ engine grammar-rust) | Done |
+| 1 | Standalone expressions (`parseLambda`, `parseValueSpecification`, `parseGraphFetch`) | `api`, `parser` | Done |
+| 2 | Core embedded data (`ExternalFormat`, `ModelStore`, `Reference`) and `###Data` | `parser`, `protocol`, `dsl-data` | Done |
+| 3 | `###Relational` | `dsl-relational` | Done |
+| 4 | `###Mapping`, one subphase per mapping grammar (below) | `dsl-mapping` and the stores' crates | Done |
+| 5 | `###Connection` and `###Runtime`, one subphase per connection grammar (below) | `dsl-connection`, `dsl-runtime`, `dsl-authentication` and the stores' crates | Done |
+| 6 | `###Service` (below) | `dsl-service` | Done |
+| 7 | The other section types, by volume, one subphase each (below) | a `dsl-*` crate per engine module | Done |
+| 8 | Whole models (`parseModel`): the engine's section split and section index, parsed in Rust in `on` mode, with no ANTLR parsing in Java (below) | `api` (+ engine core hook, grammar-rust) | Done |
+
+## Step 4: `###Mapping`
+
+The engine's `###Mapping` section (`MappingParserGrammar`) holds includes,
+mapping elements, legacy `MappingTests` and `testSuites`. Each mapping
+element's body is a grammar of its own, chosen by the element's type
+(`Person: Pure { … }`) and registered by the engine module that owns it; a
+body whose grammar is not ported makes its section `unsupported`.
+
+"Sections" counts the golden corpus's `###Mapping` sections that wait for
+the grammar (662 in all, 50 of them rejected by the engine; dumped
+2026-09-30). `tests/engine-corpus/known-failures.txt` names, for each section
+still unsupported, every subphase it waits for, so
+`grep -c 'step 4.2 ' tests/engine-corpus/known-failures.txt` counts the
+sections 4.2 unlocks; a subphase is done when no line names it
+(`scripts/known-failures.py` writes the lines). A section matches
+once all the grammars it uses are ported. The elements a subphase reads in
+sections that still wait for others are checked too, by comparing those
+sections with the other elements blanked out (spaces, so that nothing
+moves) against the Java result without them
+(`scripts/isolate-mapping-sections.py`).
+
+| Subphase | Grammar | Engine owner | Sections | Status |
+|---|---|---|---|---|
+| 4.0 | The section: `Mapping` elements, imports, `include mapping` (with store substitutions), mapping element headers (`*`, ids, `extends`), `testSuites` (embedded data and assertions), legacy `MappingTests` with `Object` test input data | core | 662 | Done: 75 sections match |
+| 4.1 | `EnumerationMapping` | core | 58 | Done: 13 more sections match |
+| 4.2 | `Pure` class mappings (model to model) | core | 202 | Done: 110 more sections match |
+| 4.3 | `Relational` class and association mappings, `Relational` test input data | relationalStore | 178 | Done: 166 more sections match |
+| 4.4 | `Relation` class mappings (relation functions) | core | 117 | Done: 105 more sections match |
+| 4.5 | `XStore` association mappings | core | 69 | Done, with 4.6: 85 more sections match |
+| 4.6 | `ModelJoin` association mappings | core | 25 | Done, with 4.5 |
+| 4.7 | `Operation` class mappings (including merge operations) | core | 25 | Done: 24 more sections match |
+| 4.8 | `AggregationAware` class mappings and their `AggregateSpecification`s | core | 11 | Done: 11 more sections match |
+| 4.9 | `ServiceStore` class mappings | serviceStore | 62 | Done: 61 more sections match (the other is an accepted divergence), and the 26 sections with `ServiceStore #{…}#` test data |
+| 4.10 | `MongoDB` class mappings | mongodb | 5 | Done: 5 more sections match |
+| 4.11 | `include dataspace` | data-space | 4 | Done: 4 more sections match |
+
+The core grammars come first. 4.9 to 4.11 belong to xts modules with no
+legend-pure counterpart: a `dsl-*` crate per engine module (`dsl-service-store`
+for 4.9, `dsl-mongodb` for 4.10), except 4.11, an include type read in
+`dsl-mapping`. Steps 5 to 7 follow the same rule. All the grammars, the
+engine's and legend-pure's, live in this workspace, in legend-engine, since
+2026-10-01 (see `engine-integration.md`, "Location").
+
+With 4.11, every mapping grammar the corpus uses is ported. The only
+`###Mapping` sections the Rust parser leaves to Java are the two the engine
+rejects for an element or test input type no grammar reads: Rust reports
+them `unsupported`, since an engine extension may read the type.
+
+## Step 5: `###Connection` and `###Runtime`
+
+The engine's `###Connection` section (`ConnectionParserGrammar`) holds
+connections, `Type my::Connection { … }`, each value read by the grammar its
+type names (the engine's `ConnectionValueParser`s), registered by the engine
+module that owns the type. Its `###Runtime` section (`RuntimeParserGrammar`)
+holds runtimes: their mappings, and their connections by store, pointers to
+packageable connections or connections of their own, `#{ Type { … } }#`, read
+by the same grammars. A connection whose type's grammar is not ported makes
+its section `unsupported`.
+
+"Sections" counts the golden corpus's `###Connection` and `###Runtime`
+sections that wait for the grammar (310 in all: 198 `###Connection`, 41 of
+them rejected by the engine, and 112 `###Runtime`, 5 rejected; dumped
+2026-09-30). `tests/engine-corpus/known-failures.txt` names the subphases
+each unsupported section waits for, as for step 4
+(`scripts/known-failures.py` writes the lines).
+
+| Subphase | Grammar | Engine owner | Sections | Status |
+|---|---|---|---|---|
+| 5.0 | The sections: connections, runtimes (`Runtime` and `SingleConnectionRuntime`: mappings, connections by store, pointers and embedded connections, connection stores), and the engine core's model connections (`JsonModelConnection`, `XmlModelConnection`, `ModelChainConnection`) | core | 310 | Done: 140 sections match |
+| 5.1 | `RelationalDatabaseConnection`, with the relational store's datasource specifications, authentication strategies, post-processors and query generation configs | relationalStore | 132 | Done: 105 more sections match (one the engine rejects for a query generation config type no grammar reads is accepted) |
+| 5.2 | Snowflake datasource specification and authentication strategy | relationalStore-snowflake | 20 | Done: 26 more sections match (those the engine rejects for Snowflake's fields among them) |
+| 5.3 | `ServiceStoreConnection` | serviceStore | 16 | Done: 15 more sections match; one end-of-input error position is accepted |
+| 5.4 | `MongoDBConnection`, with the authentication strategies of `dsl-authentication` | mongodb | 5 | Done: 5 more sections match |
+| 5.5 | `DeephavenConnection` | deephaven | 6 | Done: 6 more sections match |
+| 5.6 | `Elasticsearch7ClusterConnection` | elasticsearch | 11 | Done: 11 more sections match |
+
+The relational store's connection is a grammar of grammars: its datasource
+specification, authentication strategy and post-processors are each read by
+the grammar their type names, which the store's database extensions register
+(Snowflake's is the only one the corpus suites use). The database
+extensions' grammars other than Snowflake's are not in the corpus.
+
+The MongoDB, Deephaven and Elasticsearch connections name their
+authentication as an island of its own, `# Type { … }#`, read by the
+grammar its type names (the engine's `AuthenticationSpecification`
+grammars, `dsl-authentication`).
+
+With 5.6, every connection grammar the corpus uses is ported. The only
+`###Connection` and `###Runtime` sections the Rust parser leaves to Java are
+those the engine rejects for a type no grammar reads (a query generation
+config): Rust reports them `unsupported`, since an engine extension may read
+the type.
+
+## Step 6: `###Service`
+
+The engine's `###Service` section (its service extension's
+`ServiceParserGrammar`) holds services and execution environments. A
+service's queries, test parameters and post-validations are Pure
+expressions and primitive values; its runtime is a packaged one's path or
+one of its own, `#{ … }#`, read by the runtime grammar (`dsl-runtime`'s
+`parse_embedded_runtime`); its test suites' data and assertions are read by
+the parser's embedded data and test assertion grammars, so every grammar it
+uses was ported by steps 1 to 5. The step is the section's own grammar
+alone: one subphase.
+
+The golden corpus's 237 `###Service` sections (dumped 2026-10-01; 45 of
+them rejected by the engine) all match but the two the engine rejects for
+an embedded data or test assertion type no grammar reads: Rust reports them
+`unsupported`, since an engine extension may read the type. An execution
+of another type than `Single` and `Multi`, which only an engine extension
+reads, is unsupported too.
+
+Two engine behaviors came with it: a primitive value (a test's parameter,
+an `EqualTo` assertion's expected value) is read by the engine's
+`primitiveValue` rule, `toBytes('…')` included
+(`ParserContext::parse_primitive_value`); and a lambda parameter typed
+`Result` without type arguments is `Result<Any|1..*>`, as the engine's
+protocol mapper makes it when it reads the protocol.
+
+## Step 7: the other section types
+
+The engine's other section types, each its own grammar, registered by the
+engine module that owns it, ported in order of volume: one subphase each
+(both of the generation module's in one). Their Rust grammars are in the
+crate of the engine module that owns them (an existing one for the stores
+whose connections and mapping elements step 4 and 5 ported).
+
+"Sections" counts the golden corpus's sections of the type (737 in all;
+dumped 2026-10-01 from the corpus suites and each type's own grammar modules,
+"Rejected" those the engine rejects). `tests/engine-corpus/known-failures.txt`
+named the subphase each waited for; since 7.17, every section type the
+engine has is ported, and the file lists accepted divergences only.
+
+| Subphase | Section type | Engine owner | Sections | Rejected | Status |
+|---|---|---|---|---|---|
+| 7.1 | `###Persistence`: persistences and persistence contexts, with their triggers, platforms and targets (the relational target and the cloud platforms are extensions of their own) | persistence | 205 | 81 | Done: all match but one the engine rejects for a platform type no grammar reads (accepted) |
+| 7.2 | `###DataSpace` | data-space | 142 | 29 | Done: all match but one the engine rejects without a position (accepted) |
+| 7.3 | `###DataQualityValidation`: data quality validations, relation validations and relation comparisons | dataquality | 88 | 10 | Done: all match |
+| 7.4 | `###ServiceStore`: service stores | serviceStore | 81 | 13 | Done: all match but one the engine rejects for a security scheme no grammar reads (accepted) |
+| 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | Done: all match but one in a format only the engine's tests define (accepted) |
+| 7.6 | `###Diagram` | diagram | 36 | 20 | Done: all match |
+| 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | Done: all match |
+| 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | Done: all match |
+| 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | Done: all match |
+| 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | Done: all match |
+| 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | Done: all match |
+| 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | Done: all match |
+| 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | Done: all match |
+| 7.14 | `###HostedService`: hosted services and execution environments | hostedService | 6 | 1 | Done: all match; what no test writes, test suites, post validations, post-deployment actions and deployment configurations, is unsupported |
+| 7.15 | `###BigQuery`: BigQuery functions | bigqueryFunction | 6 | 3 | Done: all match |
+| 7.16 | `###Text`: texts | text | 6 | 3 | Done: all match |
+| 7.17 | `###FunctionJar`: function jars | functionJar | 5 | 1 | Done: all match |
+
+7.1's crates are `dsl-persistence` (the section; the `Manual` trigger and
+`Default` platform), `dsl-persistence-relational` (the `Relational`
+target) and `dsl-persistence-cloud` (the `AwsGlue` platform), each engine
+module's. The walker builds its objects as records shaped like the engine's
+protocol (the protocol crate's `record`): the protocol has some sixty classes,
+each built by one walker method. Two of the walker's ways are reproduced: a
+trigger's, platform's or target's island is parsed without its last two
+characters (it takes `}#` off a text that doesn't have it), and a service
+parameter's primitive value is parsed again from its tokens' texts joined,
+so that positions after a space inside it move left.
+
+7.2's crate is `dsl-data-space`, read and walked the same way. It also
+registers the `DataspaceTestData` embedded data, a data space's data as an
+execution context's test data: like the engine's parser, it reads a core
+reference (to a `DATASPACE` element), which needs no protocol of its own.
+The engine fails without a position on an executable that has neither a
+query nor an executable; a Rust error always has one, so Rust reports it
+unsupported and the engine parses the section (accepted).
+
+7.3's crate is `dsl-dataquality`, read and walked the same way: class
+validations with their validation trees (`$[ my::Class<constraint>{ … } ]$`,
+whose property parameters and sub-type paths the walker leaves out),
+relation validations and relation comparisons, with their test suites. A
+persistence strategy, `# Type { … }#`, is unsupported: the engine reads it
+with an extension of its data quality grammar, and no module of the engine
+has one.
+
+7.4's grammar joins the crate of the store's other grammars,
+`dsl-service-store` (its `store` module), read and walked the same way,
+its blocks in parentheses. A store's `description` is read and left out,
+as the walker leaves it. A security scheme is unsupported, as the engine
+reads one with an extension of its grammar and none of its modules has
+one; so is an `explode` option of a parameter that isn't a list, on which
+the engine fails without a message.
+
+7.5's crate is `dsl-external-format`, read and walked the same way, its
+schema sets first, then its bindings, as the walker walks them. A schema
+set's format is checked against the formats the engine's modules define
+(their external format contracts' ids: `FlatData`, `JSON`, `XSD`, …); the
+engine checks it against the extensions on its classpath, so Rust reports
+another format unsupported, for the engine to check (a test's own format,
+`Example`, is accepted as such).
+
+7.6's crate is `dsl-diagram`, read and walked the same way, its views
+grouped by kind as the walker groups them. The engine's diagram lexer reads
+a view's id (`[A-Za-z0-9_-]+`, a UUID mostly) as one token, and a number's
+sign, and a float's leading point (`.5`), with the number: the reader joins
+the Pure tokens written together again, and reports where the engine's
+lexer would have read another token (a number for an id, digits and
+letters for a number). Its numbers are doubles, written as Java writes
+them (the protocol record's `Double`: `2.23E10`, ties to even).
+
+7.7's crate is `dsl-snowflake` (the function activators' module, apart
+from `dsl-relational-snowflake`, the relational store's Snowflake
+extension), read and walked the same way, its apps first, then its UDFs;
+its deployment configurations are read and left out, as the walker leaves
+them. What the function activators share, as their protocol does (the
+engine's `functionActivator` module), is `dsl-function-activator`'s: an
+activator's header (documentation, annotations, name), its `function` and
+`ownership: Deployment { … }` fields, read and walked, and its element and
+JSON. A function's identifier, `my::f(String[1]):String[1]`, is read as
+written without spaces, by the parser's `forms::function_identifier`
+(shared with `dsl-mapping`'s relation function mappings and the other
+function activators, but Deephaven's: see 7.12).
+
+7.8's grammar joins the crate of the store's connection grammar,
+`dsl-elasticsearch` (its `store` module), read and walked the same way.
+Its walker names fields by the lexer's literal names, quoted again in its
+messages (`Field ''indices'' is required`); an index's or a property's name
+is a `VALID_STRING`, none of the grammar's keywords. A property's own
+properties and fields are maps: a name written twice makes the engine fail
+without a message (`Collectors.toMap`), so Rust reports it unsupported.
+
+7.9's grammar joins `dsl-mongodb` (its `store` module). The walker keeps a
+database's collections with a schema (includes, joins and views are read
+and left out) and reads each schema with the engine's
+`MongoDBSchemaDeserializer`, mirrored here over the JSON the grammar reads:
+its keys in the order written, a key written again keeping its place with
+its later value (Jackson's tree), the types' `false` defaults written as the
+engine writes them. A schema it fails on without a message of its own (its
+`bsonType` missing, `regex`, …) is unsupported.
+
+7.10's crate is `dsl-generation`, both sections read whole, then walked
+(the specification's as blocks of fields). A file generation is named by
+its generator's type, any identifier, which the walker lowercases the
+first letter of; its configuration properties have any name: where the
+grammar reads a field both as the generation's own and as a property
+(`scopeElements: ['a'];`, `generationOutputPath: 'p';`), it takes its own,
+and a property of either name is the walker's error. An integer too large
+for a Java `long` makes the engine fail, so Rust reports it unsupported.
+
+7.11's grammar joins the relational store's crate, `dsl-relational` (its
+`mapper` module): relational mappers, whose walker checks nothing its
+grammar doesn't, read into their records directly. Not reproduced: the
+walker keeps a section's imports only when it has a mapper.
+
+7.12's grammar joins the crate of the store's connection grammar,
+`dsl-deephaven` (its `store` module), read and walked the same way, its
+stores first, then its apps. The walker names a store's fields by the
+lexer's literal names (`Field ''tables'' is required`); a table's or a
+column's name is a `VALID_STRING`, none of the grammar's keywords, and
+columns written without a comma between them start another list of them,
+of which the walker takes one. An app's function has the grammar's own
+rule, `appFunctionIdentifier`, read by its own reader: its types are
+qualified names and its multiplicities `[*]`, `[n]`, `[n . . m]` or
+`[n . . *]`, since the engine's lexer reads `..` as one token, which the
+rule doesn't take (`[0..1]` is a syntax error), and `.1` as a float. A
+decimal's precision or scale too large for a Java `long` makes the engine
+fail, so Rust reports it unsupported.
+
+7.13's crate is `dsl-memsql-function`, read and walked as 7.7's, with
+`dsl-function-activator`. A function's activation configuration keeps its
+connection as written (`getText()`, quotes kept), unpositioned, as the
+walker leaves it. The walker makes a deployment configuration,
+`MemSqlFunctionDeploymentConfiguration my::C { … }`, an element without a
+name or a package (its path `null` in the section's index), which Rust
+reports unsupported, after the functions' errors; no test writes one.
+
+7.14's crate is `dsl-hosted-service`: hosted services read and walked as
+7.7's, with `dsl-function-activator` (their ownership a deployment's or a
+`UserList`), then execution environments, `dsl-service`'s, their runtimes
+of their own read by `dsl-runtime`. The walker writes `autoActivateUpdates`
+`false` when not given (the protocol's default is `true`), and never reads
+`generateLineage` and `storeModel` (`false`), nor `binding` (written
+`binding: my::B;;`, its rule's `;` then the field's), `contentType` and
+`activationConfiguration`, which Rust reads and leaves out. Unsupported,
+which no test writes: test suites and post validations, which the walker
+leaves out and Rust doesn't read; post-deployment actions, which no grammar
+of the engine's reads (`IPostDeploymentActionGrammarParserExtension` has
+no implementation); a deployment configuration, which the walker makes an
+element without a name, as 7.13's; and an execution environment mixing
+single and grouped executions, on which the walker fails. Not reproduced,
+as in 7.11: the walker keeps the section's imports only when it has a
+hosted service.
+
+7.15's crate is `dsl-bigquery-function`, 7.13's grammar under other names
+but for its ownership, which is optional and which the walker names `owner`
+(`Field 'owner' should be specified only once`). Its deployment
+configurations are unsupported, as 7.13's.
+
+7.16's crate is `dsl-text`: texts, a content and an optional type, read as
+blocks of fields and walked. The section has no imports.
+
+7.17's crate is `dsl-function-jar`: function jars, read and walked as 7.7's
+with `dsl-function-activator`, their ownership a deployment's; their
+`activationConfiguration`, which the walker leaves out, is read and left
+out. The section has imports (not reproduced, as in 7.11: the walker keeps
+them only when the section has a function jar).
+
+
+## Step 8: whole models
+
+`PureGrammarParser.parseModel` parses a whole model: it splits the code into
+sections with its ANTLR `CodeParserGrammar`, then parses each with its
+section type's parser. In `on` mode, the Rust parser parses the whole model
+instead, with no ANTLR parsing in Java; when it can't, the fallback parses it
+the engine's way, whose sections the Rust parser still takes over one by one
+(see `engine-integration.md`, "Engine Java side").
+
+`api::parse_model` splits the code as the engine does, by text alone
+(checked case by case against the engine: a header in a string, indented,
+nameless or followed by code, CRLF, an empty section, offsets), parses each
+section with `parse_section`, and builds the section index, its spans
+measured as the engine measures them. Two `parse_section` gaps this found are
+fixed at the source: code written on a section's header line was positioned
+after a prepended `###Type` (the body is now parsed in its type), and a `###`
+inside a body started another section (it is now a token no grammar reads,
+an error at its first `#`).
+
+Checked over every corpus suite (the 47 of the section dump) in `shadow`
+mode: 4113 models match and 390 match an error; the 6 mismatches (5 models)
+and the 26 unsupported ones hold sections the golden corpus accepts as
+divergences. The golden corpus keeps sections and expressions only: the
+whole-model path's own logic is covered by `crates/api/tests/parse_model.rs`,
+whose expectations are the engine's results, and by the shadow suites
+(`TestRustParityCoreGrammar` compares the models of the core grammar suites).

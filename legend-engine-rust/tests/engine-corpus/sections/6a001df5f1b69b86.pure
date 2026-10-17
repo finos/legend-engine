@@ -1,0 +1,10 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->groupBy('prodName', agg('sum', x|$x.getwFloat('quantity')*$x.getInteger('quantity'), y| $y->sum()))}:meta::pure::tds::TabularDataSet[1];
+}

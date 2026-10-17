@@ -1,0 +1,27 @@
+
+Mapping simple::gen1::map
+(
+   simple::Account[id]: Pure
+   {
+      ~src simple::Raw_Account
+      id: $src.id
+   }
+)
+
+Mapping simple::gen2::map
+(
+   simple::Account[id]: Pure
+   {
+      ~src simple::Raw_Account
+      id: $src.id
+   }
+)
+
+Mapping simple::merged(
+   include simple::gen1::map
+   include simple::gen2::map
+      
+   simple::Another extends [id]: Pure
+   {      
+   }   
+)

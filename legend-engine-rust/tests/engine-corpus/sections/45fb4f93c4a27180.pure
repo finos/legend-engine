@@ -1,0 +1,11 @@
+
+Enum my::Gender { MALE, FEMALE }
+Class my::PersonWithGender
+{
+  firstName: String[1];
+  gender: my::Gender[1];
+}
+function my::personWithGenderFunction(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], GENDER:String[1])>);
+}

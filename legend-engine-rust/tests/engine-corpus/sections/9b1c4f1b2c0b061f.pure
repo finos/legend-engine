@@ -1,0 +1,11 @@
+
+Class <<temporal.processingtemporal>> test::Product{
+   classification : test::Classification[*];
+}
+Class  <<temporal.processingtemporal>> test::Classification{
+   exchangeName : String[0..1];
+}
+function main::walkTree(): Any[*]
+{
+   {|test::Product.all(%2022-11-12).classification->map(c|$c.exchangeName)}
+}

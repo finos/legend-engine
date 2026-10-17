@@ -1,0 +1,23 @@
+
+
+PersistenceContext test::TestPersistenceContext 
+{
+  persistence: test::TestPersistence;
+  serviceParameters: [foo='hello',bar=1];
+  sinkConnection: #{
+    RelationalDatabaseConnection {
+      store: test::TestDatabase;
+      type: H2;
+      specification: LocalH2{};
+      auth: Test;
+    }
+  }#;
+  sinkConnection: #{
+    RelationalDatabaseConnection {
+      store: test::TestDatabase;
+      type: H2;
+      specification: LocalH2{};
+      auth: Test;
+    }
+  }#;
+}

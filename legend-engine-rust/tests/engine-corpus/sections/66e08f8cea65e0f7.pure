@@ -1,0 +1,8 @@
+
+
+Database apps::pure::dsb::sample::store::DsbSampleDb
+(
+   Table ORDERS (
+      clientId UNKNOWN
+   )
+)

@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "deephavenStore",
+    "includedStores" : [ ],
+    "name" : "description",
+    "package" : "test::Storeimport::Deephaven::Table::tables::columns::columnDefinition::BOOLEAN::INT::FLOAT::DOUBLE::DECIMAL::STRING::TIMESTAMP::DATETIME::DeephavenApp::applicationName::function::ownership::Deployment::identifier",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "tables" : [ {
+      "columns" : [ {
+        "_type" : "column",
+        "name" : "prop1",
+        "type" : {
+          "_type" : "stringType",
+          "_type" : "stringType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "prop2",
+        "type" : {
+          "_type" : "intType",
+          "_type" : "intType"
+        }
+      } ],
+      "name" : "xyz"
+    } ]
+  } ],
+  "imports" : [ "abc::abc" ]
+}

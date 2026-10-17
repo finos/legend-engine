@@ -1,0 +1,345 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 27,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 20,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 37,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "extend",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "project",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "getAll",
+          "parameters" : [ {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "test::Person",
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 4,
+              "startLine" : 4
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 4
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 4
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "function1" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 43,
+                      "endLine" : 4,
+                      "sourceId" : "",
+                      "startColumn" : 42,
+                      "startLine" : 4
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 48,
+                    "endLine" : 4,
+                    "sourceId" : "",
+                    "startColumn" : 45,
+                    "startLine" : 4
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 41,
+                  "startLine" : 4
+                }
+              },
+              "name" : "mycol",
+              "sourceInformation" : {
+                "endColumn" : 48,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 34,
+                "startLine" : 4
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 4
+        }
+      }, {
+        "_type" : "func",
+        "function" : "over",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 66,
+            "startLine" : 4
+          },
+          "type" : "colSpec",
+          "value" : {
+            "name" : "mycol",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 66,
+              "startLine" : 4
+            }
+          }
+        }, {
+          "_type" : "func",
+          "function" : "desceeending",
+          "parameters" : [ {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 78,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 74,
+              "startLine" : 4
+            },
+            "type" : "colSpec",
+            "value" : {
+              "name" : "mycol",
+              "sourceInformation" : {
+                "endColumn" : 78,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 74,
+                "startLine" : 4
+              }
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 92,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 81,
+            "startLine" : 4
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 60,
+          "startLine" : 4
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 129,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 99,
+          "startLine" : 4
+        },
+        "type" : "colSpec",
+        "value" : {
+          "function1" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 109,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 108,
+                  "startLine" : 4
+                }
+              } ],
+              "property" : "mycol",
+              "sourceInformation" : {
+                "endColumn" : 115,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 111,
+                "startLine" : 4
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 115,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 107,
+              "startLine" : 4
+            }
+          },
+          "function2" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "count",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "y",
+                "sourceInformation" : {
+                  "endColumn" : 120,
+                  "endLine" : 4,
+                  "sourceId" : "",
+                  "startColumn" : 119,
+                  "startLine" : 4
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 127,
+                "endLine" : 4,
+                "sourceId" : "",
+                "startColumn" : 123,
+                "startLine" : 4
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 129,
+              "endLine" : 4,
+              "sourceId" : "",
+              "startColumn" : 118,
+              "startLine" : 4
+            }
+          },
+          "name" : "newCol",
+          "sourceInformation" : {
+            "endColumn" : 129,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 99,
+            "startLine" : 4
+          }
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 53,
+        "startLine" : 4
+      }
+    } ],
+    "name" : "f__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 57,
+          "startLine" : 2
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 38,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

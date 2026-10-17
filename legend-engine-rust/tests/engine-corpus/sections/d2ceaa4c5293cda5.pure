@@ -1,0 +1,11 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');
+    validations: [
+      {
+         name: 'testValidation';
+         assertion: row|$row.name != 'error';
+      }
+    ];
+}

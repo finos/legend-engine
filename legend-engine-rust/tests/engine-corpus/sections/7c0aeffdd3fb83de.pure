@@ -1,0 +1,19 @@
+
+Database demo::store::OtherwiseDB
+(
+  Table EmployeeFirmDenormTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INTEGER,
+    legalName VARCHAR(200)
+  )
+  Table FirmInfoTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    other VARCHAR(200)
+  )
+
+  Join EmployeeFirmJoin(EmployeeFirmDenormTable.firmId = FirmInfoTable.id)
+)

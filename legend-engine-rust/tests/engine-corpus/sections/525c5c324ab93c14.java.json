@@ -1,0 +1,541 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "service" : {
+      "path" : "test::service::FirmService",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 20,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::myDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 42,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 7,
+            "startLine" : 42
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 61,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 7,
+          "startLine" : 41
+        },
+        "table" : "bitempPersonTable",
+        "temporality" : {
+          "_type" : "bitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "batchId",
+            "batchIdIn" : "batchIdIn",
+            "batchIdOut" : "batchIdOut",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 49,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 30,
+              "startLine" : 45
+            }
+          },
+          "sourceDerivedDimension" : {
+            "_type" : "sourceDerivedTime",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 59,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 33,
+              "startLine" : 50
+            },
+            "sourceTimeFields" : {
+              "_type" : "sourceTimeStartAndEnd",
+              "endField" : "timeThru",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 58,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 25,
+                "startLine" : 54
+              },
+              "startField" : "timeFrom"
+            },
+            "timeEnd" : "endTime",
+            "timeStart" : "startTime"
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 60,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 43
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "deleteIndicatorForGraphFetch",
+            "deleteFieldPath" : {
+              "path" : [ {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "employees",
+                "sourceInformation" : {
+                  "endColumn" : 91,
+                  "endLine" : 32,
+                  "sourceId" : "persistence.pure",
+                  "startColumn" : 82,
+                  "startLine" : 32
+                }
+              }, {
+                "_type" : "propertyPath",
+                "parameters" : [ ],
+                "property" : "isDeleted",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 32,
+                  "sourceId" : "persistence.pure",
+                  "startColumn" : 92,
+                  "startLine" : 32
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 32,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 64,
+                "startLine" : 32
+              },
+              "startType" : "test::model::Firm"
+            },
+            "deleteValues" : [ "Yes", "true", "1" ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 34,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 26,
+              "startLine" : 30
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 35,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 28
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 36,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 22,
+            "startLine" : 36
+          }
+        },
+        "keys" : [ ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "employees",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 23,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 53,
+              "startLine" : 23
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 23,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 35,
+            "startLine" : 23
+          },
+          "startType" : "test::model::Firm"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 37,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 61,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    }, {
+      "persistenceTarget" : {
+        "_type" : "relationalPersistenceTarget",
+        "database" : {
+          "path" : "test::myDatabase",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 77,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 7,
+            "startLine" : 77
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 96,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 7,
+          "startLine" : 76
+        },
+        "table" : "bitempLegalNameTable",
+        "temporality" : {
+          "_type" : "bitemporalTemporality",
+          "processingDimension" : {
+            "_type" : "batchId",
+            "batchIdIn" : "batchIdIn",
+            "batchIdOut" : "batchIdOut",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 84,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 30,
+              "startLine" : 80
+            }
+          },
+          "sourceDerivedDimension" : {
+            "_type" : "sourceDerivedTime",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 94,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 33,
+              "startLine" : 85
+            },
+            "sourceTimeFields" : {
+              "_type" : "sourceTimeStartAndEnd",
+              "endField" : "timeThru",
+              "sourceInformation" : {
+                "endColumn" : 11,
+                "endLine" : 93,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 25,
+                "startLine" : 89
+              },
+              "startField" : "timeFrom"
+            },
+            "timeEnd" : "endTime",
+            "timeStart" : "startTime"
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 95,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 78
+          }
+        }
+      },
+      "serviceOutput" : {
+        "_type" : "graphFetchServiceOutput",
+        "datasetType" : {
+          "_type" : "delta",
+          "actionIndicator" : {
+            "_type" : "noActionIndicator",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 69,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 26,
+              "startLine" : 69
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 70,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 20,
+            "startLine" : 67
+          }
+        },
+        "deduplication" : {
+          "_type" : "noDeduplication",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 71,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 22,
+            "startLine" : 71
+          }
+        },
+        "keys" : [ ],
+        "path" : {
+          "path" : [ {
+            "_type" : "propertyPath",
+            "parameters" : [ ],
+            "property" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 62,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 53,
+              "startLine" : 62
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 62,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 35,
+            "startLine" : 62
+          },
+          "startType" : "test::model::Firm"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 72,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 5,
+          "startLine" : 62
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 96,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 5,
+        "startLine" : 62
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 171,
+      "sourceId" : "persistence.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "tests" : [ {
+      "_type" : "test",
+      "graphFetchPath" : {
+        "path" : [ {
+          "_type" : "propertyPath",
+          "parameters" : [ ],
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 80,
+            "endLine" : 133,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 71,
+            "startLine" : 133
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 133,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 53,
+          "startLine" : 133
+        },
+        "startType" : "test::model::Firm"
+      },
+      "id" : "test1",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 134,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 5,
+        "startLine" : 100
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"ID\":1, \"NAME\":\"Fred\", \"startTime\": \"2022-01-01 00:00:00.0\", \"endTime\": \"2022-01-02 00:00:00.0\", \"batchIdIn\":1, \"batchIdOut\":999999999}, {\"ID\":2, \"NAME\":\"Jane\", \"startTime\": \"2022-01-01 00:00:00.0\", \"endTime\": \"2022-01-02 00:00:00.0\", \"batchIdIn\":1, \"batchIdOut\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 127,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 18,
+              "startLine" : 123
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 128,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 14,
+            "startLine" : 120
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 130,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 9,
+          "startLine" : 104
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"ID\":1, \"NAME\":\"Fred\", \"timeFrom\": \"2022-01-01 00:00:00.0\", \"timeThru\": \"2022-01-02 00:00:00.0\", \"isDeleted\" : 0}, {\"ID\":2, \"NAME\":\"Jane\", \"timeFrom\": \"2022-01-01 00:00:00.0\", \"timeThru\": \"2022-01-02 00:00:00.0\", \"isDeleted\" : 0}]",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 114,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 15,
+                "startLine" : 110
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 115,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 12,
+              "startLine" : 108
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 116,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 10,
+            "startLine" : 106
+          }
+        }
+      } ]
+    }, {
+      "_type" : "test",
+      "graphFetchPath" : {
+        "path" : [ {
+          "_type" : "propertyPath",
+          "parameters" : [ ],
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 168,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 72,
+            "startLine" : 168
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 86,
+          "endLine" : 168,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 54,
+          "startLine" : 168
+        },
+        "startType" : "test::model::Firm"
+      },
+      "id" : "test2",
+      "isTestDataFromServiceOutput" : true,
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 169,
+        "sourceId" : "persistence.pure",
+        "startColumn" : 6,
+        "startLine" : 135
+      },
+      "testBatches" : [ {
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"legalName\":\"Fred\", \"startTime\": \"2022-01-01 00:00:00.0\", \"endTime\": \"2022-01-02 00:00:00.0\", \"batchIdIn\":1, \"batchIdOut\":999999999}, {\"legalName\":\"Jane\", \"startTime\": \"2022-01-01 00:00:00.0\", \"endTime\": \"2022-01-02 00:00:00.0\", \"batchIdIn\":1, \"batchIdOut\":999999999}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 162,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 19,
+              "startLine" : 158
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 163,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 15,
+            "startLine" : 155
+          }
+        } ],
+        "batchId" : 0,
+        "id" : "testBatch1",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 165,
+          "sourceId" : "persistence.pure",
+          "startColumn" : 10,
+          "startLine" : 139
+        },
+        "testData" : {
+          "connection" : {
+            "data" : {
+              "_type" : "externalFormat",
+              "contentType" : "application/json",
+              "data" : "[{\"legalName\":\"Fred\", \"timeFrom\": \"2022-01-01 00:00:00.0\", \"timeThru\": \"2022-01-02 00:00:00.0\"}, {\"legalName\":\"Jane\", \"timeFrom\": \"2022-01-01 00:00:00.0\", \"timeThru\": \"2022-01-02 00:00:00.0\"}]",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 149,
+                "sourceId" : "persistence.pure",
+                "startColumn" : 16,
+                "startLine" : 145
+              }
+            },
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 150,
+              "sourceId" : "persistence.pure",
+              "startColumn" : 13,
+              "startLine" : 143
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 151,
+            "sourceId" : "persistence.pure",
+            "startColumn" : 11,
+            "startLine" : 141
+          }
+        }
+      } ]
+    } ],
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

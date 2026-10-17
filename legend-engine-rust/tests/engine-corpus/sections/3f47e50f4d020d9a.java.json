@@ -1,0 +1,28 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "externalFormat",
+      "contentType" : "application/x.flatdata",
+      "data" : "sample data",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    },
+    "name" : "element",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

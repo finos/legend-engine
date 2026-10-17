@@ -1,0 +1,93 @@
+{
+  "elements" : [ {
+    "_type" : "deephavenStore",
+    "includedStores" : [ ],
+    "name" : "DeephavenStore",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tables" : [ {
+      "columns" : [ {
+        "_type" : "column",
+        "name" : "TradeID",
+        "type" : {
+          "_type" : "intType",
+          "_type" : "intType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "StockSymbol",
+        "type" : {
+          "_type" : "stringType",
+          "_type" : "stringType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "Price",
+        "type" : {
+          "_type" : "floatType",
+          "_type" : "floatType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "Quantity",
+        "type" : {
+          "_type" : "intType",
+          "_type" : "intType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "City",
+        "type" : {
+          "_type" : "stringType",
+          "_type" : "stringType"
+        }
+      }, {
+        "_type" : "column",
+        "name" : "IsBuy",
+        "type" : {
+          "_type" : "booleanType",
+          "_type" : "booleanType"
+        }
+      } ],
+      "name" : "stockTrades"
+    } ]
+  }, {
+    "_type" : "DeephavenApp",
+    "actions" : [ ],
+    "applicationName" : "StockTradesApp",
+    "description" : "A sample Deephaven app that filters stock trades",
+    "function" : {
+      "path" : "test::filterStockTrades():Any[*]",
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 18
+      },
+      "type" : "FUNCTION"
+    },
+    "name" : "MyDeephavenApp",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "12345"
+    },
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 15
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

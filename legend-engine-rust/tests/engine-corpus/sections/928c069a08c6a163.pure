@@ -1,0 +1,8 @@
+
+Mapping mapping::test
+(
+  mapping::SomeClass[myId]: ModelJoin
+  {
+    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}
+  }
+)

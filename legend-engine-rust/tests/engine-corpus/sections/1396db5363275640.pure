@@ -1,0 +1,15 @@
+
+Mapping test::child (
+  test::Target[T]: Pure {
+    ~src test::TargetSrc
+    name: $src.name
+  }
+)
+Mapping test::parent (
+  include test::child
+  *test::Parent: Pure {
+    ~src test::ParentSrc
+    label: $src.label,
+    opt: []
+  }
+)

@@ -1,0 +1,7 @@
+
+Measure NewMeasure
+{
+  UnitOne;
+  UnitTwo;
+  UnitThree;
+}

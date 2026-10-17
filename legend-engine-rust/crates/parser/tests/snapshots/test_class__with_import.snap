@@ -1,0 +1,91 @@
+---
+source: crates/parser/tests/test_class.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [
+                ImportStatement {
+                    path: Package {
+                        name: "anything",
+                        parent: None,
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 8,
+                            end_line: 2,
+                            end_column: 15,
+                        },
+                    },
+                    source_info: SourceInfo {
+                        source: "test.pure",
+                        start_line: 2,
+                        start_column: 1,
+                        end_line: 2,
+                        end_column: 6,
+                    },
+                },
+            ],
+            elements: [
+                Class(
+                    ClassDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 3,
+                                    start_column: 7,
+                                    end_line: 3,
+                                    end_column: 8,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "ImportedClass",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 3,
+                                start_column: 11,
+                                end_line: 3,
+                                end_column: 23,
+                            },
+                        },
+                        type_variable_parameters: [],
+                        type_and_multiplicity_parameters: None,
+                        super_types: [],
+                        properties: [],
+                        qualified_properties: [],
+                        constraints: [],
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 3,
+                            start_column: 1,
+                            end_line: 5,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

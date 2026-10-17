@@ -1,0 +1,55 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "MongoDBConnection",
+      "authenticationSpecification" : {
+        "_type" : "userPassword",
+        "password" : {
+          "_type" : "systemproperties",
+          "sourceInformation" : {
+            "endColumn" : 5,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 58
+          },
+          "systemPropertyName" : "sys.prop.name"
+        },
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 62,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 57
+        },
+        "username" : "mongo_ro"
+      },
+      "dataSourceSpecification" : {
+        "databaseName" : "legend_db",
+        "serverURLs" : [ {
+          "baseUrl" : "localhost",
+          "port" : 27071
+        } ]
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 52
+      },
+      "type" : "MongoDb"
+    },
+    "name" : "testConnection",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    }
+  } ],
+  "imports" : [ ]
+}

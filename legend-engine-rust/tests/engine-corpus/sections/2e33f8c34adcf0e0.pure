@@ -1,0 +1,20 @@
+
+ModelChainConnection modelToModel::test::OneMappingConnection
+{
+  mappings: [
+    modelToModel::test::SrcToBridgeMapping
+  ];
+}
+
+XmlModelConnection modelToModel::test::XmlConnection
+{
+  class: modelToModel::test::__Firm;
+  url: 'data:application/xml,<__Firm><name>FirmB</name></__Firm>';
+}
+
+JsonModelConnection modelToModel::test::JsonConnection
+{
+  class: modelToModel::test::__Firm;
+  url: 'data:application/json,{"name":"FirmA"}';
+}
+

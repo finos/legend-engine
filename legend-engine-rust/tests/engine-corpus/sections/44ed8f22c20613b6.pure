@@ -1,0 +1,7 @@
+
+Enum <<st.test>> {doc.doc = 'bla'} '@'::'my Enum'
+{
+  'Anything e',
+  'A g',
+  'Anything r'
+}

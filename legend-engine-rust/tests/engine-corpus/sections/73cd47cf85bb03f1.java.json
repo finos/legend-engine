@@ -1,0 +1,295 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "graphFetch",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "filter",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "meta::external::store::service::showcase::domain::Product",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 363,
+                  "sourceId" : "",
+                  "startColumn" : 6,
+                  "startLine" : 363
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 363,
+                "sourceId" : "",
+                "startColumn" : 63,
+                "startLine" : 363
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "equal",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 22,
+                      "endLine" : 364,
+                      "sourceId" : "",
+                      "startColumn" : 21,
+                      "startLine" : 364
+                    }
+                  } ],
+                  "property" : "productName",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 364,
+                    "sourceId" : "",
+                    "startColumn" : 24,
+                    "startLine" : 364
+                  }
+                }, {
+                  "_type" : "string",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 364,
+                    "sourceId" : "",
+                    "startColumn" : 39,
+                    "startLine" : 364
+                  },
+                  "value" : "38142Y716"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 364,
+                  "sourceId" : "",
+                  "startColumn" : 36,
+                  "startLine" : 364
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 364,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 364
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 364,
+              "sourceId" : "",
+              "startColumn" : 10,
+              "startLine" : 364
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 365,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 365
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "meta::external::store::service::showcase::domain::Product",
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 365,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 365
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "productId",
+                "sourceInformation" : {
+                  "endColumn" : 24,
+                  "endLine" : 366,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 366
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "productName",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 367,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 367
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              }, {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "description",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 368,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 368
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 364,
+            "sourceId" : "",
+            "startColumn" : 60,
+            "startLine" : 364
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 371,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 371
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "meta::external::store::service::showcase::domain::Product",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 371,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 371
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "productId",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 372,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 372
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "productName",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 373,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 373
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "description",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 374,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 374
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 370,
+          "sourceId" : "",
+          "startColumn" : 22,
+          "startLine" : 370
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 376,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 363
+      }
+    } ],
+    "name" : "query__Any_1_",
+    "package" : "showcase",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 361,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 361
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 377,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 361
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

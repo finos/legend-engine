@@ -1,0 +1,9 @@
+
+Database pack::DB
+(
+  Table myTab
+  (
+    a INT,
+    b INT
+  )
+)

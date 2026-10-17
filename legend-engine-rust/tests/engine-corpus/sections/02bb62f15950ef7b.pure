@@ -1,0 +1,9 @@
+
+DeephavenConnection test::DeephavenConnection
+{
+    store: test::Store::foo;
+    serverUrl: 'http://localhost:10000'
+    authentication: # PSK {
+        psk: 'testPSK';
+    }#;
+}

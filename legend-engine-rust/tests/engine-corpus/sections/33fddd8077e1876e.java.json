@@ -1,0 +1,94 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 133,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 116,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 148,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 136,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "dummyIn",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 167,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 151,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "dummyIn",
+          "out" : "dummyOut",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 108,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 4
+          }
+        } ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

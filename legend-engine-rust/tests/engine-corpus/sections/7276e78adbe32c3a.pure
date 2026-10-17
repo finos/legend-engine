@@ -1,0 +1,46 @@
+
+Service service::CovidDataMulti
+{
+  pattern: '/9566f101-2108-408f-863f-6d7e154dc17a';
+  owners:
+  [
+    'anonymous',
+    'akphi'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |domain::COVIDData.all()->project([x|$x.cases], ['Cases']);
+    key: 'env';
+    executions['PROD']:
+    {
+      mapping: mapping::CovidDataMapping;
+      runtime: runtime::H2Runtime;
+    }
+    executions['DEV']:
+    {
+      mapping: mapping::CovidDataMapping;
+      runtime: runtime::H2Runtime;
+    }
+  }
+}
+
+Service service::CovidDataSingle
+{
+  pattern: '/9566f101-2108-408f-863f-6d7e154dc17b';
+  owners:
+  [
+    'anonymous',
+    'akphi'
+  ];
+  documentation: 'Service description';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |domain::COVIDData.all()->project([x|$x.cases], ['Cases']);
+    mapping: mapping::CovidDataMapping;
+    runtime: runtime::H2Runtime;
+  }
+}
+

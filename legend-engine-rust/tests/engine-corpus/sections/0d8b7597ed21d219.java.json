@@ -1,0 +1,221 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "mySimpleRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 34
+        },
+        "store" : {
+          "path" : "my Store",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "my Simple Connection",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 36,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 36
+            }
+          },
+          "id" : "id 1",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 36
+          }
+        }, {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::a connection",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 37,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 37
+            }
+          },
+          "id" : "id 2",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 37
+          }
+        } ]
+      }, {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 68,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "store" : {
+          "path" : "Model Store",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "test::connection",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 41,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 41
+            }
+          },
+          "id" : "id3",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 41,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 41
+          }
+        }, {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "mySimpleClass",
+            "classSourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 46,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 46
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 44
+            },
+            "url" : "my_url"
+          },
+          "id" : "id4",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 49,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 42
+          }
+        }, {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "meta::mySimpleClass",
+            "classSourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 54,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 54
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 56,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 52
+            },
+            "url" : "my_url"
+          },
+          "id" : "id5",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 57,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 50
+          }
+        }, {
+          "connection" : {
+            "_type" : "ModelChainConnection",
+            "mappings" : [ "mapping::MyMapping1", "mapping::MyMapping2" ],
+            "mappingsSourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 65,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 62
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 60
+            }
+          },
+          "id" : "id6",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 58
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "mySimpleMapping",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 30
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 70,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 26
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 26
+    }
+  } ],
+  "imports" : [ ]
+}

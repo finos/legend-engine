@@ -1,0 +1,5 @@
+
+function test::func(): Any[*]
+{
+  meta::pure::functions::math::acos_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5);
+} 

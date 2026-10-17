@@ -1,0 +1,5 @@
+
+Class test::class
+{
+  prop1 : String[0..1];
+}

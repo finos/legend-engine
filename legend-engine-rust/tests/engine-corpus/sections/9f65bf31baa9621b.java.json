@@ -1,0 +1,229 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 10
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ProductID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 14,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 14
+          },
+          "taggedValues" : [ {
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 14
+            },
+            "tag" : {
+              "profile" : "meta::pure::profiles::doc",
+              "profileSourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 14
+              },
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 14,
+                "sourceId" : "",
+                "startColumn" : 44,
+                "startLine" : 14
+              },
+              "value" : "doc"
+            },
+            "value" : "Column documentation"
+          } ],
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 30
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Product",
+        "primaryKey" : [ "ProductID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 12
+        },
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 12
+          },
+          "tag" : {
+            "profile" : "meta::pure::profiles::doc",
+            "profileSourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 12
+            },
+            "sourceInformation" : {
+              "endColumn" : 40,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 38,
+              "startLine" : 12
+            },
+            "value" : "doc"
+          },
+          "value" : "Table documentation"
+        } ]
+      } ],
+      "tabularFunctions" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 10
+        },
+        "tag" : {
+          "profile" : "meta::pure::profiles::doc",
+          "profileSourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 10
+          },
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 10
+          },
+          "value" : "doc"
+        },
+        "value" : "Schema documentation"
+      } ],
+      "views" : [ ]
+    }, {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 8
+      },
+      "tables" : [ ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "id",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ProductID",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 19,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 19
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "app::db",
+              "mainTableDb" : "app::db",
+              "schema" : "mySchema",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 19,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 19
+              },
+              "table" : "Product"
+            },
+            "tableAlias" : "Product"
+          },
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 19
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "ProductView",
+        "primaryKey" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 20,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 17
+        },
+        "taggedValues" : [ {
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 17
+          },
+          "tag" : {
+            "profile" : "meta::pure::profiles::doc",
+            "profileSourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 17
+            },
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 17,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 17
+            },
+            "value" : "doc"
+          },
+          "value" : "View documentation"
+        } ]
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ]
+  } ]
+}

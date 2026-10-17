@@ -1,0 +1,3 @@
+
+function example::testYtd(): Any[*]
+{   |(%2014 == %2014);}

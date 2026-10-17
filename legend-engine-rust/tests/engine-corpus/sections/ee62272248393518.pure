@@ -1,0 +1,24 @@
+
+import other::*;
+import meta::pure::mapping::*;
+
+Class other::Person
+{
+    name:String[1];
+    firm:Firm[1];
+    address:Address[0..1];
+}
+Class other::Firm
+{
+    legalName:String[1];
+    employees:Person[1];
+    address:Address[1];
+}
+Class other::Address
+{
+    line1:String[1];
+}
+   function meta::pure::router::operations::union(o:OperationSetImplementation[1]):SetImplementation[*]
+   {
+       $o.parameters.setImplementation;
+   }

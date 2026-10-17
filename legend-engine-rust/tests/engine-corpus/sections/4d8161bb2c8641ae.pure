@@ -1,0 +1,38 @@
+
+DataSpace model::legacyEmail
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  supportInfo: Email {
+    documentationUrl: 'https://docs.example.org';
+    address: 'support@example.org';
+  };
+}
+
+DataSpace model::legacyCombined
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  supportInfo: Combined {
+    documentationUrl: 'https://docs.example.org';
+    website: 'https://example.org';
+    emails:
+    [
+      'support@example.org'
+    ];
+  };
+}

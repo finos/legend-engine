@@ -1,0 +1,73 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Report",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::precisePrimitives::Varchar",
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 2
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 2
+          },
+          "value" : 200
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 2,
+            "sourceId" : "",
+            "startColumn" : 76,
+            "startLine" : 2
+          },
+          "value" : 1
+        } ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "country",
+      "sourceInformation" : {
+        "endColumn" : 81,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 23,
+        "startLine" : 2
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 82,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

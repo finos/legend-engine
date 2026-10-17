@@ -1,0 +1,1077 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "aggregationAware",
+      "aggregateSetImplementations" : [ {
+        "aggregateSpecification" : {
+          "aggregateValues" : [ {
+            "aggregateFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "sum",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "mapped",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/saleMapping.pure",
+                    "startColumn" : 52,
+                    "startLine" : 31
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/saleMapping.pure",
+                  "startColumn" : 61,
+                  "startLine" : 31
+                }
+              } ],
+              "parameters" : [ ]
+            },
+            "mapFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/saleMapping.pure",
+                    "startColumn" : 23,
+                    "startLine" : 31
+                  }
+                } ],
+                "property" : "revenue",
+                "sourceInformation" : {
+                  "endColumn" : 35,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/saleMapping.pure",
+                  "startColumn" : 29,
+                  "startLine" : 31
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          } ],
+          "canAggregate" : true,
+          "groupByFunctions" : [ {
+            "groupByFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/saleMapping.pure",
+                    "startColumn" : 13,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "salesPerson",
+                "sourceInformation" : {
+                  "endColumn" : 29,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/saleMapping.pure",
+                  "startColumn" : 19,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          } ]
+        },
+        "index" : 0,
+        "setImplementation" : {
+          "_type" : "relational",
+          "class" : "demo::agg::Sale",
+          "classSourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 22,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 4,
+            "startLine" : 22
+          },
+          "distinct" : false,
+          "groupBy" : [ ],
+          "id" : "demo_agg_Sale_Aggregate_0",
+          "mainTable" : {
+            "_type" : "Table",
+            "database" : "demo::store::AggDB",
+            "mainTableDb" : "demo::store::AggDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 41,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 42,
+              "startLine" : 41
+            },
+            "table" : "SalesByPersonTable"
+          },
+          "primaryKey" : [ {
+            "_type" : "column",
+            "column" : "salesPerson",
+            "sourceInformation" : {
+              "endColumn" : 62,
+              "endLine" : 39,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 39
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::AggDB",
+              "mainTableDb" : "demo::store::AggDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 50,
+                "endLine" : 39,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 33,
+                "startLine" : 39
+              },
+              "table" : "SalesByPersonTable"
+            },
+            "tableAlias" : "SalesByPersonTable"
+          } ],
+          "propertyMappings" : [ {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "class" : "demo::agg::Sale",
+              "property" : "salesPerson",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 42,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 11,
+                "startLine" : 42
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "salesPerson",
+              "sourceInformation" : {
+                "endColumn" : 73,
+                "endLine" : 42,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 24,
+                "startLine" : 42
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::AggDB",
+                "mainTableDb" : "demo::store::AggDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 61,
+                  "endLine" : 42,
+                  "sourceId" : "mapping/saleMapping.pure",
+                  "startColumn" : 44,
+                  "startLine" : 42
+                },
+                "table" : "SalesByPersonTable"
+              },
+              "tableAlias" : "SalesByPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 73,
+              "endLine" : 42,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 22,
+              "startLine" : 42
+            }
+          }, {
+            "_type" : "relationalPropertyMapping",
+            "property" : {
+              "class" : "demo::agg::Sale",
+              "property" : "revenue",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 43,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 11,
+                "startLine" : 43
+              }
+            },
+            "relationalOperation" : {
+              "_type" : "column",
+              "column" : "revenue",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 43,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 20,
+                "startLine" : 43
+              },
+              "table" : {
+                "_type" : "Table",
+                "database" : "demo::store::AggDB",
+                "mainTableDb" : "demo::store::AggDB",
+                "schema" : "default",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 43,
+                  "sourceId" : "mapping/saleMapping.pure",
+                  "startColumn" : 40,
+                  "startLine" : 43
+                },
+                "table" : "SalesByPersonTable"
+              },
+              "tableAlias" : "SalesByPersonTable"
+            },
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 43,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 18,
+              "startLine" : 43
+            }
+          } ],
+          "root" : true,
+          "sourceInformation" : {
+            "endColumn" : 3,
+            "endLine" : 61,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 3,
+            "startLine" : 22
+          }
+        }
+      } ],
+      "class" : "demo::agg::Sale",
+      "id" : "demo_agg_Sale",
+      "mainSetImplementation" : {
+        "_type" : "relational",
+        "class" : "demo::agg::Sale",
+        "classSourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 22,
+          "sourceId" : "mapping/saleMapping.pure",
+          "startColumn" : 4,
+          "startLine" : 22
+        },
+        "distinct" : false,
+        "groupBy" : [ ],
+        "id" : "demo_agg_Sale_Main",
+        "mainTable" : {
+          "_type" : "Table",
+          "database" : "demo::store::AggDB",
+          "mainTableDb" : "demo::store::AggDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 53,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 38,
+            "startLine" : 53
+          },
+          "table" : "SalesTable"
+        },
+        "primaryKey" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 51,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 9,
+            "startLine" : 51
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::AggDB",
+            "mainTableDb" : "demo::store::AggDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 51,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 29,
+              "startLine" : 51
+            },
+            "table" : "SalesTable"
+          },
+          "tableAlias" : "SalesTable"
+        } ],
+        "propertyMappings" : [ {
+          "_type" : "relationalPropertyMapping",
+          "property" : {
+            "class" : "demo::agg::Sale",
+            "property" : "salesPerson",
+            "sourceInformation" : {
+              "endColumn" : 17,
+              "endLine" : 54,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 54
+            }
+          },
+          "relationalOperation" : {
+            "_type" : "column",
+            "column" : "salesPerson",
+            "sourceInformation" : {
+              "endColumn" : 61,
+              "endLine" : 54,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 20,
+              "startLine" : 54
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::AggDB",
+              "mainTableDb" : "demo::store::AggDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 54,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 40,
+                "startLine" : 54
+              },
+              "table" : "SalesTable"
+            },
+            "tableAlias" : "SalesTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 54,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 18,
+            "startLine" : 54
+          }
+        }, {
+          "_type" : "relationalPropertyMapping",
+          "property" : {
+            "class" : "demo::agg::Sale",
+            "property" : "revenue",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 55,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 55
+            }
+          },
+          "relationalOperation" : {
+            "_type" : "column",
+            "column" : "revenue",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 55,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 16,
+              "startLine" : 55
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::AggDB",
+              "mainTableDb" : "demo::store::AggDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 55,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 36,
+                "startLine" : 55
+              },
+              "table" : "SalesTable"
+            },
+            "tableAlias" : "SalesTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 55,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 14,
+            "startLine" : 55
+          }
+        } ],
+        "root" : true,
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 61,
+          "sourceId" : "mapping/saleMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 22
+        }
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "mapping/saleMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SaleAggregationAwareMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 124,
+      "sourceId" : "mapping/saleMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::agg::Sale",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 63,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 18,
+                  "startLine" : 63
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 33,
+                "startLine" : 63
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 51,
+                    "endLine" : 63,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 50,
+                    "startLine" : 63
+                  }
+                } ],
+                "property" : "revenue",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 63,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 53,
+                  "startLine" : 63
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 49,
+                "startLine" : 63
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 63,
+              "sourceId" : "demo::SaleAggregationAwareMapping",
+              "startColumn" : 41,
+              "startLine" : 63
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 63,
+              "sourceId" : "demo::SaleAggregationAwareMapping",
+              "startColumn" : 71,
+              "startLine" : 63
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 75,
+                    "endLine" : 63,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 74,
+                    "startLine" : 63
+                  }
+                } ],
+                "property" : "salesPerson",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 63,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 77,
+                  "startLine" : 63
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 87,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 73,
+                "startLine" : 63
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 93,
+                    "endLine" : 63,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 92,
+                    "startLine" : 63
+                  }
+                } ],
+                "property" : "revenue",
+                "sourceInformation" : {
+                  "endColumn" : 101,
+                  "endLine" : 63,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 95,
+                  "startLine" : 63
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 101,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 91,
+                "startLine" : 63
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 131,
+              "endLine" : 63,
+              "sourceId" : "demo::SaleAggregationAwareMapping",
+              "startColumn" : 105,
+              "startLine" : 63
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 106,
+                "startLine" : 63
+              },
+              "value" : "Sales Person"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 130,
+                "endLine" : 63,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 122,
+                "startLine" : 63
+              },
+              "value" : "Revenue"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 63,
+            "sourceId" : "demo::SaleAggregationAwareMapping",
+            "startColumn" : 63,
+            "startLine" : 63
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 132,
+          "endLine" : 63,
+          "sourceId" : "demo::SaleAggregationAwareMapping",
+          "startColumn" : 17,
+          "startLine" : 63
+        }
+      },
+      "id" : "mainMappingSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 91,
+        "sourceId" : "mapping/saleMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 61
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Sales Person\":\"Jane\",\"Revenue\":5},{\"Sales Person\":\"John\",\"Revenue\":10},{\"Sales Person\":\"John\",\"Revenue\":20}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 86,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 82
+            }
+          },
+          "id" : "shouldReturnRawRows",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 87,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 79
+          }
+        } ],
+        "id" : "rowLevelQueryUsesMainTable",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 89,
+          "sourceId" : "mapping/saleMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 66
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::AggSalesData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 74,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 71
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 74,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 71
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 74,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 70
+          },
+          "store" : {
+            "path" : "demo::store::AggDB",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 70,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 70
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "groupBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::agg::Sale",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 18,
+                  "startLine" : 94
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 38,
+                "endLine" : 94,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 33,
+                "startLine" : 94
+              }
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "sourceInformation" : {
+                "endColumn" : 66,
+                "endLine" : 94,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 49,
+                "startLine" : 94
+              },
+              "values" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 53,
+                      "endLine" : 94,
+                      "sourceId" : "demo::SaleAggregationAwareMapping",
+                      "startColumn" : 52,
+                      "startLine" : 94
+                    }
+                  } ],
+                  "property" : "salesPerson",
+                  "sourceInformation" : {
+                    "endColumn" : 65,
+                    "endLine" : 94,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 55,
+                    "startLine" : 94
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 51,
+                  "startLine" : 94
+                }
+              } ]
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 1,
+                "upperBound" : 1
+              },
+              "sourceInformation" : {
+                "endColumn" : 100,
+                "endLine" : 94,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 69,
+                "startLine" : 94
+              },
+              "values" : [ {
+                "_type" : "func",
+                "function" : "agg",
+                "parameters" : [ {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "x",
+                      "sourceInformation" : {
+                        "endColumn" : 77,
+                        "endLine" : 94,
+                        "sourceId" : "demo::SaleAggregationAwareMapping",
+                        "startColumn" : 76,
+                        "startLine" : 94
+                      }
+                    } ],
+                    "property" : "revenue",
+                    "sourceInformation" : {
+                      "endColumn" : 85,
+                      "endLine" : 94,
+                      "sourceId" : "demo::SaleAggregationAwareMapping",
+                      "startColumn" : 79,
+                      "startLine" : 94
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 94,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 75,
+                    "startLine" : 94
+                  }
+                }, {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "func",
+                    "function" : "sum",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "y",
+                      "sourceInformation" : {
+                        "endColumn" : 91,
+                        "endLine" : 94,
+                        "sourceId" : "demo::SaleAggregationAwareMapping",
+                        "startColumn" : 90,
+                        "startLine" : 94
+                      }
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 96,
+                      "endLine" : 94,
+                      "sourceId" : "demo::SaleAggregationAwareMapping",
+                      "startColumn" : 94,
+                      "startLine" : 94
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "y"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 98,
+                    "endLine" : 94,
+                    "sourceId" : "demo::SaleAggregationAwareMapping",
+                    "startColumn" : 89,
+                    "startLine" : 94
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 70,
+                  "startLine" : 94
+                }
+              } ]
+            }, {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 94,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 103,
+                "startLine" : 94
+              },
+              "values" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 117,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 104,
+                  "startLine" : 94
+                },
+                "value" : "Sales Person"
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 128,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 120,
+                  "startLine" : 94
+                },
+                "value" : "Revenue"
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 94,
+              "sourceId" : "demo::SaleAggregationAwareMapping",
+              "startColumn" : 41,
+              "startLine" : 94
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 158,
+              "endLine" : 94,
+              "sourceId" : "demo::SaleAggregationAwareMapping",
+              "startColumn" : 138,
+              "startLine" : 94
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "asc",
+              "parameters" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 156,
+                  "endLine" : 94,
+                  "sourceId" : "demo::SaleAggregationAwareMapping",
+                  "startColumn" : 143,
+                  "startLine" : 94
+                },
+                "value" : "Sales Person"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 141,
+                "endLine" : 94,
+                "sourceId" : "demo::SaleAggregationAwareMapping",
+                "startColumn" : 139,
+                "startLine" : 94
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 136,
+            "endLine" : 94,
+            "sourceId" : "demo::SaleAggregationAwareMapping",
+            "startColumn" : 133,
+            "startLine" : 94
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 159,
+          "endLine" : 94,
+          "sourceId" : "demo::SaleAggregationAwareMapping",
+          "startColumn" : 17,
+          "startLine" : 94
+        }
+      },
+      "id" : "aggregateViewSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 122,
+        "sourceId" : "mapping/saleMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 92
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Sales Person\":\"Jane\",\"Revenue\":5},{\"Sales Person\":\"John\",\"Revenue\":30}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 117,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 113
+            }
+          },
+          "id" : "shouldReturnAggregatedRows",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 118,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 110
+          }
+        } ],
+        "id" : "groupedQueryUsesAggregateTable",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 120,
+          "sourceId" : "mapping/saleMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 97
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::AggSalesData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 105,
+                "sourceId" : "mapping/saleMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 102
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 105,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 102
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 105,
+            "sourceId" : "mapping/saleMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 101
+          },
+          "store" : {
+            "path" : "demo::store::AggDB",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 101,
+              "sourceId" : "mapping/saleMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 101
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

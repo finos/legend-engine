@@ -1,0 +1,5 @@
+
+Class test::A
+{
+   p(){pair(1, 'a')}:Pair<Integer, String>[1];
+}

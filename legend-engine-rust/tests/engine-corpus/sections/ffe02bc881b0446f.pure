@@ -1,0 +1,14 @@
+
+function my::Hello(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}
+{
+  MySuite2
+  (
+    ModelStore: (JSON) '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+    store::MyStore: testing::MyReference;
+    myTest | Hello('John') => (XML) 'Hello John!';
+    myTest | Hello('Nicole') => (JSON) '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+  )
+}

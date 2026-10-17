@@ -1,0 +1,71 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 71,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 71
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "test::M1",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 70,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 70
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 77,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 67
+      },
+      "testData" : {
+        "_type" : "reference",
+        "dataElement" : {
+          "path" : "com::model::someDataElement",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 73
+          },
+          "type" : "DATA"
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 73
+        }
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 80,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 64
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

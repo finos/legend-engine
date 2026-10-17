@@ -1,0 +1,5 @@
+|meta::pure::functions::lang::eval(|#TDS{
+a:Integer[0..1],b:Integer[0..1]
+1,2
+3,4
+}#)->pack::func3()

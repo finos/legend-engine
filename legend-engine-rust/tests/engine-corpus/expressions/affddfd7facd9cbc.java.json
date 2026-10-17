@@ -1,0 +1,46 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "minus",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "f",
+      "parameters" : [ {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 1
+        },
+        "value" : 1
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 2,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 8,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

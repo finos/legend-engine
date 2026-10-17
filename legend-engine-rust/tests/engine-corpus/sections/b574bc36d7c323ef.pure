@@ -1,0 +1,9 @@
+
+Mapping meta::mySimpleMapping
+(
+  *meta::goes[meta_goes]: Pure
+  {
+    name: 'hi'
+  }
+)
+

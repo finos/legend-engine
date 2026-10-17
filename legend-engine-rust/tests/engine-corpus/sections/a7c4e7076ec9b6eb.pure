@@ -1,0 +1,9 @@
+
+DeephavenConnection test::DeephavenConnection
+{
+  store: test::DeephavenStore;
+  serverUrl: 'http://dummyurl.com:12345'
+  authentication: # PSK {
+    psk: 'abcde';
+  }#;
+}

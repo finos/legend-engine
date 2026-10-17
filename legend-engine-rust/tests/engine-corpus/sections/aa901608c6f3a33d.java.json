@@ -1,0 +1,311 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "this is description of this COVIDDataspace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "description" : "Some more exec description",
+      "executionContextKey" : "dummyContext",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 21
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 21
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 21
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 52,
+                    "endLine" : 21,
+                    "sourceId" : "",
+                    "startColumn" : 51,
+                    "startLine" : 21
+                  }
+                } ],
+                "property" : "cases",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 21,
+                  "sourceId" : "",
+                  "startColumn" : 54,
+                  "startLine" : 21
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 21
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 21
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 21,
+                "sourceId" : "",
+                "startColumn" : 63,
+                "startLine" : 21
+              },
+              "value" : "Cases"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 21
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 21
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "title" : "this is template"
+    }, {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "dummyContext",
+      "id" : "2",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "domain::COVIDData",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 27
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 27
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 48,
+              "startLine" : 27
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 52,
+                    "endLine" : 27,
+                    "sourceId" : "",
+                    "startColumn" : 51,
+                    "startLine" : 27
+                  }
+                } ],
+                "property" : "fips",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 27,
+                  "sourceId" : "",
+                  "startColumn" : 54,
+                  "startLine" : 27
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 57,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 50,
+                "startLine" : 27
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 27
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 62,
+                "startLine" : 27
+              },
+              "value" : "Fips"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 40,
+            "startLine" : 27
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 27
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 24
+      },
+      "title" : "this is template2"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "COVIDDataspace",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "COVID Sample Data"
+  } ]
+}

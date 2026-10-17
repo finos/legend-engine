@@ -1,0 +1,6 @@
+
+JsonModelConnection meta::mySimpleConnection
+{
+  class: model::firm::Person;
+}
+

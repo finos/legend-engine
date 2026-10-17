@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "FIRST_NAME", "LAST_NAME", "FIRM_ID", "EMP_TYPE", "ACTIVE", "HIRE_DATE", "SALARY", "STREET", "CITY" ],
+        "paths" : [ "default", "EmployeeTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "Green", "1", "FULL_TIME", "1", "2020-01-15 00:00:00", "90000.0", "Main St", "London" ]
+        }, {
+          "values" : [ "2", "Bob", "Smith", "2", "CONTRACT", "1", "2021-06-01 00:00:00", "75000.0", "Oak Ave", "Paris" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 36,
+          "sourceId" : "data/employeeData.pure",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "columns" : [ "ID", "LEGAL_NAME" ],
+        "paths" : [ "default", "FirmTable" ],
+        "rows" : [ {
+          "values" : [ "1", "Acme" ]
+        }, {
+          "values" : [ "2", "Beta" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 40,
+          "sourceId" : "data/employeeData.pure",
+          "startColumn" : 5,
+          "startLine" : 37
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 41,
+        "sourceId" : "data/employeeData.pure",
+        "startColumn" : 5,
+        "startLine" : 33
+      }
+    },
+    "name" : "EmployeeFirmData",
+    "package" : "demo::relation::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 42,
+      "sourceId" : "data/employeeData.pure",
+      "startColumn" : 1,
+      "startLine" : 29
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

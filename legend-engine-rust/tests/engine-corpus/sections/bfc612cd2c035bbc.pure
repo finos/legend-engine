@@ -1,0 +1,120 @@
+
+Service services::dummyService
+{
+  pattern: '/dummy';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Single
+  {
+    query: |domain::Customer.all()->project(~['Customer ID': x|$x.id]);
+    mapping: mapping::customerMapping;
+    runtime: runtime::dummyRuntime;
+  }
+}
+
+Service services::dummyMultiService
+{
+  pattern: '/dummy/multi';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Multi
+  {
+    query: |domain::Customer.all()->project(~['Customer ID': x|$x.id]);
+    key: 'env';
+    executions['PROD']:
+    {
+      mapping: mapping::customerMapping;
+      runtime: runtime::dummyRuntime;
+    }
+    executions['DEV']:
+    {
+      mapping: mapping::customerMapping;
+      runtime: runtime::dummyRuntime;
+    }
+  }
+}
+
+Service services::nonTDSService
+{
+  pattern: '/dummy/NonTDS';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Single
+  {
+    query: |domain::Customer.all();
+    mapping: mapping::customerMapping;
+    runtime: runtime::dummyRuntime;
+  }
+}
+
+Service services::serviceWithLocalVar
+{
+  pattern: '/dummy';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Single
+  {
+    query: {|
+      let dummyVar = 'dummy';
+      domain::Customer.all()->filter(x|$x.id==$dummyVar)->project(~['Customer ID': x|$x.id]);
+      };
+    mapping: mapping::customerMapping;
+    runtime: runtime::dummyRuntime;
+  }
+}
+
+Service services::dummyCustomerService
+{
+  pattern: '/dummy';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Single
+  {
+    query: |domain::Customer.all()->project(~['Customer ID': x|$x.id]);
+    mapping: mapping::customerMapping;
+    runtime: runtime::snowflakeRuntimeWithoutRole;
+  }
+}
+
+Service services::customerService
+{
+  pattern: '/customers';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  execution: Single
+  {
+    query: |domain::Customer.all()->project(
+      ~[
+          'Customer ID': x|$x.id,
+          'Customer Name': x|$x.name,
+          BirthDate: x|$x.birthDate,
+          'Time Field': x|$x.time,
+          'StrictDate Field': x|$x.strictDate,
+          BooleanField: x|$x.boolean,
+          'Number Field': x|$x.number,
+          'Float Field': x|$x.float,
+          'Decimal Field': x|$x.decimal
+       ]
+    );
+    mapping: mapping::customerMapping;
+    runtime: runtime::snowflakeRuntime;
+  }
+}

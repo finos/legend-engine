@@ -1,0 +1,126 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "Context 1",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::element",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 29,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyMapping",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyRuntime",
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 63,
+              "startLine" : 33
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 33
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 33
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 35,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 30
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 23
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 21
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 17
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

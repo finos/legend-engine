@@ -1,0 +1,123 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Rust CI
+
+on:
+  push:
+    paths:
+      - 'legend-engine-rust/**'
+      - '.github/workflows/rust.yml'
+  pull_request:
+    paths:
+      - 'legend-engine-rust/**'
+      - '.github/workflows/rust.yml'
+
+jobs:
+  build_and_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: legend-engine-rust
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy, rustfmt, llvm-tools
+
+      - name: Install lld (faster linker)
+        run: sudo apt-get update && sudo apt-get install -y lld
+
+      - name: Enable lld for Rust compilation
+        # Routed through RUSTFLAGS instead of `.cargo/config.toml` so it's
+        # CI-only — local contributors opt in via
+        # `.cargo/config.toml.example` → `.cargo/config.local.toml`.
+        run: echo "RUSTFLAGS=-C link-arg=-fuse-ld=lld" >> $GITHUB_ENV
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            legend-engine-rust/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('legend-engine-rust/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Enable sccache as RUSTC_WRAPPER
+        # Caches rustc output across CI runs (keyed on input content), so
+        # branches with the same dep tree see compilation effectively free
+        # on the second run. Cold first run is unchanged.
+        run: |
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+
+      - name: Check Formatting (cargo fmt)
+        run: cargo fmt --check
+
+      - name: Strict Library Lint (cargo lint-lib)
+        run: cargo lint-lib
+
+      - name: Standard Lint (cargo lint)
+        run: cargo lint
+
+      - name: Install cargo-llvm-cov + cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-nextest
+
+      - name: Build, Test, and Enforce 80% Coverage
+        # `cargo llvm-cov nextest` runs each #[test] in its own process,
+        # parallelized across all cores — typically 2-4× faster than the
+        # serial `cargo test` runner on this workspace.
+        #
+        # The jni crate is excluded: its FFI glue is exercised from Java (see
+        # the NativeGrammarParser smoke test); the logic lives in `api`.
+        #
+        # 80% on the way back to 85%: the parser-only port dropped the
+        # compiler/compose tests that used to exercise parser and protocol
+        # paths (79.8% at the port); the engine golden corpus brought lines
+        # to 85.5%, the same on macOS and Linux. Raise to 85% once the corpus
+        # gaps (tests/engine-corpus/known-failures.txt) leave more margin.
+        run: cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under-lines 80
+
+      - name: Run Doctests
+        # nextest does not execute doctests; with `#![deny(missing_docs)]`
+        # on the public crates we have `///` examples that must keep
+        # compiling and (where executable) running.
+        run: cargo test --doc --workspace
+
+      - name: Check Copyright Headers
+        run: ./scripts/check-copyright.sh
+
+      - name: Check the crates package and build for crates.io
+        # The JNI library is built and tested where the engine uses it: in
+        # legend-engine-language-pure-grammar-rust's Maven build (Build CI).
+        run: cargo publish --workspace --locked --dry-run
+
+      - name: Check Documentation Accuracy
+        # Ensure that running cargo doc produces 0 warnings
+        run: cargo doc --workspace --no-deps 2>&1 | grep -c "warning:" | xargs test 0 -eq

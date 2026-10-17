@@ -1,0 +1,98 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "my::data::MyData2",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    }, {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "id", "firstName", "lastName" ],
+          "paths" : [ "default", "PersonTable" ],
+          "rows" : [ {
+            "values" : [ "1", "\"John, Jr\"", "Doe" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        }
+      },
+      "elementPointer" : {
+        "path" : "my::database",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 5
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 5
+      }
+    }, {
+      "_type" : "referenceDataResolver",
+      "elementPointer" : {
+        "path" : "my::data::MyData3",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 12
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 12,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 12
+      }
+    } ],
+    "name" : "MyData",
+    "package" : "meta::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 13,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

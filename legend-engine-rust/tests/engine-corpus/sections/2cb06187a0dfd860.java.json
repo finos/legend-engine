@@ -1,0 +1,140 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Person_Manager",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "MANAGERID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 25,
+            "startLine" : 5
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "app::dbInc",
+            "mainTableDb" : "app::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 5
+            },
+            "table" : "personTable"
+          },
+          "tableAlias" : "personTable"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 49,
+            "startLine" : 5
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "app::dbInc",
+            "mainTableDb" : "app::dbInc",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 5,
+              "sourceId" : "",
+              "startColumn" : 49,
+              "startLine" : 5
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 47,
+          "startLine" : 5
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 5
+      }
+    } ],
+    "name" : "dbInc",
+    "package" : "app",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "MANAGERID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 44,
+            "startLine" : 4
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "personTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 4
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  } ]
+}

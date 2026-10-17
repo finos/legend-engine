@@ -1,0 +1,44 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "LABEL", "SCORES", "DIVISIONS" ],
+        "paths" : [ "default", "TEAM_TABLE" ],
+        "rows" : [ {
+          "values" : [ "1", "Falcons", "\"{\"\"values\"\":[9,100,20]}\"", "\"{\"\"divisions\"\":[{\"\"name\"\":\"\"Alpha\"\",\"\"headcount\"\":150},{\"\"name\"\":\"\"Beta\"\",\"\"headcount\"\":50},{\"\"name\"\":\"\"Gamma\"\",\"\"headcount\"\":300}]}\"" ]
+        }, {
+          "values" : [ "2", "Ravens", "\"{\"\"values\"\":[5,12,7]}\"", "\"{\"\"divisions\"\":[{\"\"name\"\":\"\"Delta\"\",\"\"headcount\"\":20}]}\"" ]
+        }, {
+          "values" : [ "3", "Owls", "\"{\"\"values\"\":[40,35]}\"", "\"{\"\"divisions\"\":[{\"\"name\"\":\"\"Eps\"\",\"\"headcount\"\":900}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 93,
+          "endLine" : 28,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 24
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 29,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 24
+      }
+    },
+    "name" : "TeamData",
+    "package" : "demo::ssd::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

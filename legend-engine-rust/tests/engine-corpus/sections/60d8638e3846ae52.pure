@@ -1,0 +1,13 @@
+
+DataQualityRelationValidation meta::external::dataquality::testvalidation
+{
+    query: meta::dataquality::Person.all()->project(~[theName: x|$x.name])       ->from(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);
+    validations: [
+      {
+         name: 'validTheName';
+         description: 'theName cannot be empty';
+         assertion: row|$row.theName->isNotEmpty();
+         type: ROW_LEVEL;
+      }
+    ];
+}

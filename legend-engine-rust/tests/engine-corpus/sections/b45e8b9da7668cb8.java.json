@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Can't have config property with reserved name 'generationOutputPath'",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    }
+  }
+}

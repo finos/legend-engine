@@ -1,0 +1,5 @@
+
+Class {meta::pure::profiles::doc.doc = 'A person in the system.'} model::Person
+{
+  {meta::pure::profiles::doc.doc = 'Given name.'} firstName: String[1];
+}

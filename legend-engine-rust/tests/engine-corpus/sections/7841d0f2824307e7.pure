@@ -1,0 +1,14 @@
+
+Class test::A
+[
+  constraint1
+  (    ~externalId: 'ext ID'
+    ~function: greaterThanEqual($this.start, $this.end-1000)
+    ~enforcementLevel: Warn
+    ~message: $this.start + ' should be greater or equal ' + $this.end
+  )
+]
+{
+  start: Integer[1];
+  end: Integer[1];
+}

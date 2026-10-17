@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "NAME", "PROFILE" ],
+        "paths" : [ "default", "EMPLOYEE" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "\"{\"\"employment\"\":{\"\"firmId\"\":\"\"f1\"\",\"\"grade\"\":3}}\"" ]
+        }, {
+          "values" : [ "2", "Bob", "\"{\"\"employment\"\":{\"\"firmId\"\":\"\"f2\"\",\"\"grade\"\":5}}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 25,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      }, {
+        "columns" : [ "ID", "LEGAL_NAME" ],
+        "paths" : [ "default", "FIRM" ],
+        "rows" : [ {
+          "values" : [ "f1", "Firm One" ]
+        }, {
+          "values" : [ "f2", "Firm Two" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 30,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 31,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 22
+      }
+    },
+    "name" : "HrData",
+    "package" : "demo::ssj::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

@@ -1,0 +1,5 @@
+
+function a::a(): Decimal[*]
+{
+  [1.0D, 3.0D]
+}

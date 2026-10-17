@@ -1,0 +1,5 @@
+
+function my::relationFunction(): Any[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer)>);
+}

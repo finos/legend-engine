@@ -1,0 +1,18 @@
+
+DataSpace model::dataSpace
+{
+  title: 'some title';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: |model::Firm.all()->from(model::mapping, model::runtime);
+    },
+    {
+      id: 2;
+      title: 'Template 2';
+      query: src: model::Firm[1]|$src;
+    }
+  ];
+}

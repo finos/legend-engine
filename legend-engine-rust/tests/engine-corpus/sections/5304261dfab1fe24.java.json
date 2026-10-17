@@ -1,0 +1,421 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssa",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 18,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 18
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firstName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 18,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssa::Firm",
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 19,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 19
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 19,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 19
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Firm",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssa",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 24,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 24
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "legalName",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 24,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 24
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 25,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "scores",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 25,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::ssa::Address",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 26,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 14,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "addresses",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 26,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "fold",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "this",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 30,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 24,
+              "startLine" : 30
+            }
+          } ],
+          "property" : "addresses",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 30,
+            "startLine" : 30
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "plus",
+            "parameters" : [ {
+              "_type" : "collection",
+              "multiplicity" : {
+                "lowerBound" : 2,
+                "upperBound" : 2
+              },
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 30,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 61,
+                "startLine" : 30
+              },
+              "values" : [ {
+                "_type" : "var",
+                "name" : "acc",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 30,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 56,
+                  "startLine" : 30
+                }
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 64,
+                    "endLine" : 30,
+                    "sourceId" : "store/db.pure",
+                    "startColumn" : 63,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 69,
+                  "endLine" : 30,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 66,
+                  "startLine" : 30
+                }
+              } ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 30,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 61,
+              "startLine" : 30
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "a"
+          }, {
+            "_type" : "var",
+            "name" : "acc"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 54,
+            "startLine" : 30
+          }
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 73,
+            "startLine" : 30
+          },
+          "value" : ""
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 30,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 41,
+          "startLine" : 30
+        }
+      } ],
+      "name" : "concatenatedNames",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 84,
+            "endLine" : 30,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 79,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 88,
+        "endLine" : 30,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Address",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::ssa",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 35,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 35
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 35,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 35
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 36,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 9,
+            "startLine" : 36
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "rank",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 36,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 33
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

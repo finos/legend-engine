@@ -1,0 +1,6 @@
+
+Association test::FaultyAssociation
+{
+   a : String[1];
+}
+

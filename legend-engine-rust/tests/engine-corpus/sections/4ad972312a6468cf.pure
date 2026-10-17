@@ -1,0 +1,243 @@
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithNoExecutables
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+}
+
+DataSpace spaces::dataspaceWithoutPowerBIStereotype
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Executable 1';
+            executable: services::dummyService;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithMultiExecutionService
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Executable 1';
+            executable: services::dummyMultiService;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithNonTDSService
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Non TDS Service';
+            executable: services::nonTDSService;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithParametrizedFunctionExecutable
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Parameterized Function';
+            executable: functions::parameterizedFunction_String_1__TabularDataSet_1_;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithExecutableLocalVars
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Service With Local VAR';
+            executable: services::serviceWithLocalVar;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithNonSnowflakeRuntime
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Dummy Service';
+            executable: services::dummyService;
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>> spaces::dataspaceWithSnowflakeRuntimeWithoutRole
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        },
+        {
+            name: 'execCont 2';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::snowflakeRuntimeWithoutRole;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Dummy Service';
+            executable: services::dummyCustomerService;
+            executionContextKey: 'execCont 2';
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.Import>>  spaces::dataspaceWithValidExecutables
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        },
+        {
+            name: 'execCont 2';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::snowflakeRuntimeWithoutRole;
+        },
+        {
+            name: 'execCont 3';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::snowflakeRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Customer Type Function';
+            executable: functions::functionWithEnumOutput__TabularDataSet_1_;
+            executionContextKey: 'execCont 3';
+        },
+        {
+            title: 'Customer Service';
+            executable: services::customerService;
+            executionContextKey: 'execCont 3';
+        },
+        {
+            id: InlineQueryExecutable;
+            title: 'Inline Query Executable';
+            query: |domain::Customer.all()->project([x|$x.id, x|$x.type], ['Customer ID', 'Customer Type Enum']);
+            executionContextKey: 'execCont 3';
+        }
+    ];
+}
+
+DataSpace <<meta::external::powerbi::profiles::PowerBIArtifactGeneration.DirectQuery>> spaces::dataspaceWithValidExecutablesDirectQueryMode
+{
+    executionContexts:
+    [
+        {
+            name: 'execCont 1';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::dummyRuntime;
+        },
+        {
+            name: 'execCont 2';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::snowflakeRuntimeWithoutRole;
+        },
+        {
+            name: 'execCont 3';
+            mapping: mapping::customerMapping;
+            defaultRuntime: runtime::snowflakeRuntime;
+        }
+    ];
+    defaultExecutionContext: 'execCont 1';
+    executables:
+    [
+        {
+            title: 'Customer Type Function';
+            executable: functions::functionWithEnumOutput__TabularDataSet_1_;
+            executionContextKey: 'execCont 3';
+        },
+        {
+            title: 'Customer Service';
+            executable: services::customerService;
+            executionContextKey: 'execCont 3';
+        },
+        {
+            id: InlineQueryExecutable;
+            title: 'Inline Query Executable';
+            query: |domain::Customer.all()->project([x|$x.id, x|$x.type], ['Customer ID', 'Customer Type Enum']);
+            executionContextKey: 'execCont 3';
+        }
+    ];
+}

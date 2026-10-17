@@ -1,0 +1,10 @@
+
+RelationalDatabaseConnection demo::connection::PersonH2Connection
+{
+  store: demo::store::PersonDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}

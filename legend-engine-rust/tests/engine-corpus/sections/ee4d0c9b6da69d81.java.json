@@ -1,0 +1,65 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "type" : "SQL",
+      "value" : {
+        "sql" : "select a frm abc"
+      }
+    }, {
+      "_type" : "boolean",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 31,
+        "startLine" : 3
+      },
+      "value" : true
+    } ],
+    "name" : "f__Boolean_1_",
+    "package" : "pack",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Boolean",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 20,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 36,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

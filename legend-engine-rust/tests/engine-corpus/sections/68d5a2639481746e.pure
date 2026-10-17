@@ -1,0 +1,15 @@
+
+function model::MyFunc(): String[1]
+{
+  ''
+}
+{
+  duplicateSuite
+  (
+      testDuplicate | MyFunc() => (JSON) '[]';
+  )
+  duplicateSuite
+  (
+      testDuplicate | MyFunc() => (JSON) '[]';
+  )
+}

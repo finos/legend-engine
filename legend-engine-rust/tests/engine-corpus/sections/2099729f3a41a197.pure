@@ -1,0 +1,5 @@
+
+function test::f():Any[*]
+{
+   #>{a::A.tb}#->filter(x|[]->in(#>{a::A.tb}#->select(~name)))
+}

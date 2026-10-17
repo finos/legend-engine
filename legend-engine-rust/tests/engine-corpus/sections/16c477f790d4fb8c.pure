@@ -1,0 +1,11 @@
+
+ServiceStore test::ServiceStore
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    response : test::model::A <- test::Binding;
+    security : [];
+  )
+)

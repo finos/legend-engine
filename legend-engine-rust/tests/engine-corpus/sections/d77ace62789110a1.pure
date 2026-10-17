@@ -1,0 +1,16 @@
+
+Mapping mappingPackage::myMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    firstName: firstName,
+    address () Inline [addressSet]
+  }
+  *my::Address[addressSet]: Relation
+  {
+    ~func my::testFunc():Any[1]
+    street: STREET,
+    city: CITY
+  }
+)

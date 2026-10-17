@@ -1,0 +1,9 @@
+
+Class test::A
+{
+   ok : Integer[0..1];
+}
+
+Class test::B extends NotHere
+{
+}

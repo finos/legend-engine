@@ -1,0 +1,13 @@
+
+Database demo::store::PersonDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200),
+    active INTEGER
+  )
+
+  Filter ActiveFilter(PersonTable.active = 1)
+)

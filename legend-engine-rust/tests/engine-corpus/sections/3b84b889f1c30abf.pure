@@ -1,0 +1,19 @@
+
+'''
+Covers trading positions across desks.
+
+Sourced from the overnight batch.
+'''
+DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::String;
+      defaultRuntime: model::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  description: 'Short blurb shown in the catalog.';
+}

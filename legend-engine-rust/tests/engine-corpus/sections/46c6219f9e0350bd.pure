@@ -1,0 +1,8 @@
+
+Data meta::data::MyData
+{
+  Reference
+  #{
+    meta::data::MyData
+  }#
+}

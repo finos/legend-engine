@@ -1,0 +1,8 @@
+
+function model::MyFunc(firstName: String[1], test: Integer[1], whoops: String[1]): String[1]
+{
+  ''
+}
+{
+  testDuplicate | MyFunc('John', 1) => (JSON) '[]';
+}

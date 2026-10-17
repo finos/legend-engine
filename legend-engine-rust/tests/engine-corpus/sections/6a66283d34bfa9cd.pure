@@ -1,0 +1,32 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: '/url/myUrl/';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: nameFilter: String[1]|demo::Person.all()->filter(p|$p.name->startsWith($nameFilter))->project(~[name:p|$p.name]);
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1
+    (
+      store::MyDatabase:
+        Relation
+        #{
+          default.PERSON_TABLE:
+              ID, NAME
+              1 , Alice;
+        }#;
+      test_prefix_A (nameFilter = 'A%') ['prod', 'qa'] : PURE_TDSOBJECT =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[{"Name":"Alice"}]';
+        }#;
+    )
+  ]
+}

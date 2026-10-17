@@ -1,0 +1,17 @@
+
+Class demo::externalFormat::flatdata::bloomberg::singleFile::models::FltCpnHistRecordRecord
+{
+  SECURITY: String[1];
+  ERROR_COUNT: Integer[1];
+  FIELD_COUNT: Integer[1];
+  ID_BB_UNIQUE: String[1];
+  ID_BB_COMPANY: Integer[1];
+  ID_BB_SECURITY: Integer[1];
+  ID_BB_GLOBAL: String[1];
+  ID_ISIN: String[0..1];
+  ID_BB_SEC_NUM_DES: String[0..1];
+  FEED_SOURCE: String[0..1];
+  FLT_CPN_HIST_DT: StrictDate[1];
+  FLT_CPN_HIST_RT: Float[0..1];
+}
+

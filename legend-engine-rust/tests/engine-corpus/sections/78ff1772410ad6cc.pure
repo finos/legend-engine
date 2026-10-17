@@ -1,0 +1,5 @@
+
+function withPath::f(s: a::Result<x::String>[1]): Relation<(a:Integer)>[0..1]
+{
+  []->cast(@Relation<(a:Integer)>)
+}

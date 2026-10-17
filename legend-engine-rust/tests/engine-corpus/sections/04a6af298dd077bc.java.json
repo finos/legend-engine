@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "default"
+    },
+    "serviceParameters" : [ ],
+    "sinkConnection" : {
+      "_type" : "connectionPointer",
+      "connection" : "test::TestConnection",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 19,
+        "startLine" : 52
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 48
+    }
+  }, {
+    "_type" : "persistence",
+    "documentation" : "This is test documentation.",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "unitemporalDelta",
+        "mergeStrategy" : {
+          "_type" : "noDeletesMergeStrategy"
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 65
+        },
+        "transactionMilestoning" : {
+          "_type" : "dateTimeTransactionMilestoning",
+          "dateTimeInName" : "IN_Z",
+          "dateTimeOutName" : "OUT_Z",
+          "derivation" : {
+            "_type" : "sourceSpecifiesInDateTime",
+            "sourceDateTimeInField" : "dateTimeIn",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 75,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 72
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 68
+          }
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 64,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 64
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 64,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 62
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 83,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 60
+      },
+      "targetShape" : {
+        "_type" : "flatTarget",
+        "deduplicationStrategy" : {
+          "_type" : "noDeduplicationStrategy"
+        },
+        "modelClass" : "test::ServiceResult",
+        "partitionFields" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 82,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 78
+        },
+        "targetName" : "TestDataset1"
+      }
+    },
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 59,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 59
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 84,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 55
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

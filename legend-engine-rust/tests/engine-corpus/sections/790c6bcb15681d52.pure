@@ -1,0 +1,6 @@
+
+DataSpace model::dataSpace
+{
+  defaultExecutionContext: 'Context 1';
+  title: 'some title';
+}

@@ -1,0 +1,48 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "collection",
+    "multiplicity" : {
+      "lowerBound" : 2,
+      "upperBound" : 2
+    },
+    "sourceInformation" : {
+      "endColumn" : 13,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "values" : [ {
+      "_type" : "float",
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 1
+      },
+      "value" : 1.23
+    }, {
+      "_type" : "float",
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 1
+      },
+      "value" : 1.54
+    } ]
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 13,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

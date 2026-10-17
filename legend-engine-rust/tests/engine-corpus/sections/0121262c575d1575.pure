@@ -1,0 +1,5 @@
+
+Avro anything::somethingelse
+{
+  scopeElements: [_meta];
+}

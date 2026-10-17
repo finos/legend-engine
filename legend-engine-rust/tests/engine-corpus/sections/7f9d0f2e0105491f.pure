@@ -1,0 +1,9 @@
+
+Database demo::store::ReadingDB
+(
+  Table readingTable
+  (
+    id INTEGER PRIMARY KEY,
+    recordedAt TIMESTAMP
+  )
+)

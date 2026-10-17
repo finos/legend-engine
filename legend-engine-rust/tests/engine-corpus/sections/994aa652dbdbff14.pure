@@ -1,0 +1,9 @@
+
+Mapping test::composeMapping
+(
+  *test::Person: Pure
+  {
+    ~src test::_Person
+    weight: newUnit(test::Mass~Kilogram, $src.weightValue)->cast(@test::Mass~Kilogram)
+  }
+)

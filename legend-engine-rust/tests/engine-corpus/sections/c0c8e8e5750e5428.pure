@@ -1,0 +1,26 @@
+
+Enum enums::Gender
+{
+  MALE, FEMALE, OTHER
+}
+Class my::Address
+{
+  street : String[1];
+}
+Class my::Person
+{
+  givenNames  : String[*];
+  lastName    : String[1];
+  dateOfBirth : StrictDate[1];
+  timeOfBirth : StrictTime[1];
+  timeOfDeath : DateTime[0..1];
+  isAlive     : Boolean[1];
+  height      : Float[1];
+  girth       : Decimal[1];
+  shoeSize    : Integer[1];
+  score1      : Integer[1];
+  score2      : Float[1];
+  score3      : Decimal[1];
+  gender      : enums::Gender[1];
+  address     : my::Address[1];
+}

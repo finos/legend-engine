@@ -1,0 +1,59 @@
+
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+
+  testSuites:
+  [
+    testSuite1:
+    {
+      function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            store::TestDB:
+              Reference
+              #{
+                data::RelationalData
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"columns":[{"name":"Employees/First Name","type":"String"},{"name":"Employees/Last Name","type":"String"},{"name":"Legal Name","type":"String"}],"rows":[{"values":["John","Doe","Finos"]},{"values":["Nicole","Smith","Finos"]},{"values":["Time","Smith","Apple"]}]}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

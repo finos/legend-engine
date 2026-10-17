@@ -1,0 +1,13 @@
+
+Elasticsearch7ClusterConnection abc::abc::Connection
+{
+  store: abc::abc::Store;
+  clusterDetails: # URL { http://dummyurl.com:1234/api }#;
+  authentication: # UserPassword {
+    username: 'hello_user';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'sys.prop.name';
+    };
+  }#;
+}

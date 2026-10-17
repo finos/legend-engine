@@ -1,0 +1,6 @@
+
+SnowflakeApp x::A
+{
+   applicationName : 'MyApp';
+   ownership : Deployment { identifier: 'pierre'};
+}

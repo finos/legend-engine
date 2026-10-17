@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "domain::COVIDData",
+      "classSourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 125,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 125
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 127,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 123
+      },
+      "url" : "data:application/json,%7B%7D"
+    },
+    "name" : "MyConnection",
+    "package" : "runtime::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 127,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 123
+    }
+  } ],
+  "imports" : [ ]
+}

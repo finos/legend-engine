@@ -1,0 +1,15 @@
+
+Database demo::ss::store::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRM_DETAILS SEMISTRUCTURED,
+    // Root of this document is a JSON *array*, which is what makes an
+    // index-leading path such as '[1].label' expressible.
+    FIRM_TAGS SEMISTRUCTURED
+  )
+
+  // Row inclusion decided by a value read out of the document, not by a stored column.
+  Filter LargeFirmFilter(extractFromSemiStructured(FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER') > 2)
+)

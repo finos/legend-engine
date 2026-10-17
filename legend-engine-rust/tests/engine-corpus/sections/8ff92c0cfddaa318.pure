@@ -1,0 +1,14 @@
+
+Class test::Simple::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  middleName: String[0..1];
+  age: Integer[0..1];
+  firm: test::Simple::Firm[1];
+}
+
+Class test::Simple::Firm
+{
+  legalName: String[1];
+}

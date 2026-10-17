@@ -1,0 +1,70 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "plus",
+    "parameters" : [ {
+      "_type" : "collection",
+      "multiplicity" : {
+        "lowerBound" : 2,
+        "upperBound" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 58,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 56,
+        "startLine" : 1
+      },
+      "values" : [ {
+        "_type" : "func",
+        "function" : "someTransformation::fn::special function 1",
+        "parameters" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 47,
+            "startLine" : 1
+          },
+          "value" : "data1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 2,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "integer",
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 58,
+          "startLine" : 1
+        },
+        "value" : 1
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 58,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 56,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 58,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

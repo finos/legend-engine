@@ -1,0 +1,122 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "GeographicEntityType",
+    "package" : "meta::pure::tests::model::simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 4
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 66,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 6
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 6
+          },
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 6
+          },
+          "value" : "doc"
+        },
+        "value" : "A city, town, village, or other urban area."
+      } ],
+      "value" : "CITY"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "stereotypes" : [ {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 7
+        },
+        "sourceInformation" : {
+          "endColumn" : 20,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 7
+        },
+        "value" : "deprecated"
+      } ],
+      "taggedValues" : [ ],
+      "value" : "COUNTRY"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 76,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ {
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 8
+        },
+        "tag" : {
+          "profile" : "doc",
+          "profileSourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 8
+          },
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 8
+          },
+          "value" : "doc"
+        },
+        "value" : "Any geographic entity other than a city or country."
+      } ],
+      "value" : "REGION"
+    } ]
+  } ],
+  "imports" : [ "meta::pure::profiles", "meta::pure::tests::model::simple" ]
+}

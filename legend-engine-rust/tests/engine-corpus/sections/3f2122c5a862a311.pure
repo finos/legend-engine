@@ -1,0 +1,5 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+}
+

@@ -1,0 +1,34 @@
+
+Class test::gen::Data
+{
+  floatField: Float[1];
+  floatRangeField: Float[1..3];
+  stringRangeZeroField: String[0..3];
+  decimalRangeZeroField: Float[0..3];
+  booleanField: Boolean[1];
+  strictDateRangeZeroField: String[0..3];
+  dateTimeField: DateTime[1];
+  strictDateRangeField: String[1..3];
+  integerRangeZeroField: Integer[0..3];
+  strictDateField: StrictDate[1];
+  strictDateMultipleField: String[*];
+  dateTimeRangeField: String[1..3];
+  floatRangeZeroField: Float[0..3];
+  integerMultipleField: Integer[*];
+  decimalField: Float[1];
+  decimalRangeField: Float[1..3];
+  dateRangeZeroField: String[0..3];
+  dateTimeMultipleField: String[*];
+  stringRangeField: String[1..3];
+  dateField: DateTime[1];
+  dateTimeRangeZeroField: String[0..3];
+  floatMultipleField: Float[*];
+  stringNoDescriptionField: String[1];
+  integerRangeField: Integer[1..3];
+  srtingMultipleField: String[*];
+  dateRangeField: String[1..3];
+  integerField: Integer[1];
+  decimalMultipleField: Float[*];
+  stringField: String[1];
+  dateMultipleField: String[*];
+}

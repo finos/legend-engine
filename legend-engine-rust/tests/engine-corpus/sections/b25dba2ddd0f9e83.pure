@@ -1,0 +1,17 @@
+
+RelationalMapper test::testMapper
+(
+  DatabaseMappers:
+  [
+    [test::OrganizationsDB.Org] -> 'SnowflakeOrgDB'
+  ];
+  SchemaMappers:
+  [
+    test::OrganizationsDB.Product -> 'ProductSchemaNew',
+    test::OrganizationsDB.Org -> 'OrgSchemaNew'
+  ];
+  TableMappers:
+  [
+    test::OrganizationsDB.Org.Org -> 'OrgNewTable'
+  ];
+)

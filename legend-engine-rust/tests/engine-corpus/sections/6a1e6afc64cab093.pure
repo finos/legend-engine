@@ -1,0 +1,24 @@
+
+Binding meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Firm,
+                    meta::external::store::service::showcase::domain::Employee,
+                    meta::external::store::service::showcase::domain::Address,
+                    meta::external::store::service::showcase::domain::FirmSearch,
+                    meta::external::store::service::showcase::domain::EmployeeSearch,
+                    meta::external::store::service::showcase::domain::NameFilter,
+                    meta::external::store::service::showcase::domain::DesignationFilter,
+                    meta::external::store::service::showcase::domain::IdFilter,
+                    meta::external::store::service::showcase::domain::EmployeeSearchByFilters ];
+}
+
+Binding meta::external::store::service::showcase::store::prodServiceStoreSchemaBinding
+{
+  contentType   : 'application/json';
+  modelIncludes : [ meta::external::store::service::showcase::domain::Product,
+                    meta::external::store::service::showcase::domain::Synonym,
+                    meta::external::store::service::showcase::domain::TradeDetails,
+                    meta::external::store::service::showcase::domain::Trader,
+                    meta::external::store::service::showcase::domain::Trade ];
+}

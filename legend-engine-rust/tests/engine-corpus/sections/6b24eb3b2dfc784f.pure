@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   good: String[0..1];
+   notGood : MissingProp[1];
+}

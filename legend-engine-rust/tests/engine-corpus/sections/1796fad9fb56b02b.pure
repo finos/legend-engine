@@ -1,0 +1,21 @@
+
+function test::fetch(): String[1]
+{
+  test::Person.all()
+    ->graphFetch(#{
+      test::Person {
+        fullName,
+        firm {
+          name
+        }
+      }
+    }#)
+    ->serialize(#{
+      test::Person {
+        fullName,
+        firm {
+          name
+        }
+      }
+    }#)
+}

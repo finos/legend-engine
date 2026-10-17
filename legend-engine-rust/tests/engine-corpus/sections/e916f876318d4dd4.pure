@@ -1,0 +1,253 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.AllTradeService
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trade id" = $this.s_tradeId
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTradeDetailsService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trade.details" = $this.s_tradeDetails
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.TradeByTraderDetailsService
+     (
+         ~request
+         (
+            parameters
+            (
+                "trader.details" = $this.s_traderDetails
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     +s_tradeId: String[1];
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_tradeId->split(':')->at(0)
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByIdService
+     (
+         ~request
+         (
+            parameters
+            (
+                id = $this.s_productId
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = 'product 30'
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = $this.s_productName,
+                description = $this.s_description
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameAndDescriptionService
+     (
+         ~request
+         (
+            parameters
+            (
+                name = 'product 30',
+                description = $this.s_description
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmByName
+     (
+         ~request
+         (
+            parameters
+            (
+                name = $this.name
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] FirmServices.FirmsByNames
+     (
+         ~request
+         (
+            parameters
+            (
+                name = ['FirmA', 'FirmB', 'FirmC']
+            )
+         )
+     )
+  }
+
+  *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] PersonServices.PersonsByFirstAndMiddleName
+     (
+         ~request
+         (
+            parameters
+            (
+                firstName = $this.firstName,
+                middleName = $this.middleName->orElse('*')
+            )
+         )
+     )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] PersonServices.PersonsByFirstAndMiddleName
+     (
+         ~request
+         (
+            parameters
+            (
+                firstName = $this.firstName
+            )
+         )
+     )
+  }
+
+  meta::external::store::service::showcase::domain::Trade[trade_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    tradeId: $src.s_tradeId,
+    +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
+    trader[trader_set]: $src
+  }
+
+  meta::external::store::service::showcase::domain::Trader[trader_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Trade
+
+    kerberos  : $src.s_traderDetails->split(':')->at(0),
+    firstName : $src.s_traderDetails->split(':')->at(1),
+    lastName  : $src.s_traderDetails->split(':')->at(2)
+  }
+
+  meta::external::store::service::showcase::domain::Product[prod_set]: Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Product
+
+    productId: $src.s_productId,
+    productName: $src.s_productName,
+    description: $src.s_description,
+    synonyms[synonym_set]: $src.s_synonyms
+  }
+
+  meta::external::store::service::showcase::domain::Synonym[synonym_set]:Pure
+  {
+    ~src meta::external::store::service::showcase::domain::S_Synonym
+
+    name: $src.s_name,
+    type: EnumerationMapping SynonymTypeMapping: $src.s_type
+  }
+
+  meta::external::store::service::showcase::domain::SynonymType: EnumerationMapping SynonymTypeMapping
+  {
+    CUSIP: ['cusip', 'CUSIP'],
+    ISIN: ['isin', 'ISIN']
+  }
+
+  meta::external::store::service::showcase::domain::S_Trade_S_Product[s_cross_set]: XStore
+  {
+    s_product[s_trade_set, s_prod_set]: $this.s_tradeDetails == $that.s_tradeId
+  }
+
+  meta::external::store::service::showcase::domain::Trade_Product[cross_set]: XStore
+  {
+    product[trade_set, prod_set]: $this.prodId == $that.productId
+  }
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping2
+(
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.GetAllProductsService
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
+     (
+       ~request
+       (
+         parameters
+         (
+           name = if($this.s_productName->length() > 10, | $this.s_productName->substring(0, 10), | $this.s_productName)
+         )
+       )
+     )
+  }
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping3
+(
+  *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.GetAllProductsService
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
+     (
+       ~request
+       (
+         parameters
+         (
+           name = meta::external::store::service::showcase::domain::getProductName($this.s_productName)
+         )
+       )
+     )
+  }
+)
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping4
+(
+  *meta::external::store::service::showcase::domain::S_Trade[s_trade_set]: ServiceStore
+  {
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] TradeServices.AllTradeSpecialCharactersService
+  }
+)

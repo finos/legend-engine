@@ -1,0 +1,14 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Person: Relational
+  {
+    name: [model::relational::tests::dbInc]personTable.FIRSTNAME,
+    firm: [model::relational::tests::dbInc]@Firm_Person
+  }
+  model::Firm: Relational
+  {
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME,
+    employees: [model::relational::tests::dbInc]@Firm_Person
+  }
+)

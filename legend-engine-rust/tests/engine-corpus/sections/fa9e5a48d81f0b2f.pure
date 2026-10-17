@@ -1,0 +1,10 @@
+
+Data wild::data::D
+{
+  Relation
+  #{
+    default.T:
+      ID,DOC
+      1,"{""divisions"":[{""name"":""Alpha"",""headcount"":9,""teams"":[{""label"":""Core""},{""label"":""Edge""}]},{""name"":""Beta"",""headcount"":100,""teams"":[{""label"":""Ops""}]}]}";
+  }#
+}

@@ -1,0 +1,20 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: H2;
+  specification: LocalH2 {
+    testDataSetupCSV: 'testCSV';
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {to: 'A'; schemaFrom: 'b'; schemaTo: 'B';}
+      ];
+    }
+  ];
+}

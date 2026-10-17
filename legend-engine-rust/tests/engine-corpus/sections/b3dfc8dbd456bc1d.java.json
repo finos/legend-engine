@@ -1,0 +1,102 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::Employee",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 21
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::DB",
+        "mainTableDb" : "test::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 23
+        },
+        "table" : "employee"
+      },
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Employee",
+          "property" : "type",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 24
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "type",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 24,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 24
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 24,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 24
+            },
+            "table" : "employee"
+          },
+          "tableAlias" : "employee"
+        },
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 24
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "Map",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

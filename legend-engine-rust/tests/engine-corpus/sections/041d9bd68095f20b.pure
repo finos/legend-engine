@@ -1,0 +1,24 @@
+
+DataSpace domain::COVIDDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::H2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'this is description of this COVIDDataspace';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'wrapper exec';
+      executable: domain::wrappedQuery():TabularDataSet[1];
+      executionContextKey: 'dummyContext';
+    }
+  ];
+}

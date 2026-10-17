@@ -1,0 +1,238 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "main",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "fold",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "people",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "concatenate",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "a",
+            "sourceInformation" : {
+              "endColumn" : 25,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 10
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "p",
+              "sourceInformation" : {
+                "endColumn" : 41,
+                "endLine" : 10,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 10
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 10
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 10
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "p"
+        }, {
+          "_type" : "var",
+          "name" : "a"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 23,
+          "startLine" : 10
+        }
+      }, {
+        "_type" : "var",
+        "name" : "zero",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 51,
+          "startLine" : 10
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 10
+      }
+    } ],
+    "name" : "walkTree_String_$2_MANY$__Person_MANY__String_MANY_",
+    "package" : "main",
+    "parameters" : [ {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 31,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 2
+      },
+      "name" : "zero",
+      "sourceInformation" : {
+        "endColumn" : 42,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 25,
+        "startLine" : 8
+      }
+    }, {
+      "_type" : "var",
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "main::Person",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "people",
+      "sourceInformation" : {
+        "endColumn" : 67,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 45,
+        "startLine" : 8
+      }
+    } ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 71,
+          "startLine" : 8
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 8
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,21 @@
+
+Mapping ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping
+(
+  *ui::meta::something::tests::mapping::enumeration::model::domain::Employee[ui_meta_something_tests_mapping_enumeration_model_domain_Employee]: Pure
+  {
+    ~src ui::meta::something::tests::mapping::enumeration::model::domain::EmployeeSource
+    type: EnumerationMapping Foo: $src.id->toString(),
+    dateOfHire: $src.active
+  }
+
+  ui::meta::something::tests::mapping::enumeration::model::domain::EmployeeType: EnumerationMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: ['A']
+  }
+  ui::meta::something::tests::mapping::enumeration::model::domain::YesNo: EnumerationMapping YesNoEnumerationMapping
+  {
+    YES: [1],
+    NO: [0]
+  }
+)

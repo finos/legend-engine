@@ -1,0 +1,46 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "ENUM VALUE WITH SPACE",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "Dummy Value"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::EnumWithSpace",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 4
+        },
+        "type" : "ENUMERATION"
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "employeeTestMapping",
+    "package" : "ui::meta::something::tests::mapping::enumeration::model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

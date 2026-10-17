@@ -1,0 +1,17 @@
+
+Runtime model::dummyRuntime
+{
+  mappings:
+  [
+    model::dummyMapping,
+    model::dummyMapping2
+  ];
+}
+
+Runtime model::dummyRuntime2
+{
+  mappings:
+  [
+    model::dummyMapping2
+  ];
+}

@@ -1,0 +1,11 @@
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::Firm
+{
+  legalName: String[1];
+  employees: test::Person[*];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::Person
+{
+  name: String[1];
+}

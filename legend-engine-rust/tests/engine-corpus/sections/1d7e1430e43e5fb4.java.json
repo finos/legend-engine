@@ -1,0 +1,48 @@
+{
+  "elements" : [ {
+    "_type" : "relationalMapper",
+    "databaseMappers" : [ ],
+    "name" : "testMapper",
+    "package" : "test",
+    "schemaMappers" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 27,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "tableMappers" : [ {
+      "from" : {
+        "_type" : "Table",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Product",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 24,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "table" : "Product"
+      },
+      "to" : "ProductTable"
+    }, {
+      "from" : {
+        "_type" : "Table",
+        "database" : "test::OrganizationsDB",
+        "schema" : "Product",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 25
+        },
+        "table" : "Product"
+      },
+      "to" : "ProductTableNew"
+    } ]
+  } ],
+  "imports" : [ ]
+}

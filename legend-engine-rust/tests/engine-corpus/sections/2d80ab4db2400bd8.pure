@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::NumericThing[t]: Relation
+  {
+    ~func my::firmFunction():Relation<Any>[1]
+    amount: ID
+  }
+)

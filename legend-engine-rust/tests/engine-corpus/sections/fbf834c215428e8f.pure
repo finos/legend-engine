@@ -1,0 +1,10 @@
+
+import abc::abc::*;
+Deephaven test::Storeimport::Deephaven::Table::tables::columns::columnDefinition::BOOLEAN::INT::FLOAT::DOUBLE::DECIMAL::STRING::TIMESTAMP::DATETIME::DeephavenApp::applicationName::function::ownership::Deployment::identifier::description
+(
+    Table xyz
+    (
+        prop1: STRING,
+        prop2: INT
+    )
+)

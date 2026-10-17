@@ -1,0 +1,132 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "ProductDatabase",
+    "package" : "model::store",
+    "schemas" : [ {
+      "name" : "productSchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 12
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "productTable",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 13,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 10
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "equality",
+      "profileSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 21,
+        "startLine" : 6
+      },
+      "value" : "Key"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Product reference data.\nLoaded nightly."
+      }
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 46,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 28,
+        "startLine" : 6
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 28,
+          "startLine" : 6
+        },
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 6
+        },
+        "value" : "version"
+      },
+      "value" : "1.0"
+    } ]
+  } ]
+}

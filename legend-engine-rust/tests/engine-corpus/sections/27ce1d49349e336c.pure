@@ -1,0 +1,10 @@
+
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER,
+    NAME VARCHAR(100),
+    BATCH_ID INTEGER
+  )
+)

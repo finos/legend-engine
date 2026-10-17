@@ -1,0 +1,13 @@
+
+MongoDBConnection store::serverURLs::database::debug::authentication
+{
+  database: legend_db;
+  serverURLs: [localhost:27071];
+  authentication: # UserPassword {
+    username: 'mongo_ro';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'sys.prop.name';
+    };
+  }#;
+}

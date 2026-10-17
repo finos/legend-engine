@@ -1,0 +1,75 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::Person",
+      "classSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "id" : "model_Person_1",
+      "propertyMappings" : [ ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 32
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 30
+      },
+      "srcClass" : "model::_Person"
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "CORP",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "corporation"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "model::IncType",
+        "sourceInformation" : {
+          "endColumn" : 16,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 35
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "model_IncType2",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "mapping2",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 39,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 28
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

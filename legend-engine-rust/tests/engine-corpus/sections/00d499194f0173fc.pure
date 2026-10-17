@@ -1,0 +1,6 @@
+
+Mapping a::mapping
+(
+   test::Person : Pure
+              {    lastName :              1 }
+)

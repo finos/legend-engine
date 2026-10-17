@@ -1,0 +1,11 @@
+
+Diagram meta::pure::MyDiagram
+{
+  generalizationView
+  {
+    target: ranOutOfCreativityHere;
+    points: [(123.123,23.23),(123.123,23.23)];
+    source: sourceId;
+    points: [(123.123,23.23),(123.123,23.23)];
+  }
+}

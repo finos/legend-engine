@@ -1,0 +1,195 @@
+{
+  "elements" : [ {
+    "_type" : "persistenceContext",
+    "name" : "TestPersistenceContext",
+    "package" : "test",
+    "persistence" : {
+      "path" : "test::TestPersistence",
+      "sourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "type" : "PERSISTENCE"
+    },
+    "platform" : {
+      "_type" : "default"
+    },
+    "serviceParameters" : [ {
+      "name" : "con2",
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "value" : {
+        "_type" : "connectionValue",
+        "connection" : {
+          "_type" : "RelationalDatabaseConnection",
+          "authenticationStrategy" : {
+            "_type" : "test",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 16
+            }
+          },
+          "databaseType" : "H2",
+          "datasourceSpecification" : {
+            "_type" : "h2Local",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 13
+            }
+          },
+          "element" : "test::TestDatabase",
+          "elementSourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 11
+          },
+          "postProcessorWithParameter" : [ ],
+          "postProcessors" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 9
+          },
+          "type" : "H2"
+        }
+      }
+    }, {
+      "name" : "foo",
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 19
+      },
+      "value" : {
+        "_type" : "primitiveTypeValue",
+        "primitiveType" : {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 19
+          },
+          "value" : "hello"
+        }
+      }
+    }, {
+      "name" : "bar",
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 20
+      },
+      "value" : {
+        "_type" : "primitiveTypeValue",
+        "primitiveType" : {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 20
+          },
+          "value" : 1
+        }
+      }
+    }, {
+      "name" : "con1",
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 21
+      },
+      "value" : {
+        "_type" : "connectionValue",
+        "connection" : {
+          "_type" : "connectionPointer",
+          "connection" : "test::TestConnection",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 21
+          }
+        }
+      }
+    } ],
+    "sinkConnection" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "test",
+        "sourceInformation" : {
+          "endColumn" : 17,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 32
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 29
+        }
+      },
+      "element" : "test::TestDatabase",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 27
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 33,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 25
+      },
+      "type" : "H2"
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

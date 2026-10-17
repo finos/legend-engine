@@ -1,0 +1,34 @@
+
+Persistence test::MyPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        foo, bar
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: FieldBased
+        {
+          partitionFields:
+          [
+            foo1, bar2
+          ];
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: version;
+      }
+    }
+    ->
+    {
+    }
+  ];
+}

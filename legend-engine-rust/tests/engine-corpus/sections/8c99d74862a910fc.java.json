@@ -1,0 +1,533 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Trade_Product",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "PRODUCT_ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 76,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 22,
+            "startLine" : 76
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::dates::store::TradingDB",
+            "mainTableDb" : "demo::relation::dates::store::TradingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 76,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 22,
+              "startLine" : 76
+            },
+            "table" : "TRADE"
+          },
+          "tableAlias" : "TRADE"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 76,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 41,
+            "startLine" : 76
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::dates::store::TradingDB",
+            "mainTableDb" : "demo::relation::dates::store::TradingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 76,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 41,
+              "startLine" : 76
+            },
+            "table" : "PRODUCT"
+          },
+          "tableAlias" : "PRODUCT"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 76,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 39,
+          "startLine" : 76
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 76,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 76
+      }
+    }, {
+      "name" : "Trade_Account",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ACCOUNT_ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 77,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 22,
+            "startLine" : 77
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::dates::store::TradingDB",
+            "mainTableDb" : "demo::relation::dates::store::TradingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 77,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 22,
+              "startLine" : 77
+            },
+            "table" : "TRADE"
+          },
+          "tableAlias" : "TRADE"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 77,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 41,
+            "startLine" : 77
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::relation::dates::store::TradingDB",
+            "mainTableDb" : "demo::relation::dates::store::TradingDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 77,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 41,
+              "startLine" : 77
+            },
+            "table" : "ACCOUNT"
+          },
+          "tableAlias" : "ACCOUNT"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 77,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 39,
+          "startLine" : 77
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 77,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 77
+      }
+    } ],
+    "name" : "TradingDB",
+    "package" : "demo::relation::dates::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 78,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 25
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 34,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "FROM_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 35,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "THRU_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 36,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "businessMilestoning",
+          "from" : "FROM_Z",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 31,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 31
+          },
+          "thru" : "THRU_Z",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "PRODUCT",
+        "primaryKey" : [ "ID", "FROM_Z" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 37,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 27
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 45,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "STATUS",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 46,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 20
+          }
+        }, {
+          "name" : "IN_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 47,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "OUT_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 48,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "IN_Z",
+          "out" : "OUT_Z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 43,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 8,
+            "startLine" : 43
+          }
+        } ],
+        "name" : "ACCOUNT",
+        "primaryKey" : [ "ID", "IN_Z" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 49,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 39
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ISSUER",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 35,
+            "endLine" : 58,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 58
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "GRADE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 59,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 59
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        }, {
+          "name" : "IN_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 60,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 60
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "OUT_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 61,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 61
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "FROM_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 62,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 62
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "THRU_Z",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 63,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 63
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        } ],
+        "milestoning" : [ {
+          "_type" : "processingMilestoning",
+          "in" : "IN_Z",
+          "out" : "OUT_Z",
+          "outIsInclusive" : false,
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 8,
+            "startLine" : 55
+          }
+        }, {
+          "_type" : "businessMilestoning",
+          "from" : "FROM_Z",
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 56,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 17,
+            "startLine" : 56
+          },
+          "thru" : "THRU_Z",
+          "thruIsInclusive" : false
+        } ],
+        "name" : "RATING",
+        "primaryKey" : [ "ISSUER", "IN_Z", "FROM_Z" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 64,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 51
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 68,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 68
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PRODUCT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 69,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 69
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "ACCOUNT_ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 70,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 70
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "TRADE_DATE",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 71,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 71
+          },
+          "type" : {
+            "_type" : "Date"
+          }
+        }, {
+          "name" : "EXECUTED_AT",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 72,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 72
+          },
+          "type" : {
+            "_type" : "Timestamp"
+          }
+        }, {
+          "name" : "QUANTITY",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 73,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 73
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "TRADE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 74,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 66
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 78,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,5 @@
+
+GenerationSpecification model::GenerationSpecification
+{
+  fileGenerations: [model::myFileGeneration1];  fileGenerations: [model::myFileGeneration1];}
+

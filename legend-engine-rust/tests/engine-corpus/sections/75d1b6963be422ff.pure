@@ -1,0 +1,9 @@
+
+Class test::A
+{
+   name : String[*];
+}
+Class test::B
+{
+   xza(s: test::A[1]){$s.x + 'ok'}:String[1];
+}

@@ -1,0 +1,12 @@
+
+Data demo::data::DistinctPersonData
+{
+  Relational
+  #{
+    default.PersonRoleTable:
+      'firstName,lastName,role\n' +
+      'John,Doe,developer\n' +
+      'John,Doe,team-lead\n' +
+      'Jane,Smith,developer\n';
+  }#
+}

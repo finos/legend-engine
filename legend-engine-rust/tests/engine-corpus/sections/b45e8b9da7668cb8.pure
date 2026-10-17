@@ -1,0 +1,6 @@
+
+import anything::*;
+Avro model::AvroConfig
+{
+  generationOutputPath: [''];
+}

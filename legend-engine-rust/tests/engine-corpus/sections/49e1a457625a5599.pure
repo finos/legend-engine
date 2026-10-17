@@ -1,0 +1,11 @@
+
+Mapping model::mapping::SourceToTargetM2M
+(
+   *model::domain::Target[model_domain_Target] : Pure
+    {
+     ~src model::domain::Source
+     name: $src.oneName,
+     date: $src.anotherDate,
+     number: $src.oneNumber
+    }
+)

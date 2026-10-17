@@ -1,0 +1,13 @@
+{|
+   let businessDate = now();
+   model::domain::referenceData::account::FirmAccount.all($businessDate)
+       ->groupBy([x | $x.trader($businessDate).lastName,
+                  x | $x.trader($businessDate).firstName,
+                  x | $x.trader($businessDate).isActive],
+                 [agg(x | $x.trader($businessDate).kerberos, y | $y->uniqueValueOnly())],
+                 ['Trader/Last Name',
+                  'Trader/First Name',
+                  'Trader/Is Active',
+                  'Trader/Kerberos Distinct Value']
+       );
+}

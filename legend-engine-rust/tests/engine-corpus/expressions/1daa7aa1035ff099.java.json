@@ -1,0 +1,44 @@
+{
+"value" : {
+  "_type" : "func",
+  "function" : "func",
+  "parameters" : [ {
+    "_type" : "boolean",
+    "sourceInformation" : {
+      "endColumn" : 4,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "value" : true
+  }, {
+    "_type" : "integer",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 2,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 2
+    },
+    "value" : 2
+  }, {
+    "_type" : "string",
+    "sourceInformation" : {
+      "endColumn" : 7,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 3
+    },
+    "value" : "www"
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 10,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 7,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,15 @@
+
+SchemaSet test::SchemaSet
+{
+  format: Example;
+  schemas: [ { content: 'example'; } ];
+}
+
+Binding test::TestBinding
+{
+  schemaSet: test::SchemaSet;
+  contentType: 'text/example';
+  modelIncludes: [
+    test::Person
+  ];
+}

@@ -1,0 +1,173 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::model::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 26
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::store::TestDB",
+        "mainTableDb" : "test::store::TestDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 37,
+          "startLine" : 29
+        },
+        "table" : "FIRM_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 28,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 28
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "test::store::TestDB",
+          "mainTableDb" : "test::store::TestDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 28
+          },
+          "table" : "FIRM_TABLE"
+        },
+        "tableAlias" : "FIRM_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::model::Firm",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 30
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::store::TestDB",
+            "mainTableDb" : "test::store::TestDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 30,
+              "startLine" : 30
+            },
+            "table" : "FIRM_TABLE"
+          },
+          "tableAlias" : "FIRM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::model::Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "NAME",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 31
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::store::TestDB",
+            "mainTableDb" : "test::store::TestDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 31
+            },
+            "table" : "FIRM_TABLE"
+          },
+          "tableAlias" : "FIRM_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 31
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "FirmMapping",
+    "package" : "test::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,11 @@
+
+import anything::*;
+Class <<goes.businesstemporal>> {goes.doc = 'bla'} anything::A extends B, B
+{
+}
+
+Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}

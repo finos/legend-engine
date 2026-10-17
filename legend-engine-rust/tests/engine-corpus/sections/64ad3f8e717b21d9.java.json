@@ -1,0 +1,178 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "dummyRuntime",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 247,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 237
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 237,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 237
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "model::animal::mammal::Mammal",
+            "classSourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 243,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 243
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 245,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 241
+            },
+            "url" : "my_url"
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 246,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 239
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 232,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 232
+        },
+        "type" : "MAPPING"
+      }, {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 233,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 233
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 249,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 228
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 249,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 228
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "dummyRuntime2",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 269,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 259
+        },
+        "store" : {
+          "path" : "ModelStore",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 259,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 259
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "JsonModelConnection",
+            "class" : "model::animal::mammal::Mammal",
+            "classSourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 265,
+              "sourceId" : "",
+              "startColumn" : 18,
+              "startLine" : 265
+            },
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 267,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 263
+            },
+            "url" : "my_url"
+          },
+          "id" : "id1",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 268,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 261
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping2",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 255,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 255
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 271,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 251
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 271,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 251
+    }
+  } ],
+  "imports" : [ ]
+}

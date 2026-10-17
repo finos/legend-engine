@@ -1,0 +1,554 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "serialize",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "concatenate",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "meta::external::store::service::showcase::domain::S_Product",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 611,
+                    "sourceId" : "",
+                    "startColumn" : 25,
+                    "startLine" : 611
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 89,
+                  "endLine" : 611,
+                  "sourceId" : "",
+                  "startColumn" : 84,
+                  "startLine" : 611
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p",
+                      "sourceInformation" : {
+                        "endColumn" : 22,
+                        "endLine" : 612,
+                        "sourceId" : "",
+                        "startColumn" : 21,
+                        "startLine" : 612
+                      }
+                    } ],
+                    "property" : "s_productId",
+                    "sourceInformation" : {
+                      "endColumn" : 34,
+                      "endLine" : 612,
+                      "sourceId" : "",
+                      "startColumn" : 24,
+                      "startLine" : 612
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "productId",
+                    "sourceInformation" : {
+                      "endColumn" : 48,
+                      "endLine" : 612,
+                      "sourceId" : "",
+                      "startColumn" : 39,
+                      "startLine" : 612
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 612,
+                    "sourceId" : "",
+                    "startColumn" : 36,
+                    "startLine" : 612
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 612,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 612
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 612,
+                "sourceId" : "",
+                "startColumn" : 10,
+                "startLine" : 612
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 614,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 614
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "meta::external::store::service::showcase::domain::S_Product",
+                "sourceInformation" : {
+                  "endColumn" : 70,
+                  "endLine" : 614,
+                  "sourceId" : "",
+                  "startColumn" : 12,
+                  "startLine" : 614
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_productId",
+                  "sourceInformation" : {
+                    "endColumn" : 26,
+                    "endLine" : 615,
+                    "sourceId" : "",
+                    "startColumn" : 16,
+                    "startLine" : 615
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_productName",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 616,
+                    "sourceId" : "",
+                    "startColumn" : 16,
+                    "startLine" : 616
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_description",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 617,
+                    "sourceId" : "",
+                    "startColumn" : 16,
+                    "startLine" : 617
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 613,
+              "sourceId" : "",
+              "startColumn" : 10,
+              "startLine" : 613
+            }
+          }, {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "meta::external::store::service::showcase::domain::S_Product",
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 620,
+                    "sourceId" : "",
+                    "startColumn" : 22,
+                    "startLine" : 620
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 86,
+                  "endLine" : 620,
+                  "sourceId" : "",
+                  "startColumn" : 81,
+                  "startLine" : 620
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "and",
+                  "parameters" : [ {
+                    "_type" : "func",
+                    "function" : "equal",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 24,
+                          "endLine" : 621,
+                          "sourceId" : "",
+                          "startColumn" : 23,
+                          "startLine" : 621
+                        }
+                      } ],
+                      "property" : "s_productName",
+                      "sourceInformation" : {
+                        "endColumn" : 38,
+                        "endLine" : 621,
+                        "sourceId" : "",
+                        "startColumn" : 26,
+                        "startLine" : 621
+                      }
+                    }, {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 54,
+                        "endLine" : 621,
+                        "sourceId" : "",
+                        "startColumn" : 43,
+                        "startLine" : 621
+                      },
+                      "value" : "product 30"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 41,
+                      "endLine" : 621,
+                      "sourceId" : "",
+                      "startColumn" : 40,
+                      "startLine" : 621
+                    }
+                  }, {
+                    "_type" : "func",
+                    "function" : "equal",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 60,
+                          "endLine" : 621,
+                          "sourceId" : "",
+                          "startColumn" : 59,
+                          "startLine" : 621
+                        }
+                      } ],
+                      "property" : "s_description",
+                      "sourceInformation" : {
+                        "endColumn" : 74,
+                        "endLine" : 621,
+                        "sourceId" : "",
+                        "startColumn" : 62,
+                        "startLine" : 621
+                      }
+                    }, {
+                      "_type" : "string",
+                      "sourceInformation" : {
+                        "endColumn" : 102,
+                        "endLine" : 621,
+                        "sourceId" : "",
+                        "startColumn" : 79,
+                        "startLine" : 621
+                      },
+                      "value" : "product 30 description"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 77,
+                      "endLine" : 621,
+                      "sourceId" : "",
+                      "startColumn" : 76,
+                      "startLine" : 621
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 621,
+                    "sourceId" : "",
+                    "startColumn" : 56,
+                    "startLine" : 621
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 102,
+                  "endLine" : 621,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 621
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 621,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 621
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 72,
+                "endLine" : 623,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 623
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "meta::external::store::service::showcase::domain::S_Product",
+                "sourceInformation" : {
+                  "endColumn" : 72,
+                  "endLine" : 623,
+                  "sourceId" : "",
+                  "startColumn" : 14,
+                  "startLine" : 623
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_productId",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 624,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 624
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_productName",
+                  "sourceInformation" : {
+                    "endColumn" : 32,
+                    "endLine" : 625,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 625
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                }, {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "s_description",
+                  "sourceInformation" : {
+                    "endColumn" : 31,
+                    "endLine" : 626,
+                    "sourceId" : "",
+                    "startColumn" : 19,
+                    "startLine" : 626
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 21,
+              "endLine" : 622,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 622
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 620,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 620
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 70,
+            "endLine" : 631,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 631
+          },
+          "type" : "rootGraphFetchTree",
+          "value" : {
+            "_type" : "rootGraphFetchTree",
+            "_type" : "rootGraphFetchTree",
+            "class" : "meta::external::store::service::showcase::domain::S_Product",
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 631,
+              "sourceId" : "",
+              "startColumn" : 12,
+              "startLine" : 631
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "s_productId",
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 632,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 632
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "s_productName",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 633,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 633
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            }, {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "s_description",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 634,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 634
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 630,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 630
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "String",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 611,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 611
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "name" : "productId",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 611,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 611
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 636,
+        "sourceId" : "",
+        "startColumn" : 24,
+        "startLine" : 611
+      }
+    } ],
+    "name" : "query__Any_1_",
+    "package" : "showcase",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 609,
+          "sourceId" : "",
+          "startColumn" : 29,
+          "startLine" : 609
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 637,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 609
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

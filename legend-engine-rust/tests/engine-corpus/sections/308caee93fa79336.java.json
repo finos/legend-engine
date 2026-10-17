@@ -1,0 +1,96 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "NAME", "PROFILE" ],
+        "paths" : [ "PERSON_SCHEMA", "PERSON_NESTED" ],
+        "rows" : [ {
+          "values" : [ "1", "Alice", "\"{\"\"employment\"\":{\"\"firm\"\":{\"\"legalName\"\":\"\"Firm One\"\"}},\"\"grade\"\":3}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 29,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 27
+        }
+      }, {
+        "columns" : [ "ID", "NAME", "PROFILE" ],
+        "paths" : [ "PERSON_SCHEMA", "PERSON_ROOT" ],
+        "rows" : [ {
+          "values" : [ "2", "Bob", "\"{\"\"legalName\"\":\"\"Firm Two\"\"}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 33,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 31
+        }
+      }, {
+        "columns" : [ "ID", "NAME", "PROFILE_JSON" ],
+        "paths" : [ "PERSON_SCHEMA", "PERSON_TEXT" ],
+        "rows" : [ {
+          "values" : [ "3", "Cara", "\"{\"\"legalName\"\":\"\"Firm Three\"\"}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 37,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      }, {
+        "columns" : [ "ID", "NAME", "MANAGER_ID", "PROFILE" ],
+        "paths" : [ "PERSON_SCHEMA", "STAFF" ],
+        "rows" : [ {
+          "values" : [ "10", "Dan", "11", "\"{\"\"legalName\"\":\"\"Dan Firm\"\"}\"" ]
+        }, {
+          "values" : [ "11", "Eve", "", "\"{\"\"legalName\"\":\"\"Eve Firm\"\"}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 42,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 39
+        }
+      }, {
+        "columns" : [ "ID", "REFERENCE", "CONTENT" ],
+        "paths" : [ "PERSON_SCHEMA", "RECORD_TABLE" ],
+        "rows" : [ {
+          "values" : [ "20", "R-1", "\"{\"\"payload\"\":{\"\"tags\"\":[{\"\"code\"\":\"\"T1\"\",\"\"category\"\":\"\"Primary\"\"},{\"\"code\"\":\"\"T2\"\",\"\"category\"\":\"\"Secondary\"\"}],\"\"participants\"\":[{\"\"party\"\":\"\"P1\"\"}]}}\"" ]
+        }, {
+          "values" : [ "21", "R-2", "\"{\"\"payload\"\":{\"\"tags\"\":[{\"\"code\"\":\"\"T9\"\",\"\"category\"\":\"\"Primary\"\"}],\"\"participants\"\":[{\"\"party\"\":\"\"P8\"\"},{\"\"party\"\":\"\"P9\"\"}]}}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 142,
+          "endLine" : 47,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 44
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 48,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 27
+      }
+    },
+    "name" : "PersonData",
+    "package" : "demo::ssn::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

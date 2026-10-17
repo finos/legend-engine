@@ -1,0 +1,30 @@
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  firmId: Integer[1];
+  address: my::Address[1];
+}
+
+Class my::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+  clientNames: String[*];
+}
+
+Class my::Address
+{
+  city: String[1];
+}
+
+Association my::Person_Firm
+{
+  employees: my::Person[*];
+  firm: my::Firm[1];
+}
+function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);
+}

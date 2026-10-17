@@ -1,0 +1,398 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "NycDeptFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "LOCATION",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 52,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 24,
+            "startLine" : 52
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 52,
+              "sourceId" : "store/joinsDb.pure",
+              "startColumn" : 24,
+              "startLine" : 52
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 52,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 49,
+            "startLine" : 52
+          },
+          "value" : "NYC"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 52,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 47,
+          "startLine" : 52
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 54,
+        "endLine" : 52,
+        "sourceId" : "store/joinsDb.pure",
+        "startColumn" : 3,
+        "startLine" : 52
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Emp_Dept",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "DEPT_ID",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 46,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 17,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 46,
+              "sourceId" : "store/joinsDb.pure",
+              "startColumn" : 17,
+              "startLine" : 46
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 46,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 39,
+            "startLine" : 46
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 46,
+              "sourceId" : "store/joinsDb.pure",
+              "startColumn" : 39,
+              "startLine" : 46
+            },
+            "table" : "DEPARTMENT"
+          },
+          "tableAlias" : "DEPARTMENT"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 46,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 37,
+          "startLine" : 46
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 55,
+        "endLine" : 46,
+        "sourceId" : "store/joinsDb.pure",
+        "startColumn" : 3,
+        "startLine" : 46
+      }
+    }, {
+      "name" : "Emp_Sale",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 47,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 17,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "HR",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 47,
+              "sourceId" : "store/joinsDb.pure",
+              "startColumn" : 17,
+              "startLine" : 47
+            },
+            "table" : "EMPLOYEE"
+          },
+          "tableAlias" : "EMPLOYEE"
+        }, {
+          "_type" : "column",
+          "column" : "EMP_ID",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 47,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 34,
+            "startLine" : 47
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::JoinsDB",
+            "mainTableDb" : "demo::store::JoinsDB",
+            "schema" : "SALES",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 47,
+              "sourceId" : "store/joinsDb.pure",
+              "startColumn" : 34,
+              "startLine" : 47
+            },
+            "table" : "SALE"
+          },
+          "tableAlias" : "SALE"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 47,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 32,
+          "startLine" : 47
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 51,
+        "endLine" : 47,
+        "sourceId" : "store/joinsDb.pure",
+        "startColumn" : 3,
+        "startLine" : 47
+      }
+    } ],
+    "name" : "JoinsDB",
+    "package" : "demo::store",
+    "schemas" : [ {
+      "name" : "HR",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "store/joinsDb.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 25,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 26,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "DEPT_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 27,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "EMPLOYEE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 28,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 31,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 31
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 32,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "LOCATION",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 33,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "DEPARTMENT",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 34,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    }, {
+      "name" : "SALES",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 44,
+        "sourceId" : "store/joinsDb.pure",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 40,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "EMP_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 41,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 41
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "AMOUNT",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 42,
+            "sourceId" : "store/joinsDb.pure",
+            "startColumn" : 7,
+            "startLine" : 42
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "SALE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 43,
+          "sourceId" : "store/joinsDb.pure",
+          "startColumn" : 5,
+          "startLine" : 38
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 53,
+      "sourceId" : "store/joinsDb.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ]
+  } ]
+}

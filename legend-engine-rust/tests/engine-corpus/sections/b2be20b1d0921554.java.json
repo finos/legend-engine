@@ -1,0 +1,452 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "xStore",
+      "association" : {
+        "path" : "test::Firm_Person_Milestoned",
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 36
+        },
+        "type" : "ASSOCIATION"
+      },
+      "propertyMappings" : [ {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 25,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 38
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 32,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 27,
+                "startLine" : 38
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 41,
+                  "endLine" : 38,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 38
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 38,
+                "sourceId" : "",
+                "startColumn" : 43,
+                "startLine" : 38
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 35,
+              "endLine" : 38,
+              "sourceId" : "",
+              "startColumn" : 34,
+              "startLine" : 38
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Firm_Person_Milestoned",
+          "property" : "employer",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "source" : "p",
+        "sourceInformation" : {
+          "endColumn" : 44,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 38
+        },
+        "target" : "f"
+      }, {
+        "_type" : "xStorePropertyMapping",
+        "crossExpression" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "this",
+                "sourceInformation" : {
+                  "endColumn" : 26,
+                  "endLine" : 39,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 39
+                }
+              } ],
+              "property" : "id",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 39
+              }
+            }, {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "that",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 39,
+                  "sourceId" : "",
+                  "startColumn" : 34,
+                  "startLine" : 39
+                }
+              } ],
+              "property" : "firmId",
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 39,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 39
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 39,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 39
+            }
+          } ],
+          "parameters" : [ ]
+        },
+        "property" : {
+          "class" : "test::Firm_Person_Milestoned",
+          "property" : "employees",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 39,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "source" : "f",
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 39
+        },
+        "target" : "p"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::Person_Milestoned",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "id" : "p",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 26
+          },
+          "type" : "Integer"
+        },
+        "property" : {
+          "property" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 26
+          }
+        },
+        "source" : "p",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 26
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 26,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 26
+            },
+            "value" : 1
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Person_Milestoned",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "source" : "p",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 27
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 27,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 27
+              }
+            } ],
+            "property" : "name",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 27,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 27
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 25
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 23
+      },
+      "srcClass" : "test::Person_Milestoned"
+    }, {
+      "_type" : "pureInstance",
+      "class" : "test::Firm_Milestoned",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "id" : "f",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Firm_Milestoned",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "f",
+        "sourceInformation" : {
+          "endColumn" : 15,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 12,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 9,
+                "startLine" : 32
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 14,
+              "startLine" : 32
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::Firm_Milestoned",
+          "property" : "legalName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "f",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 33
+              }
+            } ],
+            "property" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 31
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "srcClass" : "test::Firm_Milestoned"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "crossPropertyMappingWithLocalProperties_Milestoned",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 21
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

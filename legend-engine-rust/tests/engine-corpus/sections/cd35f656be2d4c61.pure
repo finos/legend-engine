@@ -1,0 +1,12 @@
+
+Class ui::Person
+{
+  name: String[1];
+  dog: ui::Dog[1];
+}
+
+Class ui::Dog
+{
+  name: String[1];
+  breed: String[1];
+}

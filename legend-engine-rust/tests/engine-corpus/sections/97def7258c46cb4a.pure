@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   name : String[*];
+   xza(s:z::k::B[1]){$s + 'ok'}:String[1];
+}

@@ -1,0 +1,192 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "model::domain::Target",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 4
+      },
+      "id" : "model_domain_Target",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::domain::Target",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 7
+          }
+        },
+        "source" : "model_domain_Target",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 7
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 7,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 7
+              }
+            } ],
+            "property" : "oneName",
+            "sourceInformation" : {
+              "endColumn" : 23,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 7
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::domain::Target",
+          "property" : "date",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 8
+          }
+        },
+        "source" : "model_domain_Target",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 8
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 8,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 8
+              }
+            } ],
+            "property" : "anotherDate",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 8,
+              "sourceId" : "",
+              "startColumn" : 17,
+              "startLine" : 8
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "model::domain::Target",
+          "property" : "number",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 9
+          }
+        },
+        "source" : "model_domain_Target",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 9
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 14,
+                "startLine" : 9
+              }
+            } ],
+            "property" : "oneNumber",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 9
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 11,
+        "startLine" : 6
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "srcClass" : "model::domain::Source"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SourceToTargetM2M",
+    "package" : "model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,9 @@
+
+function test::func1():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]
+{
+   [];
+}
+function test::func2():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]
+{
+   [];
+}

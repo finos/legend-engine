@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'validityMilestoning' should be specified only once",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

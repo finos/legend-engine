@@ -1,0 +1,14 @@
+
+Mapping demo::PersonMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PersonDB]PersonTable.id
+    )
+    ~mainTable [demo::store::PersonDB]PersonTable
+    firstName: [demo::store::PersonDB]PersonTable.firstName,
+    lastName: [demo::store::PersonDB]PersonTable.lastName
+  }
+)

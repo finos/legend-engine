@@ -1,0 +1,65 @@
+
+Mapping demo::ProductRouterUnionMapping
+(
+  demo::routerunion::Product[listedProduct]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ProductDB]ListedProductTable.id
+    )
+    ~mainTable [demo::store::ProductDB]ListedProductTable
+    code: [demo::store::ProductDB]ListedProductTable.code,
+    description: [demo::store::ProductDB]ListedProductTable.description
+  }
+
+  demo::routerunion::Product[otcProduct]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ProductDB]OtcProductTable.id
+    )
+    ~mainTable [demo::store::ProductDB]OtcProductTable
+    code: [demo::store::ProductDB]OtcProductTable.code,
+    description: [demo::store::ProductDB]OtcProductTable.description
+  }
+
+  *demo::routerunion::Product: Operation
+  {
+    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(listedProduct, otcProduct)
+  }
+
+  testSuites:
+  [
+    routerUnionSuite:
+    {
+      function: |demo::routerunion::Product.all()->sortBy(x|$x.code)->project([x|$x.code, x|$x.description], ['Code', 'Description']);
+      tests:
+      [
+        concatenatesPerSetResults:
+        {
+          data:
+          [
+            demo::store::ProductDB:
+              Reference
+              #{
+                demo::data::ProductData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnEveryProduct:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Code":"LST-1","Description":"Listed Future"},{"Code":"LST-2","Description":"Listed Option"},{"Code":"OTC-1","Description":"Interest Rate Swap"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

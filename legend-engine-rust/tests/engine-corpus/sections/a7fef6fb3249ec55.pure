@@ -1,0 +1,9 @@
+
+Mapping reporting::mapping::referenceDataMapping
+(
+  *test::Firm: Pure
+  {
+    ~src test::Firm_milestoned
+    id: $src.legalOwner.employer.id
+  }
+)

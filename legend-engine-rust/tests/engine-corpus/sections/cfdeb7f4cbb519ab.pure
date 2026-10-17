@@ -1,0 +1,15 @@
+
+function testfetch1::query(): Any[1]
+{
+  {|test::Person.all()
+    ->graphFetch(#{
+      test::Person {
+        fullName
+      }
+    }#, 1)
+    ->serialize(#{
+      test::Person {
+        fullName
+      }
+    }#)};
+}

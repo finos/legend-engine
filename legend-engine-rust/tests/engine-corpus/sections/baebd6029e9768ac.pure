@@ -1,0 +1,7 @@
+
+JsonModelConnection model::connection
+{
+  class: test::B;
+  url: 'executor:default';
+}
+

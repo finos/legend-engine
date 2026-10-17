@@ -1,0 +1,44 @@
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection
+{
+    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection2
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection3
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore1;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection4
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore2;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection5
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore3;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection6
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore4;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection7
+{
+    store   : meta::external::store::service::showcase::store::EmployeeServiceStore5;
+    baseUrl : 'http://127.0.0.1:55035';
+}
+
+

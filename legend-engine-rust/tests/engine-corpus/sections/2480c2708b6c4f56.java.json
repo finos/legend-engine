@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Path should be provided for DataElementReference",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 6,
+      "sourceId" : "",
+      "startColumn" : 4,
+      "startLine" : 4
+    }
+  }
+}

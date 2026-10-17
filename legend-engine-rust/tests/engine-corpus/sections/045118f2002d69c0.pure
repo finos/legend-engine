@@ -1,0 +1,18 @@
+
+Database demo::store::FirmDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firmId INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legalName VARCHAR(200)
+  )
+
+  Join PersonFirm(PersonTable.firmId = FirmTable.id)
+)

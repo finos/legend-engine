@@ -1,0 +1,4 @@
+
+function example::testAny(): Any[1]
+{
+    1;}

@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "test::firm::model::M2MMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 74
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 75,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 72
+      }
+    },
+    "name" : "modelChainConnection",
+    "package" : "test::firm::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 75,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 72
+    }
+  } ],
+  "imports" : [ ]
+}

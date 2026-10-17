@@ -1,0 +1,29 @@
+
+Runtime test::TestRuntime
+{
+  mappings:
+  [
+    test::TestMapping
+  ];
+  connections:
+  [
+    test::TestDb:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::TestDb;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'create schema if not exists TESTDB;\ncreate table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from TESTDB.PERSON_TABLE;\ninsert into TESTDB.PERSON_TABLE values(1,\'John\',\'Doe\');'
+              ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

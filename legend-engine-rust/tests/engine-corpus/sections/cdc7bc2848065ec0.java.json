@@ -1,0 +1,69 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "DB",
+    "package" : "probe::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 35,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 28
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 32,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "DOC",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 33,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "T",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 34,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 30
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 28
+    },
+    "stereotypes" : [ ]
+  } ]
+}

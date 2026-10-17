@@ -1,0 +1,20 @@
+
+Class 'A-Z'
+[
+  constraint1: $this.ok->toOne() == 1,
+  constraint2: if($this.ok == 'ok', |true, |false),
+  'constraint-3': $this.anyValue->instanceOf(String) || $this.anyValue->instanceOf(AEnum)
+]
+{
+  name: String[45..*];
+  ok: Integer[1..2];
+  anyValue: Any[1];
+  'maybe or maybe not!': Boolean[1];
+  xza(s: String[1]) {$s + 'ok\n{""}\'\''}: String[1];
+  'I\'m derived'('#String': String[1]) {$s + 'ok\n{""}\'\''}: String[1];
+}
+
+Enum AEnum
+{
+  B
+}

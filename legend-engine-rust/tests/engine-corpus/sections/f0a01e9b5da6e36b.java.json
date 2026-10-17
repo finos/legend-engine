@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "serviceStore",
+      "baseUrl" : "http://baseUrl",
+      "element" : "test::serviceStore",
+      "elementSourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 41
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 43,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 39
+      }
+    },
+    "name" : "serviceStoreConnection",
+    "package" : "simple",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 43,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 39
+    }
+  } ],
+  "imports" : [ ]
+}

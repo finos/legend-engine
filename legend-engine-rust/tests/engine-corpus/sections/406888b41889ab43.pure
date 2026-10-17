@@ -1,0 +1,5 @@
+
+function test::new(): Any[1]
+{
+  meta::pure::functions::collection::pair(r: TDSRow[1]|1, 'hello')
+}

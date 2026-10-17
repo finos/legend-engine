@@ -1,0 +1,15 @@
+
+Database model::store::ProductDatabase
+(
+  Schema productSchema
+  (
+    '''
+    One row per product.
+    Keyed by ID.
+    '''
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+)

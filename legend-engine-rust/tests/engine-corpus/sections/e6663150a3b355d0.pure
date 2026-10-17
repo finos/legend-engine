@@ -1,0 +1,11 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: store::Store;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'testCSV';
+  };
+  auth: DefaultH2;
+}

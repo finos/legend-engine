@@ -1,0 +1,5 @@
+
+Class test::Person{name : String[1];}function test::f():Any[*]
+{
+   test::Person.all()->project(~[mycol:x|$x.name])->select(~[mycol])->extend(over(~mycol), ~newCol:{p,w,r|$p->lag($r).mycol + 'w'})
+}

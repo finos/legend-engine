@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'content' is required",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  }
+}

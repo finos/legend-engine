@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "diagrams" : [ {
+      "description" : "some information about the context",
+      "diagram" : {
+        "path" : "model::SomeDiag1",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 25,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 25
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 26,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 22
+      },
+      "title" : "Diag 1"
+    }, {
+      "diagram" : {
+        "path" : "model::Diagram",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 17
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "title" : ""
+    }, {
+      "diagram" : {
+        "path" : "model::Diagram2",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 18
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 18,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 18
+      },
+      "title" : ""
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 10
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::String",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "meta::pure::profiles::typemodifiers",
+      "profileSourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 49,
+        "startLine" : 2
+      },
+      "value" : "abstract"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 75,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 61,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 61,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 65,
+          "startLine" : 2
+        },
+        "value" : "doc"
+      },
+      "value" : "bla"
+    } ],
+    "title" : "some title"
+  } ]
+}

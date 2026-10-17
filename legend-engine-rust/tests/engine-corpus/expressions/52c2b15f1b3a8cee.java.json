@@ -1,0 +1,78 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "in",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "not",
+      "parameters" : [ {
+        "_type" : "property",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "c",
+            "sourceInformation" : {
+              "endColumn" : 5,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 4,
+              "startLine" : 1
+            }
+          } ],
+          "property" : "salesPerson",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 1
+          }
+        } ],
+        "property" : "lastName",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "var",
+      "name" : "names",
+      "sourceInformation" : {
+        "endColumn" : 38,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 33,
+        "startLine" : 1
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 31,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 30,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 39,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

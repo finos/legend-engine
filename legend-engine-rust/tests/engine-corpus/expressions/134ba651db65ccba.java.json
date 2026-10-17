@@ -1,0 +1,379 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "serialize",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "graphFetchChecked",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "internalize",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::gen::PricesRecord",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::gen::TestBinding",
+          "sourceInformation" : {
+            "endColumn" : 74,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 53,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "var",
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 77,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 127,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 105,
+          "startLine" : 1
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::gen::PricesRecord",
+          "sourceInformation" : {
+            "endColumn" : 127,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 105,
+            "startLine" : 1
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "accountId",
+            "sourceInformation" : {
+              "endColumn" : 137,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 129,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "synonym",
+            "sourceInformation" : {
+              "endColumn" : 145,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 139,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "synonymType",
+            "sourceInformation" : {
+              "endColumn" : 157,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 147,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "currency",
+            "sourceInformation" : {
+              "endColumn" : 166,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 159,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "closePrice",
+            "sourceInformation" : {
+              "endColumn" : 177,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 168,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "priceFile",
+            "sourceInformation" : {
+              "endColumn" : 187,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 179,
+              "startLine" : 1
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "header",
+              "sourceInformation" : {
+                "endColumn" : 194,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 189,
+                "startLine" : 1
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "closeOfBusiness",
+                "sourceInformation" : {
+                  "endColumn" : 210,
+                  "endLine" : 1,
+                  "sourceId" : "",
+                  "startColumn" : 196,
+                  "startLine" : 1
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 101,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 85,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 253,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 231,
+        "startLine" : 1
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::gen::PricesRecord",
+        "sourceInformation" : {
+          "endColumn" : 253,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 231,
+          "startLine" : 1
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "accountId",
+          "sourceInformation" : {
+            "endColumn" : 263,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 255,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "synonym",
+          "sourceInformation" : {
+            "endColumn" : 271,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 265,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "synonymType",
+          "sourceInformation" : {
+            "endColumn" : 283,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 273,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "currency",
+          "sourceInformation" : {
+            "endColumn" : 292,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 285,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "closePrice",
+          "sourceInformation" : {
+            "endColumn" : 303,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 294,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "priceFile",
+          "sourceInformation" : {
+            "endColumn" : 313,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 305,
+            "startLine" : 1
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "header",
+            "sourceInformation" : {
+              "endColumn" : 320,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 315,
+              "startLine" : 1
+            },
+            "subTrees" : [ {
+              "_type" : "propertyGraphFetchTree",
+              "_type" : "propertyGraphFetchTree",
+              "parameters" : [ ],
+              "property" : "closeOfBusiness",
+              "sourceInformation" : {
+                "endColumn" : 336,
+                "endLine" : 1,
+                "sourceId" : "",
+                "startColumn" : 322,
+                "startLine" : 1
+              },
+              "subTrees" : [ ],
+              "subTypeTrees" : [ ]
+            } ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 227,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 219,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "genericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "String",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "multiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "name" : "data",
+    "sourceInformation" : {
+      "endColumn" : 14,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 342,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 15,
+    "startLine" : 1
+  }
+}
+}

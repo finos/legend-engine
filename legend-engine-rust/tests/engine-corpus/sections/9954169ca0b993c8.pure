@@ -1,0 +1,6 @@
+
+import meta::pure::metamodel::relation::*;
+function demo::relation::func::businessTemporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
+}

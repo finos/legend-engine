@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "snowflakePublic",
+        "passPhraseVaultReference" : "passRef",
+        "privateKeyVaultReference" : "privateKeyRef",
+        "publicUserName" : "myName",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 17
+        }
+      },
+      "databaseType" : "Snowflake",
+      "datasourceSpecification" : {
+        "_type" : "snowflake",
+        "accountName" : "account",
+        "databaseName" : "test",
+        "enableQueryTags" : true,
+        "quotedIdentifiersIgnoreCase" : false,
+        "region" : "us-east-1",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 6
+        },
+        "tempTableDb" : "temp_table_db",
+        "tempTableSchema" : "temp_table_schema",
+        "warehouseName" : "warehousename"
+      },
+      "element" : "store::Store",
+      "elementSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 4
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 2
+      },
+      "type" : "Snowflake"
+    },
+    "name" : "mySimpleConnection",
+    "package" : "meta",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 23,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

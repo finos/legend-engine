@@ -1,0 +1,17 @@
+
+Mapping Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::ServiceStore::description::ServiceGroup::Service::path::requestBody::method::parameters::response::security::allowReserved::required::location::style::explode::enum::body
+(
+  test::Person: ServiceStore
+  {
+    ~service [test::TradeProductServiceStore] TestServiceGroup.TestService
+    (
+       ~request
+       (
+           parameters
+           (
+               param = $this.prop
+           )
+       )
+    )
+  }
+)

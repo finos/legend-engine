@@ -1,0 +1,17 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  type: Postgres;
+  specification: Static
+  {
+    name: 'myDatabase';
+    host: 'myHost.com';
+    port: 8090;
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}

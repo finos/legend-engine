@@ -1,0 +1,18 @@
+
+ServiceStoreConnection test::serviceStore::caching::connection::PersonConnection
+{
+    store   : test::serviceStore::caching::store::PersonService;
+    baseUrl : 'http://127.0.0.1:55036';
+}ServiceStoreConnection test::serviceStore::caching::connection::FirmConnection
+{
+    store   : test::serviceStore::caching::store::FirmService;
+    baseUrl : 'http://127.0.0.1:55036';
+}ServiceStoreConnection test::serviceStore::caching::connection::AddressConnection
+{
+    store   : test::serviceStore::caching::store::AddressService;
+    baseUrl : 'http://127.0.0.1:55036';
+}ServiceStoreConnection test::serviceStore::caching::connection::StreetConnection
+{
+    store   : test::serviceStore::caching::store::StreetService;
+    baseUrl : 'http://127.0.0.1:55036';
+}

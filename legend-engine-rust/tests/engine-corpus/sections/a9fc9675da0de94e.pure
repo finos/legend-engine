@@ -1,0 +1,13 @@
+
+Class test::A
+[
+  constraint1
+  (    ~externalId: 'ext ID'
+    ~function: if($this.ok == 'ok', |true, |false)
+    ~enforcementLevel: Warn
+    ~message: $this.ok + ' is not ok'
+  )
+]
+{
+  ok: Integer[1..2];
+}

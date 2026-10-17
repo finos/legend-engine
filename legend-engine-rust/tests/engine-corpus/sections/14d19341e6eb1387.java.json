@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "ModelJoin association mapping requires a lambda join condition of the form '{src: SrcClass[1], tgt: TgtClass[1] | <boolean expression>}'",
+    "sourceInformation" : {
+      "endColumn" : 37,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 36
+    }
+  }
+}

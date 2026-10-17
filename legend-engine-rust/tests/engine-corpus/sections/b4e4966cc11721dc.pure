@@ -1,0 +1,14 @@
+
+Mapping demo::ShiftMapping
+(
+  *demo::Shift: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::ShiftDB]shiftTable.id
+    )
+    ~mainTable [demo::store::ShiftDB]shiftTable
+    id: [demo::store::ShiftDB]shiftTable.id,
+    startedAt: [demo::store::ShiftDB]shiftTable.startedAt
+  }
+)

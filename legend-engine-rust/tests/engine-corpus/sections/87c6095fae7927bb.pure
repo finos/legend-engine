@@ -1,0 +1,124 @@
+
+ServiceStore test::serviceStore::caching::store::PersonService
+(
+    ServiceGroup PersonService
+    (
+        path : '/persons';
+
+        Service AllPersonsService
+        (
+            path : '/allPersons';
+            method : GET;
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service PersonByNameService
+        (
+            path : '/personByName/{fullName}';
+            method : GET;
+            parameters :
+            (
+                "fullName" : String ( location = path )
+            );
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service PersonsByAddressNameService
+        (
+            path : '/personsByAddressName';
+            method : GET;
+            parameters :
+            (
+                "addressName" : String ( location = query, required = false )
+            );
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::FirmService
+(
+    ServiceGroup FirmService
+    (
+        path : '/firms';
+
+        Service AllFirmsService
+        (
+            path : '/allFirms';
+            method : GET;
+            response : [test::Firm <- test::firmServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service FirmByNameService
+        (
+            path : '/firmByName';
+            method : GET;
+            parameters :
+            (
+                "name" : String ( location = query )
+            );
+            response : [test::Firm <- test::firmServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::AddressService
+(
+    ServiceGroup AddressService
+    (
+        path : '/addresses';
+
+        Service AllAddressesService
+        (
+            path : '/allAddresses';
+            method : GET;
+            response : [test::Address <- test::addressServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service AddressByNameService
+        (
+            path : '/addressByName';
+            method : GET;
+            parameters :
+            (
+                "name" : String ( location = query )
+            );
+            response : [test::Address <- test::addressServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::StreetService
+(
+    ServiceGroup StreetService
+    (
+        path : '/streets';
+
+        Service AllStreetsService
+        (
+            path : '/allStreets';
+            method : GET;
+            response : [test::Street <- test::streetServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service StreetByIDService
+        (
+            path : '/streetByID';
+            method : GET;
+            parameters :
+            (
+                "streetId" : String ( location = query )
+            );
+            response : [test::Street <- test::streetServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)

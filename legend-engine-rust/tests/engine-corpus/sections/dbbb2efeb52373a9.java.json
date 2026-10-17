@@ -1,0 +1,38 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "mySimpleRuntime",
+    "package" : "meta",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "meta::mySimpleMapping",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 29
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 27
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 27
+    }
+  } ],
+  "imports" : [ ]
+}

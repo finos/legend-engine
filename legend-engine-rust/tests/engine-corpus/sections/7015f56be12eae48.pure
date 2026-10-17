@@ -1,0 +1,11 @@
+
+Mapping model::myRelationalMapping
+(
+  model::Person[person]: Relational
+  {
+    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,
+    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,
+    age: [model::relational::tests::dbInc]personTable.AGE,
+    firm:[model::relational::tests::dbInc]@Firm_Person 
+  }
+)

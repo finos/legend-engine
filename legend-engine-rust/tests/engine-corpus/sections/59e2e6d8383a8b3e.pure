@@ -1,0 +1,22 @@
+
+Database test::DataTypesDB
+(
+    Table dataTable
+    (
+        pk INTEGER PRIMARY KEY,
+        ti TINYINT,
+        si SMALLINT,
+        int INTEGER,
+        bi BIGINT,
+        vc VARCHAR(200),
+        c CHAR(1),
+        date DATE,
+        ts TIMESTAMP,
+        f FLOAT,
+        d DOUBLE,
+        bit BIT,
+        dec DECIMAL(38,15),
+        r REAL,
+        n NUMERIC(38,15)
+    )
+)

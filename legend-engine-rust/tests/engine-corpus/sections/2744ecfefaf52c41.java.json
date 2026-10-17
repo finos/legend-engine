@@ -1,0 +1,144 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "filter",
+      "parameters" : [ {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 18,
+          "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+          "startColumn" : 3,
+          "startLine" : 18
+        },
+        "type" : ">",
+        "value" : {
+          "path" : [ "demo::relation::db::EmployeeDB", "EmployeeTable" ],
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 18,
+            "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+            "startColumn" : 3,
+            "startLine" : 18
+          }
+        }
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "r",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 19,
+                "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+                "startColumn" : 18,
+                "startLine" : 19
+              }
+            } ],
+            "property" : "EMP_TYPE",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 19,
+              "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+              "startColumn" : 21,
+              "startLine" : 19
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 19,
+              "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+              "startColumn" : 33,
+              "startLine" : 19
+            },
+            "value" : "FULL_TIME"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 19,
+            "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+            "startColumn" : 30,
+            "startLine" : 19
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "r"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 19,
+          "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+          "startColumn" : 16,
+          "startLine" : 19
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 12,
+        "endLine" : 19,
+        "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+        "startColumn" : 7,
+        "startLine" : 19
+      }
+    } ],
+    "name" : "fullTimeEmployees__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 98,
+          "endLine" : 16,
+          "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+          "startColumn" : 53,
+          "startLine" : 16
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 97,
+            "endLine" : 16,
+            "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+            "startColumn" : 95,
+            "startLine" : 16
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "mappingFunction/fullTimeEmployees.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

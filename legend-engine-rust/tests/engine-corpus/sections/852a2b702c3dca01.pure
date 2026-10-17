@@ -1,0 +1,90 @@
+
+Runtime demo::runtime::ShiftGmtRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftGmtConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftRegionRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftRegionConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftUtcPrefixedOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftUtcPrefixedOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftHalfHourOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftHalfHourOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftDaylightSavingRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftDaylightSavingConnection
+    ]
+  ];
+}

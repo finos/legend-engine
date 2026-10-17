@@ -1,0 +1,5 @@
+
+function demo::relation::func::registeredFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::FirmRegistryDB.FirmRegistryTable}#
+}

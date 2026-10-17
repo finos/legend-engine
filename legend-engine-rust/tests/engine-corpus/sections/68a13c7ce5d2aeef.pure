@@ -1,0 +1,48 @@
+
+Mapping test::modelToModelMapping
+(
+    *test::changedModel: Pure
+{
+    ~src test::model
+    name: $src.name,
+    id: $src.id->parseInteger()
+}
+  testSuites:
+  [
+    testSuite1:
+    {
+      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+            #{
+               test::model:
+                Reference 
+                #{ 
+                  test::data::MyData
+                }#
+            }#
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+

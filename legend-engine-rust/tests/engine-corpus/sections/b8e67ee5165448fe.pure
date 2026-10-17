@@ -1,0 +1,10 @@
+
+Database demo::store::SalesDB
+(
+  Table SalesTable
+  (
+    id INTEGER PRIMARY KEY,
+    salesPerson VARCHAR(200),
+    amount INTEGER
+  )
+)

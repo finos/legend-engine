@@ -1,0 +1,24 @@
+
+Service anything::class
+{
+  pattern: 'url/myUrl/';
+  owners: ['test'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: '';
+    mapping: anything::somethingelse;
+    runtime:
+    #{
+     connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+    ];
+  }
+}

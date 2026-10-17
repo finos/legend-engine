@@ -1,0 +1,1234 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::domain::EmployeeTemporalLink",
+        "sourceInformation" : {
+          "endColumn" : 46,
+          "endLine" : 64,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 64
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "businessRecord",
+              "sourceInformation" : {
+                "endColumn" : 153,
+                "endLine" : 66,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 139,
+                "startLine" : 66
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 156,
+              "endLine" : 66,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 155,
+              "startLine" : 66
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "processingRecord",
+              "sourceInformation" : {
+                "endColumn" : 177,
+                "endLine" : 66,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 161,
+                "startLine" : 66
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 180,
+              "endLine" : 66,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 179,
+              "startLine" : 66
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 159,
+            "endLine" : 66,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 158,
+            "startLine" : 66
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::BusinessTemporalEmployee",
+              "sourceInformation" : {
+                "endColumn" : 69,
+                "endLine" : 66,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 22,
+                "startLine" : 66
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "businessRecord",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 66,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 66
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::TemporalEmployee",
+              "sourceInformation" : {
+                "endColumn" : 132,
+                "endLine" : 66,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 93,
+                "startLine" : 66
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "processingRecord",
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 66,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 75,
+            "startLine" : 66
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 180,
+          "endLine" : 66,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 137,
+          "startLine" : 66
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 67,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 64
+      },
+      "stores" : [ ]
+    }, {
+      "_type" : "modelJoin",
+      "association" : {
+        "path" : "demo::relation::domain::EmployeeDepartmentSameScheme",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 69,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 69
+        },
+        "type" : "ASSOCIATION"
+      },
+      "joinCondition" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "equal",
+          "parameters" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "employee",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 71,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 121,
+                "startLine" : 71
+              }
+            } ],
+            "property" : "id",
+            "sourceInformation" : {
+              "endColumn" : 132,
+              "endLine" : 71,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 131,
+              "startLine" : 71
+            }
+          }, {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "department",
+              "sourceInformation" : {
+                "endColumn" : 147,
+                "endLine" : 71,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 137,
+                "startLine" : 71
+              }
+            } ],
+            "property" : "employeeId",
+            "sourceInformation" : {
+              "endColumn" : 158,
+              "endLine" : 71,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 149,
+              "startLine" : 71
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 135,
+            "endLine" : 71,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 134,
+            "startLine" : 71
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::TemporalEmployee",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 71,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 16,
+                "startLine" : 71
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "employee",
+          "sourceInformation" : {
+            "endColumn" : 58,
+            "endLine" : 71,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 6,
+            "startLine" : 71
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "demo::relation::domain::TemporalDepartment",
+              "sourceInformation" : {
+                "endColumn" : 114,
+                "endLine" : 71,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 73,
+                "startLine" : 71
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "department",
+          "sourceInformation" : {
+            "endColumn" : 117,
+            "endLine" : 71,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 61,
+            "startLine" : 71
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 158,
+          "endLine" : 71,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 119,
+          "startLine" : 71
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 72,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 69
+      },
+      "stores" : [ ]
+    } ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::BusinessTemporalEmployee",
+      "id" : "biz",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 43,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          }
+        },
+        "source" : "biz",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 43,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 43
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 44,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          }
+        },
+        "source" : "biz",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 44,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 44
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 45,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "source" : "biz",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 45,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 45
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::businessTemporalEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 42,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 42
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 46,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::TemporalEmployee",
+      "id" : "proc",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 51,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "source" : "proc",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 51,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 52,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "source" : "proc",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 52,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 52
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 53,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 53
+          }
+        },
+        "source" : "proc",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 53,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 53
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::temporalEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 50,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 50
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 54,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 48
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::TemporalDepartment",
+      "id" : "dept",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalDepartment",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 59,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 59
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 59,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 59
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "NAME",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalDepartment",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 60,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 60,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 60
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMPLOYEE_ID",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalDepartment",
+          "property" : "employeeId",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 61,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 61
+          }
+        },
+        "source" : "dept",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 61,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 61
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::sameSchemeDepartments():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 58,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 58
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 62,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 56
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "AsymmetricMilestoningModelJoinMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 149,
+      "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 38
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::BusinessTemporalEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 78,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 78
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 78,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 71,
+                  "startLine" : 78
+                },
+                "value" : "2025-01-01"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 78,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 66,
+                "startLine" : 78
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 79,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 32,
+                    "startLine" : 79
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 79,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 35,
+                  "startLine" : 79
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 79,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 30,
+                "startLine" : 79
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 79,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 79
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 81,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 81
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 81,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 26,
+                    "startLine" : 81
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 81,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 29,
+                  "startLine" : 81
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 81,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 24,
+                "startLine" : 81
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 45,
+                      "endLine" : 81,
+                      "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                      "startColumn" : 44,
+                      "startLine" : 81
+                    }
+                  }, {
+                    "_type" : "strictDate",
+                    "sourceInformation" : {
+                      "endColumn" : 74,
+                      "endLine" : 81,
+                      "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                      "startColumn" : 64,
+                      "startLine" : 81
+                    },
+                    "value" : "2025-01-01"
+                  } ],
+                  "property" : "processingRecord",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 81,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 47,
+                    "startLine" : 81
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 85,
+                  "endLine" : 81,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 77,
+                  "startLine" : 81
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 81,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 42,
+                "startLine" : 81
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 82,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 82
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 82,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 22,
+                "startLine" : 82
+              },
+              "value" : "BizName"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 82,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 33,
+                "startLine" : 82
+              },
+              "value" : "ProcName"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 80,
+            "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 80
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 83,
+          "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 78
+        }
+      },
+      "id" : "diffSchemeModelJoinSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 111,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 76
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"BizName\":\"Alice\",\"ProcName\":\"Alice\"},{\"BizName\":\"Bob\",\"ProcName\":\"Bob\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 106,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 102
+            }
+          },
+          "id" : "shouldJoinAcrossDifferentMilestoningSchemes",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 107,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 99
+          }
+        } ],
+        "id" : "crossSchemeModelJoinAtDate",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 109,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 86
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::AsymmetricMilestoningData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 94,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 91
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 94,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 91
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 94,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 90
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 90,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 90
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::TemporalEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 114,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 18,
+                  "startLine" : 114
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 114,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 63,
+                  "startLine" : 114
+                },
+                "value" : "2025-01-01"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 114,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 58,
+                "startLine" : 114
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 115,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 32,
+                    "startLine" : 115
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 115,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 35,
+                  "startLine" : 115
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 115,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 30,
+                "startLine" : 115
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 115,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 115
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 75,
+              "endLine" : 117,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 117
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 117,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 26,
+                    "startLine" : 117
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 117,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 29,
+                  "startLine" : 117
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 117,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 24,
+                "startLine" : 117
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 45,
+                      "endLine" : 117,
+                      "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                      "startColumn" : 44,
+                      "startLine" : 117
+                    }
+                  }, {
+                    "_type" : "strictDate",
+                    "sourceInformation" : {
+                      "endColumn" : 68,
+                      "endLine" : 117,
+                      "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                      "startColumn" : 58,
+                      "startLine" : 117
+                    },
+                    "value" : "2025-06-01"
+                  } ],
+                  "property" : "department",
+                  "sourceInformation" : {
+                    "endColumn" : 56,
+                    "endLine" : 117,
+                    "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                    "startColumn" : 47,
+                    "startLine" : 117
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 117,
+                  "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                  "startColumn" : 71,
+                  "startLine" : 117
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 117,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 42,
+                "startLine" : 117
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 118,
+              "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+              "startColumn" : 21,
+              "startLine" : 118
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 118,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 22,
+                "startLine" : 118
+              },
+              "value" : "EmpName"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 42,
+                "endLine" : 118,
+                "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+                "startColumn" : 33,
+                "startLine" : 118
+              },
+              "value" : "DeptName"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 116,
+            "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+            "startColumn" : 21,
+            "startLine" : 116
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 119,
+          "sourceId" : "demo::relation::mapping::AsymmetricMilestoningModelJoinMapping",
+          "startColumn" : 17,
+          "startLine" : 114
+        }
+      },
+      "id" : "sameSchemeModelJoinSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 147,
+        "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 112
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"EmpName\":\"Alice\",\"DeptName\":\"Platform Engineering\"},{\"EmpName\":\"Bob\",\"DeptName\":\"Marketing\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 142,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 138
+            }
+          },
+          "id" : "shouldResolveDepartmentAtItsOwnDate",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 143,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 135
+          }
+        } ],
+        "id" : "sameSchemeModelJoinAtIndependentDates",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 145,
+          "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 122
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::SameSchemeMilestoningData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 130,
+                "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 127
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 130,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 127
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 130,
+            "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 126
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 126,
+              "sourceId" : "mapping/asymmetricMilestoningMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 126
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

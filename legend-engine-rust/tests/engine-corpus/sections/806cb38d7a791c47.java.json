@@ -1,0 +1,137 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Address",
+      "id" : "addr",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "CITY",
+        "property" : {
+          "class" : "my::Address",
+          "property" : "city",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "addr",
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::addressFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 46
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 52,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 52
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "id" : "addr",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 53,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 53
+          }
+        },
+        "propertyMappings" : [ ],
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 53,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 53
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 51,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 51
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 49
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 55,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

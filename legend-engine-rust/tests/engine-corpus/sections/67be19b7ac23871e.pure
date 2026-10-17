@@ -1,0 +1,96 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::MixedAssociationChainMapping
+(
+  *demo::relation::domain::Employee[emp]: Relational
+  {
+    ~primaryKey ([demo::relation::db::EmployeeDB]EmployeeTable.ID)
+    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
+    firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
+    lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [demo::relation::db::EmployeeDB]EmployeeTable.EMP_TYPE,
+    active: case(equal([demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE, 1), sqlTrue(), sqlFalse()),
+    hireDate: [demo::relation::db::EmployeeDB]EmployeeTable.HIRE_DATE,
+    salary: [demo::relation::db::EmployeeDB]EmployeeTable.SALARY,
+    +firmId: Integer[1]: [demo::relation::db::EmployeeDB]EmployeeTable.FIRM_ID,
+    +departmentId: Integer[0..1]: [demo::relation::db::EmployeeDB]EmployeeTable.DEPARTMENT_ID
+  }
+
+  *demo::relation::domain::Department[dept]: Relational
+  {
+    ~primaryKey ([demo::relation::db::EmployeeDB]DepartmentTable.ID)
+    ~mainTable [demo::relation::db::EmployeeDB]DepartmentTable
+    name: [demo::relation::db::EmployeeDB]DepartmentTable.NAME,
+    code: [demo::relation::db::EmployeeDB]DepartmentTable.CODE,
+    +id: Integer[1]: [demo::relation::db::EmployeeDB]DepartmentTable.ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  demo::relation::domain::EmployeeDepartment: XStore
+  {
+    department[emp, dept]: $this.departmentId == $that.id,
+    employeesInDept[dept, emp]: $this.id == $that.departmentId
+  }
+
+  testSuites:
+  [
+    chainedAssociationSuite:
+    {
+      // Filter on the intermediate hop (department.name), project through BOTH hops
+      // (department.name, employer.legalName) in the same query.
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.department.name == 'Engineering')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.department.name, x | $x.employer.legalName],
+                    ['Name', 'Department', 'Firm']
+                  );
+      tests:
+      [
+        engineeringOnly:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeChainData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterOnIntermediateHopAndProjectBoth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Department":"Engineering","Firm":"Acme"},{"Name":"Carol","Department":"Engineering","Firm":"Acme"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

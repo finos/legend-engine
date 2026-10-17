@@ -1,0 +1,28 @@
+
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  executables:
+  [
+    {
+      id: 2;
+      title: 'Template 2';
+      query: |model::Firm.all()->project(~[Cases:x|$x.cases, Fips:x|$x.fips]);
+      executionContextKey: 'Context 1';
+      sampleValues: Relation
+        #{
+          Cases, Fips
+          10   , A
+          25   , BC;
+        }#;
+    }
+  ];
+}

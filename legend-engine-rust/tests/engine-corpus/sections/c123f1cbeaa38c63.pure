@@ -1,0 +1,20 @@
+
+import meta::external::store::service::showcase::domain::*;
+
+Class meta::external::store::service::showcase::domain::Firm
+{
+    firmName   : String[1];
+    firmId     : Integer[1];
+    employees1 : Person[*];
+    employees2 : Person[*];
+}
+Class meta::external::store::service::showcase::domain::Person
+{
+    name             : String[1];
+    primaryAddress   : Address[1];
+    secondaryAddress : Address[1];
+}
+Class meta::external::store::service::showcase::domain::Address
+{
+    street : String[1];
+}

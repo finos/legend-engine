@@ -1,0 +1,33 @@
+
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person
+    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')
+  }
+
+  MappingTests
+  [
+    test1
+    (
+      query: src: meta::slang::transform::tests::Address[1]|$src.a;
+      data:
+      [
+      ];
+      assert: 'assertString';
+    ),
+    test2
+    (
+      query: |model::domain::Target.all()->graphFetchChecked(#{model::domain::Target{name}}#)->serialize(#{model::domain::Target{name}}#);
+      data:
+      [
+        <Object, JSON, model::domain::Source, '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}'>,
+        <Object, XML, SourceClass, '{"defects":[],"value":{"name":"oneName 99"},"source":{"defects":[],"value":{"oneName":"oneName 99"},"source":{"number":1,"record":"{\"oneName\":\"oneName 99\",\"anotherName\":\"{\\"anotherOne\\":\\"movie\\"}\"}"}}}'>
+      ];
+      assert: '{"defects":[],"value":{"name":"oneName 99"},"source":{"defects":[],"value":{"oneName":"oneName 99"},"source":{"number":1,"record":"{\"oneName\":\"oneName 99\",\"anotherName\":\"{\\"anotherOne\\":\\"movie\\"}\"}"}}}';
+    )
+  ]
+)

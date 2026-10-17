@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "no viable alternative at input '~pathresponse'",
+    "sourceInformation" : {
+      "endColumn" : 20,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 13,
+      "startLine" : 8
+    }
+  }
+}

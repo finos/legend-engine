@@ -1,0 +1,14 @@
+
+import meta::*;
+Runtime meta::mySimpleRuntime
+{
+  connectionStores:
+  [
+  meta::mySimpleConnection : [
+     ModelStore
+    ]
+  ];
+  mappings : 
+  [meta::mySimpleMapping
+  ];
+}

@@ -1,0 +1,23 @@
+
+Class <<temporal.processingtemporal>> test::ProcessingTemporalAddress
+{
+  processingDate: Date[1];
+}
+
+Class <<temporal.businesstemporal>> test::BusinessTemporalAddress
+{
+  businessDate: Date[1];
+}
+
+Class <<temporal.bitemporal>> test::BiTemporalAddress
+{
+  processingDate: Date[1];
+  businessDate: Date[1];
+}
+
+Class test::Person
+{
+  processingTemporalAddress : test::ProcessingTemporalAddress[1];
+  businessTemporalAddress : test::BusinessTemporalAddress[1];
+  biTemporalAddress : test::BiTemporalAddress[1];
+}

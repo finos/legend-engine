@@ -1,0 +1,4 @@
+
+Class <<temporal.bitemporal>> test::Order { createdLocation : test::Location[0..1]; }
+Class <<temporal.bitemporal>> test::Location{ place : String[1];}
+function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12, %2022-11-12).createdLocation.place} }

@@ -1,0 +1,9 @@
+
+Data Data
+{
+   ExternalFormat
+   #{
+     contentType: 'test';
+     data: 'test';
+   }#
+}

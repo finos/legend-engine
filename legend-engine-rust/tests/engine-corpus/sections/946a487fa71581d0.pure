@@ -1,0 +1,6 @@
+
+Class test::Foo { xs : String[*]; }
+function test::mkFoo(opt:String[0..1]):test::Foo[1]
+{
+   ^test::Foo(xs = [$opt])
+}

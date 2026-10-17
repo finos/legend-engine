@@ -1,0 +1,56 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;    }
+    ingestMode: UnitemporalDelta
+    {
+      mergeStrategy: NoDeletes;
+      transactionMilestoning: DateTime
+      {
+        dateTimeInName: 'IN_Z';
+        dateTimeOutName: 'OUT_Z';
+        derivation: SourceSpecifiesInDateTime
+        {
+          sourceDateTimeInField: 'dateTimeIn';
+        }
+      }
+    }
+    targetShape: Flat
+    {
+      targetName: 'TestDataset1';
+      modelClass: test::ServiceResult;
+    }
+  }
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                contentType: 'application/x.flatdata';
+                data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+              }#
+           }
+         }
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}

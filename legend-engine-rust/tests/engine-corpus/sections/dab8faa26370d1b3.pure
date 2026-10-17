@@ -1,0 +1,8 @@
+
+Data meta::data::MyData
+{
+   ExternalFormat
+   #{
+     data: '1B4A 9DEA 230F FF20';
+   }#
+}

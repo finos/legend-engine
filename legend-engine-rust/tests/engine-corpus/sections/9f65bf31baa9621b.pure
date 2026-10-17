@@ -1,0 +1,15 @@
+
+Database app::db
+(
+  Schema {meta::pure::profiles::doc.doc = 'Schema documentation'} mySchema
+  (
+    Table {meta::pure::profiles::doc.doc = 'Table documentation'} Product
+    (
+      ProductID {meta::pure::profiles::doc.doc = 'Column documentation'} VARCHAR(30) PRIMARY KEY
+    )
+  )
+  View {meta::pure::profiles::doc.doc = 'View documentation'} ProductView
+  (
+    id: mySchema.Product.ProductID
+  )
+)

@@ -1,0 +1,1 @@
+|#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,AGE])->meta::pure::functions::relation::extend(~[FIRSTNAME_TARGET:row|$row.FIRSTNAME,AGE_TARGET:row|$row.AGE])->meta::pure::functions::relation::select(~[FIRSTNAME_TARGET,AGE_TARGET])

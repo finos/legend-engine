@@ -1,0 +1,123 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::PersonWithGender",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::PersonWithGender",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 46,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "GENDER",
+        "enumMappingId" : "GenderMapping",
+        "property" : {
+          "class" : "my::PersonWithGender",
+          "property" : "gender",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personWithGenderFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 45,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 45
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 43
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "MALE",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "M"
+        } ]
+      }, {
+        "enumValue" : "FEMALE",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "F"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "my::Gender",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 38,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 38
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "GenderMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 42,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 38
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 49,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 36
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

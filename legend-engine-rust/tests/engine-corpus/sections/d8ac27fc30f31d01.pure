@@ -1,0 +1,16 @@
+
+Binding chain::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    chain::source::S_Firm,
+    chain::source::S_Address,
+    chain::source::S_Division,
+    chain::source::S_Location,
+    chain::source::S_Team,
+    chain::source::S_Terms,
+    chain::source::S_RepoTerms,
+    chain::source::S_Collateral,
+    chain::source::S_Identifier
+  ];
+}

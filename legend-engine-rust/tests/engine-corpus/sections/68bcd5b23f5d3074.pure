@@ -1,0 +1,10 @@
+
+RelationalMapper test::testMapper
+(
+   SchemaMappers:
+   [
+      test::OrganizationsDB.Org -> 'OrgSchema',
+      test::OrganizationsDB.Org -> 'OrgSchemaNew',
+      test::OrganizationsDB.Product -> 'ProductSchema'
+   ];
+)

@@ -1,0 +1,10 @@
+
+Mapping test::decomposeMapping
+(
+  *test::_Person: Pure
+  {
+    ~src test::Person
+    weightUnit: $src.weight->unitType(),
+    weightValue: $src.weight->unitValue()
+  }
+)

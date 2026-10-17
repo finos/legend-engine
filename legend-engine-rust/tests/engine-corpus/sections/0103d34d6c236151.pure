@@ -1,0 +1,6 @@
+
+Enum model::someEnum
+{
+  value1,
+  value2
+}

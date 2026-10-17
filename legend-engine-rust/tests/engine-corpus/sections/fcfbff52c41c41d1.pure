@@ -1,0 +1,14 @@
+
+Database test::DB
+(
+  Table tradeTable (
+    id INTEGER PRIMARY KEY,
+    time TIMESTAMP
+  )
+  Table positionTable (
+    milestoning(processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z))
+    id INTEGER PRIMARY KEY,
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
+  )
+)

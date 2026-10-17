@@ -1,0 +1,162 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "prop",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "fromJson",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "demo::Person",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 7
+          }
+        }, {
+          "_type" : "var",
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 39,
+            "startLine" : 7
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 7
+        }
+      } ],
+      "parameters" : [ {
+        "_type" : "var",
+        "genericType" : {
+          "multiplicityArguments" : [ ],
+          "rawType" : {
+            "_type" : "packageableType",
+            "fullPath" : "Byte",
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 7,
+              "sourceId" : "",
+              "startColumn" : 6,
+              "startLine" : 7
+            }
+          },
+          "typeArguments" : [ ],
+          "typeVariableValues" : [ ]
+        },
+        "multiplicity" : {
+          "lowerBound" : 0
+        },
+        "name" : "data",
+        "sourceInformation" : {
+          "endColumn" : 12,
+          "endLine" : 7,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 7
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      }
+    } ],
+    "name" : "testFunc__Any_1_",
+    "package" : "demo",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 5
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 45,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

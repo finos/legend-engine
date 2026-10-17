@@ -1,0 +1,16 @@
+
+Database <<equality.Key>> {doc.doc = 'schema'} test::db
+(
+  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema
+  (
+    Table <<equality.Key>> {doc.doc = 'table'} table1
+    (
+      col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)
+    )
+  )
+
+  View <<equality.Key>> {doc.doc = 'view'} view1
+  (
+    col1: mySchema.table1.col1
+  )
+)

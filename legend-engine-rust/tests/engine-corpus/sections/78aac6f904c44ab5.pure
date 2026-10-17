@@ -1,0 +1,19 @@
+
+function showcase::query(): Any[1]
+{
+   {firstName:String[1], middleName:String[0..1]|meta::external::store::service::showcase::domain::Person.all()
+       ->filter(p | $p.firstName == $firstName)
+       ->graphFetch(#{
+           meta::external::store::service::showcase::domain::Person {
+               firstName,
+               middleName,
+               lastName
+           }
+         }#)       ->serialize(#{
+           meta::external::store::service::showcase::domain::Person {
+               firstName,
+               middleName,
+               lastName
+           }
+        }#)};
+}

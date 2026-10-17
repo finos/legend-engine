@@ -1,0 +1,11 @@
+
+Mapping test::mapping::FirmMapping
+(
+  *test::model::Firm: Relational
+  {
+    ~primaryKey ([test::store::FirmDB]FIRM_TABLE.ID)
+    ~mainTable [test::store::FirmDB]FIRM_TABLE
+    id: [test::store::FirmDB]FIRM_TABLE.ID,
+    name: [test::store::FirmDB]FIRM_TABLE.NAME
+  }
+)

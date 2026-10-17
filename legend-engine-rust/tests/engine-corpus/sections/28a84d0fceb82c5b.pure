@@ -1,0 +1,17 @@
+
+Runtime meta::dataquality::DataQualityRuntime
+{
+  mappings:
+  [
+    meta::dataquality::dataquality::Mapping
+  ];
+  connections:
+  [
+    meta::dataquality::db:
+    [
+      connection_1: meta::dataquality::H2
+    ]
+  ];
+}
+
+

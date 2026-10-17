@@ -1,0 +1,51 @@
+
+Mapping demo::SalesSummaryMapping
+(
+  *demo::groupby::SalesSummary: Relational
+  {
+    ~groupBy
+    (
+      [demo::store::SalesDB]SalesTable.salesPerson
+    )
+    scope([demo::store::SalesDB]SalesTable)
+    (
+      salesPerson: salesPerson,
+      totalAmount: sum(amount)
+    )
+  }
+
+  testSuites:
+  [
+    groupBySuite:
+    {
+      function: |demo::groupby::SalesSummary.all()->project([x|$x.salesPerson, x|$x.totalAmount], ['Sales Person', 'Total'])->sort([asc('Sales Person')]);
+      tests:
+      [
+        aggregatesPerSalesPerson:
+        {
+          data:
+          [
+            demo::store::SalesDB:
+              Reference
+              #{
+                demo::data::SalesData
+              }#
+          ];
+          asserts:
+          [
+            shouldGroup:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Sales Person":"Jane","Total":5},{"Sales Person":"John","Total":30}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

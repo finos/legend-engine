@@ -1,0 +1,18 @@
+
+Database demo::store::PaymentDB
+(
+  Table CardPaymentTable
+  (
+    id INTEGER PRIMARY KEY,
+    reference VARCHAR(20),
+    amount INTEGER,
+    cardLast4 VARCHAR(4)
+  )
+  Table BankTransferTable
+  (
+    id INTEGER PRIMARY KEY,
+    reference VARCHAR(20),
+    amount INTEGER,
+    sortCode VARCHAR(8)
+  )
+)

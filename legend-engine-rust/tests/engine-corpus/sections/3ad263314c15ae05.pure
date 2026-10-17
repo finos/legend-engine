@@ -1,0 +1,2 @@
+
+Class my::A { x: String[1]; }

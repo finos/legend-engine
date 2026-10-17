@@ -1,0 +1,22 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "toBytes",
+    "originalMilestonedProperties" : [ ],
+    "package" : "import::Class::Association::Profile::Enum::Measure::function::extends::stereotypes::tags::Error::Warn::native::projects::as::composite::shared::none::all::let::allVersions::allVersionsInRange",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 3,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

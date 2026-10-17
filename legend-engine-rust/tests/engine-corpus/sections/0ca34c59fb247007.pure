@@ -1,0 +1,5 @@
+
+Class ui::Person
+{
+  name: String[1];
+}

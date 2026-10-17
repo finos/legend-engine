@@ -1,0 +1,1732 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "operation",
+      "class" : "demo::relation::domain::ExtendedEmployee",
+      "classSourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 20,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "operation" : "STORE_UNION",
+      "parameters" : [ "contractSet", "fullTimeSet" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::ExtendedEmployee",
+      "id" : "contractSet",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 28,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 28,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 29,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 29,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 30,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 30,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 31,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 31,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 32,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 32,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/unionEnumMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 32
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 32,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 32
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 32,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 32
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 32,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 32
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 38,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 38
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 33,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 33,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 34,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 34,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 34
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 35,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "propertyMappings" : [ {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "STREET",
+          "property" : {
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 37,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 37
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 37,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 37
+          }
+        }, {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "CITY",
+          "property" : {
+            "property" : "city",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 38,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 38
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 38,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 38
+          }
+        } ],
+        "source" : "contractSet",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 39,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::contractEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 27,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 27
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 25
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::ExtendedEmployee",
+      "id" : "fullTimeSet",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 45,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 45
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 45,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 45
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 46,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 46
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 46,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 46
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "LAST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "lastName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 47,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 47,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "EMP_TYPE",
+        "enumMappingId" : "EmployeeTypeMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "employeeType",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 48,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 48
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 48,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 48
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "active",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 49,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 49
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 28,
+          "endLine" : 49,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 49
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "equal",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 16,
+                  "endLine" : 49,
+                  "sourceId" : "mapping/unionEnumMapping.pure",
+                  "startColumn" : 13,
+                  "startLine" : 49
+                }
+              } ],
+              "property" : "ACTIVE",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 49,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 18,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "integer",
+              "sourceInformation" : {
+                "endColumn" : 28,
+                "endLine" : 49,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 28,
+                "startLine" : 49
+              },
+              "value" : 1
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 49,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 25,
+              "startLine" : 49
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 55,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 55
+          }
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "HIRE_DATE",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "hireDate",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 50,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 50
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 50,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 50
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 51,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 51
+          }
+        },
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 51,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 51
+        }
+      }, {
+        "_type" : "relationFunctionEmbeddedPropertyMapping",
+        "property" : {
+          "class" : "demo::relation::domain::ExtendedEmployee",
+          "property" : "address",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 52,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 52
+          }
+        },
+        "propertyMappings" : [ {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "STREET",
+          "property" : {
+            "property" : "street",
+            "sourceInformation" : {
+              "endColumn" : 12,
+              "endLine" : 54,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 54
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 54,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 54
+          }
+        }, {
+          "_type" : "relationFunctionPropertyMapping",
+          "column" : "CITY",
+          "property" : {
+            "property" : "city",
+            "sourceInformation" : {
+              "endColumn" : 10,
+              "endLine" : 55,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 7,
+              "startLine" : 55
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 55,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 7,
+            "startLine" : 55
+          }
+        } ],
+        "source" : "fullTimeSet",
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 56,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 52
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::fullTimeEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 44,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 44
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 42
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "FULL_TIME",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "FULL_TIME"
+        } ]
+      }, {
+        "enumValue" : "CONTRACT",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "CONTRACT"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "demo::relation::domain::EmployeeType",
+        "sourceInformation" : {
+          "endColumn" : 38,
+          "endLine" : 59,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 59
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "EmployeeTypeMapping",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 63,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 59
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeUnionEnumMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 178,
+      "sourceId" : "mapping/unionEnumMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::domain::ExtendedEmployee",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 69,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 18,
+                    "startLine" : 69
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 69,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 58,
+                  "startLine" : 69
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "e",
+                      "sourceInformation" : {
+                        "endColumn" : 33,
+                        "endLine" : 70,
+                        "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                        "startColumn" : 32,
+                        "startLine" : 70
+                      }
+                    } ],
+                    "property" : "employeeType",
+                    "sourceInformation" : {
+                      "endColumn" : 46,
+                      "endLine" : 70,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 35,
+                      "startLine" : 70
+                    }
+                  }, {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "packageableElementPtr",
+                      "fullPath" : "demo::relation::domain::EmployeeType",
+                      "sourceInformation" : {
+                        "endColumn" : 86,
+                        "endLine" : 70,
+                        "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                        "startColumn" : 51,
+                        "startLine" : 70
+                      }
+                    } ],
+                    "property" : "FULL_TIME",
+                    "sourceInformation" : {
+                      "endColumn" : 96,
+                      "endLine" : 70,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 88,
+                      "startLine" : 70
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 70,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 48,
+                    "startLine" : 70
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "e"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 96,
+                  "endLine" : 70,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 30,
+                  "startLine" : 70
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 70,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 21,
+                "startLine" : 70
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 71,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 32,
+                    "startLine" : 71
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 71,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 35,
+                  "startLine" : 71
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 71,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 71
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 71,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 71
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 73,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 73
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 73,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 26,
+                    "startLine" : 73
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 73,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 29,
+                  "startLine" : 73
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 73,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 24,
+                "startLine" : 73
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "toString",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 45,
+                      "endLine" : 73,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 44,
+                      "startLine" : 73
+                    }
+                  } ],
+                  "property" : "employeeType",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 73,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 47,
+                    "startLine" : 73
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 73,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 61,
+                  "startLine" : 73
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 73,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 42,
+                "startLine" : 73
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 74,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 74
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 74,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 22,
+                "startLine" : 74
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 74,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 74
+              },
+              "value" : "Type"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 72,
+            "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+            "startColumn" : 21,
+            "startLine" : 72
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 75,
+          "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+          "startColumn" : 17,
+          "startLine" : 69
+        }
+      },
+      "id" : "enumFilterAcrossUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 103,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 67
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Carol\",\"Type\":\"FULL_TIME\"},{\"Name\":\"David\",\"Type\":\"FULL_TIME\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 98,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 94
+            }
+          },
+          "id" : "shouldFilterByEnumAcrossUnion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 99,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 91
+          }
+        } ],
+        "id" : "fullTimeAcrossUnion",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 101,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 78
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeUnionEnumData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 86,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 83
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 86,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 83
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 86,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 82
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 82,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 82
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::ExtendedEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 106,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 18,
+                  "startLine" : 106
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 106,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 58,
+                "startLine" : 106
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 107,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 32,
+                    "startLine" : 107
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 107,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 35,
+                  "startLine" : 107
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 107,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 107
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 107,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 107
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 109,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 109
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 109,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 26,
+                    "startLine" : 109
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 109,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 29,
+                  "startLine" : 109
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 109,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 24,
+                "startLine" : 109
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 45,
+                      "endLine" : 109,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 44,
+                      "startLine" : 109
+                    }
+                  } ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 109,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 47,
+                    "startLine" : 109
+                  }
+                } ],
+                "property" : "city",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 109,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 55,
+                  "startLine" : 109
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 109,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 42,
+                "startLine" : 109
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 110,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 110
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 110,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 22,
+                "startLine" : 110
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 110,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 110
+              },
+              "value" : "City"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 108,
+            "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+            "startColumn" : 21,
+            "startLine" : 108
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 111,
+          "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+          "startColumn" : 17,
+          "startLine" : 106
+        }
+      },
+      "id" : "embeddedProjectAcrossUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 139,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 104
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Alice\",\"City\":\"London\"},{\"Name\":\"Bob\",\"City\":\"Paris\"},{\"Name\":\"Carol\",\"City\":\"Berlin\"},{\"Name\":\"David\",\"City\":\"London\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 134,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 130
+            }
+          },
+          "id" : "shouldProjectEmbeddedPropertyAcrossUnion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 135,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 127
+          }
+        } ],
+        "id" : "allCitiesAcrossUnion",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 137,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 114
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeUnionEnumData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 122,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 119
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 122,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 119
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 122,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 118
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 118,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 118
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "filter",
+              "parameters" : [ {
+                "_type" : "func",
+                "function" : "getAll",
+                "parameters" : [ {
+                  "_type" : "packageableElementPtr",
+                  "fullPath" : "demo::relation::domain::ExtendedEmployee",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 142,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 18,
+                    "startLine" : 142
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 142,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 58,
+                  "startLine" : 142
+                }
+              }, {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "equal",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "e",
+                        "sourceInformation" : {
+                          "endColumn" : 33,
+                          "endLine" : 143,
+                          "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                          "startColumn" : 32,
+                          "startLine" : 143
+                        }
+                      } ],
+                      "property" : "address",
+                      "sourceInformation" : {
+                        "endColumn" : 41,
+                        "endLine" : 143,
+                        "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                        "startColumn" : 35,
+                        "startLine" : 143
+                      }
+                    } ],
+                    "property" : "city",
+                    "sourceInformation" : {
+                      "endColumn" : 46,
+                      "endLine" : 143,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 43,
+                      "startLine" : 143
+                    }
+                  }, {
+                    "_type" : "string",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 143,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 51,
+                      "startLine" : 143
+                    },
+                    "value" : "London"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 143,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 48,
+                    "startLine" : 143
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "e"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 143,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 30,
+                  "startLine" : 143
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 26,
+                "endLine" : 143,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 21,
+                "startLine" : 143
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 144,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 32,
+                    "startLine" : 144
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 144,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 35,
+                  "startLine" : 144
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 144,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 144
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 144,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 144
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 146,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 146
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 146,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 26,
+                    "startLine" : 146
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 146,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 29,
+                  "startLine" : 146
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 146,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 24,
+                "startLine" : 146
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 45,
+                      "endLine" : 146,
+                      "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                      "startColumn" : 44,
+                      "startLine" : 146
+                    }
+                  } ],
+                  "property" : "address",
+                  "sourceInformation" : {
+                    "endColumn" : 53,
+                    "endLine" : 146,
+                    "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                    "startColumn" : 47,
+                    "startLine" : 146
+                  }
+                } ],
+                "property" : "city",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 146,
+                  "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                  "startColumn" : 55,
+                  "startLine" : 146
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 146,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 42,
+                "startLine" : 146
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 147,
+              "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+              "startColumn" : 21,
+              "startLine" : 147
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 147,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 22,
+                "startLine" : 147
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 35,
+                "endLine" : 147,
+                "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+                "startColumn" : 30,
+                "startLine" : 147
+              },
+              "value" : "City"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 145,
+            "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+            "startColumn" : 21,
+            "startLine" : 145
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 148,
+          "sourceId" : "demo::relation::mapping::EmployeeUnionEnumMapping",
+          "startColumn" : 17,
+          "startLine" : 142
+        }
+      },
+      "id" : "embeddedFilterAcrossUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 176,
+        "sourceId" : "mapping/unionEnumMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 140
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Alice\",\"City\":\"London\"},{\"Name\":\"David\",\"City\":\"London\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 171,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 167
+            }
+          },
+          "id" : "shouldFilterEmbeddedPropertyAcrossUnion",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 172,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 164
+          }
+        } ],
+        "id" : "londonAcrossBothLegs",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 174,
+          "sourceId" : "mapping/unionEnumMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 151
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::EmployeeUnionEnumData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 159,
+                "sourceId" : "mapping/unionEnumMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 156
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 159,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 156
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 159,
+            "sourceId" : "mapping/unionEnumMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 155
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 155,
+              "sourceId" : "mapping/unionEnumMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 155
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "demo::relation::func" ]
+}

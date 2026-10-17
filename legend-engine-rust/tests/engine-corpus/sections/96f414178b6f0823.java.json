@@ -1,0 +1,106 @@
+{
+  "elements" : [ {
+    "_type" : "persistence",
+    "documentation" : "test doc",
+    "name" : "TestPersistence",
+    "notifier" : {
+      "notifyees" : [ ]
+    },
+    "package" : "test",
+    "persister" : {
+      "_type" : "batchPersister",
+      "ingestMode" : {
+        "_type" : "appendOnly",
+        "auditing" : {
+          "_type" : "noAuditing"
+        },
+        "filterDuplicates" : false,
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 69
+        }
+      },
+      "sink" : {
+        "_type" : "relationalSink",
+        "database" : {
+          "path" : "test::Database",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 56
+          },
+          "type" : "STORE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 36,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 54
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 74,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 52
+      },
+      "targetShape" : {
+        "_type" : "multiFlatTarget",
+        "modelClass" : "test::ServiceResult",
+        "parts" : [ {
+          "deduplicationStrategy" : {
+            "_type" : "noDeduplicationStrategy"
+          },
+          "modelProperty" : "property1",
+          "partitionFields" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 63
+          },
+          "targetName" : "TestDataset1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 68,
+          "sourceId" : "",
+          "startColumn" : 18,
+          "startLine" : 57
+        },
+        "transactionScope" : "ALL_TARGETS"
+      }
+    },
+    "service" : {
+      "path" : "test::Service",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 51,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 51
+      },
+      "type" : "SERVICE"
+    },
+    "serviceOutputTargets" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 75,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 47
+    },
+    "trigger" : {
+      "_type" : "manualTrigger"
+    }
+  } ],
+  "imports" : [ ]
+}

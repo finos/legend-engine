@@ -1,0 +1,122 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::class",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 13,
+                "startLine" : 15
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 15
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x",
+                "sourceInformation" : {
+                  "endColumn" : 45,
+                  "endLine" : 15,
+                  "sourceId" : "",
+                  "startColumn" : 44,
+                  "startLine" : 15
+                }
+              } ],
+              "property" : "prop1",
+              "sourceInformation" : {
+                "endColumn" : 51,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 47,
+                "startLine" : 15
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "x"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 15
+            }
+          }, {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 15,
+              "sourceId" : "",
+              "startColumn" : 54,
+              "startLine" : 15
+            },
+            "value" : "prop1"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 32,
+            "startLine" : 15
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 15
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 13
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName" ],
+    "package" : "test",
+    "pattern" : "/url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 17,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

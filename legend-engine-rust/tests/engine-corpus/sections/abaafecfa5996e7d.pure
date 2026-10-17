@@ -1,0 +1,34 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: '/url/myUrl/';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Person.all()->project(~[name:p|$p.name]);
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1 'Happy path'
+    (
+      store::MyDatabase:
+        Relation
+        #{
+          default.PERSON_TABLE:
+              ID, NAME
+              1 , Alice
+              2 , Bob;
+        }#;
+      test_1 'basic query' =>
+        Relation
+        #{
+          Name
+          Alice
+          Bob;
+        }#;
+    )
+  ]
+}

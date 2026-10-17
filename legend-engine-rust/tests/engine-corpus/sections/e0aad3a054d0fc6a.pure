@@ -1,0 +1,8 @@
+
+Database a::A
+(
+  Table tb
+  (
+    id <<test::SampleProfile.important, test::SampleProfile.deprecated>> Integer
+  )
+)

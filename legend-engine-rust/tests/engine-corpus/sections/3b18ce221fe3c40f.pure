@@ -1,0 +1,10 @@
+
+Database demo::store::PersonKeyDB
+(
+  Table PersonTable
+  (
+    firstName VARCHAR(200) PRIMARY KEY,
+    lastName VARCHAR(200) PRIMARY KEY,
+    title VARCHAR(50)
+  )
+)

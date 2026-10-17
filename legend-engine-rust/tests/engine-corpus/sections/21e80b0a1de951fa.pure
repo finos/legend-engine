@@ -1,0 +1,4 @@
+
+HostedService anything::Name
+{   ownership :Deployment { identifier: '17'};
+   pattern : '/a/b';   documentation : 'blah';   function : a::f():String[1];   autoActivateUpdates : true;}

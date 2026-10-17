@@ -1,0 +1,376 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Manager",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "MANAGER_ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 131,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 16,
+            "startLine" : 131
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "PERSON_SCHEMA",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 131,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 16,
+              "startLine" : 131
+            },
+            "table" : "STAFF"
+          },
+          "tableAlias" : "STAFF"
+        }, {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 131,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 49,
+            "startLine" : 131
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssn::store::PersonDB",
+            "mainTableDb" : "demo::ssn::store::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 131,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 49,
+              "startLine" : 131
+            },
+            "table" : "{target}"
+          },
+          "tableAlias" : "{target}"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 131,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 47,
+          "startLine" : 131
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 60,
+        "endLine" : 131,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 131
+      }
+    } ],
+    "name" : "PersonDB",
+    "package" : "demo::ssn::store",
+    "schemas" : [ {
+      "name" : "PERSON_SCHEMA",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 129,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 93
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 98,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 98
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 99,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 99
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "PROFILE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 100,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 100
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_NESTED",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 101,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 96
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 105,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 105
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 106,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 106
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "PROFILE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 107,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 107
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_ROOT",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 108,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 103
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 112,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 112
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 113,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 113
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "PROFILE_JSON",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 114,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 114
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 1000
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "PERSON_TEXT",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 115,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 110
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 118,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 118
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 23,
+            "endLine" : 119,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 119
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "MANAGER_ID",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 120,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 120
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "PROFILE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 121,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 121
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "STAFF",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 122,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 116
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 125,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 125
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "REFERENCE",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 126,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 126
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "CONTENT",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 127,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 127
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "RECORD_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 128,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 123
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 132,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 91
+    },
+    "stereotypes" : [ ]
+  } ]
+}

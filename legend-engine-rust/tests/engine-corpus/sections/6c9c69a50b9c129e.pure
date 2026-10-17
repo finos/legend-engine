@@ -1,0 +1,8 @@
+
+Class my::Class
+{
+  (shared) prop1: String[1];
+  (none) prop2: String[1];
+  (composite) prop3: String[1];
+  prop4: String[1];
+}

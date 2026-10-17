@@ -1,0 +1,97 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ {
+      "profile" : "access",
+      "profileSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 5
+      },
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 5
+      },
+      "value" : "private"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 1
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 4,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 1
+        },
+        "value" : "doc"
+      },
+      "value" : {
+        "_type" : "string",
+        "multiLine" : true,
+        "value" : "Attached to the class.\nEverything else is untouched."
+      }
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 62,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 27,
+        "startLine" : 5
+      },
+      "tag" : {
+        "profile" : "meta::pure::profiles::doc",
+        "profileSourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 5
+        },
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 5,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 5
+        },
+        "value" : "todo"
+      },
+      "value" : "x"
+    } ]
+  } ],
+  "imports" : [ ]
+}

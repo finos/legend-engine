@@ -1,0 +1,14 @@
+
+import model::mapping::*;
+Mapping model::mapping::dummyMapping
+(
+)
+
+Mapping test::M1 (
+   include mapping dummyMapping   include dataspace model::dataspace::dataSpace
+   test::A[1]: Pure {
+      ~src test::S_A
+      prop1: $src.prop1
+   }
+)
+

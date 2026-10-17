@@ -1,0 +1,209 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "my::Person",
+      "id" : "person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRSTNAME",
+        "property" : {
+          "class" : "my::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 47
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 47
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "localMappingProperty" : {
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 48
+          },
+          "type" : "String"
+        },
+        "property" : {
+          "class" : "my::Person",
+          "property" : "ageBucket",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 48,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 48
+          }
+        },
+        "source" : "person",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 48,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 48
+        },
+        "valueFn" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "if",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "greaterThan",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 48,
+                    "sourceId" : "",
+                    "startColumn" : 31,
+                    "startLine" : 48
+                  }
+                } ],
+                "property" : "AGE",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 36,
+                  "startLine" : 48
+                }
+              }, {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 42,
+                  "startLine" : 48
+                },
+                "value" : 65
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 48
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 54,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 48
+                },
+                "value" : "senior"
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 54,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 46,
+                "startLine" : 48
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 64,
+                  "endLine" : 48,
+                  "sourceId" : "",
+                  "startColumn" : 58,
+                  "startLine" : 48
+                },
+                "value" : "other"
+              } ],
+              "parameters" : [ ],
+              "sourceInformation" : {
+                "endColumn" : 64,
+                "endLine" : 48,
+                "sourceId" : "",
+                "startColumn" : 57,
+                "startLine" : 48
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 48,
+              "sourceId" : "",
+              "startColumn" : 28,
+              "startLine" : 48
+            }
+          } ],
+          "parameters" : [ ],
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 51,
+            "sourceId" : "",
+            "startColumn" : 28,
+            "startLine" : 51
+          }
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "my::personFunction():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 11,
+          "startLine" : 46
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 49,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 44
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "testMapping",
+    "package" : "my",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 50,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 42
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

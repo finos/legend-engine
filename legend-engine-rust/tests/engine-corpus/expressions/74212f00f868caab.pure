@@ -1,0 +1,1 @@
+|demo::Person.all()->project(~[fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)

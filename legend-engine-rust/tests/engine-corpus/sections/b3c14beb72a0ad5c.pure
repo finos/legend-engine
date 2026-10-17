@@ -1,0 +1,12 @@
+
+Data demo::data::ShapeSingleData
+{
+  Relational
+  #{
+    default.ShapeTable:
+      'id,kind,name,radius,side\n' +
+      '1,circle,Big Circle,10,0\n' +
+      '2,square,Small Square,0,5\n' +
+      '3,circle,Small Circle,2,0\n';
+  }#
+}

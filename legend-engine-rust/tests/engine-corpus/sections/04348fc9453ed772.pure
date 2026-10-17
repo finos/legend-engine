@@ -1,0 +1,84 @@
+
+Mapping model::M2MSimpleMapping
+(
+  *model::TargetPerson: Pure
+  {
+    ~src model::Person
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+
+  testSuites:
+  [
+    graphFetchSuite:
+    {
+      function: |model::TargetPerson.all()->graphFetch(
+  #{
+    model::TargetPerson{
+      fullName
+    }
+  }#
+)->serialize(
+  #{
+    model::TargetPerson{
+      fullName
+    }
+  }#
+);
+      tests:
+      [
+        dataReferenceOnPerson:
+        {
+          data:
+          [
+            ModelStore:
+              ModelStore
+              #{
+                model::Person:
+                  Reference
+                  #{
+                    model::PersonData
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expectedAssertion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '';
+                  }#;
+              }#
+          ];
+        },
+        dataReference:
+        {
+          data:
+          [
+            ModelStore:
+              Reference
+              #{
+                model::ModelStoreRef
+              }#
+          ];
+          asserts:
+          [
+            expectedAssertion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

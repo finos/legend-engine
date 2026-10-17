@@ -1,0 +1,16 @@
+
+Data demo::ssj::data::HrData
+{
+  Relation
+  #{
+    default.EMPLOYEE:
+      ID,NAME,PROFILE
+      1,Alice,"{""employment"":{""firmId"":""f1"",""grade"":3}}"
+      2,Bob,"{""employment"":{""firmId"":""f2"",""grade"":5}}";
+
+    default.FIRM:
+      ID,LEGAL_NAME
+      f1,Firm One
+      f2,Firm Two;
+  }#
+}

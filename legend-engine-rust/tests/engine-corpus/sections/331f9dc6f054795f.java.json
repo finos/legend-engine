@@ -1,0 +1,241 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "db",
+    "package" : "store::relational",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 15,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 8
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Firm",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 6
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 13,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 13
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Firm1",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 11
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 16,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ {
+      "path" : "store::relational::db",
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ ],
+    "name" : "db1",
+    "package" : "store::relational",
+    "schemas" : [ {
+      "name" : "mySchema",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 25,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 25
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "Firm",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ]
+  }, {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ {
+      "path" : "store::relational::db1",
+      "sourceInformation" : {
+        "endColumn" : 32,
+        "endLine" : 32,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "type" : "STORE"
+    } ],
+    "joins" : [ {
+      "name" : "Firm_Person",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 20,
+            "startLine" : 34
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::relational::db1",
+            "mainTableDb" : "store::relational::db1",
+            "schema" : "mySchema",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 44,
+              "startLine" : 34
+            },
+            "table" : "Firm"
+          },
+          "tableAlias" : "Firm"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 103,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 63,
+            "startLine" : 34
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "store::relational::db1",
+            "mainTableDb" : "store::relational::db1",
+            "schema" : "mySchema",
+            "sourceInformation" : {
+              "endColumn" : 100,
+              "endLine" : 34,
+              "sourceId" : "",
+              "startColumn" : 87,
+              "startLine" : 34
+            },
+            "table" : "Firm1"
+          },
+          "tableAlias" : "Firm1"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 103,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 61,
+          "startLine" : 34
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 104,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 34
+      }
+    } ],
+    "name" : "db2",
+    "package" : "store::relational",
+    "schemas" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ]
+  } ]
+}

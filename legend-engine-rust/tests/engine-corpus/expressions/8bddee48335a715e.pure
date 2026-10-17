@@ -1,0 +1,1 @@
+|Person.all().age->map(p|$p / 10)

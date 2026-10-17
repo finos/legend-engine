@@ -1,0 +1,15 @@
+
+ServiceStore test::testServiceStoreGrammarWithSingleService
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      serializationFormat : String ( location = query, style = simple, explode = true )
+    );
+    response : ExampleClass <- tests::store::exampleBinding ;
+    security : [];
+  )
+)

@@ -1,0 +1,6 @@
+
+function test::fetch(): Any[1]
+{
+  {names:String[*] | test::Person.all()
+                        ->project([x | $x.fullName], ['fullName'])}
+}

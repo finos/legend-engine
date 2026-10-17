@@ -1,0 +1,6 @@
+
+Data model::element{
+  ExternalFormat  #{
+    contentType: 'application/x.flatdata';
+    data: 'sample data';
+  }#}

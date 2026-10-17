@@ -1,0 +1,14 @@
+
+Mapping demo::mapping::Map1
+(
+  *demo::model::ChildClass: Relational
+  {
+    ~primaryKey
+    (
+      [demo::stores::Db]First.Source.accountNumber
+    )
+    ~mainTable [demo::stores::Db]First.Source
+    Name: [demo::stores::Db]First.Source.name,
+    accountNumber: [demo::stores::Db]First.Source.accountNumber
+  }
+)

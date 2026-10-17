@@ -1,0 +1,13 @@
+
+Class ui::Person
+{
+  name: String[1];
+}
+
+Class ui::Employee extends ui::Person
+[
+  a: $this.name == 'a'
+]
+{
+  companyName: String[0..1];
+}

@@ -1,0 +1,12 @@
+
+Data arr::data::D
+{
+  Relation
+  #{
+    default.T:
+      ID,DOC
+      1,"{""tags"":[""red"",""blue""],""divisions"":[{""name"":""Alpha"",""headcount"":9},{""name"":""Beta"",""headcount"":100}]}"
+      2,"{""tags"":[],""divisions"":[{""name"":""Gamma"",""headcount"":50}]}"
+      3,"{}";
+  }#
+}

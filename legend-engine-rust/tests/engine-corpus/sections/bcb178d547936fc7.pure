@@ -1,0 +1,15 @@
+
+Class model::Person
+{
+   name:String[1];
+   firm:model::Firm[1];
+   other:model::Other[1];
+}
+Class model::Firm
+{
+   name:String[1];
+}
+Class model::Other
+{
+   name:String[1];
+}

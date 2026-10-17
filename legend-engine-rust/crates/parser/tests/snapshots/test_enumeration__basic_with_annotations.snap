@@ -1,0 +1,301 @@
+---
+source: crates/parser/tests/test_enumeration.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Enumeration(
+                    EnumDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 91,
+                                    end_line: 2,
+                                    end_column: 92,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "Color",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 95,
+                                end_line: 2,
+                                end_column: 99,
+                            },
+                        },
+                        values: [
+                            EnumValue {
+                                name: "RED",
+                                stereotypes: [
+                                    StereotypePtr {
+                                        profile: PackageableElementPtr {
+                                            package: Some(
+                                                Package {
+                                                    name: "profiles",
+                                                    parent: Some(
+                                                        Package {
+                                                            name: "pure",
+                                                            parent: Some(
+                                                                Package {
+                                                                    name: "meta",
+                                                                    parent: None,
+                                                                    source_info: SourceInfo {
+                                                                        source: "test.pure",
+                                                                        start_line: 4,
+                                                                        start_column: 7,
+                                                                        end_line: 4,
+                                                                        end_column: 10,
+                                                                    },
+                                                                },
+                                                            ),
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 4,
+                                                                start_column: 13,
+                                                                end_line: 4,
+                                                                end_column: 16,
+                                                            },
+                                                        },
+                                                    ),
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 4,
+                                                        start_column: 19,
+                                                        end_line: 4,
+                                                        end_column: 26,
+                                                    },
+                                                },
+                                            ),
+                                            name: "doc",
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 7,
+                                                end_line: 4,
+                                                end_column: 31,
+                                            },
+                                        },
+                                        value: "deprecated",
+                                        value_source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 33,
+                                            end_line: 4,
+                                            end_column: 42,
+                                        },
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 7,
+                                            end_line: 4,
+                                            end_column: 42,
+                                        },
+                                    },
+                                ],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 5,
+                                    end_line: 4,
+                                    end_column: 48,
+                                },
+                            },
+                            EnumValue {
+                                name: "GREEN",
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 5,
+                                    start_column: 5,
+                                    end_line: 5,
+                                    end_column: 9,
+                                },
+                            },
+                            EnumValue {
+                                name: "BLUE",
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 6,
+                                    start_column: 5,
+                                    end_line: 6,
+                                    end_column: 8,
+                                },
+                            },
+                        ],
+                        stereotypes: [
+                            StereotypePtr {
+                                profile: PackageableElementPtr {
+                                    package: Some(
+                                        Package {
+                                            name: "profiles",
+                                            parent: Some(
+                                                Package {
+                                                    name: "pure",
+                                                    parent: Some(
+                                                        Package {
+                                                            name: "meta",
+                                                            parent: None,
+                                                            source_info: SourceInfo {
+                                                                source: "test.pure",
+                                                                start_line: 2,
+                                                                start_column: 8,
+                                                                end_line: 2,
+                                                                end_column: 11,
+                                                            },
+                                                        },
+                                                    ),
+                                                    source_info: SourceInfo {
+                                                        source: "test.pure",
+                                                        start_line: 2,
+                                                        start_column: 14,
+                                                        end_line: 2,
+                                                        end_column: 17,
+                                                    },
+                                                },
+                                            ),
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 2,
+                                                start_column: 20,
+                                                end_line: 2,
+                                                end_column: 27,
+                                            },
+                                        },
+                                    ),
+                                    name: "doc",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 2,
+                                        start_column: 8,
+                                        end_line: 2,
+                                        end_column: 32,
+                                    },
+                                },
+                                value: "deprecated",
+                                value_source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 34,
+                                    end_line: 2,
+                                    end_column: 43,
+                                },
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 8,
+                                    end_line: 2,
+                                    end_column: 43,
+                                },
+                            },
+                        ],
+                        tagged_values: [
+                            TaggedValue {
+                                tag: TagPtr {
+                                    profile: PackageableElementPtr {
+                                        package: Some(
+                                            Package {
+                                                name: "profiles",
+                                                parent: Some(
+                                                    Package {
+                                                        name: "pure",
+                                                        parent: Some(
+                                                            Package {
+                                                                name: "meta",
+                                                                parent: None,
+                                                                source_info: SourceInfo {
+                                                                    source: "test.pure",
+                                                                    start_line: 2,
+                                                                    start_column: 48,
+                                                                    end_line: 2,
+                                                                    end_column: 51,
+                                                                },
+                                                            },
+                                                        ),
+                                                        source_info: SourceInfo {
+                                                            source: "test.pure",
+                                                            start_line: 2,
+                                                            start_column: 54,
+                                                            end_line: 2,
+                                                            end_column: 57,
+                                                        },
+                                                    },
+                                                ),
+                                                source_info: SourceInfo {
+                                                    source: "test.pure",
+                                                    start_line: 2,
+                                                    start_column: 60,
+                                                    end_line: 2,
+                                                    end_column: 67,
+                                                },
+                                            },
+                                        ),
+                                        name: "doc",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 2,
+                                            start_column: 48,
+                                            end_line: 2,
+                                            end_column: 72,
+                                        },
+                                    },
+                                    value: "doc",
+                                    source_info: SourceInfo {
+                                        source: "test.pure",
+                                        start_line: 2,
+                                        start_column: 74,
+                                        end_line: 2,
+                                        end_column: 76,
+                                    },
+                                },
+                                value: "An enum",
+                                multi_line: false,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 48,
+                                    end_line: 2,
+                                    end_column: 88,
+                                },
+                            },
+                        ],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 7,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

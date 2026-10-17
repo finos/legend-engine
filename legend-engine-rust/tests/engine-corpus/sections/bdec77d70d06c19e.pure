@@ -1,0 +1,14 @@
+
+DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.InDevelopment, meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.External>>
+  model::MySpace
+{
+  executionContexts:
+  [
+    {
+      name: 'prod';
+      mapping: model::MyMapping;
+      defaultRuntime: model::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'prod';
+}

@@ -1,0 +1,27 @@
+
+Mapping mapping::ModelToModelMapping
+(
+  *model::target::_Person: Pure
+  {
+    ~src model::Person
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+  *model::target::_Firm: Pure
+  {
+    ~src model::Firm
+    employees[model_target__Person]: $src.employees,
+    type: EnumerationMapping model_target_IncType: $src.type,
+    name: $src.legalName
+  }
+
+  model::target::IncType: EnumerationMapping
+  {
+    LLC: ['llc'],
+    CORP: ['corp']
+  }
+)
+
+Mapping model::mapping::TestMapping
+(
+)
+

@@ -1,0 +1,7 @@
+
+Class demo::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
+}

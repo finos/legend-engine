@@ -1,0 +1,15 @@
+
+Class test::Person
+{
+  fullName: String[1];
+}
+
+Class test::Firm
+{
+  firmName: String[1];
+}
+
+Enum test::Enum
+{
+  A, B, C
+}

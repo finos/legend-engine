@@ -1,0 +1,8 @@
+
+Class test::A
+[
+   ok
+]
+{
+   names : String[*];
+}

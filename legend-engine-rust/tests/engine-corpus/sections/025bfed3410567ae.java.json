@@ -1,0 +1,154 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "demo::relation::m2m::EmployeeCard",
+      "classSourceInformation" : {
+        "endColumn" : 36,
+        "endLine" : 26,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 4,
+        "startLine" : 26
+      },
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "demo::relation::m2m::EmployeeCard",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 29,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 24,
+          "endLine" : 29,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 29,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 11,
+                "startLine" : 29
+              }
+            } ],
+            "property" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 24,
+              "endLine" : 29,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 16,
+              "startLine" : 29
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "demo::relation::m2m::EmployeeCard",
+          "property" : "employerName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 30,
+            "sourceId" : "chain/modelChain.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "source" : "",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 30,
+          "sourceId" : "chain/modelChain.pure",
+          "startColumn" : 5,
+          "startLine" : 30
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 22,
+                  "endLine" : 30,
+                  "sourceId" : "chain/modelChain.pure",
+                  "startColumn" : 19,
+                  "startLine" : 30
+                }
+              } ],
+              "property" : "employer",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 30,
+                "sourceId" : "chain/modelChain.pure",
+                "startColumn" : 24,
+                "startLine" : 30
+              }
+            } ],
+            "property" : "legalName",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 30,
+              "sourceId" : "chain/modelChain.pure",
+              "startColumn" : 33,
+              "startLine" : 30
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : true,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 41,
+        "endLine" : 28,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 10,
+        "startLine" : 28
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 31,
+        "sourceId" : "chain/modelChain.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "srcClass" : "demo::relation::domain::Employee"
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "EmployeeCardChainMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 32,
+      "sourceId" : "chain/modelChain.pure",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

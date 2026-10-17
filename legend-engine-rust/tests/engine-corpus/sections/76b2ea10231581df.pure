@@ -1,0 +1,56 @@
+
+RelationalDatabaseConnection runtime::connection::dummyConnection
+{
+  store: store::CustomerDataStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection runtime::connection::snowflakeConnectionWithoutRole
+{
+  store: store::CustomerDataStore;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dummyDB';
+    account: 'account';
+    warehouse: 'warehouse';
+    region: 'us-east-1';
+    enableQueryTags: true;
+    accountType: VPS;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}
+
+RelationalDatabaseConnection runtime::connection::snowflakeConnection
+{
+  store: store::CustomerDataStore;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'name';
+    account: 'account';
+    warehouse: 'warehouse';
+    region: 'region';
+    enableQueryTags: true;
+    accountType: VPS;
+    role: 'role';
+    organization: 'organization';
+    cloudType: 'cloudType';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}

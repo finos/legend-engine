@@ -1,0 +1,9 @@
+
+MemSqlFunction <<a::A.test>> {a::A.val = 'ok'} xx::A
+{
+   functionName : 'demoFunction';
+   function : zxx(Integer[1]):String[1];
+   ownership : Deployment { identifier: 'testDeployment' };
+   description : 'Its a single store function!';
+   activationConfiguration : a::b::connection;
+}

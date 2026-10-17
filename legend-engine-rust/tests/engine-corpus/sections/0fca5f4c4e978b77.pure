@@ -1,0 +1,9 @@
+
+Mapping test::mapping::FirmMapping
+(
+  *test::model::Firm: Pure
+  {
+    ~src test::model::Firm
+    legalName: $src.legalName
+  }
+)

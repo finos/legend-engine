@@ -1,0 +1,570 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::Person",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 52,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::DB",
+        "mainTableDb" : "test::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 58,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 58
+        },
+        "table" : "PERSON"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "fullName",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 56
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "test::DB",
+          "mainTableDb" : "test::DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 56,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 56
+          },
+          "table" : "PERSON"
+        },
+        "tableAlias" : "PERSON"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Person",
+          "property" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 59
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "fullName",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 59
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 59
+            },
+            "table" : "PERSON"
+          },
+          "tableAlias" : "PERSON"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 59
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Person",
+          "property" : "birthTime",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 60
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "birthTime",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 60
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 60
+            },
+            "table" : "PERSON"
+          },
+          "tableAlias" : "PERSON"
+        },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 60
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Person",
+          "property" : "firmName",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 61
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "firmName",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 61
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 30,
+              "endLine" : 61,
+              "sourceId" : "",
+              "startColumn" : 25,
+              "startLine" : 61
+            },
+            "table" : "PERSON"
+          },
+          "tableAlias" : "PERSON"
+        },
+        "sourceInformation" : {
+          "endColumn" : 39,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 13,
+          "startLine" : 61
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 52
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "test::Address",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 63
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::DB",
+        "mainTableDb" : "test::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 65,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 65
+        },
+        "table" : "Address"
+      },
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Address",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 66
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 66,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 66
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 28,
+              "endLine" : 66,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 66
+            },
+            "table" : "Address"
+          },
+          "tableAlias" : "Address"
+        },
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 66,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 66
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Address",
+          "property" : "street",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 67
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "test::DB",
+            "name" : "Address_Street",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 67,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 67
+            }
+          } ],
+          "relationalElement" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 67,
+              "sourceId" : "",
+              "startColumn" : 42,
+              "startLine" : 67
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "test::DB",
+              "mainTableDb" : "test::DB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 67,
+                "sourceId" : "",
+                "startColumn" : 42,
+                "startLine" : 67
+              },
+              "table" : "Street"
+            },
+            "tableAlias" : "Street"
+          },
+          "sourceInformation" : {
+            "endColumn" : 52,
+            "endLine" : 67,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 67
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 67,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 67
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 68,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 63
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "test::Location",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 69
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "test::DB",
+        "mainTableDb" : "test::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 75,
+          "sourceId" : "",
+          "startColumn" : 26,
+          "startLine" : 75
+        },
+        "table" : "Location"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 73,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 73
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "test::DB",
+          "mainTableDb" : "test::DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 73,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 73
+          },
+          "table" : "Location"
+        },
+        "tableAlias" : "Location"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Location",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 76
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 76,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 76
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 76,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 76
+            },
+            "table" : "Location"
+          },
+          "tableAlias" : "Location"
+        },
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 76,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 76
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "enumMappingId" : "LocationEnumMapping",
+        "property" : {
+          "class" : "test::Location",
+          "property" : "city",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 77
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "city",
+          "sourceInformation" : {
+            "endColumn" : 73,
+            "endLine" : 77,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 77
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "test::DB",
+            "mainTableDb" : "test::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 77,
+              "sourceId" : "",
+              "startColumn" : 61,
+              "startLine" : 77
+            },
+            "table" : "Location"
+          },
+          "tableAlias" : "Location"
+        },
+        "sourceInformation" : {
+          "endColumn" : 73,
+          "endLine" : 77,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 77
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 78,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 69
+      }
+    } ],
+    "enumerationMappings" : [ {
+      "enumValueMappings" : [ {
+        "enumValue" : "AMERICAS",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "NewYork"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "Dallas"
+        } ]
+      }, {
+        "enumValue" : "EMEA",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "Paris"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "Stockholm"
+        } ]
+      }, {
+        "enumValue" : "ASIA_PACIFIC",
+        "sourceValues" : [ {
+          "_type" : "stringSourceValue",
+          "value" : "Singapore"
+        }, {
+          "_type" : "stringSourceValue",
+          "value" : "HongKong"
+        } ]
+      } ],
+      "enumeration" : {
+        "path" : "test::LocationEnum",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 79,
+          "sourceId" : "",
+          "startColumn" : 1,
+          "startLine" : 79
+        },
+        "type" : "ENUMERATION"
+      },
+      "id" : "LocationEnumMapping",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 84,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 79
+      }
+    } ],
+    "includedMappings" : [ ],
+    "name" : "Map",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 85,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 50
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

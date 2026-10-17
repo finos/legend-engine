@@ -1,0 +1,34 @@
+
+Mapping demo::PersonMap
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::PersonDB]PERSON_TBL.ID
+    )
+    ~mainTable [demo::PersonDB]PERSON_TBL
+    id: [demo::PersonDB]PERSON_TBL.ID,
+    fullName: [demo::PersonDB]PERSON_TBL.FULL_NAME,
+    age: [demo::PersonDB]PERSON_TBL.AGE,
+    emailAddress: [demo::PersonDB]PERSON_TBL.EMAIL,
+    annualSalary: [demo::PersonDB]PERSON_TBL.SALARY,
+    dateOfBirth: [demo::PersonDB]PERSON_TBL.DOB
+  }
+
+  *demo::SampleData: Relational
+  {
+    ~primaryKey
+    (
+      [demo::PersonDB]SAMPLE_VAL_TBL.ID
+    )
+    ~mainTable [demo::PersonDB]SAMPLE_VAL_TBL
+    id: [demo::PersonDB]SAMPLE_VAL_TBL.ID,
+    strCol: [demo::PersonDB]SAMPLE_VAL_TBL.STR_COL,
+    intCol: [demo::PersonDB]SAMPLE_VAL_TBL.INT_COL,
+    floatCol: [demo::PersonDB]SAMPLE_VAL_TBL.FLOAT_COL,
+    dateCol: [demo::PersonDB]SAMPLE_VAL_TBL.DATE_COL,
+    boolCol: [demo::PersonDB]SAMPLE_VAL_TBL.BOOL_COL
+  }
+)
+

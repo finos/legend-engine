@@ -1,0 +1,41 @@
+
+RelationalDatabaseConnection demo::connection::ReadingNoZoneConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ReadingUtcConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  timezone: 'UTC';
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ReadingNewYorkConnection
+{
+  store: demo::store::ReadingDB;
+  type: H2;
+  timezone: 'America/New_York';
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE \'2012-05-20 13:10:52.501+10:00\');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE \'2012-05-20 03:10:52.501-04:00\');\n'
+    ];
+  };
+  auth: DefaultH2;
+}

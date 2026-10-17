@@ -1,0 +1,46 @@
+
+Runtime meta::mySimpleRuntime
+{
+  mappings:
+  [
+    mySimpleMapping
+  ];
+  connections:
+  [
+    'my Store':
+    [
+      'id 1': 'my Simple Connection',
+      'id 2': test::'a connection'
+    ],
+    'Model Store':
+    [
+      id3: test::connection,
+      id4:
+      #{
+        JsonModelConnection
+        {
+          class: mySimpleClass;
+          url: 'my_url';
+        }
+      }#,
+      id5:
+      #{
+        JsonModelConnection
+        {
+          class: meta::mySimpleClass;
+          url: 'my_url';
+        }
+      }#,
+      id6:
+      #{
+        ModelChainConnection
+        {
+          mappings: [
+            mapping::MyMapping1,
+            mapping::MyMapping2
+          ];
+        }
+      }#
+    ]
+  ];
+}

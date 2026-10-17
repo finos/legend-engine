@@ -1,0 +1,11 @@
+
+Class test::A
+{
+   name : String[1];
+}
+
+Class test::B
+{
+   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];
+   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];
+}

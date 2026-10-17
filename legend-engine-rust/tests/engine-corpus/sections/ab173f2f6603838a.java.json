@@ -1,0 +1,168 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 32,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 32
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 31,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 26
+        },
+        "testDataSetupSqls" : [ "DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE '2012-05-20 13:10:52.501+10:00');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE '2012-05-20 03:10:52.501-04:00');\n" ]
+      },
+      "element" : "demo::store::ReadingDB",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 24,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 24
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 33,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 22
+      },
+      "type" : "H2"
+    },
+    "name" : "ReadingNoZoneConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 22
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 46,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 46
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 45,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 40
+        },
+        "testDataSetupSqls" : [ "DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE '2012-05-20 13:10:52.501+10:00');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE '2012-05-20 03:10:52.501-04:00');\n" ]
+      },
+      "element" : "demo::store::ReadingDB",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 37,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 37
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 47,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 35
+      },
+      "timeZone" : "'UTC'",
+      "type" : "H2"
+    },
+    "name" : "ReadingUtcConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 47,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 35
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 60,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 60
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 59,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 3,
+          "startLine" : 54
+        },
+        "testDataSetupSqls" : [ "DROP TABLE IF EXISTS readingTable;\nCREATE TABLE readingTable (id INTEGER PRIMARY KEY, recordedAt TIMESTAMP WITH TIME ZONE);\nINSERT INTO readingTable VALUES (1, TIMESTAMP WITH TIME ZONE '2012-05-20 13:10:52.501+10:00');\nINSERT INTO readingTable VALUES (2, TIMESTAMP WITH TIME ZONE '2012-05-20 03:10:52.501-04:00');\n" ]
+      },
+      "element" : "demo::store::ReadingDB",
+      "elementSourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 51,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 10,
+        "startLine" : 51
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 61,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 49
+      },
+      "timeZone" : "'America/New_York'",
+      "type" : "H2"
+    },
+    "name" : "ReadingNewYorkConnection",
+    "package" : "demo::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 61,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 49
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,5 @@
+
+Class demo::Class
+{
+   binary: Binary[1];
+}

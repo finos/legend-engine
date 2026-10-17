@@ -1,0 +1,5 @@
+
+Runtime test::runtime
+{
+ mappings: [test::mapping];
+}

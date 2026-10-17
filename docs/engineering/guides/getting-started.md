@@ -11,6 +11,7 @@
 |------|-----------------|-------|
 | JDK | **11** (LTS) | Enforced by Maven enforcer: `[11.0.10,12)`. Download: [Adoptium](https://adoptium.net/) or `sdk install java 11.0.23-tem` (SDKMAN). |
 | Maven | **3.6.2+** | Download: [maven.apache.org](https://maven.apache.org/download.cgi). |
+| Rust | **1.89+** (stable), via [rustup](https://rustup.rs) | `legend-engine-language-pure-grammar-rust` builds the Rust grammar parser's native library with `cargo` and puts it in its jar; the build stops if `cargo` is not on the `PATH`. `-P skip-rust` builds without it: the jar then has no library, and the engine parses with its Java parsers. |
 | Git | Any recent | — |
 | Docker | Optional, recommended | Required for Testcontainers-based integration tests (MongoDB, Postgres, etc.) and local Zipkin tracing. |
 | IntelliJ IDEA | Recommended | Community edition works. |
@@ -74,10 +75,10 @@ The Pure IDE lets you interactively develop and test Pure code without recompili
 **Program arguments:**
 
 ```text
-server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json
+server legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json
 ```
 
-Access at: <http://127.0.0.1:9200/ide>
+Access at: <http://127.0.0.1:9010/ide> (the port is `server.connector.port` in `ideLightConfig.json`).
 
 **Debugging Pure code:**
 

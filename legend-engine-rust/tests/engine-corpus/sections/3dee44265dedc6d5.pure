@@ -1,0 +1,5 @@
+
+function my::functionParent(val: Integer[0..1]):String[1]
+{
+    abs($val);
+}

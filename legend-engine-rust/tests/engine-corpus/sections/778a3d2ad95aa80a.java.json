@@ -1,0 +1,959 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::TemporalEmployee",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 21,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 21
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 21,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 21
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 22,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 22,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::TemporalEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 23,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 23
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 23,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::temporalEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 20,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 20
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 24,
+        "sourceId" : "mapping/milestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relation",
+      "class" : "demo::relation::domain::BusinessTemporalEmployee",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "ID",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 29,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 29,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 29
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "FIRST_NAME",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 30,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 30,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 30
+        }
+      }, {
+        "_type" : "relationFunctionPropertyMapping",
+        "column" : "SALARY",
+        "property" : {
+          "class" : "demo::relation::domain::BusinessTemporalEmployee",
+          "property" : "salary",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 31,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 31,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 5,
+          "startLine" : 31
+        }
+      } ],
+      "relationFunction" : {
+        "path" : "demo::relation::func::businessTemporalEmployees():Relation<Any>[1]",
+        "sourceInformation" : {
+          "endColumn" : 76,
+          "endLine" : 28,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 28
+        },
+        "type" : "FUNCTION"
+      },
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 32,
+        "sourceId" : "mapping/milestoningMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "TemporalEmployeeMapping",
+    "package" : "demo::relation::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 145,
+      "sourceId" : "mapping/milestoningMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAllVersions",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::TemporalEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 38,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 38
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 38,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 58,
+                "startLine" : 38
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 39,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 32,
+                    "startLine" : 39
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 39,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 35,
+                  "startLine" : 39
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 39,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 30,
+                "startLine" : 39
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 39,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 39
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 41,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 41
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 41,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 26,
+                    "startLine" : 41
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 41,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 29,
+                  "startLine" : 41
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 41,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 24,
+                "startLine" : 41
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 42,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 42
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 42,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 22,
+                "startLine" : 42
+              },
+              "value" : "First Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 40,
+            "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+            "startColumn" : 21,
+            "startLine" : 40
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 43,
+          "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+          "startColumn" : 17,
+          "startLine" : 38
+        }
+      },
+      "id" : "allVersionsSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 71,
+        "sourceId" : "mapping/milestoningMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 36
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\"},{\"First Name\":\"Bob\"},{\"First Name\":\"Carol\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 66,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 62
+            }
+          },
+          "id" : "shouldReturnAllVersions",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 67,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 59
+          }
+        } ],
+        "id" : "allRows",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 69,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 46
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::TemporalEmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 54,
+                "sourceId" : "mapping/milestoningMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 51
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 54,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 51
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 54,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 50
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 50,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 50
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::TemporalEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 57,
+                  "endLine" : 74,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 74
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 74,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 63,
+                  "startLine" : 74
+                },
+                "value" : "2025-01-01"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 74,
+                "endLine" : 74,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 58,
+                "startLine" : 74
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 75,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 32,
+                    "startLine" : 75
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 75,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 35,
+                  "startLine" : 75
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 75,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 30,
+                "startLine" : 75
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 75,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 75
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 77,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 77
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 77,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 26,
+                    "startLine" : 77
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 77,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 29,
+                  "startLine" : 77
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 77,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 24,
+                "startLine" : 77
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 78,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 78
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 78,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 22,
+                "startLine" : 78
+              },
+              "value" : "First Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 76,
+            "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+            "startColumn" : 21,
+            "startLine" : 76
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 79,
+          "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+          "startColumn" : 17,
+          "startLine" : 74
+        }
+      },
+      "id" : "pointInTimeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 107,
+        "sourceId" : "mapping/milestoningMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 72
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Alice\"},{\"First Name\":\"Bob\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 102,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 98
+            }
+          },
+          "id" : "shouldFilterByDate",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 103,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 95
+          }
+        } ],
+        "id" : "activeAtDate",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 105,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 82
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::TemporalEmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 90,
+                "sourceId" : "mapping/milestoningMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 87
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 90,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 87
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 90,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 86
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 86,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 86
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::relation::domain::BusinessTemporalEmployee",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 110,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 18,
+                  "startLine" : 110
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 110,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 71,
+                  "startLine" : 110
+                },
+                "value" : "2025-01-01"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 82,
+                "endLine" : 110,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 66,
+                "startLine" : 110
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 33,
+                    "endLine" : 111,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 32,
+                    "startLine" : 111
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 111,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 35,
+                  "startLine" : 111
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 111,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 30,
+                "startLine" : 111
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 26,
+              "endLine" : 111,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 111
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 113,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 113
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 27,
+                    "endLine" : 113,
+                    "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                    "startColumn" : 26,
+                    "startLine" : 113
+                  }
+                } ],
+                "property" : "firstName",
+                "sourceInformation" : {
+                  "endColumn" : 37,
+                  "endLine" : 113,
+                  "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                  "startColumn" : 29,
+                  "startLine" : 113
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 113,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 24,
+                "startLine" : 113
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 114,
+              "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+              "startColumn" : 21,
+              "startLine" : 114
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 33,
+                "endLine" : 114,
+                "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+                "startColumn" : 22,
+                "startLine" : 114
+              },
+              "value" : "First Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 112,
+            "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+            "startColumn" : 21,
+            "startLine" : 112
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 115,
+          "sourceId" : "demo::relation::mapping::TemporalEmployeeMapping",
+          "startColumn" : 17,
+          "startLine" : 110
+        }
+      },
+      "id" : "businessTemporalPointInTimeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 143,
+        "sourceId" : "mapping/milestoningMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 108
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"First Name\":\"Dave\"},{\"First Name\":\"Eve\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 138,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 134
+            }
+          },
+          "id" : "shouldFilterByBusinessDate",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 139,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 131
+          }
+        } ],
+        "id" : "activeAtDate",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 141,
+          "sourceId" : "mapping/milestoningMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 118
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::relation::data::BusinessTemporalEmployeeData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 126,
+                "sourceId" : "mapping/milestoningMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 123
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 126,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 123
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 126,
+            "sourceId" : "mapping/milestoningMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 122
+          },
+          "store" : {
+            "path" : "demo::relation::db::EmployeeDB",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 122,
+              "sourceId" : "mapping/milestoningMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 122
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

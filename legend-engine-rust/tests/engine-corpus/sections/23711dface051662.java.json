@@ -1,0 +1,77 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 59,
+        "endLine" : 29,
+        "sourceId" : "store/firmRegistryDb.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::FirmRegistryDB", "FirmRegistryTable" ],
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 29,
+          "sourceId" : "store/firmRegistryDb.pure",
+          "startColumn" : 3,
+          "startLine" : 29
+        }
+      }
+    } ],
+    "name" : "registeredFirms__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 27,
+          "sourceId" : "store/firmRegistryDb.pure",
+          "startColumn" : 51,
+          "startLine" : 27
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 95,
+            "endLine" : 27,
+            "sourceId" : "store/firmRegistryDb.pure",
+            "startColumn" : 93,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 30,
+      "sourceId" : "store/firmRegistryDb.pure",
+      "startColumn" : 1,
+      "startLine" : 27
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

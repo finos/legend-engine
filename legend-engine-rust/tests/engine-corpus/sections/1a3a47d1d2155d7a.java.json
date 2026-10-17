@@ -1,0 +1,207 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "Context 1",
+    "elements" : [ {
+      "path" : "model::element",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 31
+      }
+    }, {
+      "path" : "model",
+      "sourceInformation" : {
+        "endColumn" : 34,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 31
+      }
+    }, {
+      "exclude" : true,
+      "path" : "model::sub",
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 37,
+        "startLine" : 31
+      }
+    } ],
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "executionContextKey" : "Context 1",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 37
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "model::sub::element",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 37,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 37
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 37,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 37
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 45,
+          "endLine" : 37,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 37
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 39,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 34
+      },
+      "title" : "Template 1"
+    }, {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "srssc",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 42,
+            "startLine" : 43
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "model::sub::element",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 43,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 43
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 43
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 41,
+          "startLine" : 43
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 44,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 40
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "model::dummyRuntime",
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 27
+        },
+        "type" : "RUNTIME"
+      },
+      "description" : "some information about the context",
+      "mapping" : {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 35,
+          "endLine" : 26,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 26
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "Context 1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 28,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    } ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 46,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

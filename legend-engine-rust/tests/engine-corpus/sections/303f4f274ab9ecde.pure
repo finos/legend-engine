@@ -1,0 +1,36 @@
+
+Mapping demo::PersonMapping
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PersonDB]PersonTable.id
+    )
+    ~mainTable [demo::store::PersonDB]PersonTable
+    firstName: [demo::store::PersonDB]PersonTable.firstName,
+    lastName: [demo::store::PersonDB]PersonTable.lastName
+  }
+
+  MappingTests
+  [
+    allPersons
+    (
+      query: |demo::Person.all()->project([p|$p.firstName, p|$p.lastName], ['First Name', 'Last Name']);
+      data:
+      [
+        <Relational, CSV, demo::store::PersonDB, 'default\nPersonTable\nid,firstName,lastName\n1,Ada,Lovelace\n2,Grace,Hopper\n\n\n\n'>
+      ];
+      assert: '[{"values":["Ada","Lovelace"]},{"values":["Grace","Hopper"]}]';
+    ),
+    lovelaceOnly
+    (
+      query: |demo::Person.all()->filter(p|$p.lastName == 'Lovelace')->project([p|$p.firstName], ['First Name']);
+      data:
+      [
+        <Relational, CSV, demo::store::PersonDB, 'default\nPersonTable\nid,firstName,lastName\n1,Ada,Lovelace\n2,Grace,Hopper\n\n\n\n'>
+      ];
+      assert: '[{"values":["Ada"]}]';
+    )
+  ]
+)

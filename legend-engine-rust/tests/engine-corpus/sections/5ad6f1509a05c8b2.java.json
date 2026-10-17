@@ -1,0 +1,76 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "test::Class",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      },
+      "distinct" : false,
+      "extendsClassMappingId" : "id2",
+      "groupBy" : [ ],
+      "id" : "id1",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "test::Class",
+          "property" : "prop",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 6
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 6
+          },
+          "value" : 1
+        },
+        "source" : "id1",
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 6,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 6
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 4
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

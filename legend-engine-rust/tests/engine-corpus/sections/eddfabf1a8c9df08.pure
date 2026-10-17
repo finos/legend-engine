@@ -1,0 +1,20 @@
+
+Class model::pure::changetoken::tests::distance::PointOfInterest
+{
+  name: String[1];
+  location: model::pure::changetoken::tests::distance::GeographicCoordinate[1];
+}
+
+Enum model::pure::changetoken::tests::trade::Side
+{
+  Unknown,
+  Buy,
+  Sell
+}
+
+Class {doc.doc = 'A class to represent GIS geographic coordinate'}
+model::pure::changetoken::tests::distance::GeographicCoordinate
+{
+  latitude: Float[1];
+  longitude: Float[1];
+}

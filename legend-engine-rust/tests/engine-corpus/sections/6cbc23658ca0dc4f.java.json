@@ -1,0 +1,16 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ ],
+    "includedStores" : [ ],
+    "name" : "serviceStore",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 36,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  } ]
+}

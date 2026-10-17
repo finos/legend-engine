@@ -1,0 +1,68 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "dummyRuntime",
+    "package" : "model",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ {
+        "connectionPointer" : {
+          "_type" : "connectionPointer",
+          "connection" : "model::connection",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 36,
+            "sourceId" : "",
+            "startColumn" : 8,
+            "startLine" : 36
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 8,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 36
+        },
+        "storePointers" : [ {
+          "path" : "model::nonExistantDataspace",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 38,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 38
+          },
+          "type" : "DATASPACE"
+        } ]
+      } ],
+      "connections" : [ ],
+      "mappings" : [ {
+        "path" : "model::dummyMapping",
+        "sourceInformation" : {
+          "endColumn" : 23,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 41,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 28
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 28
+    }
+  } ],
+  "imports" : [ ]
+}

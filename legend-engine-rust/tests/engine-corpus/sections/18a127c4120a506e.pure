@@ -1,0 +1,43 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'test doc';
+  trigger: Manual;
+  service: test::service::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: true;
+    }
+    targetShape: Flat
+    {
+      modelClass: test::ModelClass;
+      targetName: 'TestDataset1';
+      partitionFields: [propertyA, propertyB];
+      deduplicationStrategy: MaxVersion
+      {
+        versionField: version;
+      }
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'x.y@z.com';
+      },
+      PagerDuty
+      {
+        url: 'https://x.com';
+      }
+    ];
+  }
+}

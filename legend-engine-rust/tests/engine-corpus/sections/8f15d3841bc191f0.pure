@@ -1,0 +1,11 @@
+
+Class test::Person
+{
+  birthDate: DateTime[1];
+}
+
+function test::f(): String[*]
+{
+  [test::Person.all()->graphFetch(#{test::Person{birthDate}}#)->serialize(#{test::Person{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd HH:mm:ss.SSSX')),
+   test::Person.all()->graphFetch(#{test::Person{birthDate}}#)->serialize(#{test::Person{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd HH:mm:ss?[.S3]X'))]
+}

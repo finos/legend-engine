@@ -1,0 +1,13 @@
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+

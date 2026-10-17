@@ -1,0 +1,7 @@
+
+'''
+Documented.
+'''
+Class {my::pkg::doc.doc = 'Not the doc profile.'} model::A
+{
+}

@@ -1,0 +1,1330 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 106
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 106
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 107,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 107
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "aName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 107,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 107
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::M",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 108,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 108
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "m1",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 108,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 108
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::M",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 109,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 109
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "m2",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 109,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 109
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 110,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "B",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 114,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 114
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "bName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 114,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 114
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::N",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 115,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 115
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "n1",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 115,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 115
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::N",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 116,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 116
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "n2",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 116,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 116
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 117,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 112
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::A",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 112,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 112
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "C",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 121,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 121
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "cName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 121,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 121
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::O",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 122,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 122
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "o1",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 122,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 122
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::test::O",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 123,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 123
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "o2",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 123,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 123
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 124,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 119
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::B",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 119,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 119
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "D",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 128,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 128
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 128,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 128
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 129,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 129
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "dName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 129,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 129
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 130,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 126
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "E",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 134,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 134
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "eName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 134,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 134
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 135,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 132
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::D",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 132,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 132
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "F",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 139,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 139
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 139,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 139
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 140,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 137
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::E",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 137,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 137
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "G",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 144,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 144
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 144,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 144
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 145,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 145
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "gName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 145,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 145
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 146,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 142
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "H",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 150,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 150
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "hName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 150,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 150
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 151,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 148
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::G",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 148,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 148
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "I",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 155,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 155
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "iName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 155,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 155
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 156,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 153
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::H",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 153,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 153
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "J",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 160,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 160
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 160,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 160
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 161,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 161
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "jName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 161,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 161
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 162,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 158
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "K",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 166,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 166
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "kName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 166,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 166
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 167,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 164
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::J",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 164,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 164
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "L",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 171,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 171
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "lName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 171,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 171
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 172,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 169
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::test::K",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 169,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 169
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "M",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 176,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 176
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 176,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 176
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 177,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 177
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "mName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 177,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 177
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 178,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 174
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "N",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 182,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 182
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 182,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 182
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 183,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 183
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "nName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 183,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 183
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 184,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 180
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "O",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 188,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 188
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 188,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 188
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 189,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 189
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "oName",
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 189,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 189
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 190,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 186
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Person",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 194,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 194
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 194,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 194
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 195,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 192
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Employee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 199,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 199
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firmName",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 199,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 199
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 200,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 197
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::Person",
+      "sourceInformation" : {
+        "endColumn" : 43,
+        "endLine" : 197,
+        "sourceId" : "",
+        "startColumn" : 31,
+        "startLine" : 197
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

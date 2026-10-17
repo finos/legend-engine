@@ -1,0 +1,51 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "SchemaSet",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n  \"title\": \"test::gen::Data\",\n  \"type\": \"object\",\n  \"properties\":   {\n    \"floatField\":     {\n      \"type\": \"number\"\n    },\n    \"floatRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"stringRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"maxItems\": 3\n    },\n    \"decimalRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      },\n      \"maxItems\": 3\n    },\n    \"booleanField\":     {\n      \"type\": \"boolean\"\n    },\n    \"strictDateRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"maxItems\": 3\n    },\n    \"dateTimeField\":     {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"strictDateRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"integerRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"integer\"\n      },\n      \"maxItems\": 3\n    },\n    \"strictDateField\":     {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"strictDateMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      }\n    },\n    \"dateTimeRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"floatRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      },\n      \"maxItems\": 3\n    },\n    \"integerMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"integer\"\n      }\n    },\n    \"decimalField\":     {\n      \"type\": \"number\"\n    },\n    \"decimalRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"dateRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"maxItems\": 3\n    },\n    \"dateTimeMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      }\n    },\n    \"stringRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"dateField\":     {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"dateTimeRangeZeroField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"maxItems\": 3\n    },\n    \"floatMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      }\n    },\n    \"stringNoDescriptionField\":     {\n      \"type\": \"string\"\n    },\n    \"integerRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"integer\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"srtingMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      }\n    },\n    \"dateRangeField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"maxItems\": 3\n    },\n    \"integerField\":     {\n      \"type\": \"integer\"\n    },\n    \"decimalMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"number\"\n      }\n    },\n    \"stringField\":     {\n      \"type\": \"string\"\n    },\n    \"dateMultipleField\":     {\n      \"type\": \"array\",\n      \"items\":       {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n\"floatField\",\n\"floatRangeField\",\n\"booleanField\",\n\"dateTimeField\",\n\"strictDateRangeField\",\n\"strictDateField\",\n\"dateTimeRangeField\",\n\"decimalField\",\n\"decimalRangeField\",\n\"stringRangeField\",\n\"dateField\",\n\"stringNoDescriptionField\",\n\"integerRangeField\",\n\"dateRangeField\",\n\"integerField\",\n\"stringField\"\n  ]\n}\n",
+      "contentSourceInformation" : {
+        "endColumn" : 4231,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 40
+      },
+      "location" : "test/gen/Data.json",
+      "sourceInformation" : {
+        "endColumn" : 4233,
+        "endLine" : 40,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 39
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 41,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 36
+    }
+  }, {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "test::gen::Data" ]
+    },
+    "name" : "Binding",
+    "package" : "test",
+    "schemaSet" : "test::SchemaSet",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 48,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 43
+    }
+  } ],
+  "imports" : [ ]
+}

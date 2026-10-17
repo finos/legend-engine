@@ -1,0 +1,6 @@
+
+Class demo::relation::domain::Address
+{
+  street: String[1];
+  city: String[1];
+}

@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "meta::external::store::service::showcase::mapping::ServiceStoreMapping" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 598,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 595
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 599,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 593
+      }
+    },
+    "name" : "modelChainConnection",
+    "package" : "meta::external::store::service::showcase::connection",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 599,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 593
+    }
+  } ],
+  "imports" : [ ]
+}

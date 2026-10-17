@@ -1,0 +1,60 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "dataResolvers" : [ {
+      "_type" : "baseDataResolver",
+      "data" : {
+        "_type" : "relationAccessor",
+        "relationElements" : [ {
+          "columns" : [ "ID" ],
+          "paths" : [ "default", "PERSON_TABLE" ],
+          "rows" : [ {
+            "values" : [ "2" ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 58
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 61,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 58
+        }
+      },
+      "elementPointer" : {
+        "path" : "test::store::TestDB",
+        "sourceInformation" : {
+          "endColumn" : 21,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 55
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 6,
+        "endLine" : 61,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 55
+      }
+    } ],
+    "name" : "Seed",
+    "package" : "test::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 62,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 53
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

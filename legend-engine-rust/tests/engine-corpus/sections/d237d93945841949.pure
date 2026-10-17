@@ -1,0 +1,12 @@
+
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+    *meta::external::store::service::showcase::domain::Person[person_set]: ServiceStore
+    {
+        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService
+        (
+            ~path $service.response.firms
+        )
+    }
+)
+

@@ -1,0 +1,37 @@
+
+RelationalDatabaseConnection relational::graphFetch::RelationalConnection
+{
+  type: H2;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: Test
+  {
+  };
+}
+
+RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection
+{
+  store: relational::graphFetch::dbInc;
+  type: H2;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1234;
+  };
+  auth: Test
+  {
+  };
+}
+
+ModelChainConnection relational::graphFetch::OneMappingConnection
+{
+  mappings: [
+    relational::graphFetch::Relational_Mapping
+  ];
+}
+

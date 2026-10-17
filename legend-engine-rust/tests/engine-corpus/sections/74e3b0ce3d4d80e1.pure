@@ -1,0 +1,10 @@
+
+Mapping simple::simpleRelationalMappingInc
+(
+  simple::Person: Relational
+  {
+    ~mainTable [simple::dbInc]personTable
+    lastName: [simple::dbInc]personTable.LASTNAME, 
+    firm[x]: [simple::dbInc]@personSelfJoin
+  }
+)

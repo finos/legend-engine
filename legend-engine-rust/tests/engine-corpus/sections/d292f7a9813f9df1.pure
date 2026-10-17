@@ -1,0 +1,8 @@
+
+DeephavenApp test::MyApp
+{
+    applicationName: 'MyTestApp';
+    function: test::myFunc():Any[*];
+    description: 'A test app';
+    ownership: Deployment { identifier: 'owner123' };
+}

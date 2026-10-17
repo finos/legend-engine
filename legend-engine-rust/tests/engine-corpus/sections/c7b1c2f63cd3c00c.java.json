@@ -1,0 +1,103 @@
+{
+  "elements" : [ {
+    "_type" : "diagram",
+    "classViews" : [ {
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 10
+      },
+      "hideProperties" : true,
+      "id" : "ola",
+      "position" : {
+        "x" : 123.123,
+        "y" : 23.23
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : 123.123
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 14,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 8
+      }
+    }, {
+      "class" : "anything::goes",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 17,
+        "sourceId" : "",
+        "startColumn" : 12,
+        "startLine" : 17
+      },
+      "hideProperties" : true,
+      "id" : "otis",
+      "position" : {
+        "x" : 123.123,
+        "y" : 23.23
+      },
+      "rectangle" : {
+        "height" : 23.23,
+        "width" : 123.123
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 15
+      }
+    } ],
+    "generalizationViews" : [ {
+      "line" : {
+        "points" : [ {
+          "x" : 0.123,
+          "y" : 23.23
+        }, {
+          "x" : 123.123,
+          "y" : 23.23
+        } ]
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 22
+      },
+      "sourceView" : "ola",
+      "sourceViewSourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 24,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 24
+      },
+      "targetView" : "otiss",
+      "targetViewSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 25,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 25
+      }
+    } ],
+    "name" : "MyDiagram",
+    "package" : "meta::pure",
+    "propertyViews" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 6
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,11 @@
+
+ServiceStore meta::external::store::service::showcase::store::FirmServiceStore
+(
+   Service FirmService
+   (
+      path     : '/firms';
+      method   : GET;
+      security : [];
+      response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::FirmResponseSchemaBinding];
+   )
+)

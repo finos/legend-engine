@@ -1,0 +1,4 @@
+
+Enum test::B {
+   a,b
+}

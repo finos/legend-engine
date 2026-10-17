@@ -1,0 +1,1 @@
+|MifidCDTModel.all()->graphFetch(#{MifidCDTModel{cPrimeId(true),lei,eti}}#)

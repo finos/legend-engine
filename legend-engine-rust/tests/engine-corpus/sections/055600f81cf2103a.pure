@@ -1,0 +1,63 @@
+
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeSimpleMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $row.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    simpleSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        allEmployees:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"},{"First Name":"Carol","Last Name":"White"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,9 @@
+
+Database simple::DB
+(
+  Table personTable
+  (
+    FIRSTNAME VARCHAR(10),
+    FIRM SEMISTRUCTURED
+  )
+)

@@ -1,0 +1,17 @@
+
+import anything::*;
+import test::*;
+Class test::trial {
+   name: ritual[*];
+   anotherOne(){$this.name->toOne()}: ritual[1];
+   
+}
+Class test::trial2 {
+   name: trial[*];
+   anotherOne(){$this.name->toOne().name2}: ritual[1];
+   
+}
+
+Enum anything::ritual {
+   theGoodOne   
+}

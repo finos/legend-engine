@@ -1,0 +1,29 @@
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::merge::SimpleMergeModelMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::merge::Person: Operation
+  {
+    meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([p1,p2,p3],{s1: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName[1], s2: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName[1], s3: meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge[1]|($s1.id == $s2.id) && ($s1.id == $s3.id)})
+  }
+  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p1]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithFirstName
+    firstName: $src.sourceFirstName,
+    address: $src.sourceAddress
+  }
+  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p2]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithLastName
+    lastName: $src.sourceLastName
+  }
+  meta::pure::mapping::modelToModel::test::alloy::merge::Person[p3]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourcePersonWithAge
+    age: $src.sourceAge
+  }
+  meta::pure::mapping::modelToModel::test::alloy::merge::Address: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::merge::SourceAddress
+    street: $src.sourceStreet
+  }
+)

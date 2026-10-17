@@ -1,0 +1,744 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::sse::Block",
+      "classSourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 20,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 20
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::sse::store::TradingDB",
+        "mainTableDb" : "demo::sse::store::TradingDB",
+        "schema" : "TRADING",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 45,
+          "startLine" : 26
+        },
+        "table" : "ACTIVE_BLOCKS"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 24
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::sse::store::TradingDB",
+          "mainTableDb" : "demo::sse::store::TradingDB",
+          "schema" : "TRADING",
+          "sourceInformation" : {
+            "endColumn" : 56,
+            "endLine" : 24,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 36,
+            "startLine" : 24
+          },
+          "table" : "ACTIVE_BLOCKS"
+        },
+        "tableAlias" : "ACTIVE_BLOCKS"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::sse::Block",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 61,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::sse::store::TradingDB",
+            "mainTableDb" : "demo::sse::store::TradingDB",
+            "schema" : "TRADING",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 27,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 38,
+              "startLine" : 27
+            },
+            "table" : "ACTIVE_BLOCKS"
+          },
+          "tableAlias" : "ACTIVE_BLOCKS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 61,
+          "endLine" : 27,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::sse::Block",
+          "property" : "account",
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ACCOUNT",
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 14,
+            "startLine" : 28
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::sse::store::TradingDB",
+            "mainTableDb" : "demo::sse::store::TradingDB",
+            "schema" : "TRADING",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 28,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 43,
+              "startLine" : 28
+            },
+            "table" : "ACTIVE_BLOCKS"
+          },
+          "tableAlias" : "ACTIVE_BLOCKS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 28,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 12,
+          "startLine" : 28
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::sse::Block",
+          "property" : "orders",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 29
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::sse::store::TradingDB",
+            "name" : "Block_Order",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 29,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 58,
+              "startLine" : 29
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 29,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 29
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 29,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 27,
+          "startLine" : 29
+        },
+        "target" : "demo_sse_Order"
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::sse::Order",
+      "classSourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 32,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::sse::store::TradingDB",
+        "mainTableDb" : "demo::sse::store::TradingDB",
+        "schema" : "TRADING",
+        "sourceInformation" : {
+          "endColumn" : 58,
+          "endLine" : 38,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 45,
+          "startLine" : 38
+        },
+        "table" : "ORDERS"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 52,
+          "endLine" : 36,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 36
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::sse::store::TradingDB",
+          "mainTableDb" : "demo::sse::store::TradingDB",
+          "schema" : "TRADING",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 36,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 36,
+            "startLine" : 36
+          },
+          "table" : "ORDERS"
+        },
+        "tableAlias" : "ORDERS"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::sse::Order",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 39,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 39
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::sse::store::TradingDB",
+            "mainTableDb" : "demo::sse::store::TradingDB",
+            "schema" : "TRADING",
+            "sourceInformation" : {
+              "endColumn" : 51,
+              "endLine" : 39,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 38,
+              "startLine" : 39
+            },
+            "table" : "ORDERS"
+          },
+          "tableAlias" : "ORDERS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 39,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 39
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::sse::Order",
+          "property" : "orderName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 40
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ORDER_NAME",
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 40,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 40
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::sse::store::TradingDB",
+            "mainTableDb" : "demo::sse::store::TradingDB",
+            "schema" : "TRADING",
+            "sourceInformation" : {
+              "endColumn" : 58,
+              "endLine" : 40,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 45,
+              "startLine" : 40
+            },
+            "table" : "ORDERS"
+          },
+          "tableAlias" : "ORDERS"
+        },
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 40,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 40
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 41,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "TradingMapping",
+    "package" : "demo::sse",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::sse::Block",
+                "sourceInformation" : {
+                  "endColumn" : 33,
+                  "endLine" : 47,
+                  "sourceId" : "demo::sse::TradingMapping",
+                  "startColumn" : 18,
+                  "startLine" : 47
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 47,
+                "sourceId" : "demo::sse::TradingMapping",
+                "startColumn" : 34,
+                "startLine" : 47
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 110,
+                "endLine" : 48,
+                "sourceId" : "demo::sse::TradingMapping",
+                "startColumn" : 30,
+                "startLine" : 48
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "b",
+                        "sourceInformation" : {
+                          "endColumn" : 45,
+                          "endLine" : 48,
+                          "sourceId" : "demo::sse::TradingMapping",
+                          "startColumn" : 44,
+                          "startLine" : 48
+                        }
+                      } ],
+                      "property" : "id",
+                      "sourceInformation" : {
+                        "endColumn" : 48,
+                        "endLine" : 48,
+                        "sourceId" : "demo::sse::TradingMapping",
+                        "startColumn" : 47,
+                        "startLine" : 48
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "b"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 48,
+                      "endLine" : 48,
+                      "sourceId" : "demo::sse::TradingMapping",
+                      "startColumn" : 42,
+                      "startLine" : 48
+                    }
+                  },
+                  "name" : "blockId",
+                  "sourceInformation" : {
+                    "endColumn" : 48,
+                    "endLine" : 48,
+                    "sourceId" : "demo::sse::TradingMapping",
+                    "startColumn" : 31,
+                    "startLine" : 48
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "b",
+                        "sourceInformation" : {
+                          "endColumn" : 65,
+                          "endLine" : 48,
+                          "sourceId" : "demo::sse::TradingMapping",
+                          "startColumn" : 64,
+                          "startLine" : 48
+                        }
+                      } ],
+                      "property" : "account",
+                      "sourceInformation" : {
+                        "endColumn" : 73,
+                        "endLine" : 48,
+                        "sourceId" : "demo::sse::TradingMapping",
+                        "startColumn" : 67,
+                        "startLine" : 48
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "b"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 73,
+                      "endLine" : 48,
+                      "sourceId" : "demo::sse::TradingMapping",
+                      "startColumn" : 62,
+                      "startLine" : 48
+                    }
+                  },
+                  "name" : "account",
+                  "sourceInformation" : {
+                    "endColumn" : 73,
+                    "endLine" : 48,
+                    "sourceId" : "demo::sse::TradingMapping",
+                    "startColumn" : 51,
+                    "startLine" : 48
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "b",
+                          "sourceInformation" : {
+                            "endColumn" : 92,
+                            "endLine" : 48,
+                            "sourceId" : "demo::sse::TradingMapping",
+                            "startColumn" : 91,
+                            "startLine" : 48
+                          }
+                        } ],
+                        "property" : "orders",
+                        "sourceInformation" : {
+                          "endColumn" : 99,
+                          "endLine" : 48,
+                          "sourceId" : "demo::sse::TradingMapping",
+                          "startColumn" : 94,
+                          "startLine" : 48
+                        }
+                      } ],
+                      "property" : "orderName",
+                      "sourceInformation" : {
+                        "endColumn" : 109,
+                        "endLine" : 48,
+                        "sourceId" : "demo::sse::TradingMapping",
+                        "startColumn" : 101,
+                        "startLine" : 48
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "b"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 109,
+                      "endLine" : 48,
+                      "sourceId" : "demo::sse::TradingMapping",
+                      "startColumn" : 89,
+                      "startLine" : 48
+                    }
+                  },
+                  "name" : "orderName",
+                  "sourceInformation" : {
+                    "endColumn" : 109,
+                    "endLine" : 48,
+                    "sourceId" : "demo::sse::TradingMapping",
+                    "startColumn" : 76,
+                    "startLine" : 48
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 48,
+              "sourceId" : "demo::sse::TradingMapping",
+              "startColumn" : 21,
+              "startLine" : 48
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 73,
+              "endLine" : 49,
+              "sourceId" : "demo::sse::TradingMapping",
+              "startColumn" : 26,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 49,
+                  "sourceId" : "demo::sse::TradingMapping",
+                  "startColumn" : 28,
+                  "startLine" : 49
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "blockId",
+                  "sourceInformation" : {
+                    "endColumn" : 34,
+                    "endLine" : 49,
+                    "sourceId" : "demo::sse::TradingMapping",
+                    "startColumn" : 28,
+                    "startLine" : 49
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 49,
+                "sourceId" : "demo::sse::TradingMapping",
+                "startColumn" : 37,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 49,
+                  "sourceId" : "demo::sse::TradingMapping",
+                  "startColumn" : 51,
+                  "startLine" : 49
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "orderName",
+                  "sourceInformation" : {
+                    "endColumn" : 59,
+                    "endLine" : 49,
+                    "sourceId" : "demo::sse::TradingMapping",
+                    "startColumn" : 51,
+                    "startLine" : 49
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 70,
+                "endLine" : 49,
+                "sourceId" : "demo::sse::TradingMapping",
+                "startColumn" : 62,
+                "startLine" : 49
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 49,
+            "sourceId" : "demo::sse::TradingMapping",
+            "startColumn" : 21,
+            "startLine" : 49
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 74,
+          "endLine" : 49,
+          "sourceId" : "demo::sse::TradingMapping",
+          "startColumn" : 17,
+          "startLine" : 47
+        }
+      },
+      "id" : "explodeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 77,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 45
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"blockId\":\"b1\",\"account\":\"ACC1\",\"orderName\":\"Alpha\"},{\"blockId\":\"b1\",\"account\":\"ACC1\",\"orderName\":\"Beta\"},{\"blockId\":\"b2\",\"account\":\"ACC2\",\"orderName\":\"Gamma\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 72,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 68
+            }
+          },
+          "id" : "shouldJoinEachExplodedElement",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 73,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 65
+          }
+        } ],
+        "id" : "explodeArrayIntoRows",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 75,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 52
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::sse::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 60,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 15,
+                "startLine" : 57
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 60,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 15,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 60,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 13,
+            "startLine" : 56
+          },
+          "store" : {
+            "path" : "demo::sse::store::TradingDB",
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 56,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 13,
+              "startLine" : 56
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

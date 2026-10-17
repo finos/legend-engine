@@ -1,0 +1,43 @@
+
+Class example::Person
+{
+  firstName:String[0..1];
+  lastName: String[0..1];
+}
+
+Class example::_S_PersonA extends example::_S_Person
+{
+   aName    : String[1];
+}
+
+Class example::_S_PersonB extends example::_S_Person
+{
+   bName    : String[1];
+}
+
+
+Class example::_S_Person
+{
+   fullName      : String[1];
+}
+
+
+Class example::_S_Cat
+{
+   fullName      : String[1];
+}
+
+
+Class example::_S_Firm
+{
+  name:String[1];
+  sourceEmployees:example::_S_Person[*];
+  sourceEmployeesA:example::_S_PersonA[*];
+}
+
+Class example::Firm
+{
+
+  legalName:String[1];
+  employees:example::Person[*];
+}

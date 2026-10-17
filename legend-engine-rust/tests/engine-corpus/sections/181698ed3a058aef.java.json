@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'mergeStrategy' is required",
+    "sourceInformation" : {
+      "endColumn" : 5,
+      "endLine" : 26,
+      "sourceId" : "",
+      "startColumn" : 17,
+      "startLine" : 19
+    }
+  }
+}

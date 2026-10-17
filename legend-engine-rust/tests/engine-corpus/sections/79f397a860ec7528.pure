@@ -1,0 +1,5 @@
+
+Class models::Firm
+{
+  name: String[1];
+}

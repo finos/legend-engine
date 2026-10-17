@@ -1,0 +1,494 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "Block_Order",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "and",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "explodeSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "BLOCKDATA",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 62,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 68,
+                  "startLine" : 62
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::sse::store::TradingDB",
+                  "mainTableDb" : "demo::sse::store::TradingDB",
+                  "schema" : "TRADING",
+                  "sourceInformation" : {
+                    "endColumn" : 88,
+                    "endLine" : 62,
+                    "sourceId" : "store/db.pure",
+                    "startColumn" : 68,
+                    "startLine" : 62
+                  },
+                  "table" : "ACTIVE_BLOCKS"
+                },
+                "tableAlias" : "ACTIVE_BLOCKS"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 117,
+                  "endLine" : 62,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 101,
+                  "startLine" : 62
+                },
+                "value" : "relatedEntities"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 135,
+                  "endLine" : 62,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 120,
+                  "startLine" : 62
+                },
+                "value" : "SEMISTRUCTURED"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 136,
+                "endLine" : 62,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 46,
+                "startLine" : 62
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 143,
+                "endLine" : 62,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 139,
+                "startLine" : 62
+              },
+              "value" : "tag"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 154,
+                "endLine" : 62,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 146,
+                "startLine" : 62
+              },
+              "value" : "VARCHAR"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 165,
+              "endLine" : 62,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 20,
+              "startLine" : 62
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 165,
+              "endLine" : 62,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 159,
+              "startLine" : 62
+            },
+            "value" : "order"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 165,
+            "endLine" : 62,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 157,
+            "startLine" : 62
+          }
+        }, {
+          "_type" : "dynaFunc",
+          "funcName" : "equal",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "extractFromSemiStructured",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "explodeSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "BLOCKDATA",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 63,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 57,
+                  "startLine" : 63
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "demo::sse::store::TradingDB",
+                  "mainTableDb" : "demo::sse::store::TradingDB",
+                  "schema" : "TRADING",
+                  "sourceInformation" : {
+                    "endColumn" : 77,
+                    "endLine" : 63,
+                    "sourceId" : "store/db.pure",
+                    "startColumn" : 57,
+                    "startLine" : 63
+                  },
+                  "table" : "ACTIVE_BLOCKS"
+                },
+                "tableAlias" : "ACTIVE_BLOCKS"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 63,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 90,
+                  "startLine" : 63
+                },
+                "value" : "relatedEntities"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 124,
+                  "endLine" : 63,
+                  "sourceId" : "store/db.pure",
+                  "startColumn" : 109,
+                  "startLine" : 63
+                },
+                "value" : "SEMISTRUCTURED"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 63,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 35,
+                "startLine" : 63
+              }
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 134,
+                "endLine" : 63,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 128,
+                "startLine" : 63
+              },
+              "value" : "tagId"
+            }, {
+              "_type" : "literal",
+              "sourceInformation" : {
+                "endColumn" : 145,
+                "endLine" : 63,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 137,
+                "startLine" : 63
+              },
+              "value" : "VARCHAR"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 166,
+              "endLine" : 63,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 9,
+              "startLine" : 63
+            }
+          }, {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 166,
+              "endLine" : 63,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 150,
+              "startLine" : 63
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::sse::store::TradingDB",
+              "mainTableDb" : "demo::sse::store::TradingDB",
+              "schema" : "TRADING",
+              "sourceInformation" : {
+                "endColumn" : 163,
+                "endLine" : 63,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 150,
+                "startLine" : 63
+              },
+              "table" : "ORDERS"
+            },
+            "tableAlias" : "ORDERS"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 166,
+            "endLine" : 63,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 148,
+            "startLine" : 63
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 166,
+          "endLine" : 63,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 63
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 167,
+        "endLine" : 63,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 62
+      }
+    } ],
+    "name" : "TradingDB",
+    "package" : "demo::sse::store",
+    "schemas" : [ {
+      "name" : "TRADING",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 57,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 34
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 38,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 38
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "ACCOUNT",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 39,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 39
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "BLOCKDATA",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 40,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 40
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "BLOCKS",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 41,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 36
+        }
+      }, {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 44,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 44
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        }, {
+          "name" : "ORDER_NAME",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 45,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 45
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 100
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "ORDERS",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 46,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 42
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ {
+        "columnMappings" : [ {
+          "name" : "ID",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ID",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 53,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 11,
+              "startLine" : 53
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::sse::store::TradingDB",
+              "mainTableDb" : "demo::sse::store::TradingDB",
+              "schema" : "TRADING",
+              "sourceInformation" : {
+                "endColumn" : 24,
+                "endLine" : 53,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 11,
+                "startLine" : 53
+              },
+              "table" : "BLOCKS"
+            },
+            "tableAlias" : "BLOCKS"
+          },
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 53,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 53
+          }
+        }, {
+          "name" : "ACCOUNT",
+          "operation" : {
+            "_type" : "column",
+            "column" : "ACCOUNT",
+            "sourceInformation" : {
+              "endColumn" : 37,
+              "endLine" : 54,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 16,
+              "startLine" : 54
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::sse::store::TradingDB",
+              "mainTableDb" : "demo::sse::store::TradingDB",
+              "schema" : "TRADING",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 54,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 16,
+                "startLine" : 54
+              },
+              "table" : "BLOCKS"
+            },
+            "tableAlias" : "BLOCKS"
+          },
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 54,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 54
+          }
+        }, {
+          "name" : "BLOCKDATA",
+          "operation" : {
+            "_type" : "column",
+            "column" : "BLOCKDATA",
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 55,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 18,
+              "startLine" : 55
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::sse::store::TradingDB",
+              "mainTableDb" : "demo::sse::store::TradingDB",
+              "schema" : "TRADING",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 55,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 18,
+                "startLine" : 55
+              },
+              "table" : "BLOCKS"
+            },
+            "tableAlias" : "BLOCKS"
+          },
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 55,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 7,
+            "startLine" : 55
+          }
+        } ],
+        "distinct" : false,
+        "groupBy" : [ ],
+        "name" : "ACTIVE_BLOCKS",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 56,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 5,
+          "startLine" : 51
+        }
+      } ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 64,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 32
+    },
+    "stereotypes" : [ ]
+  } ]
+}

@@ -1,0 +1,10 @@
+
+
+PersistenceContext test::TestPersistenceContext
+{
+  persistence: test::TestPersistence;
+  platform: AwsGlue
+  #{
+    dataProcessingUnits: 10;
+  }#;
+}

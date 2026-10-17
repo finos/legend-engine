@@ -1,0 +1,2448 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::ssa::Person",
+      "classSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::ssa::store::PersonDB",
+        "mainTableDb" : "demo::ssa::store::PersonDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 24,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 44,
+          "startLine" : 24
+        },
+        "table" : "PERSON_TABLE"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::ssa::store::PersonDB",
+          "mainTableDb" : "demo::ssa::store::PersonDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 22
+          },
+          "table" : "PERSON_TABLE"
+        },
+        "tableAlias" : "PERSON_TABLE"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::ssa::Person",
+          "property" : "firstName",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRST_NAME",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 25,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssa::store::PersonDB",
+            "mainTableDb" : "demo::ssa::store::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 25,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 44,
+              "startLine" : 25
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 25,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "bindingTransformer" : {
+          "binding" : "demo::ssa::FirmBinding"
+        },
+        "property" : {
+          "class" : "demo::ssa::Person",
+          "property" : "firm",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "FIRM_DETAILS",
+          "sourceInformation" : {
+            "endColumn" : 96,
+            "endLine" : 28,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 44,
+            "startLine" : 28
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::ssa::store::PersonDB",
+            "mainTableDb" : "demo::ssa::store::PersonDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 83,
+              "endLine" : 28,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 72,
+              "startLine" : 28
+            },
+            "table" : "PERSON_TABLE"
+          },
+          "tableAlias" : "PERSON_TABLE"
+        },
+        "sourceInformation" : {
+          "endColumn" : 96,
+          "endLine" : 28,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 28
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 29,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PersonMapping",
+    "package" : "demo::ssa",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 124,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 35,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 35
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 35,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 35
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 201,
+                "endLine" : 36,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 36
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 36,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 36
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 36,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 36
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 36,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 36
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 36,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 36
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "size",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 79,
+                              "endLine" : 36,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 78,
+                              "startLine" : 36
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 84,
+                            "endLine" : 36,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 81,
+                            "startLine" : 36
+                          }
+                        } ],
+                        "property" : "addresses",
+                        "sourceInformation" : {
+                          "endColumn" : 94,
+                          "endLine" : 36,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 86,
+                          "startLine" : 36
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 100,
+                        "endLine" : 36,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 97,
+                        "startLine" : 36
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 102,
+                      "endLine" : 36,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 76,
+                      "startLine" : 36
+                    }
+                  },
+                  "name" : "addressCount",
+                  "sourceInformation" : {
+                    "endColumn" : 102,
+                    "endLine" : 36,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 36
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "isEmpty",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 123,
+                              "endLine" : 36,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 122,
+                              "startLine" : 36
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 128,
+                            "endLine" : 36,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 125,
+                            "startLine" : 36
+                          }
+                        } ],
+                        "property" : "addresses",
+                        "sourceInformation" : {
+                          "endColumn" : 138,
+                          "endLine" : 36,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 130,
+                          "startLine" : 36
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 147,
+                        "endLine" : 36,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 141,
+                        "startLine" : 36
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 149,
+                      "endLine" : 36,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 120,
+                      "startLine" : 36
+                    }
+                  },
+                  "name" : "noAddresses",
+                  "sourceInformation" : {
+                    "endColumn" : 149,
+                    "endLine" : 36,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 105,
+                    "startLine" : 36
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "isNotEmpty",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 171,
+                              "endLine" : 36,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 170,
+                              "startLine" : 36
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 176,
+                            "endLine" : 36,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 173,
+                            "startLine" : 36
+                          }
+                        } ],
+                        "property" : "addresses",
+                        "sourceInformation" : {
+                          "endColumn" : 186,
+                          "endLine" : 36,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 178,
+                          "startLine" : 36
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 198,
+                        "endLine" : 36,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 189,
+                        "startLine" : 36
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 200,
+                      "endLine" : 36,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 168,
+                      "startLine" : 36
+                    }
+                  },
+                  "name" : "hasAddresses",
+                  "sourceInformation" : {
+                    "endColumn" : 200,
+                    "endLine" : 36,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 152,
+                    "startLine" : 36
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 36,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 36
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 37,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 37
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 37,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 37
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 37,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 37
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 37,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 37
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 37,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 37
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 37,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 35
+        }
+      },
+      "id" : "cardinalitySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 46,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 33
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"addressCount\":3,\"noAddresses\":false,\"hasAddresses\":true},{\"firstName\":\"Bob\",\"addressCount\":1,\"noAddresses\":false,\"hasAddresses\":true}]",
+            "sourceInformation" : {
+              "endColumn" : 279,
+              "endLine" : 43,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 60,
+              "startLine" : 43
+            }
+          },
+          "id" : "shouldCount",
+          "sourceInformation" : {
+            "endColumn" : 283,
+            "endLine" : 43,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 35,
+            "startLine" : 43
+          }
+        } ],
+        "id" : "countElements",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 44,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 40
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 42,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 42
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 42
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 42
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 42
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 49,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 49
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 49,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 107,
+                "endLine" : 50,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 50
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 50,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 50
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 50,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 50
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 50,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 50
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 50,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 50
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "func",
+                        "function" : "at",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "p",
+                              "sourceInformation" : {
+                                "endColumn" : 79,
+                                "endLine" : 50,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 78,
+                                "startLine" : 50
+                              }
+                            } ],
+                            "property" : "firm",
+                            "sourceInformation" : {
+                              "endColumn" : 84,
+                              "endLine" : 50,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 81,
+                              "startLine" : 50
+                            }
+                          } ],
+                          "property" : "addresses",
+                          "sourceInformation" : {
+                            "endColumn" : 94,
+                            "endLine" : 50,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 86,
+                            "startLine" : 50
+                          }
+                        }, {
+                          "_type" : "integer",
+                          "sourceInformation" : {
+                            "endColumn" : 100,
+                            "endLine" : 50,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 100,
+                            "startLine" : 50
+                          },
+                          "value" : 0
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 98,
+                          "endLine" : 50,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 97,
+                          "startLine" : 50
+                        }
+                      } ],
+                      "property" : "name",
+                      "sourceInformation" : {
+                        "endColumn" : 106,
+                        "endLine" : 50,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 103,
+                        "startLine" : 50
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 106,
+                      "endLine" : 50,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 76,
+                      "startLine" : 50
+                    }
+                  },
+                  "name" : "firstByIndex",
+                  "sourceInformation" : {
+                    "endColumn" : 106,
+                    "endLine" : 50,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 50
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 50,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 50
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 51,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 51
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 51,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 51
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 51,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 51
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 51,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 51
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 51,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 51
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 51,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 49
+        }
+      },
+      "id" : "elementAccessSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 60,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 47
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"firstByIndex\":\"A1\"},{\"firstName\":\"Bob\",\"firstByIndex\":\"Z9\"}]",
+            "sourceInformation" : {
+              "endColumn" : 206,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 61,
+              "startLine" : 57
+            }
+          },
+          "id" : "shouldAccess",
+          "sourceInformation" : {
+            "endColumn" : 210,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 36,
+            "startLine" : 57
+          }
+        } ],
+        "id" : "accessElements",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 58,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 54
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 56,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 56
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 56,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 56
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 56,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 56
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 56,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 56
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 63,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 63
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 63,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 63
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 137,
+                "endLine" : 64,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 64
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 64,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 64
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 64,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 64
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 64,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 64
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 64,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 64
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "size",
+                      "parameters" : [ {
+                        "_type" : "func",
+                        "function" : "filter",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "p",
+                              "sourceInformation" : {
+                                "endColumn" : 75,
+                                "endLine" : 64,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 74,
+                                "startLine" : 64
+                              }
+                            } ],
+                            "property" : "firm",
+                            "sourceInformation" : {
+                              "endColumn" : 80,
+                              "endLine" : 64,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 77,
+                              "startLine" : 64
+                            }
+                          } ],
+                          "property" : "addresses",
+                          "sourceInformation" : {
+                            "endColumn" : 90,
+                            "endLine" : 64,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 82,
+                            "startLine" : 64
+                          }
+                        }, {
+                          "_type" : "lambda",
+                          "body" : [ {
+                            "_type" : "func",
+                            "function" : "startsWith",
+                            "parameters" : [ {
+                              "_type" : "property",
+                              "parameters" : [ {
+                                "_type" : "var",
+                                "name" : "a",
+                                "sourceInformation" : {
+                                  "endColumn" : 105,
+                                  "endLine" : 64,
+                                  "sourceId" : "demo::ssa::PersonMapping",
+                                  "startColumn" : 104,
+                                  "startLine" : 64
+                                }
+                              } ],
+                              "property" : "name",
+                              "sourceInformation" : {
+                                "endColumn" : 110,
+                                "endLine" : 64,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 107,
+                                "startLine" : 64
+                              }
+                            }, {
+                              "_type" : "string",
+                              "sourceInformation" : {
+                                "endColumn" : 126,
+                                "endLine" : 64,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 124,
+                                "startLine" : 64
+                              },
+                              "value" : "A"
+                            } ],
+                            "sourceInformation" : {
+                              "endColumn" : 122,
+                              "endLine" : 64,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 113,
+                              "startLine" : 64
+                            }
+                          } ],
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "a"
+                          } ],
+                          "sourceInformation" : {
+                            "endColumn" : 127,
+                            "endLine" : 64,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 102,
+                            "startLine" : 64
+                          }
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 98,
+                          "endLine" : 64,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 93,
+                          "startLine" : 64
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 134,
+                        "endLine" : 64,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 131,
+                        "startLine" : 64
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 136,
+                      "endLine" : 64,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 72,
+                      "startLine" : 64
+                    }
+                  },
+                  "name" : "matching",
+                  "sourceInformation" : {
+                    "endColumn" : 136,
+                    "endLine" : 64,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 64
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 64,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 64
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 65,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 65
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 65,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 65
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 65,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 65
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 65,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 65
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 65,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 65
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 65,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 63
+        }
+      },
+      "id" : "filterSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 74,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 61
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"matching\":2},{\"firstName\":\"Bob\",\"matching\":0}]",
+            "sourceInformation" : {
+              "endColumn" : 192,
+              "endLine" : 71,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 61,
+              "startLine" : 71
+            }
+          },
+          "id" : "shouldFilter",
+          "sourceInformation" : {
+            "endColumn" : 196,
+            "endLine" : 71,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 36,
+            "startLine" : 71
+          }
+        } ],
+        "id" : "applyFilter",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 72,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 68
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 70,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 70
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 70,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 70
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 70,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 70
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 70,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 70
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 77,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 77
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 77,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 77
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 143,
+                "endLine" : 78,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 78
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 78,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 78
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 78,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 78
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 78,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 78
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 78,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 78
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "map",
+                      "parameters" : [ {
+                        "_type" : "func",
+                        "function" : "filter",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "property",
+                            "parameters" : [ {
+                              "_type" : "var",
+                              "name" : "p",
+                              "sourceInformation" : {
+                                "endColumn" : 71,
+                                "endLine" : 78,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 70,
+                                "startLine" : 78
+                              }
+                            } ],
+                            "property" : "firm",
+                            "sourceInformation" : {
+                              "endColumn" : 76,
+                              "endLine" : 78,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 73,
+                              "startLine" : 78
+                            }
+                          } ],
+                          "property" : "addresses",
+                          "sourceInformation" : {
+                            "endColumn" : 86,
+                            "endLine" : 78,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 78,
+                            "startLine" : 78
+                          }
+                        }, {
+                          "_type" : "lambda",
+                          "body" : [ {
+                            "_type" : "func",
+                            "function" : "startsWith",
+                            "parameters" : [ {
+                              "_type" : "property",
+                              "parameters" : [ {
+                                "_type" : "var",
+                                "name" : "a",
+                                "sourceInformation" : {
+                                  "endColumn" : 101,
+                                  "endLine" : 78,
+                                  "sourceId" : "demo::ssa::PersonMapping",
+                                  "startColumn" : 100,
+                                  "startLine" : 78
+                                }
+                              } ],
+                              "property" : "name",
+                              "sourceInformation" : {
+                                "endColumn" : 106,
+                                "endLine" : 78,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 103,
+                                "startLine" : 78
+                              }
+                            }, {
+                              "_type" : "string",
+                              "sourceInformation" : {
+                                "endColumn" : 122,
+                                "endLine" : 78,
+                                "sourceId" : "demo::ssa::PersonMapping",
+                                "startColumn" : 120,
+                                "startLine" : 78
+                              },
+                              "value" : "A"
+                            } ],
+                            "sourceInformation" : {
+                              "endColumn" : 118,
+                              "endLine" : 78,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 109,
+                              "startLine" : 78
+                            }
+                          } ],
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "a"
+                          } ],
+                          "sourceInformation" : {
+                            "endColumn" : 123,
+                            "endLine" : 78,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 98,
+                            "startLine" : 78
+                          }
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 94,
+                          "endLine" : 78,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 89,
+                          "startLine" : 78
+                        }
+                      }, {
+                        "_type" : "lambda",
+                        "body" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "a",
+                            "sourceInformation" : {
+                              "endColumn" : 136,
+                              "endLine" : 78,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 135,
+                              "startLine" : 78
+                            }
+                          } ],
+                          "property" : "name",
+                          "sourceInformation" : {
+                            "endColumn" : 141,
+                            "endLine" : 78,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 138,
+                            "startLine" : 78
+                          }
+                        } ],
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "a"
+                        } ],
+                        "sourceInformation" : {
+                          "endColumn" : 141,
+                          "endLine" : 78,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 133,
+                          "startLine" : 78
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 129,
+                        "endLine" : 78,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 127,
+                        "startLine" : 78
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 142,
+                      "endLine" : 78,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 68,
+                      "startLine" : 78
+                    }
+                  },
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 142,
+                    "endLine" : 78,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 78
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 78,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 78
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 70,
+              "endLine" : 79,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 79
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 79,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 79
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 79,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 79
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 79,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 79
+              }
+            }, {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 56,
+                  "endLine" : 79,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 53,
+                  "startLine" : 79
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 56,
+                    "endLine" : 79,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 53,
+                    "startLine" : 79
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 79,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 59,
+                "startLine" : 79
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 79,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 79
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 79,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 77
+        }
+      },
+      "id" : "mapSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 88,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 75
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"name\":\"A1\"},{\"firstName\":\"Alice\",\"name\":\"A3\"}]",
+            "sourceInformation" : {
+              "endColumn" : 189,
+              "endLine" : 85,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 58,
+              "startLine" : 85
+            }
+          },
+          "id" : "shouldMap",
+          "sourceInformation" : {
+            "endColumn" : 193,
+            "endLine" : 85,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 33,
+            "startLine" : 85
+          }
+        } ],
+        "id" : "applyMap",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 86,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 82
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 84,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 84
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 84,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 84
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 84,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 84
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 84,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 84
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 91,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 91
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 91,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 91
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 105,
+                "endLine" : 92,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 92
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 92,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 92
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 92,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 92
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 92,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 92
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 92,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 92
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "var",
+                          "name" : "p",
+                          "sourceInformation" : {
+                            "endColumn" : 79,
+                            "endLine" : 92,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 78,
+                            "startLine" : 92
+                          }
+                        } ],
+                        "property" : "firm",
+                        "sourceInformation" : {
+                          "endColumn" : 84,
+                          "endLine" : 92,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 81,
+                          "startLine" : 92
+                        }
+                      } ],
+                      "property" : "concatenatedNames",
+                      "sourceInformation" : {
+                        "endColumn" : 102,
+                        "endLine" : 92,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 86,
+                        "startLine" : 92
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 104,
+                      "endLine" : 92,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 76,
+                      "startLine" : 92
+                    }
+                  },
+                  "name" : "concatenated",
+                  "sourceInformation" : {
+                    "endColumn" : 104,
+                    "endLine" : 92,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 92
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 92,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 92
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 93,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 93
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 93,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 93
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 93,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 93
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 93,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 93
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 93,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 93
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 93,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 91
+        }
+      },
+      "id" : "foldSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 102,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 89
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"concatenated\":\"A1B2A3\"},{\"firstName\":\"Bob\",\"concatenated\":\"Z9\"}]",
+            "sourceInformation" : {
+              "endColumn" : 208,
+              "endLine" : 99,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 59,
+              "startLine" : 99
+            }
+          },
+          "id" : "shouldFold",
+          "sourceInformation" : {
+            "endColumn" : 212,
+            "endLine" : 99,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 34,
+            "startLine" : 99
+          }
+        } ],
+        "id" : "applyFold",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 100,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 96
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 98,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 98
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 98,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 98
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 98,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 98
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 98,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 98
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "sort",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "project",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::ssa::Person",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 111,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 18,
+                  "startLine" : 111
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 111,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 35,
+                "startLine" : 111
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 132,
+                "endLine" : 112,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 30,
+                "startLine" : 112
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "property",
+                      "parameters" : [ {
+                        "_type" : "var",
+                        "name" : "p",
+                        "sourceInformation" : {
+                          "endColumn" : 47,
+                          "endLine" : 112,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 46,
+                          "startLine" : 112
+                        }
+                      } ],
+                      "property" : "firstName",
+                      "sourceInformation" : {
+                        "endColumn" : 57,
+                        "endLine" : 112,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 49,
+                        "startLine" : 112
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 57,
+                      "endLine" : 112,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 44,
+                      "startLine" : 112
+                    }
+                  },
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 57,
+                    "endLine" : 112,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 31,
+                    "startLine" : 112
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "max",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 75,
+                              "endLine" : 112,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 74,
+                              "startLine" : 112
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 80,
+                            "endLine" : 112,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 77,
+                            "startLine" : 112
+                          }
+                        } ],
+                        "property" : "scores",
+                        "sourceInformation" : {
+                          "endColumn" : 87,
+                          "endLine" : 112,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 82,
+                          "startLine" : 112
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 92,
+                        "endLine" : 112,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 90,
+                        "startLine" : 112
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 94,
+                      "endLine" : 112,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 72,
+                      "startLine" : 112
+                    }
+                  },
+                  "name" : "topScore",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 112,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 60,
+                    "startLine" : 112
+                  }
+                }, {
+                  "function1" : {
+                    "_type" : "lambda",
+                    "body" : [ {
+                      "_type" : "func",
+                      "function" : "min",
+                      "parameters" : [ {
+                        "_type" : "property",
+                        "parameters" : [ {
+                          "_type" : "property",
+                          "parameters" : [ {
+                            "_type" : "var",
+                            "name" : "p",
+                            "sourceInformation" : {
+                              "endColumn" : 112,
+                              "endLine" : 112,
+                              "sourceId" : "demo::ssa::PersonMapping",
+                              "startColumn" : 111,
+                              "startLine" : 112
+                            }
+                          } ],
+                          "property" : "firm",
+                          "sourceInformation" : {
+                            "endColumn" : 117,
+                            "endLine" : 112,
+                            "sourceId" : "demo::ssa::PersonMapping",
+                            "startColumn" : 114,
+                            "startLine" : 112
+                          }
+                        } ],
+                        "property" : "scores",
+                        "sourceInformation" : {
+                          "endColumn" : 124,
+                          "endLine" : 112,
+                          "sourceId" : "demo::ssa::PersonMapping",
+                          "startColumn" : 119,
+                          "startLine" : 112
+                        }
+                      } ],
+                      "sourceInformation" : {
+                        "endColumn" : 129,
+                        "endLine" : 112,
+                        "sourceId" : "demo::ssa::PersonMapping",
+                        "startColumn" : 127,
+                        "startLine" : 112
+                      }
+                    } ],
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "p"
+                    } ],
+                    "sourceInformation" : {
+                      "endColumn" : 131,
+                      "endLine" : 112,
+                      "sourceId" : "demo::ssa::PersonMapping",
+                      "startColumn" : 109,
+                      "startLine" : 112
+                    }
+                  },
+                  "name" : "lowScore",
+                  "sourceInformation" : {
+                    "endColumn" : 131,
+                    "endLine" : 112,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 97,
+                    "startLine" : 112
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 112,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 21,
+              "startLine" : 112
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 113,
+              "sourceId" : "demo::ssa::PersonMapping",
+              "startColumn" : 26,
+              "startLine" : 113
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "ascending",
+              "parameters" : [ {
+                "_type" : "classInstance",
+                "sourceInformation" : {
+                  "endColumn" : 36,
+                  "endLine" : 113,
+                  "sourceId" : "demo::ssa::PersonMapping",
+                  "startColumn" : 28,
+                  "startLine" : 113
+                },
+                "type" : "colSpec",
+                "value" : {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 36,
+                    "endLine" : 113,
+                    "sourceId" : "demo::ssa::PersonMapping",
+                    "startColumn" : 28,
+                    "startLine" : 113
+                  }
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 47,
+                "endLine" : 113,
+                "sourceId" : "demo::ssa::PersonMapping",
+                "startColumn" : 39,
+                "startLine" : 113
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 113,
+            "sourceId" : "demo::ssa::PersonMapping",
+            "startColumn" : 21,
+            "startLine" : 113
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 113,
+          "sourceId" : "demo::ssa::PersonMapping",
+          "startColumn" : 17,
+          "startLine" : 111
+        }
+      },
+      "id" : "aggregateSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 122,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 109
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"firstName\":\"Alice\",\"topScore\":30,\"lowScore\":10},{\"firstName\":\"Bob\",\"topScore\":7,\"lowScore\":7}]",
+            "sourceInformation" : {
+              "endColumn" : 223,
+              "endLine" : 119,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 64,
+              "startLine" : 119
+            }
+          },
+          "id" : "shouldAggregate",
+          "sourceInformation" : {
+            "endColumn" : 227,
+            "endLine" : 119,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 39,
+            "startLine" : 119
+          }
+        } ],
+        "id" : "aggregateElements",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 120,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 9,
+          "startLine" : 116
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::ssa::data::PersonData",
+              "sourceInformation" : {
+                "endColumn" : 89,
+                "endLine" : 118,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 118
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 118,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 118
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 118,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 19,
+            "startLine" : 118
+          },
+          "store" : {
+            "path" : "demo::ssa::store::PersonDB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 118,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 19,
+              "startLine" : 118
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

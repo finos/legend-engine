@@ -1,0 +1,9 @@
+
+Database wild::store::DB
+(
+  Table T
+  (
+    ID INTEGER PRIMARY KEY,
+    DOC SEMISTRUCTURED
+  )
+)

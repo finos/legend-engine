@@ -2456,6 +2456,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-grammar-rust</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-grammar-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>

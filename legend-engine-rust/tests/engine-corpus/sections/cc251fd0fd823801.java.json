@@ -1,0 +1,394 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "A",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 3
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 3
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 10,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "age",
+      "sourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "B",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "olapGroupBy",
+        "parameters" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "test::A",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 8,
+                "startLine" : 9
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 15,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 9
+            },
+            "values" : [ {
+              "_type" : "func",
+              "function" : "col",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 39,
+                      "endLine" : 9,
+                      "sourceId" : "",
+                      "startColumn" : 38,
+                      "startLine" : 9
+                    }
+                  } ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 44,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 41,
+                    "startLine" : 9
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 37,
+                  "startLine" : 9
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 52,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 47,
+                  "startLine" : 9
+                },
+                "value" : "Name"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 32,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "func",
+              "function" : "col",
+              "parameters" : [ {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "p",
+                    "sourceInformation" : {
+                      "endColumn" : 63,
+                      "endLine" : 9,
+                      "sourceId" : "",
+                      "startColumn" : 62,
+                      "startLine" : 9
+                    }
+                  } ],
+                  "property" : "age",
+                  "sourceInformation" : {
+                    "endColumn" : 67,
+                    "endLine" : 9,
+                    "sourceId" : "",
+                    "startColumn" : 65,
+                    "startLine" : 9
+                  }
+                } ],
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 61,
+                  "startLine" : 9
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 74,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 70,
+                  "startLine" : 9
+                },
+                "value" : "Age"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 58,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 56,
+                "startLine" : 9
+              }
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 23,
+            "startLine" : 9
+          }
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "sourceInformation" : {
+            "endColumn" : 99,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 93,
+            "startLine" : 9
+          },
+          "values" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 94,
+              "startLine" : 9
+            },
+            "value" : "age"
+          } ]
+        }, {
+          "_type" : "func",
+          "function" : "desc",
+          "parameters" : [ {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 110,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 106,
+              "startLine" : 9
+            },
+            "value" : "age"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 104,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 101,
+            "startLine" : 9
+          }
+        }, {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "func",
+            "function" : "count",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y",
+              "sourceInformation" : {
+                "endColumn" : 117,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 116,
+                "startLine" : 9
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 124,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 120,
+              "startLine" : 9
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "y"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 126,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 115,
+            "startLine" : 9
+          }
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 136,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 128,
+            "startLine" : 9
+          },
+          "value" : "testCol"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 80,
+          "startLine" : 9
+        }
+      } ],
+      "name" : "z",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "meta::pure::tds::TabularDataSet",
+          "sourceInformation" : {
+            "endColumn" : 170,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 140,
+            "startLine" : 9
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 174,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 9
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 10,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

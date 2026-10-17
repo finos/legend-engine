@@ -1,0 +1,12 @@
+
+Class animal::Animal
+{
+  owner: user::User[1];
+  a(){$this.owner}:user::User[1];
+}
+
+Class user::User
+{
+  firstName: String[1];
+  lastName: String[1];
+}

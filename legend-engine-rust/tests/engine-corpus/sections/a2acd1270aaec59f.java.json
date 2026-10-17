@@ -1,0 +1,234 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : false,
+    "documentation" : "Showcase service with binding",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "externalize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "internalize",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::Address",
+              "sourceInformation" : {
+                "endColumn" : 40,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 28,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::InternalizeBinding",
+              "sourceInformation" : {
+                "endColumn" : 78,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 9
+              }
+            }, {
+              "_type" : "var",
+              "name" : "data",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 81,
+                "startLine" : 9
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 43,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "demo::ExternalizeBinding",
+            "sourceInformation" : {
+              "endColumn" : 124,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 101,
+              "startLine" : 9
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 141,
+              "endLine" : 9,
+              "sourceId" : "",
+              "startColumn" : 129,
+              "startLine" : 9
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "demo::Address",
+              "sourceInformation" : {
+                "endColumn" : 141,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 129,
+                "startLine" : 9
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "street",
+                "sourceInformation" : {
+                  "endColumn" : 148,
+                  "endLine" : 9,
+                  "sourceId" : "",
+                  "startColumn" : 143,
+                  "startLine" : 9
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 99,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 89,
+            "startLine" : 9
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "String",
+              "sourceInformation" : {
+                "endColumn" : 23,
+                "endLine" : 9,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 9
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 9,
+            "sourceId" : "",
+            "startColumn" : 12,
+            "startLine" : 9
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 152,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 27,
+          "startLine" : 9
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 7
+      }
+    },
+    "name" : "myServiceSingle",
+    "owners" : [ ],
+    "package" : "meta::pure",
+    "pattern" : "/showcase/binding",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 40,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "testSuite1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 38,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 13
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"street\":\"street A\"},\n{\"street\":\"street$B\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 19,
+              "startLine" : 29
+            }
+          },
+          "id" : "assert1",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 26
+          }
+        } ],
+        "id" : "test1",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "data",
+          "value" : {
+            "_type" : "string",
+            "sourceInformation" : {
+              "endColumn" : 47,
+              "endLine" : 21,
+              "sourceId" : "",
+              "startColumn" : 20,
+              "startLine" : 21
+            },
+            "value" : "street\nStreet A\nStreet$B"
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 36,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 17
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

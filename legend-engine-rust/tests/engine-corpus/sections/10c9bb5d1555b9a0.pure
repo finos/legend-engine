@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::Firm[firm]: Relation
+  {
+    ~func my::firmFunction():Relation<Any>[1]
+    legalName: $src.LEGALNAME->toOneMany()->first()
+  }
+)

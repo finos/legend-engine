@@ -1,0 +1,24 @@
+
+Diagram diagram::MyDiagram
+{
+  classView a6b8266b-395e-4308-a08a-8f9b44af6d53
+  {
+    class: model::target::_Firm;
+    position: (547.0,270.0);
+    rectangle: (159.0,72.0);
+  }
+  classView c41deda8-19be-4374-9260-8be50c32d3cd
+  {
+    class: model::target::_Person;
+    position: (1128.0,308.0);
+    rectangle: (122.0,44.0);
+  }
+  propertyView
+  {
+    property: model::target::_Firm.employees;
+    source: a6b8266b-395e-4308-a08a-8f9b44af6d53;
+    target: c41deda8-19be-4374-9260-8be50c32d3cd;
+    points: [(626.5,306.0),(1189.0,330.0)];
+  }
+}
+

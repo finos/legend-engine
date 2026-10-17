@@ -1,0 +1,20 @@
+
+Data demo::relation::data::EmployeeChainData
+{
+  Relation
+  #{
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY,DEPARTMENT_ID
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London,10
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris,20
+      3,Carol,White,1,FULL_TIME,1,2019-03-10 00:00:00,60000.0,Pine Rd,Berlin,10;
+    default.DepartmentTable:
+      ID,FIRM_ID,NAME,CODE
+      10,1,Engineering,ENG
+      20,2,Marketing,MKT;
+    default.FirmTable:
+      ID,LEGAL_NAME
+      1,Acme
+      2,Beta;
+  }#
+}

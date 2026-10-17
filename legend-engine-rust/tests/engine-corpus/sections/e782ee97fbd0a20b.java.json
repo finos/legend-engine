@@ -1,0 +1,82 @@
+{
+  "elements" : [ {
+    "_type" : "hostedService",
+    "actions" : [ ],
+    "autoActivateUpdates" : true,
+    "documentation" : "My hosted service",
+    "function" : {
+      "path" : "zxx(Integer[1]):String[1]",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 15,
+        "startLine" : 6
+      },
+      "type" : "FUNCTION"
+    },
+    "generateLineage" : false,
+    "name" : "MyHostedService",
+    "ownership" : {
+      "_type" : "DeploymentOwner",
+      "id" : "17"
+    },
+    "package" : "package1",
+    "pattern" : "/a/b/{integer1}",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ {
+      "profile" : "a::A",
+      "profileSourceInformation" : {
+        "endColumn" : 20,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 17,
+        "startLine" : 2
+      },
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 22,
+        "startLine" : 2
+      },
+      "value" : "test"
+    } ],
+    "storeModel" : false,
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 44,
+        "endLine" : 2,
+        "sourceId" : "",
+        "startColumn" : 30,
+        "startLine" : 2
+      },
+      "tag" : {
+        "profile" : "a::A",
+        "profileSourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 2,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 2
+        },
+        "value" : "val"
+      },
+      "value" : "ok"
+    } ]
+  } ],
+  "imports" : [ ]
+}

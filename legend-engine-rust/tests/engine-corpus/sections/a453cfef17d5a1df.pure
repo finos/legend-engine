@@ -1,0 +1,5 @@
+
+function test::new(res: Result[1]): Any[1]
+{
+  1
+}

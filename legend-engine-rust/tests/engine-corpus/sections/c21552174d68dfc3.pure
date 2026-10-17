@@ -1,0 +1,57 @@
+
+Enum test::firm::model::AddressType
+{
+   Headquarters,
+   RegionalOffice,
+   Home,
+   Holiday
+}
+
+Class test::firm::model::Firm
+{
+   name      : String[1];
+   ranking   : Integer[0..1];
+   addresses : test::firm::model::AddressUse[1..*];
+}
+
+Class test::firm::model::Address
+{
+   firstLine  : String[1];
+   secondLine : String[0..1];
+   city       : String[0..1];
+   region     : String[0..1];
+   country    : String[1];
+   position   : test::firm::model::GeographicPosition[0..1];
+}
+
+Class test::firm::model::GeographicPosition
+[
+   validLatitude: ($this.latitude >= -90) && ($this.latitude <= 90),
+   validLongitude: ($this.longitude >= -180) && ($this.longitude <= 180)
+]
+{
+   latitude  : Decimal[1];
+   longitude : Decimal[1];
+}
+
+Class test::firm::model::AddressUse
+{
+   addressType : test::firm::model::AddressType[1];
+   address     : test::firm::model::Address[1];
+}
+
+Class test::firm::model::Person
+{
+   firstName      : String[1];
+   lastName       : String[1];
+   dateOfBirth    : StrictDate[0..1];   
+   addresses      : test::firm::model::AddressUse[*];
+   isAlive        : Boolean[1];
+   heightInMeters : Float[1];
+}
+
+Association test::firm::model::Firm_Person
+{
+   firm      : test::firm::model::Firm[1];
+   employees : test::firm::model::Person[*];
+}

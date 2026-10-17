@@ -1,0 +1,23 @@
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  firmId: Integer[1];
+  address: my::Address[1];
+}
+Class my::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+  clientNames: String[*];
+}
+Class my::Address
+{
+  city: String[1];
+}
+Association my::Person_Firm
+{
+  employees: my::Person[*];
+  firm: my::Firm[1];
+}

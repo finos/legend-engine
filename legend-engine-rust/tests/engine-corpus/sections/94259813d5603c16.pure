@@ -1,0 +1,34 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService
+    (
+      ~request
+      (
+        parameters
+        (
+          param = $this.prop,
+          param2 = 1,
+          param1 = $this.prop1
+        )
+      )
+    )
+  }
+  *test::model1: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup1.TestServiceGroup2.TestService
+    (
+      ~request
+      (
+        parameters
+        (
+          param = $this.prop,
+          param2 = 1,
+          param1 = $this.prop1
+        )
+      )
+    )
+  }
+)

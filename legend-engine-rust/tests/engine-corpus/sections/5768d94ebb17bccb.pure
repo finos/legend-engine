@@ -1,0 +1,15 @@
+ 
+Service test::Service 
+{ 
+  pattern: '/url/myUrl'; 
+  owners: ['ownerName']; 
+  documentation: 'test'; 
+  autoActivateUpdates: true; 
+  mcpServer: '11';
+  execution: Single 
+  { 
+    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); 
+    mapping: test::mapping; 
+    runtime: test::runtime; 
+  }
+}

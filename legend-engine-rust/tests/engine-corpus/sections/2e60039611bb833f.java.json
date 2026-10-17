@@ -1,0 +1,34 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "Example1",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"firstName\": {\n      \"type\": \"string\"\n    },\n    \"lastName\": {\n      \"type\": \"string\"\n    },\n    \"middleName\": {\n      \"type\": \"string\"\n    },\n    \"firm\": {\n      \"$ref\": \"#/definitions/demo::jsonSchema::Firm\"\n    }\n  },\n  \"required\": [\n    \"firstName\",\n    \"lastName\",\n    \"firm\"\n  ],\n  \"definitions\": {\n    \"demo::jsonSchema::Firm\": {\n      \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n      \"title\": \"demo::jsonSchema::Firm\",\n      \"type\": \"object\",\n      \"properties\": {\n        \"legalName\": {\n          \"type\": \"string\"\n        },\n        \"employeesCount\": {\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"legalName\",\n        \"employeesCount\"\n      ]\n    }\n  }\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 873,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 6
+      },
+      "location" : "demo/jsonSchema/Person.json",
+      "sourceInformation" : {
+        "endColumn" : 875,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 5
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

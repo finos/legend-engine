@@ -1,0 +1,18 @@
+
+import other::*;
+
+Class other::Person
+{
+    name:String[1];
+    firm:Firm[1];
+}
+Class other::Firm
+{
+    legalName:String[1];
+    address:Address[1];
+}
+Class other::Address
+{
+    line1:String[1];
+    postcode:String[1];
+}

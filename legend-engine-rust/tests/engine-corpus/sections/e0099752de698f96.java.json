@@ -1,0 +1,99 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "defaultExecutionContext" : "dummyContext",
+    "description" : "this is description of this COVIDDataspace",
+    "executables" : [ {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "description" : "Some more exec description",
+      "executable" : {
+        "path" : "domain::COVIDData_QueryFunctionRelation():Relation[1]",
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 21,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 21
+        },
+        "type" : "FUNCTION"
+      },
+      "executionContextKey" : "dummyContext",
+      "id" : "1",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 17
+      },
+      "title" : "this is template"
+    }, {
+      "_type" : "dataSpacePackageableElementExecutable",
+      "executable" : {
+        "path" : "domain::COVIDData_QueryFunctionRelation():Relation[1]",
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 27,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 27
+        },
+        "type" : "FUNCTION"
+      },
+      "executionContextKey" : "dummyContext",
+      "id" : "2",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 24
+      },
+      "title" : "this is template2"
+    } ],
+    "executionContexts" : [ {
+      "defaultRuntime" : {
+        "path" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 9,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 9
+        },
+        "type" : "RUNTIME"
+      },
+      "mapping" : {
+        "path" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 8,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 8
+        },
+        "type" : "MAPPING"
+      },
+      "name" : "dummyContext",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "name" : "COVIDDataspace",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "COVID Sample Data"
+  } ]
+}

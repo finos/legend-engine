@@ -1,0 +1,11 @@
+
+Mapping test::Map
+(
+  test::Trade : Relational {
+    id: [test::DB]tradeTable.id,
+    time: [test::DB]tradeTable.time
+  }
+  test::Position : Relational {
+    id: [test::DB]positionTable.id
+  }
+)

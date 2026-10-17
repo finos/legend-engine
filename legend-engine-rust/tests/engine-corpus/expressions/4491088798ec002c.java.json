@@ -1,0 +1,210 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "serialize",
+    "parameters" : [ {
+      "_type" : "func",
+      "function" : "graphFetchUnexpanded",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "internalize",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::firm::model::GeographicPosition",
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::gen::TestBinding",
+          "sourceInformation" : {
+            "endColumn" : 86,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 65,
+            "startLine" : 1
+          }
+        }, {
+          "_type" : "var",
+          "name" : "data",
+          "sourceInformation" : {
+            "endColumn" : 93,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 89,
+            "startLine" : 1
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 53,
+          "startLine" : 1
+        }
+      }, {
+        "_type" : "classInstance",
+        "sourceInformation" : {
+          "endColumn" : 156,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 120,
+          "startLine" : 1
+        },
+        "type" : "rootGraphFetchTree",
+        "value" : {
+          "_type" : "rootGraphFetchTree",
+          "_type" : "rootGraphFetchTree",
+          "class" : "test::firm::model::GeographicPosition",
+          "sourceInformation" : {
+            "endColumn" : 156,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 120,
+            "startLine" : 1
+          },
+          "subTrees" : [ {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "latitude",
+            "sourceInformation" : {
+              "endColumn" : 165,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 158,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          }, {
+            "_type" : "propertyGraphFetchTree",
+            "_type" : "propertyGraphFetchTree",
+            "parameters" : [ ],
+            "property" : "longitude",
+            "sourceInformation" : {
+              "endColumn" : 176,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 168,
+              "startLine" : 1
+            },
+            "subTrees" : [ ],
+            "subTypeTrees" : [ ]
+          } ],
+          "subTypeTrees" : [ ]
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 116,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 97,
+        "startLine" : 1
+      }
+    }, {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 231,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 195,
+        "startLine" : 1
+      },
+      "type" : "rootGraphFetchTree",
+      "value" : {
+        "_type" : "rootGraphFetchTree",
+        "_type" : "rootGraphFetchTree",
+        "class" : "test::firm::model::GeographicPosition",
+        "sourceInformation" : {
+          "endColumn" : 231,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 195,
+          "startLine" : 1
+        },
+        "subTrees" : [ {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "latitude",
+          "sourceInformation" : {
+            "endColumn" : 240,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 233,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        }, {
+          "_type" : "propertyGraphFetchTree",
+          "_type" : "propertyGraphFetchTree",
+          "parameters" : [ ],
+          "property" : "longitude",
+          "sourceInformation" : {
+            "endColumn" : 251,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 243,
+            "startLine" : 1
+          },
+          "subTrees" : [ ],
+          "subTypeTrees" : [ ]
+        } ],
+        "subTypeTrees" : [ ]
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 191,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 183,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ {
+    "_type" : "var",
+    "genericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Byte",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 6,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "multiplicity" : {
+      "lowerBound" : 0
+    },
+    "name" : "data",
+    "sourceInformation" : {
+      "endColumn" : 12,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    }
+  } ],
+  "sourceInformation" : {
+    "endColumn" : 255,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 13,
+    "startLine" : 1
+  }
+}
+}

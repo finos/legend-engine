@@ -1,0 +1,170 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ {
+      "_type" : "filter",
+      "name" : "LargeFirmFilter",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "greaterThan",
+        "parameters" : [ {
+          "_type" : "dynaFunc",
+          "funcName" : "extractFromSemiStructured",
+          "parameters" : [ {
+            "_type" : "column",
+            "column" : "FIRM_DETAILS",
+            "sourceInformation" : {
+              "endColumn" : 74,
+              "endLine" : 51,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 52,
+              "startLine" : 51
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::ss::store::FirmDB",
+              "mainTableDb" : "demo::ss::store::FirmDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 51,
+                "sourceId" : "store/db.pure",
+                "startColumn" : 52,
+                "startLine" : 51
+              },
+              "table" : "FIRM_TABLE"
+            },
+            "tableAlias" : "FIRM_TABLE"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 51,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 77,
+              "startLine" : 51
+            },
+            "value" : "employeeCount"
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 102,
+              "endLine" : 51,
+              "sourceId" : "store/db.pure",
+              "startColumn" : 94,
+              "startLine" : 51
+            },
+            "value" : "INTEGER"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 51,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 26,
+            "startLine" : 51
+          }
+        }, {
+          "_type" : "literal",
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 51,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 107,
+            "startLine" : 51
+          },
+          "value" : 2
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 107,
+          "endLine" : 51,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 105,
+          "startLine" : 51
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 108,
+        "endLine" : 51,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 3,
+        "startLine" : 51
+      }
+    } ],
+    "includedStores" : [ ],
+    "joins" : [ ],
+    "name" : "FirmDB",
+    "package" : "demo::ss::store",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 52,
+        "sourceId" : "store/db.pure",
+        "startColumn" : 1,
+        "startLine" : 39
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "ID",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 43,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 43
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "FIRM_DETAILS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 44,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 44
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        }, {
+          "name" : "FIRM_TAGS",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 47,
+            "sourceId" : "store/db.pure",
+            "startColumn" : 5,
+            "startLine" : 47
+          },
+          "type" : {
+            "_type" : "SemiStructured"
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FIRM_TABLE",
+        "primaryKey" : [ "ID" ],
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 48,
+          "sourceId" : "store/db.pure",
+          "startColumn" : 3,
+          "startLine" : 41
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 52,
+      "sourceId" : "store/db.pure",
+      "startColumn" : 1,
+      "startLine" : 39
+    },
+    "stereotypes" : [ ]
+  } ]
+}

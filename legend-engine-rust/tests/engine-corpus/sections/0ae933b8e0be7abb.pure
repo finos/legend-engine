@@ -1,0 +1,18 @@
+
+Mapping test::modelJoinShadowingMapping
+(
+   test::Person[p]: Pure {
+      ~src test::Person
+      name: $src.name,
+      tags: $src.tags
+   }
+   test::Firm[f]: Pure {
+      ~src test::Firm
+      id: $src.id
+   }
+
+   test::Firm_Person: ModelJoin {
+      {p:test::Person[1], f:test::Firm[1]|
+         $p.tags->filter(p|$p == $f.id)->size() > 0}
+   }
+)

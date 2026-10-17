@@ -1,0 +1,2 @@
+
+Class test::Report{   country : meta::pure::precisePrimitives::Varchar(200)[1];}

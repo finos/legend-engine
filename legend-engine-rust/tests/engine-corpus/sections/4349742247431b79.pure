@@ -1,0 +1,8 @@
+
+Mapping ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping
+(
+  demo::EnumWithSpace: EnumerationMapping
+  {
+    'ENUM VALUE WITH SPACE': ['Dummy Value']
+  }
+)

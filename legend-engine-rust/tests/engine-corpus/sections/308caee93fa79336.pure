@@ -1,0 +1,28 @@
+
+Data demo::ssn::data::PersonData
+{
+  Relation
+  #{
+    PERSON_SCHEMA.PERSON_NESTED:
+      ID,NAME,PROFILE
+      1,Alice,"{""employment"":{""firm"":{""legalName"":""Firm One""}},""grade"":3}";
+
+    PERSON_SCHEMA.PERSON_ROOT:
+      ID,NAME,PROFILE
+      2,Bob,"{""legalName"":""Firm Two""}";
+
+    PERSON_SCHEMA.PERSON_TEXT:
+      ID,NAME,PROFILE_JSON
+      3,Cara,"{""legalName"":""Firm Three""}";
+
+    PERSON_SCHEMA.STAFF:
+      ID,NAME,MANAGER_ID,PROFILE
+      10,Dan,11,"{""legalName"":""Dan Firm""}"
+      11,Eve,,"{""legalName"":""Eve Firm""}";
+
+    PERSON_SCHEMA.RECORD_TABLE:
+      ID,REFERENCE,CONTENT
+      20,R-1,"{""payload"":{""tags"":[{""code"":""T1"",""category"":""Primary""},{""code"":""T2"",""category"":""Secondary""}],""participants"":[{""party"":""P1""}]}}"
+      21,R-2,"{""payload"":{""tags"":[{""code"":""T9"",""category"":""Primary""}],""participants"":[{""party"":""P8""},{""party"":""P9""}]}}";
+  }#
+}

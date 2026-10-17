@@ -1,0 +1,58 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "RelationalDatabaseConnection",
+      "authenticationStrategy" : {
+        "_type" : "h2Default",
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 198,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 198
+        }
+      },
+      "databaseType" : "H2",
+      "datasourceSpecification" : {
+        "_type" : "h2Local",
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 197,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 173
+        },
+        "testDataSetupSqls" : [ "DROP TABLE IF EXISTS PERSON_TBL;", "CREATE TABLE PERSON_TBL(ID INT, FULL_NAME VARCHAR(200), AGE INT, EMAIL VARCHAR(200), SALARY DECIMAL(10,2), DOB DATE);", "INSERT INTO PERSON_TBL VALUES (-1, 'Smith Failsson', 30, 'fail@test.com', 30000.00, '1995-01-01');", "INSERT INTO PERSON_TBL VALUES (1, 'Alice Smith', 30, 'alice@test.com', 50000.00, '1995-02-01');", "INSERT INTO PERSON_TBL VALUES (2, 'Bob Johnson', 25, 'bob@test.com', 60000.50, '2000-03-01');", "INSERT INTO PERSON_TBL VALUES (3, 'Charlie Brown', 35, 'charlie@test.com', 75000.75, '1990-01-01');", "INSERT INTO PERSON_TBL VALUES (4, 'Diana Prince', NULL, 'diana@test.com', 45000.00, NULL);", "INSERT INTO PERSON_TBL VALUES (5, 'Eve Davis', 28, NULL, 55000.00, NULL);", "DROP TABLE IF EXISTS SAMPLE_VAL_TBL;", "CREATE TABLE SAMPLE_VAL_TBL(ID INT PRIMARY KEY, STR_COL VARCHAR(200), INT_COL INT, FLOAT_COL DOUBLE, DATE_COL DATE, BOOL_COL BOOLEAN);", "INSERT INTO SAMPLE_VAL_TBL VALUES (1,  'A', 10, 1.1, '2024-01-01', true);", "INSERT INTO SAMPLE_VAL_TBL VALUES (2,  'A', 10, 1.1, '2024-01-01', true);", "INSERT INTO SAMPLE_VAL_TBL VALUES (3,  'A', 10, 2.2, '2024-02-01', false);", "INSERT INTO SAMPLE_VAL_TBL VALUES (4,  'A', 10, 2.2, '2024-02-01', false);", "INSERT INTO SAMPLE_VAL_TBL VALUES (5,  'A', 20, 3.3, '2024-03-01', true);", "INSERT INTO SAMPLE_VAL_TBL VALUES (6,  'B', 20, 3.3, NULL,          NULL);", "INSERT INTO SAMPLE_VAL_TBL VALUES (7,  'B', 20, NULL, NULL,          NULL);", "INSERT INTO SAMPLE_VAL_TBL VALUES (8,  'B', NULL, NULL, NULL,        NULL);", "INSERT INTO SAMPLE_VAL_TBL VALUES (9,  'C', NULL, NULL, NULL,        NULL);", "INSERT INTO SAMPLE_VAL_TBL VALUES (10, NULL, NULL, NULL, NULL,         NULL);" ]
+      },
+      "element" : "demo::PersonDB",
+      "elementSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 171,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 171
+      },
+      "postProcessorWithParameter" : [ ],
+      "postProcessors" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 199,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 169
+      },
+      "type" : "H2"
+    },
+    "name" : "H2Connection",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 199,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 169
+    }
+  } ],
+  "imports" : [ ]
+}

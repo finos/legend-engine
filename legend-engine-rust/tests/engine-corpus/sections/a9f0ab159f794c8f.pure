@@ -1,0 +1,6 @@
+
+Enum demo::relation::domain::ActiveStatus
+{
+  ACTIVE,
+  INACTIVE
+}

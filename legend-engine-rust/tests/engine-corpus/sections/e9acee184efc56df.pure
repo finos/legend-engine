@@ -1,0 +1,8 @@
+
+Database simple::DB
+(
+   Table "tableNameInQuotes.With.Dots"
+   (
+       ID INTEGER PRIMARY KEY
+   )
+)

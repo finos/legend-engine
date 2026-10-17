@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'doc' is required",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 20,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 3
+    }
+  }
+}

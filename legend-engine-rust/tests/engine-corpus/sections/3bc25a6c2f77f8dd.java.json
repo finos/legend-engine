@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Unexpected token '}'. Valid alternatives: ['->subType(@']",
+    "sourceInformation" : {
+      "endColumn" : 74,
+      "endLine" : 14,
+      "sourceId" : "testing::mapping",
+      "startColumn" : 74,
+      "startLine" : 14
+    }
+  }
+}

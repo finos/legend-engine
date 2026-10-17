@@ -1,0 +1,5 @@
+
+Class my::OptionalFirm
+{
+  legalName: String[0..1];
+}

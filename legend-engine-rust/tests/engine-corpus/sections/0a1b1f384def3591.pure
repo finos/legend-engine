@@ -1,0 +1,10 @@
+
+import test2::*;
+import test::*;
+
+Class test::doc {}
+Class test2::doc {}
+
+Class test::mewo {
+   prop1: doc[1];
+}

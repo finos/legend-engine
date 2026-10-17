@@ -1,0 +1,16 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Streaming
+  {
+    sink: ObjectStorage
+    {
+      binding: test::TestBinding;
+      binding: test::TestBinding;
+    }
+  }
+}

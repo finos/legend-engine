@@ -1,0 +1,65 @@
+{
+  "elements" : [ {
+    "_type" : "profile",
+    "name" : "doc",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 20,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 4
+    },
+    "stereotypes" : [ ],
+    "tags" : [ ]
+  }, {
+    "_type" : "profile",
+    "name" : "doc",
+    "package" : "test2",
+    "sourceInformation" : {
+      "endColumn" : 21,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 5
+    },
+    "stereotypes" : [ ],
+    "tags" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "mewo",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 8,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 7
+    },
+    "stereotypes" : [ {
+      "profile" : "doc",
+      "profileSourceInformation" : {
+        "endColumn" : 11,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 7
+      },
+      "sourceInformation" : {
+        "endColumn" : 15,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 7
+      },
+      "value" : "doc"
+    } ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ "test2", "test" ]
+}

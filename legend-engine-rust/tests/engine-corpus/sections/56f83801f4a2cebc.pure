@@ -1,0 +1,10 @@
+
+Binding testServiceStoreTestSuites::employeeServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    testServiceStoreTestSuites::Employee,
+    testServiceStoreTestSuites::Employee2
+  ];
+}
+

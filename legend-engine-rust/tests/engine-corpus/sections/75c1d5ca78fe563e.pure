@@ -1,0 +1,14 @@
+
+function withPath::f(s: Integer[1]): String[1]
+{
+  ~owner_abc:String;
+  ~function_abc:String;
+  ~message_abc:String;
+  ~enforcementLevel_abc:String;
+  ~externalId_abc:String;
+  ~owner;
+  ~function;
+  ~message;
+  ~enforcementLevel;
+  ~externalId;
+}

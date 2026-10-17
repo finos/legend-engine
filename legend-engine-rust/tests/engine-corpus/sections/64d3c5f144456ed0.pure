@@ -1,0 +1,11 @@
+
+Measure test::NewMeasure
+{
+   *UnitOne: x -> $x;
+   UnitTwo: x -> $x * 1000;
+   UnitThree: x -> $x * 400;
+}Class test::A
+{
+   unitOne : test::NewMeasure~UnitOne[0..1];
+   unitTwo : test::NewMeasure~UnitTwo[0..1];
+}

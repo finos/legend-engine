@@ -1,0 +1,158 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "test",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetch",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "test::class",
+                "sourceInformation" : {
+                  "endColumn" : 23,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 13,
+                  "startLine" : 29
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 24,
+                "startLine" : 29
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 55,
+                "endLine" : 29,
+                "sourceId" : "",
+                "startColumn" : 45,
+                "startLine" : 29
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "test::class",
+                "sourceInformation" : {
+                  "endColumn" : 55,
+                  "endLine" : 29,
+                  "sourceId" : "",
+                  "startColumn" : 45,
+                  "startLine" : 29
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "prop1",
+                  "sourceInformation" : {
+                    "endColumn" : 61,
+                    "endLine" : 29,
+                    "sourceId" : "",
+                    "startColumn" : 57,
+                    "startLine" : 29
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 41,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 32,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "test::mapping",
+            "sourceInformation" : {
+              "endColumn" : 85,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 73,
+              "startLine" : 29
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "test::runtime",
+            "sourceInformation" : {
+              "endColumn" : 100,
+              "endLine" : 29,
+              "sourceId" : "",
+              "startColumn" : 88,
+              "startLine" : 29
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 29,
+            "sourceId" : "",
+            "startColumn" : 68,
+            "startLine" : 29
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 101,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 29
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 14,
+        "startLine" : 27
+      }
+    },
+    "name" : "Service",
+    "owners" : [ "ownerName", "ownerName2" ],
+    "package" : "test",
+    "pattern" : "url/myUrl/",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 38,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 20
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "test" : {
+      "_type" : "singleExecutionTest",
+      "asserts" : [ ],
+      "data" : "moreThanData",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "",
+        "startColumn" : 9,
+        "startLine" : 31
+      }
+    },
+    "title" : "my Service"
+  } ],
+  "imports" : [ ]
+}

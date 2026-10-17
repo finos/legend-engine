@@ -1,0 +1,94 @@
+
+Service meta::pure::myServiceMulti
+{
+  pattern: 'url/myUrl/{env}';
+  owners:
+  [
+    'ownerName'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: env: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->get($env, 'abc'))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);
+  }
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+    tests['UAT']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+  }
+}
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    [
+      abc:
+      {
+        mapping: test::myMapping1;
+        runtime: test::myRuntime1;
+      },
+      xyz:
+      {
+        mapping: test::myMapping2;
+        runtime: test::myRuntime2;
+      }
+    ],
+    PROD:
+    [
+      abc:
+      {
+        mapping: test::myMapping3;
+        runtime: test::myRuntime3;
+      },
+      xyz:
+      {
+        mapping: test::myMapping4;
+        runtime:
+        #{
+          connections:
+          [
+            ModelStore:
+            [
+              id1: test::myConnection,
+              id2:
+              #{
+                JsonModelConnection
+                {
+                  class: meta::mySimpleClass;
+                  url: 'my_url';
+                }
+              }#,
+              id3:
+              #{
+                JsonModelConnection
+                {
+                  class: meta::mySimpleClass;
+                  url: 'my_url';
+                }
+              }#
+            ]
+          ];
+        }#;
+      }
+    ]
+  ];
+}

@@ -1,0 +1,2541 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "probe::Row",
+      "classSourceInformation" : {
+        "endColumn" : 13,
+        "endLine" : 18,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "probe::store::DB",
+        "mainTableDb" : "probe::store::DB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 21,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 34,
+          "startLine" : 21
+        },
+        "table" : "T"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "ID",
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 20,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 19,
+          "startLine" : 20
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "probe::store::DB",
+          "mainTableDb" : "probe::store::DB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 20,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 37,
+            "startLine" : 20
+          },
+          "table" : "T"
+        },
+        "tableAlias" : "T"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "id",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "ID",
+          "sourceInformation" : {
+            "endColumn" : 30,
+            "endLine" : 22,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 9,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "probe::store::DB",
+            "mainTableDb" : "probe::store::DB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 27,
+              "endLine" : 22,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 27,
+              "startLine" : 22
+            },
+            "table" : "T"
+          },
+          "tableAlias" : "T"
+        },
+        "sourceInformation" : {
+          "endColumn" : 30,
+          "endLine" : 22,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "transformOnly",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_transform",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "extractFromSemiStructured",
+              "parameters" : [ {
+                "_type" : "column",
+                "column" : "DOC",
+                "sourceInformation" : {
+                  "endColumn" : 100,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 78,
+                  "startLine" : 26
+                },
+                "table" : {
+                  "_type" : "Table",
+                  "database" : "probe::store::DB",
+                  "mainTableDb" : "probe::store::DB",
+                  "schema" : "default",
+                  "sourceInformation" : {
+                    "endColumn" : 96,
+                    "endLine" : 26,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 96,
+                    "startLine" : 26
+                  },
+                  "table" : "T"
+                },
+                "tableAlias" : "T"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 105,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 103,
+                  "startLine" : 26
+                },
+                "value" : "a"
+              }, {
+                "_type" : "literal",
+                "sourceInformation" : {
+                  "endColumn" : 125,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 108,
+                  "startLine" : 26
+                },
+                "value" : "SEMISTRUCTURED[]"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 126,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 52,
+                "startLine" : 26
+              }
+            }, {
+              "_type" : "relationalLambda",
+              "body" : {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "lambdaParameter",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 160,
+                    "endLine" : 26,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 159,
+                    "startLine" : 26
+                  }
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 165,
+                    "endLine" : 26,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 163,
+                    "startLine" : 26
+                  },
+                  "value" : "b"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 185,
+                    "endLine" : 26,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 168,
+                    "startLine" : 26
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 186,
+                  "endLine" : 26,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 133,
+                  "startLine" : 26
+                }
+              },
+              "parameterNames" : [ "x" ],
+              "sourceInformation" : {
+                "endColumn" : 186,
+                "endLine" : 26,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 129,
+                "startLine" : 26
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 187,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 36,
+              "startLine" : 26
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 192,
+              "endLine" : 26,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 190,
+              "startLine" : 26
+            },
+            "value" : ";"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 193,
+            "endLine" : 26,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 20,
+            "startLine" : 26
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 193,
+          "endLine" : 26,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 18,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "transformThenFlatten",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_flatten",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_transform",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 121,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 99,
+                    "startLine" : 27
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "probe::store::DB",
+                    "mainTableDb" : "probe::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 117,
+                      "endLine" : 27,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 117,
+                      "startLine" : 27
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 126,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 124,
+                    "startLine" : 27
+                  },
+                  "value" : "a"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 146,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 129,
+                    "startLine" : 27
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 147,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 73,
+                  "startLine" : 27
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 181,
+                      "endLine" : 27,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 180,
+                      "startLine" : 27
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 186,
+                      "endLine" : 27,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 184,
+                      "startLine" : 27
+                    },
+                    "value" : "b"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 206,
+                      "endLine" : 27,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 189,
+                      "startLine" : 27
+                    },
+                    "value" : "SEMISTRUCTURED[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 207,
+                    "endLine" : 27,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 154,
+                    "startLine" : 27
+                  }
+                },
+                "parameterNames" : [ "x" ],
+                "sourceInformation" : {
+                  "endColumn" : 207,
+                  "endLine" : 27,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 150,
+                  "startLine" : 27
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 208,
+                "endLine" : 27,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 57,
+                "startLine" : 27
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 209,
+              "endLine" : 27,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 43,
+              "startLine" : 27
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 214,
+              "endLine" : 27,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 212,
+              "startLine" : 27
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 215,
+            "endLine" : 27,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 27,
+            "startLine" : 27
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 215,
+          "endLine" : 27,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 25,
+          "startLine" : 27
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "emptyInner",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_flatten",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_transform",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 111,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 89,
+                    "startLine" : 31
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "probe::store::DB",
+                    "mainTableDb" : "probe::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 107,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 107,
+                      "startLine" : 31
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 116,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 114,
+                    "startLine" : 31
+                  },
+                  "value" : "e"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 136,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 119,
+                    "startLine" : 31
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 137,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 63,
+                  "startLine" : 31
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 171,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 170,
+                      "startLine" : 31
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 176,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 174,
+                      "startLine" : 31
+                    },
+                    "value" : "b"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 196,
+                      "endLine" : 31,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 179,
+                      "startLine" : 31
+                    },
+                    "value" : "SEMISTRUCTURED[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 197,
+                    "endLine" : 31,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 144,
+                    "startLine" : 31
+                  }
+                },
+                "parameterNames" : [ "x" ],
+                "sourceInformation" : {
+                  "endColumn" : 197,
+                  "endLine" : 31,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 140,
+                  "startLine" : 31
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 198,
+                "endLine" : 31,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 31
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 199,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 33,
+              "startLine" : 31
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 204,
+              "endLine" : 31,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 202,
+              "startLine" : 31
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 205,
+            "endLine" : 31,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 17,
+            "startLine" : 31
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 205,
+          "endLine" : 31,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 15,
+          "startLine" : 31
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "nullInner",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_flatten",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_transform",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 110,
+                    "endLine" : 32,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 88,
+                    "startLine" : 32
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "probe::store::DB",
+                    "mainTableDb" : "probe::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 106,
+                      "endLine" : 32,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 106,
+                      "startLine" : 32
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 115,
+                    "endLine" : 32,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 113,
+                    "startLine" : 32
+                  },
+                  "value" : "n"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 135,
+                    "endLine" : 32,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 118,
+                    "startLine" : 32
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 136,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 62,
+                  "startLine" : 32
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 170,
+                      "endLine" : 32,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 169,
+                      "startLine" : 32
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 175,
+                      "endLine" : 32,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 173,
+                      "startLine" : 32
+                    },
+                    "value" : "b"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 195,
+                      "endLine" : 32,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 178,
+                      "startLine" : 32
+                    },
+                    "value" : "SEMISTRUCTURED[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 196,
+                    "endLine" : 32,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 143,
+                    "startLine" : 32
+                  }
+                },
+                "parameterNames" : [ "x" ],
+                "sourceInformation" : {
+                  "endColumn" : 196,
+                  "endLine" : 32,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 139,
+                  "startLine" : 32
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 197,
+                "endLine" : 32,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 46,
+                "startLine" : 32
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 198,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 32,
+              "startLine" : 32
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 203,
+              "endLine" : 32,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 201,
+              "startLine" : 32
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 204,
+            "endLine" : 32,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 16,
+            "startLine" : 32
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 204,
+          "endLine" : 32,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 14,
+          "startLine" : 32
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "absentInner",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_flatten",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_transform",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 112,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 90,
+                    "startLine" : 33
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "probe::store::DB",
+                    "mainTableDb" : "probe::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 108,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 108,
+                      "startLine" : 33
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 115,
+                    "startLine" : 33
+                  },
+                  "value" : "k"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 137,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 120,
+                    "startLine" : 33
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 138,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 64,
+                  "startLine" : 33
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 172,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 171,
+                      "startLine" : 33
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 177,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 175,
+                      "startLine" : 33
+                    },
+                    "value" : "b"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 197,
+                      "endLine" : 33,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 180,
+                      "startLine" : 33
+                    },
+                    "value" : "SEMISTRUCTURED[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 198,
+                    "endLine" : 33,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 145,
+                    "startLine" : 33
+                  }
+                },
+                "parameterNames" : [ "x" ],
+                "sourceInformation" : {
+                  "endColumn" : 198,
+                  "endLine" : 33,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 141,
+                  "startLine" : 33
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 199,
+                "endLine" : 33,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 48,
+                "startLine" : 33
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 200,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 34,
+              "startLine" : 33
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 205,
+              "endLine" : 33,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 203,
+              "startLine" : 33
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 206,
+            "endLine" : 33,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 18,
+            "startLine" : 33
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 206,
+          "endLine" : 33,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 33
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "probe::Row",
+          "property" : "allEmpty",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 5,
+            "startLine" : 34
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "dynaFunc",
+          "funcName" : "array_to_string",
+          "parameters" : [ {
+            "_type" : "dynaFunc",
+            "funcName" : "array_flatten",
+            "parameters" : [ {
+              "_type" : "dynaFunc",
+              "funcName" : "array_transform",
+              "parameters" : [ {
+                "_type" : "dynaFunc",
+                "funcName" : "extractFromSemiStructured",
+                "parameters" : [ {
+                  "_type" : "column",
+                  "column" : "DOC",
+                  "sourceInformation" : {
+                    "endColumn" : 109,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 87,
+                    "startLine" : 34
+                  },
+                  "table" : {
+                    "_type" : "Table",
+                    "database" : "probe::store::DB",
+                    "mainTableDb" : "probe::store::DB",
+                    "schema" : "default",
+                    "sourceInformation" : {
+                      "endColumn" : 105,
+                      "endLine" : 34,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 105,
+                      "startLine" : 34
+                    },
+                    "table" : "T"
+                  },
+                  "tableAlias" : "T"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 114,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 112,
+                    "startLine" : 34
+                  },
+                  "value" : "z"
+                }, {
+                  "_type" : "literal",
+                  "sourceInformation" : {
+                    "endColumn" : 134,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 117,
+                    "startLine" : 34
+                  },
+                  "value" : "SEMISTRUCTURED[]"
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 135,
+                  "endLine" : 34,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 61,
+                  "startLine" : 34
+                }
+              }, {
+                "_type" : "relationalLambda",
+                "body" : {
+                  "_type" : "dynaFunc",
+                  "funcName" : "extractFromSemiStructured",
+                  "parameters" : [ {
+                    "_type" : "lambdaParameter",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 169,
+                      "endLine" : 34,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 168,
+                      "startLine" : 34
+                    }
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 174,
+                      "endLine" : 34,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 172,
+                      "startLine" : 34
+                    },
+                    "value" : "b"
+                  }, {
+                    "_type" : "literal",
+                    "sourceInformation" : {
+                      "endColumn" : 194,
+                      "endLine" : 34,
+                      "sourceId" : "mapping/mapping.pure",
+                      "startColumn" : 177,
+                      "startLine" : 34
+                    },
+                    "value" : "SEMISTRUCTURED[]"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 195,
+                    "endLine" : 34,
+                    "sourceId" : "mapping/mapping.pure",
+                    "startColumn" : 142,
+                    "startLine" : 34
+                  }
+                },
+                "parameterNames" : [ "x" ],
+                "sourceInformation" : {
+                  "endColumn" : 195,
+                  "endLine" : 34,
+                  "sourceId" : "mapping/mapping.pure",
+                  "startColumn" : 138,
+                  "startLine" : 34
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 196,
+                "endLine" : 34,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 45,
+                "startLine" : 34
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 197,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 31,
+              "startLine" : 34
+            }
+          }, {
+            "_type" : "literal",
+            "sourceInformation" : {
+              "endColumn" : 202,
+              "endLine" : 34,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 200,
+              "startLine" : 34
+            },
+            "value" : ","
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 203,
+            "endLine" : 34,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 15,
+            "startLine" : 34
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 203,
+          "endLine" : 34,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 13,
+          "startLine" : 34
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 35,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "M",
+    "package" : "probe",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 70,
+      "sourceId" : "mapping/mapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 41,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 41
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 41,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 41
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 84,
+              "endLine" : 41,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 41
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 41,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 41
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 41,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 41
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 41,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 41
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 41,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 41
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 41,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 41
+                      }
+                    } ],
+                    "property" : "transformOnly",
+                    "sourceInformation" : {
+                      "endColumn" : 83,
+                      "endLine" : 41,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 41
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 41,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 41
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 83,
+                  "endLine" : 41,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 41
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 41,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 41
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 85,
+          "endLine" : 41,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 41
+        }
+      },
+      "id" : "transformOnlySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 43,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 39
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"[1, 2];[3]\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 225,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 42
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 229,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 42
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 234,
+          "endLine" : 42,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 42
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 42,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 42
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 42
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 42,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 42
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 42,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 42
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 46,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 46
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 46,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 46
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 91,
+              "endLine" : 46,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 46
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 46,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 46
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 46,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 46
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 46,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 46
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 46,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 46
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 46,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 46
+                      }
+                    } ],
+                    "property" : "transformThenFlatten",
+                    "sourceInformation" : {
+                      "endColumn" : 90,
+                      "endLine" : 46,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 46
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 46,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 46
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 90,
+                  "endLine" : 46,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 46
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 46,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 46
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 92,
+          "endLine" : 46,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 46
+        }
+      },
+      "id" : "transformThenFlattenSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 48,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 44
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1,2,3\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 220,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 47
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 224,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 47
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 229,
+          "endLine" : 47,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 47
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 47,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 47
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 47
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 47,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 47
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 47,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 47
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 51,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 51
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 51,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 51
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 81,
+              "endLine" : 51,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 51
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 51,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 51
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 51,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 51
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 51,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 51
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 51,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 51
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 51,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 51
+                      }
+                    } ],
+                    "property" : "emptyInner",
+                    "sourceInformation" : {
+                      "endColumn" : 80,
+                      "endLine" : 51,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 51
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 80,
+                    "endLine" : 51,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 51
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 80,
+                  "endLine" : 51,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 51
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 51,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 51
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 51,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 51
+        }
+      },
+      "id" : "emptyInnerSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 53,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 49
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 216,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 52
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 220,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 52
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 225,
+          "endLine" : 52,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 52
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 52,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 52
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 52
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 52,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 52
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 52,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 52
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 56,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 56
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 56,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 56
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 80,
+              "endLine" : 56,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 56
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 56,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 56
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 56,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 56
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 56,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 56
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 56,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 56
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 56,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 56
+                      }
+                    } ],
+                    "property" : "nullInner",
+                    "sourceInformation" : {
+                      "endColumn" : 79,
+                      "endLine" : 56,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 56
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 79,
+                    "endLine" : 56,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 56
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 79,
+                  "endLine" : 56,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 56
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 56,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 56
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 81,
+          "endLine" : 56,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 56
+        }
+      },
+      "id" : "nullInnerSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 58,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 54
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 216,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 57
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 220,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 57
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 225,
+          "endLine" : 57,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 57
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 57,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 57
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 57,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 57
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 57,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 57
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 61,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 61
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 61,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 61
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 82,
+              "endLine" : 61,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 61
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 61,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 61,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 61
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 61,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 61
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 61,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 61
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 61,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 61
+                      }
+                    } ],
+                    "property" : "absentInner",
+                    "sourceInformation" : {
+                      "endColumn" : 81,
+                      "endLine" : 61,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 61
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 61,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 61
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 81,
+                  "endLine" : 61,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 61
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 61,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 61
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 83,
+          "endLine" : 61,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 61
+        }
+      },
+      "id" : "absentInnerSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 63,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 59
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : \"1\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 216,
+              "endLine" : 62,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 62
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 220,
+            "endLine" : 62,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 62
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 225,
+          "endLine" : 62,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 62
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 62,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 62
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 62,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 62
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 62,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 62
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 62,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 62
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "probe::Row",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 66,
+                "sourceId" : "probe::M",
+                "startColumn" : 18,
+                "startLine" : 66
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 66,
+              "sourceId" : "probe::M",
+              "startColumn" : 28,
+              "startLine" : 66
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 79,
+              "endLine" : 66,
+              "sourceId" : "probe::M",
+              "startColumn" : 45,
+              "startLine" : 66
+            },
+            "type" : "colSpecArray",
+            "value" : {
+              "colSpecs" : [ {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 55,
+                        "endLine" : 66,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 54,
+                        "startLine" : 66
+                      }
+                    } ],
+                    "property" : "id",
+                    "sourceInformation" : {
+                      "endColumn" : 58,
+                      "endLine" : 66,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 57,
+                      "startLine" : 66
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 66,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 52,
+                    "startLine" : 66
+                  }
+                },
+                "name" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 58,
+                  "endLine" : 66,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 46,
+                  "startLine" : 66
+                }
+              }, {
+                "function1" : {
+                  "_type" : "lambda",
+                  "body" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "r",
+                      "sourceInformation" : {
+                        "endColumn" : 69,
+                        "endLine" : 66,
+                        "sourceId" : "probe::M",
+                        "startColumn" : 68,
+                        "startLine" : 66
+                      }
+                    } ],
+                    "property" : "allEmpty",
+                    "sourceInformation" : {
+                      "endColumn" : 78,
+                      "endLine" : 66,
+                      "sourceId" : "probe::M",
+                      "startColumn" : 71,
+                      "startLine" : 66
+                    }
+                  } ],
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "r"
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 78,
+                    "endLine" : 66,
+                    "sourceId" : "probe::M",
+                    "startColumn" : 66,
+                    "startLine" : 66
+                  }
+                },
+                "name" : "v",
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 66,
+                  "sourceId" : "probe::M",
+                  "startColumn" : 61,
+                  "startLine" : 66
+                }
+              } ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 42,
+            "endLine" : 66,
+            "sourceId" : "probe::M",
+            "startColumn" : 36,
+            "startLine" : 66
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 80,
+          "endLine" : 66,
+          "sourceId" : "probe::M",
+          "startColumn" : 17,
+          "startLine" : 66
+        }
+      },
+      "id" : "allEmptySuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 68,
+        "sourceId" : "mapping/mapping.pure",
+        "startColumn" : 5,
+        "startLine" : 64
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"id\" : 1,\n  \"v\" : null\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 217,
+              "endLine" : 67,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 120,
+              "startLine" : 67
+            }
+          },
+          "id" : "a",
+          "sourceInformation" : {
+            "endColumn" : 221,
+            "endLine" : 67,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 95,
+            "startLine" : 67
+          }
+        } ],
+        "id" : "t",
+        "sourceInformation" : {
+          "endColumn" : 226,
+          "endLine" : 67,
+          "sourceId" : "mapping/mapping.pure",
+          "startColumn" : 16,
+          "startLine" : 67
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "probe::data::D",
+              "sourceInformation" : {
+                "endColumn" : 76,
+                "endLine" : 67,
+                "sourceId" : "mapping/mapping.pure",
+                "startColumn" : 47,
+                "startLine" : 67
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 76,
+              "endLine" : 67,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 47,
+              "startLine" : 67
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 76,
+            "endLine" : 67,
+            "sourceId" : "mapping/mapping.pure",
+            "startColumn" : 29,
+            "startLine" : 67
+          },
+          "store" : {
+            "path" : "probe::store::DB",
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 67,
+              "sourceId" : "mapping/mapping.pure",
+              "startColumn" : 29,
+              "startLine" : 67
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

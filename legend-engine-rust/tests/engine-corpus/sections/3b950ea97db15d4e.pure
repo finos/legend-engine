@@ -1,0 +1,14 @@
+
+import anything::*;
+Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}
+
+Enum <<goes.test>> {goes.doc = 'bla'} myEnum
+{
+  <<goes.test>> {goes.doc = 'Tag Value for enum Value'} a,
+  <<goes.test, goes.test>> {goes.doc = 'Tag Value for enum Value'} b,
+  c
+}

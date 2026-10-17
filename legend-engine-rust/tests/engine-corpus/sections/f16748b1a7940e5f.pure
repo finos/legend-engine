@@ -1,0 +1,5 @@
+
+Class my::FirmWithAliases
+{
+  aliases: String[1..*];
+}

@@ -1,0 +1,4 @@
+
+Class test::Target { name: String[1]; }
+Class test::TargetSrcA { name: String[1]; }
+Class test::TargetSrcB { name: String[1]; }

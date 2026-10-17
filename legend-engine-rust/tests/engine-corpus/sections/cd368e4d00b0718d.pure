@@ -1,0 +1,5 @@
+
+Enum test::SerializationFormat
+{
+  CSV, PURE
+}

@@ -1,0 +1,27 @@
+ 
+Service test::Service 
+{ 
+  pattern: 'url/myUrl/{executionKey}'; 
+  title: 'my Service';
+  owners: ['ownerName']; 
+  documentation: 'test'; 
+  autoActivateUpdates: true; 
+  execution: Multi 
+  { 
+    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); 
+    key: 'executionKey';    executions['keyOne']: {       mapping: test::mapping; 
+       runtime: test::runtime; 
+    }    executions['keyTwo']: {       mapping: test::mapping; 
+       runtime: test::runtime; 
+    }  }
+  postValidations:
+  [
+    {
+      description: 'A good description of the validation';
+      params: [];
+      assertions: [
+          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T');
+      ];
+    }
+  ]
+}

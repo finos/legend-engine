@@ -1,0 +1,16 @@
+
+DataSpace domain::COVIDDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::H2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: '';
+}
+

@@ -1,0 +1,7 @@
+
+function test::f(d: DateTime[1]): String[*]
+{
+  [format('%t{yyyy-MM-dd HH:mm:ss.SSS}', $d),
+   format('%t{S} and %t{SSSSSS}', [$d, $d]),
+   format('%t{yyyy-MM-dd HH:mm:ss?[.SSS]} %t{yyyy-MM-dd} %%t{SSS}', [$d, $d])]
+}

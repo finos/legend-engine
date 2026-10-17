@@ -1,0 +1,15 @@
+
+ServiceStore test::ServiceStore
+(
+  ServiceGroup TestServiceGroup
+  (
+    path : '/testServices';
+    Service TestService
+    (
+      path : '/testService';
+      method : POST;
+      requestBody : test::model::B <- test::TestBinding ;      response : [ test::model::A <- test::TestBinding ];
+      security : [];
+    )
+  )
+)

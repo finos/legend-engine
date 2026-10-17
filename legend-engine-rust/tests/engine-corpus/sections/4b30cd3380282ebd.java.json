@@ -1,0 +1,157 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 10,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 10
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 10
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::mapping",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 10
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::runtime",
+            "sourceInformation" : {
+              "endColumn" : 68,
+              "endLine" : 10,
+              "sourceId" : "",
+              "startColumn" : 55,
+              "startLine" : 10
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 10,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 10
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 69,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 10
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 7
+      },
+      "title" : "Template 1"
+    }, {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "2",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "var",
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 37,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 15
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 29,
+                "endLine" : 15,
+                "sourceId" : "",
+                "startColumn" : 19,
+                "startLine" : 15
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "src",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 15,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 15
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 37,
+          "endLine" : 15,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 15
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 12
+      },
+      "title" : "Template 2"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "dataSpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 18,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "some title"
+  } ]
+}

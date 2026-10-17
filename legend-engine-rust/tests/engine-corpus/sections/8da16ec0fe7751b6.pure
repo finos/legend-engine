@@ -1,0 +1,8 @@
+
+Runtime Runtime::SingleConnectionRuntime::import::mappings::connections::connection::connectionStores
+{
+  mappings:
+  [
+    test::mapping::someMapping
+  ];
+}

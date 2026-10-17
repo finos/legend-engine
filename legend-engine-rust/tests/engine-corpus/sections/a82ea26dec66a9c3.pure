@@ -1,0 +1,21 @@
+
+Class simple::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  otherNames: String[*];
+}
+
+Class simple::Firm
+{
+  employees: simple::Person[*];
+  legalName: String[1];
+}
+
+Enum simple::GeographicEntityType
+{
+  CITY,
+  COUNTRY,
+  REGION
+}
+

@@ -1,0 +1,112 @@
+---
+source: crates/parser/tests/test_class.rs
+expression: file
+---
+SourceFile {
+    sections: [
+        Section {
+            kind: "Pure",
+            imports: [],
+            elements: [
+                Class(
+                    ClassDef {
+                        package: Some(
+                            Package {
+                                name: "my",
+                                parent: None,
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 2,
+                                    start_column: 7,
+                                    end_line: 2,
+                                    end_column: 8,
+                                },
+                            },
+                        ),
+                        name: SpannedString {
+                            value: "WithUnit",
+                            source_info: SourceInfo {
+                                source: "test.pure",
+                                start_line: 2,
+                                start_column: 11,
+                                end_line: 2,
+                                end_column: 18,
+                            },
+                        },
+                        type_variable_parameters: [],
+                        type_and_multiplicity_parameters: None,
+                        super_types: [],
+                        properties: [
+                            Property {
+                                name: "weight",
+                                type_ref: Unit(
+                                    UnitReference {
+                                        measure: TypeReference {
+                                            package: None,
+                                            name: "NewMeasure",
+                                            type_arguments: [],
+                                            multiplicity_arguments: [],
+                                            type_variable_values: [],
+                                            source_info: SourceInfo {
+                                                source: "test.pure",
+                                                start_line: 4,
+                                                start_column: 13,
+                                                end_line: 4,
+                                                end_column: 22,
+                                            },
+                                        },
+                                        unit: "UnitOne",
+                                        source_info: SourceInfo {
+                                            source: "test.pure",
+                                            start_line: 4,
+                                            start_column: 13,
+                                            end_line: 4,
+                                            end_column: 30,
+                                        },
+                                    },
+                                ),
+                                multiplicity: ZeroOrOne,
+                                aggregation: None,
+                                default_value: None,
+                                stereotypes: [],
+                                tagged_values: [],
+                                source_info: SourceInfo {
+                                    source: "test.pure",
+                                    start_line: 4,
+                                    start_column: 5,
+                                    end_line: 4,
+                                    end_column: 37,
+                                },
+                            },
+                        ],
+                        qualified_properties: [],
+                        constraints: [],
+                        stereotypes: [],
+                        tagged_values: [],
+                        source_info: SourceInfo {
+                            source: "test.pure",
+                            start_line: 2,
+                            start_column: 1,
+                            end_line: 5,
+                            end_column: 1,
+                        },
+                    },
+                ),
+            ],
+            source_info: SourceInfo {
+                source: "test.pure",
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 7,
+            },
+        },
+    ],
+    source_info: SourceInfo {
+        source: "test.pure",
+        start_line: 1,
+        start_column: 1,
+        end_line: 1,
+        end_column: 7,
+    },
+}

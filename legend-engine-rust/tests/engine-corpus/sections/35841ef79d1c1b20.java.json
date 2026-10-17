@@ -1,0 +1,85 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "description" : "y",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "withMapping",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "model::Firm",
+              "sourceInformation" : {
+                "endColumn" : 25,
+                "endLine" : 18,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 18
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 18,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 18
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "model::dummyMapping",
+            "sourceInformation" : {
+              "endColumn" : 64,
+              "endLine" : 18,
+              "sourceId" : "",
+              "startColumn" : 46,
+              "startLine" : 18
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 44,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 34,
+            "startLine" : 18
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 18
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 15
+      },
+      "title" : "Template 1"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "MySpace",
+    "package" : "model",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "x"
+  } ]
+}

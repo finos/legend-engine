@@ -1,0 +1,27 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 2,
+      "endLine" : 5,
+      "sourceId" : "",
+      "startColumn" : 2,
+      "startLine" : 1
+    },
+    "type" : "TDS",
+    "value" : {
+      "tdsString" : "\na:Integer[0..1],b:Integer[0..1]\n1,2\n3,4\n"
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 2,
+    "endLine" : 5,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

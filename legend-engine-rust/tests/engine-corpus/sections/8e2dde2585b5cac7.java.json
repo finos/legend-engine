@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Column data type SEMISTRUCTURED does not expect any parameters in declaration 'FIRMSEMISTRUCTURED(10)'",
+    "sourceInformation" : {
+      "endColumn" : 27,
+      "endLine" : 7,
+      "sourceId" : "",
+      "startColumn" : 10,
+      "startLine" : 7
+    }
+  }
+}

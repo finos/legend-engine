@@ -1,0 +1,22 @@
+
+Data model::PersonData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '';
+  }#
+}
+
+Data model::ModelStoreRef
+{
+  ModelStore
+  #{
+    model::Person:
+      Reference
+      #{
+        model::PersonData
+      }#
+  }#
+}
+

@@ -1,0 +1,646 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::routerunion::Product",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 18,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "listedProduct",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::ProductDB",
+        "mainTableDb" : "demo::store::ProductDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 24,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "ListedProductTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 22,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::ProductDB",
+          "mainTableDb" : "demo::store::ProductDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 22,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "ListedProductTable"
+        },
+        "tableAlias" : "ListedProductTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::routerunion::Product",
+          "property" : "code",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "code",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 25,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 25,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 25
+            },
+            "table" : "ListedProductTable"
+          },
+          "tableAlias" : "ListedProductTable"
+        },
+        "source" : "listedProduct",
+        "sourceInformation" : {
+          "endColumn" : 57,
+          "endLine" : 25,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::routerunion::Product",
+          "property" : "description",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 26,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "description",
+          "sourceInformation" : {
+            "endColumn" : 71,
+            "endLine" : 26,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 18,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 59,
+              "endLine" : 26,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 42,
+              "startLine" : 26
+            },
+            "table" : "ListedProductTable"
+          },
+          "tableAlias" : "ListedProductTable"
+        },
+        "source" : "listedProduct",
+        "sourceInformation" : {
+          "endColumn" : 71,
+          "endLine" : 26,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 16,
+          "startLine" : 26
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::routerunion::Product",
+      "classSourceInformation" : {
+        "endColumn" : 28,
+        "endLine" : 29,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "otcProduct",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::ProductDB",
+        "mainTableDb" : "demo::store::ProductDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 35,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 35
+        },
+        "table" : "OtcProductTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 33,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::ProductDB",
+          "mainTableDb" : "demo::store::ProductDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 33,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 33
+          },
+          "table" : "OtcProductTable"
+        },
+        "tableAlias" : "OtcProductTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::routerunion::Product",
+          "property" : "code",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 36,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "code",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 36,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 36,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 35,
+              "startLine" : 36
+            },
+            "table" : "OtcProductTable"
+          },
+          "tableAlias" : "OtcProductTable"
+        },
+        "source" : "otcProduct",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 36,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::routerunion::Product",
+          "property" : "description",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 37,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "description",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 37,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 18,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::ProductDB",
+            "mainTableDb" : "demo::store::ProductDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 37,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 42,
+              "startLine" : 37
+            },
+            "table" : "OtcProductTable"
+          },
+          "tableAlias" : "OtcProductTable"
+        },
+        "source" : "otcProduct",
+        "sourceInformation" : {
+          "endColumn" : 68,
+          "endLine" : 37,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 16,
+          "startLine" : 37
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "demo::routerunion::Product",
+      "classSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 40,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 40
+      },
+      "operation" : "ROUTER_UNION",
+      "parameters" : [ "listedProduct", "otcProduct" ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "ProductRouterUnionMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "mapping/productMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::routerunion::Product",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 49,
+                  "sourceId" : "demo::ProductRouterUnionMapping",
+                  "startColumn" : 18,
+                  "startLine" : 49
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 44,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 49,
+                    "sourceId" : "demo::ProductRouterUnionMapping",
+                    "startColumn" : 61,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "code",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 49,
+                  "sourceId" : "demo::ProductRouterUnionMapping",
+                  "startColumn" : 64,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 60,
+                "startLine" : 49
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 49,
+              "sourceId" : "demo::ProductRouterUnionMapping",
+              "startColumn" : 52,
+              "startLine" : 49
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 49,
+              "sourceId" : "demo::ProductRouterUnionMapping",
+              "startColumn" : 79,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 49,
+                    "sourceId" : "demo::ProductRouterUnionMapping",
+                    "startColumn" : 82,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "code",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 49,
+                  "sourceId" : "demo::ProductRouterUnionMapping",
+                  "startColumn" : 85,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 81,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 49,
+                    "sourceId" : "demo::ProductRouterUnionMapping",
+                    "startColumn" : 93,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "description",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 49,
+                  "sourceId" : "demo::ProductRouterUnionMapping",
+                  "startColumn" : 96,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 92,
+                "startLine" : 49
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 132,
+              "endLine" : 49,
+              "sourceId" : "demo::ProductRouterUnionMapping",
+              "startColumn" : 110,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 111,
+                "startLine" : 49
+              },
+              "value" : "Code"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 131,
+                "endLine" : 49,
+                "sourceId" : "demo::ProductRouterUnionMapping",
+                "startColumn" : 119,
+                "startLine" : 49
+              },
+              "value" : "Description"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 49,
+            "sourceId" : "demo::ProductRouterUnionMapping",
+            "startColumn" : 71,
+            "startLine" : 49
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 133,
+          "endLine" : 49,
+          "sourceId" : "demo::ProductRouterUnionMapping",
+          "startColumn" : 17,
+          "startLine" : 49
+        }
+      },
+      "id" : "routerUnionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 77,
+        "sourceId" : "mapping/productMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 47
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Code\":\"LST-1\",\"Description\":\"Listed Future\"},{\"Code\":\"LST-2\",\"Description\":\"Listed Option\"},{\"Code\":\"OTC-1\",\"Description\":\"Interest Rate Swap\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 72,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 68
+            }
+          },
+          "id" : "shouldReturnEveryProduct",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 73,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 65
+          }
+        } ],
+        "id" : "concatenatesPerSetResults",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 75,
+          "sourceId" : "mapping/productMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 52
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::ProductData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 60,
+                "sourceId" : "mapping/productMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 57
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 60,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 60,
+            "sourceId" : "mapping/productMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 56
+          },
+          "store" : {
+            "path" : "demo::store::ProductDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 56,
+              "sourceId" : "mapping/productMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 56
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

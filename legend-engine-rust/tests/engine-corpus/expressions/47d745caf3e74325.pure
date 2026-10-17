@@ -1,0 +1,1 @@
+src:Person[1] |$src.name;

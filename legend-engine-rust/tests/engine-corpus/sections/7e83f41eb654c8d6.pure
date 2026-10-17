@@ -1,0 +1,12 @@
+
+Class demo::otherwise::Firm
+{
+  legalName: String[1];
+  otherInformation: String[1];
+}
+
+Class demo::otherwise::Employee
+{
+  name: String[1];
+  firm: demo::otherwise::Firm[1];
+}

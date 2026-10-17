@@ -1,0 +1,40 @@
+
+Class meta::external::store::service::showcase::domain::Product
+{
+  productId   : String[1];
+  productName : String[1];
+  description : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::Synonym
+{
+  name : String[1];
+  type : String[1];
+}
+
+Class meta::external::store::service::showcase::domain::Trade
+{
+  id       : String[1];
+  quantity : Integer[1];
+  trader   : meta::external::store::service::showcase::domain::Trader[1];
+}
+
+Class meta::external::store::service::showcase::domain::TradeDetails
+{
+  id      : String[1];
+  product : meta::external::store::service::showcase::domain::Product[1];
+  trader  : meta::external::store::service::showcase::domain::Trader[1];
+}
+
+Class meta::external::store::service::showcase::domain::Trader
+{
+  kerberos : String[1];
+  id       : Integer[1];
+}
+
+Association meta::external::store::service::showcase::domain::Product_Synonym
+{
+  product  : meta::external::store::service::showcase::domain::Product[1];
+  synonyms : meta::external::store::service::showcase::domain::Synonym[*];
+}
+

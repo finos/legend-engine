@@ -1,0 +1,600 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::joined::Party",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 18,
+        "sourceId" : "mapping/partyMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "party",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::PartyDB",
+        "mainTableDb" : "demo::store::PartyDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 24,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 24
+        },
+        "table" : "PartyTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 22,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PartyDB",
+          "mainTableDb" : "demo::store::PartyDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 22,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 22
+          },
+          "table" : "PartyTable"
+        },
+        "tableAlias" : "PartyTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joined::Party",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 25,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 25,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PartyDB",
+            "mainTableDb" : "demo::store::PartyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 42,
+              "endLine" : 25,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 25
+            },
+            "table" : "PartyTable"
+          },
+          "tableAlias" : "PartyTable"
+        },
+        "source" : "party",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 25,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 25
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 26,
+        "sourceId" : "mapping/partyMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::joined::Organisation",
+      "classSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 28,
+        "sourceId" : "mapping/partyMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 28
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "organisation",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::PartyDB",
+        "mainTableDb" : "demo::store::PartyDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 34,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 38,
+          "startLine" : 34
+        },
+        "table" : "OrganisationTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "partyId",
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 32,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 32
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PartyDB",
+          "mainTableDb" : "demo::store::PartyDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 45,
+            "endLine" : 32,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 29,
+            "startLine" : 32
+          },
+          "table" : "OrganisationTable"
+        },
+        "tableAlias" : "OrganisationTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joined::Organisation",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 35,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 35
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "elemtWithJoins",
+          "joins" : [ {
+            "db" : "demo::store::PartyDB",
+            "name" : "PartyOrganisation",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 35,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 33,
+              "startLine" : 35
+            }
+          } ],
+          "relationalElement" : {
+            "_type" : "column",
+            "column" : "name",
+            "sourceInformation" : {
+              "endColumn" : 90,
+              "endLine" : 35,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 54,
+              "startLine" : 35
+            },
+            "table" : {
+              "_type" : "Table",
+              "database" : "demo::store::PartyDB",
+              "mainTableDb" : "demo::store::PartyDB",
+              "schema" : "default",
+              "sourceInformation" : {
+                "endColumn" : 85,
+                "endLine" : 35,
+                "sourceId" : "mapping/partyMapping.pure",
+                "startColumn" : 76,
+                "startLine" : 35
+              },
+              "table" : "PartyTable"
+            },
+            "tableAlias" : "PartyTable"
+          },
+          "sourceInformation" : {
+            "endColumn" : 90,
+            "endLine" : 35,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 11,
+            "startLine" : 35
+          }
+        },
+        "source" : "organisation",
+        "sourceInformation" : {
+          "endColumn" : 90,
+          "endLine" : 35,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 35
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::joined::Organisation",
+          "property" : "registrationNumber",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 36,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "registrationNumber",
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 36,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 25,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PartyDB",
+            "mainTableDb" : "demo::store::PartyDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 63,
+              "endLine" : 36,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 47,
+              "startLine" : 36
+            },
+            "table" : "OrganisationTable"
+          },
+          "tableAlias" : "OrganisationTable"
+        },
+        "source" : "organisation",
+        "sourceInformation" : {
+          "endColumn" : 82,
+          "endLine" : 36,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 23,
+          "startLine" : 36
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 37,
+        "sourceId" : "mapping/partyMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 28
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PartyJoinedTableMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 73,
+      "sourceId" : "mapping/partyMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::joined::Organisation",
+                "sourceInformation" : {
+                  "endColumn" : 43,
+                  "endLine" : 43,
+                  "sourceId" : "demo::PartyJoinedTableMapping",
+                  "startColumn" : 18,
+                  "startLine" : 43
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 44,
+                "startLine" : 43
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 43,
+                    "sourceId" : "demo::PartyJoinedTableMapping",
+                    "startColumn" : 61,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 67,
+                  "endLine" : 43,
+                  "sourceId" : "demo::PartyJoinedTableMapping",
+                  "startColumn" : 64,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 67,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 60,
+                "startLine" : 43
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 43,
+              "sourceId" : "demo::PartyJoinedTableMapping",
+              "startColumn" : 52,
+              "startLine" : 43
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 114,
+              "endLine" : 43,
+              "sourceId" : "demo::PartyJoinedTableMapping",
+              "startColumn" : 79,
+              "startLine" : 43
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 43,
+                    "sourceId" : "demo::PartyJoinedTableMapping",
+                    "startColumn" : 82,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 88,
+                  "endLine" : 43,
+                  "sourceId" : "demo::PartyJoinedTableMapping",
+                  "startColumn" : 85,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 81,
+                "startLine" : 43
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 43,
+                    "sourceId" : "demo::PartyJoinedTableMapping",
+                    "startColumn" : 93,
+                    "startLine" : 43
+                  }
+                } ],
+                "property" : "registrationNumber",
+                "sourceInformation" : {
+                  "endColumn" : 113,
+                  "endLine" : 43,
+                  "sourceId" : "demo::PartyJoinedTableMapping",
+                  "startColumn" : 96,
+                  "startLine" : 43
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 113,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 92,
+                "startLine" : 43
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 140,
+              "endLine" : 43,
+              "sourceId" : "demo::PartyJoinedTableMapping",
+              "startColumn" : 117,
+              "startLine" : 43
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 118,
+                "startLine" : 43
+              },
+              "value" : "Name"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 139,
+                "endLine" : 43,
+                "sourceId" : "demo::PartyJoinedTableMapping",
+                "startColumn" : 126,
+                "startLine" : 43
+              },
+              "value" : "Registration"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 77,
+            "endLine" : 43,
+            "sourceId" : "demo::PartyJoinedTableMapping",
+            "startColumn" : 71,
+            "startLine" : 43
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 141,
+          "endLine" : 43,
+          "sourceId" : "demo::PartyJoinedTableMapping",
+          "startColumn" : 17,
+          "startLine" : 43
+        }
+      },
+      "id" : "joinedTableInheritanceSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 71,
+        "sourceId" : "mapping/partyMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 41
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Name\":\"Acme Holdings\",\"Registration\":\"REG-001\"},{\"Name\":\"Beta Corp\",\"Registration\":\"REG-003\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 66,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 62
+            }
+          },
+          "id" : "shouldResolveInheritedName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 67,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 59
+          }
+        } ],
+        "id" : "inheritedPropertyCrossesJoin",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 69,
+          "sourceId" : "mapping/partyMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 46
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::PartyData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 54,
+                "sourceId" : "mapping/partyMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 51
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 54,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 51
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 54,
+            "sourceId" : "mapping/partyMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 50
+          },
+          "store" : {
+            "path" : "demo::store::PartyDB",
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 50,
+              "sourceId" : "mapping/partyMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 50
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

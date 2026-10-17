@@ -1,0 +1,186 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "models::Firm",
+      "classSourceInformation" : {
+        "endColumn" : 14,
+        "endLine" : 16,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "model_Firm",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Firm",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 51,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 18
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::ExtendedDB",
+            "mainTableDb" : "stores::ExtendedDB",
+            "schema" : "FirmSchema",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 18,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 18
+            },
+            "table" : "Firms"
+          },
+          "tableAlias" : "Firms"
+        },
+        "source" : "model_Firm",
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 18
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 16
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "models::Person",
+      "classSourceInformation" : {
+        "endColumn" : 16,
+        "endLine" : 20,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "model_Person",
+      "primaryKey" : [ ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "models::Person",
+          "property" : "name",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "name",
+          "sourceInformation" : {
+            "endColumn" : 54,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 22
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "stores::ExtendedDB",
+            "mainTableDb" : "stores::ExtendedDB",
+            "schema" : "PeopleSchema",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 22,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 22
+            },
+            "table" : "People"
+          },
+          "tableAlias" : "People"
+        },
+        "source" : "model_Person",
+        "sourceInformation" : {
+          "endColumn" : 54,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 9,
+          "startLine" : 22
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 23,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 20
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "BaseMapping",
+    "package" : "mappings",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "tests" : [ ]
+  }, {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ {
+      "_type" : "mappingIncludeMapping",
+      "includedMapping" : "mappings::BaseMapping",
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      }
+    } ],
+    "name" : "ExtendedMapping",
+    "package" : "mappings",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

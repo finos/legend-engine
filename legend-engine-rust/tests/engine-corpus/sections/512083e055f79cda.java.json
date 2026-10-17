@@ -1,0 +1,84 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "from",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "baseQuery",
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 11,
+          "endLine" : 54,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 54
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "mapping::CovidDataMapping",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 55,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 55
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "runtime::H2Runtime",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 56,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 56
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 54,
+        "sourceId" : "",
+        "startColumn" : 16,
+        "startLine" : 54
+      }
+    } ],
+    "name" : "wrappedQuery__TabularDataSet_1_",
+    "package" : "domain",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::tds::TabularDataSet",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 52,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 52
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 58,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 52
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "domain" ]
+}

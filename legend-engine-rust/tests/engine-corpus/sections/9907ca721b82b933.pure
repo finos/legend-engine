@@ -1,0 +1,9 @@
+
+Mapping ui::a
+(
+  *ui::Person[ui_Person]: Pure
+  {
+    ~src ui::Person2
+    name: 'aa'
+  }
+)

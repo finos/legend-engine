@@ -1,0 +1,19 @@
+
+Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
+{
+    mappings :
+    [
+        meta::external::store::service::showcase::mapping::ServiceStoreMapping
+    ];
+    connections :
+    [
+        meta::external::store::service::showcase::store::ShowcaseServiceStore :
+        [
+            connection_1 : meta::external::store::service::showcase::connection::serviceStoreConnection
+        ],
+        ModelStore :
+        [
+            connection_2 : meta::external::store::service::showcase::connection::modelChainConnection
+        ]
+    ];
+}

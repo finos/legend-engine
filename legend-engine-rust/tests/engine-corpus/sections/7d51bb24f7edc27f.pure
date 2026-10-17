@@ -1,0 +1,2 @@
+
+Class test::A{   name : String[1];}Class test::B{   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->join(test::A.all()->project(col(a|$a.name, 'Equity_Account_No')), meta::relational::metamodel::join::JoinType.INNER, { p, e | $p.getStriXng('Account_No') == $e.getString('Equity_Account_No') })}:meta::pure::tds::TabularDataSet[1];}

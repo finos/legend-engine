@@ -1,0 +1,601 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::vehicle::Car",
+      "classSourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 18,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "car",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::VehicleDB",
+        "mainTableDb" : "demo::store::VehicleDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 24,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "CarTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 22,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::VehicleDB",
+          "mainTableDb" : "demo::store::VehicleDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 38,
+            "endLine" : 22,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "CarTable"
+        },
+        "tableAlias" : "CarTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::vehicle::Car",
+          "property" : "registration",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 25,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "registration",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 25,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 19,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::VehicleDB",
+            "mainTableDb" : "demo::store::VehicleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 25,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 43,
+              "startLine" : 25
+            },
+            "table" : "CarTable"
+          },
+          "tableAlias" : "CarTable"
+        },
+        "source" : "car",
+        "sourceInformation" : {
+          "endColumn" : 63,
+          "endLine" : 25,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 17,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::vehicle::Car",
+          "property" : "doors",
+          "sourceInformation" : {
+            "endColumn" : 9,
+            "endLine" : 26,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "doors",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 26,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 12,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::VehicleDB",
+            "mainTableDb" : "demo::store::VehicleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 43,
+              "endLine" : 26,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 36,
+              "startLine" : 26
+            },
+            "table" : "CarTable"
+          },
+          "tableAlias" : "CarTable"
+        },
+        "source" : "car",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 26,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 10,
+          "startLine" : 26
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 27,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::vehicle::Truck",
+      "classSourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 29,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 29
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "truck",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::VehicleDB",
+        "mainTableDb" : "demo::store::VehicleDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 35,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 35
+        },
+        "table" : "TruckTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 43,
+          "endLine" : 33,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 33
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::VehicleDB",
+          "mainTableDb" : "demo::store::VehicleDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 40,
+            "endLine" : 33,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 33
+          },
+          "table" : "TruckTable"
+        },
+        "tableAlias" : "TruckTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::vehicle::Truck",
+          "property" : "registration",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 36,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 36
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "registration",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 36,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 19,
+            "startLine" : 36
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::VehicleDB",
+            "mainTableDb" : "demo::store::VehicleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 36,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 43,
+              "startLine" : 36
+            },
+            "table" : "TruckTable"
+          },
+          "tableAlias" : "TruckTable"
+        },
+        "source" : "truck",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 36,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 17,
+          "startLine" : 36
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::vehicle::Truck",
+          "property" : "payloadTonnes",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 37,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "payloadTonnes",
+          "sourceInformation" : {
+            "endColumn" : 67,
+            "endLine" : 37,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 20,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::VehicleDB",
+            "mainTableDb" : "demo::store::VehicleDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 37,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 44,
+              "startLine" : 37
+            },
+            "table" : "TruckTable"
+          },
+          "tableAlias" : "TruckTable"
+        },
+        "source" : "truck",
+        "sourceInformation" : {
+          "endColumn" : 67,
+          "endLine" : 37,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 18,
+          "startLine" : 37
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 38,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 29
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "demo::vehicle::Vehicle",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 40,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 40
+      },
+      "operation" : "INHERITANCE",
+      "parameters" : [ ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 43,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 40
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "VehicleOperationMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 79,
+      "sourceId" : "mapping/vehicleMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::vehicle::Vehicle",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 49,
+                  "sourceId" : "demo::VehicleOperationMapping",
+                  "startColumn" : 18,
+                  "startLine" : 49
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 49,
+                "sourceId" : "demo::VehicleOperationMapping",
+                "startColumn" : 40,
+                "startLine" : 49
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 49,
+                    "sourceId" : "demo::VehicleOperationMapping",
+                    "startColumn" : 57,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "registration",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 49,
+                  "sourceId" : "demo::VehicleOperationMapping",
+                  "startColumn" : 60,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 49,
+                "sourceId" : "demo::VehicleOperationMapping",
+                "startColumn" : 56,
+                "startLine" : 49
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 49,
+              "sourceId" : "demo::VehicleOperationMapping",
+              "startColumn" : 48,
+              "startLine" : 49
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 49,
+              "sourceId" : "demo::VehicleOperationMapping",
+              "startColumn" : 83,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 87,
+                    "endLine" : 49,
+                    "sourceId" : "demo::VehicleOperationMapping",
+                    "startColumn" : 86,
+                    "startLine" : 49
+                  }
+                } ],
+                "property" : "registration",
+                "sourceInformation" : {
+                  "endColumn" : 100,
+                  "endLine" : 49,
+                  "sourceId" : "demo::VehicleOperationMapping",
+                  "startColumn" : 89,
+                  "startLine" : 49
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 100,
+                "endLine" : 49,
+                "sourceId" : "demo::VehicleOperationMapping",
+                "startColumn" : 85,
+                "startLine" : 49
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 1,
+              "upperBound" : 1
+            },
+            "sourceInformation" : {
+              "endColumn" : 119,
+              "endLine" : 49,
+              "sourceId" : "demo::VehicleOperationMapping",
+              "startColumn" : 104,
+              "startLine" : 49
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 118,
+                "endLine" : 49,
+                "sourceId" : "demo::VehicleOperationMapping",
+                "startColumn" : 105,
+                "startLine" : 49
+              },
+              "value" : "Registration"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 81,
+            "endLine" : 49,
+            "sourceId" : "demo::VehicleOperationMapping",
+            "startColumn" : 75,
+            "startLine" : 49
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 120,
+          "endLine" : 49,
+          "sourceId" : "demo::VehicleOperationMapping",
+          "startColumn" : 17,
+          "startLine" : 49
+        }
+      },
+      "id" : "operationDispatchSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 77,
+        "sourceId" : "mapping/vehicleMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 47
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Registration\":\"CAR-001\"},{\"Registration\":\"CAR-002\"},{\"Registration\":\"TRK-001\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 72,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 68
+            }
+          },
+          "id" : "shouldDispatchToBothTables",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 73,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 65
+          }
+        } ],
+        "id" : "rootQueryReachesEveryLeafTable",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 75,
+          "sourceId" : "mapping/vehicleMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 52
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::VehicleData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 60,
+                "sourceId" : "mapping/vehicleMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 57
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 60,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 57
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 60,
+            "sourceId" : "mapping/vehicleMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 56
+          },
+          "store" : {
+            "path" : "demo::store::VehicleDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 56,
+              "sourceId" : "mapping/vehicleMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 56
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,35 @@
+{
+  "elements" : [ {
+    "_type" : "externalFormatSchemaSet",
+    "format" : "JSON",
+    "name" : "Simple",
+    "package" : "test",
+    "schemas" : [ {
+      "content" : "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"stringField\": {\n      \"type\": \"string\"\n    },\n    \"floatField\": {\n      \"type\": \"number\"\n    },\n    \"decimalField\": {\n      \"type\": \"number\"\n    },\n    \"integerField\": {\n      \"type\": \"integer\"\n    },\n    \"dateField\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"dateTimeField\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\"\n    },\n    \"strictDateField\": {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"booleanField\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"stringField\",\n    \"floatField\",\n    \"decimalField\",\n    \"integerField\",\n    \"dateField\",\n    \"dateTimeField\",\n    \"strictDateField\",\n    \"booleanField\"\n  ]\n}",
+      "contentSourceInformation" : {
+        "endColumn" : 835,
+        "endLine" : 9,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 9
+      },
+      "id" : "Test",
+      "location" : "Test.json",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 10,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 6
+      }
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 12,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    }
+  } ],
+  "imports" : [ ]
+}

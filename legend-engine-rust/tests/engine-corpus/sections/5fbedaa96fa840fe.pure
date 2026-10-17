@@ -1,0 +1,11 @@
+
+import anything::*;
+Class test::trial {
+   name: ritual[*];
+   anotherOne(){ritual.theGoodOne1}: ritual[1];
+   
+}
+
+Enum anything::ritual {
+   theGoodOne   
+}

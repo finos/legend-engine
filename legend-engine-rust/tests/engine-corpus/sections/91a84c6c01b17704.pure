@@ -1,0 +1,76 @@
+
+Mapping mapping::testAMapping
+(
+  model::test::A[a]: Relational
+  {
+    ~primaryKey
+    (
+      [store::test::testDatabase]ABC.id
+    )
+    ~mainTable [store::test::testDatabase]ABC
+    id: [store::test::testDatabase]ABC.id,
+    aName: [store::test::testDatabase]ABC.aName
+  }
+)
+
+Mapping mapping::testB1Mapping
+(
+  include mapping mapping::testAMapping
+
+  model::test::B[b1] extends [a]: Relational
+  {
+  }
+)
+
+Mapping mapping::testB2Mapping
+(
+  include mapping mapping::testAMapping
+
+  model::test::B[b2] extends [a]: Relational
+  {
+    aName: concat('bName_', [store::test::testDatabase]ABC.aName),
+    bName: [store::test::testDatabase]ABC.bName
+  }
+)
+
+Mapping mapping::testC1Mapping
+(
+  include mapping mapping::testB1Mapping
+
+  model::test::C[c1] extends [b1]: Relational
+  {
+  }
+)
+
+Mapping mapping::testC2Mapping
+(
+  include mapping mapping::testB2Mapping
+
+  model::test::C[c2] extends [b2]: Relational
+  {
+    aName: concat('cName_', [store::test::testDatabase]ABC.aName),
+    bName: concat('cName_', [store::test::testDatabase]ABC.bName),
+    cName: [store::test::testDatabase]ABC.cName
+  }
+)
+
+Mapping model::map
+(
+  *model::Person[id]: Relational
+  {
+    ~primaryKey
+    (
+      [my::db]PersonTable.NAME
+    )
+    ~mainTable [my::db]PersonTable
+  }
+  *model::Employee extends [id]: Relational
+  {
+    ~primaryKey
+    (
+      [my::db]EmployeeTable.FIRMNAME
+    )
+    ~mainTable [my::db]EmployeeTable
+    firmName: [my::db]EmployeeTable.FIRMNAME
+  }
+)

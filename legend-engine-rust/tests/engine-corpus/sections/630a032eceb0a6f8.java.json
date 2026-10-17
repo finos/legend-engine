@@ -1,0 +1,233 @@
+{
+  "elements" : [ {
+    "_type" : "association",
+    "name" : "FirmDepartments",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Firm",
+          "sourceInformation" : {
+            "endColumn" : 36,
+            "endLine" : 20,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 9,
+            "startLine" : 20
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "firm",
+      "sourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 20,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 20
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Department",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 21,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 21
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "departments",
+      "sourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 21,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 21
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 22,
+      "sourceId" : "mapping/chainedModelJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 18
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "association",
+    "name" : "DepartmentStaff",
+    "originalMilestonedProperties" : [ ],
+    "package" : "demo::relation::domain",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Department",
+          "sourceInformation" : {
+            "endColumn" : 48,
+            "endLine" : 26,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 26
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "department",
+      "sourceInformation" : {
+        "endColumn" : 52,
+        "endLine" : 26,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "demo::relation::domain::Employee",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 27,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 10,
+            "startLine" : 27
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "staff",
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 27,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 28,
+      "sourceId" : "mapping/chainedModelJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 24
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "classInstance",
+      "sourceInformation" : {
+        "endColumn" : 53,
+        "endLine" : 32,
+        "sourceId" : "mapping/chainedModelJoinMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 32
+      },
+      "type" : ">",
+      "value" : {
+        "path" : [ "demo::relation::db::EmployeeDB", "DepartmentTable" ],
+        "sourceInformation" : {
+          "endColumn" : 53,
+          "endLine" : 32,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 3,
+          "startLine" : 32
+        }
+      }
+    } ],
+    "name" : "chainedDepartments__Relation_1_",
+    "package" : "demo::relation::func",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 99,
+          "endLine" : 30,
+          "sourceId" : "mapping/chainedModelJoinMapping.pure",
+          "startColumn" : 54,
+          "startLine" : 30
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Any",
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 30,
+            "sourceId" : "mapping/chainedModelJoinMapping.pure",
+            "startColumn" : 96,
+            "startLine" : 30
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 33,
+      "sourceId" : "mapping/chainedModelJoinMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 30
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ "meta::pure::metamodel::relation" ]
+}

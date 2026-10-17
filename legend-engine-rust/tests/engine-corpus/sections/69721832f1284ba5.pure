@@ -1,0 +1,8 @@
+
+Mapping test::mapping
+(
+  test::TestScopeCM: Relational
+  {
+    feeAmount: plus([db]table.quantity, [db]table.quantity)
+  }
+)

@@ -1,0 +1,7 @@
+
+Class test::model::B
+{
+  alpha   : String[1];
+  beta    : Boolean[0..1];
+  gamma   : Integer[1];
+}

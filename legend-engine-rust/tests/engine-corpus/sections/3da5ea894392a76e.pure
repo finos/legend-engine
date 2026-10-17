@@ -1,0 +1,6 @@
+
+Database a::A
+(
+   Table tb(id Integer, name VARCHAR(32))
+   Table other(oid BIGINT, oname VARCHAR(64))
+)

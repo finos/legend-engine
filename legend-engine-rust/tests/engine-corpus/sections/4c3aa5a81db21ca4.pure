@@ -1,0 +1,22 @@
+
+Class test::Firm
+{
+  id: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> test::Firm_milestoned
+{
+  id: Integer[1];
+  legalOwner: test::Person[1];
+}
+
+Class test::Person
+{
+}
+
+Association test::Firm_Person
+{
+  employees: test::Person[*];
+  employer: test::Firm_milestoned[1];
+}
+

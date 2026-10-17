@@ -1,0 +1,127 @@
+{
+  "elements" : [ {
+    "_type" : "dataSpace",
+    "description" : "this is description of this COVIDDataspace",
+    "executables" : [ {
+      "_type" : "dataSpaceTemplateExecutable",
+      "description" : "Some more exec description",
+      "id" : "1",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "select",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 44,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 15,
+                "startLine" : 12
+              },
+              "type" : ">",
+              "value" : {
+                "path" : [ "store::TestDB", "PersonTable" ],
+                "sourceInformation" : {
+                  "endColumn" : 44,
+                  "endLine" : 12,
+                  "sourceId" : "",
+                  "startColumn" : 15,
+                  "startLine" : 12
+                }
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 75,
+                "endLine" : 12,
+                "sourceId" : "",
+                "startColumn" : 55,
+                "startLine" : 12
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "name" : "firstName",
+                  "sourceInformation" : {
+                    "endColumn" : 64,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 56,
+                    "startLine" : 12
+                  }
+                }, {
+                  "name" : "lastName",
+                  "sourceInformation" : {
+                    "endColumn" : 74,
+                    "endLine" : 12,
+                    "sourceId" : "",
+                    "startColumn" : 67,
+                    "startLine" : 12
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 47,
+              "startLine" : 12
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "execution::Runtime",
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 12,
+              "sourceId" : "",
+              "startColumn" : 84,
+              "startLine" : 12
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 12,
+            "sourceId" : "",
+            "startColumn" : 79,
+            "startLine" : 12
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 102,
+          "endLine" : 12,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 12
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 13,
+        "sourceId" : "",
+        "startColumn" : 5,
+        "startLine" : 8
+      },
+      "title" : "this is template"
+    } ],
+    "executionContexts" : [ ],
+    "name" : "COVIDDataspace",
+    "package" : "domain",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 15,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "title" : "COVID Sample Data"
+  } ]
+}

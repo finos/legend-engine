@@ -1,0 +1,5 @@
+
+function test::new(): Any[1]
+{
+  ^meta::pure::tds::BasicColumnSpecification(documentation='documentation here', func=r: TDSRow[1]|1, name='hello')
+}

@@ -1,0 +1,15 @@
+
+Mapping test::Map
+(
+  test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::DB]PERSON.fullName
+    )
+    ~mainTable [test::DB]PERSON
+    fullName:  [test::DB]PERSON.fullName,
+    birthTime: [test::DB]PERSON.birthTime
+  }
+)
+

@@ -1,0 +1,19 @@
+
+
+Persistence test::TestPersistence 
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Streaming
+  {
+    sink: Relational
+    {
+      database: test::Database;
+    }
+    sink: Relational
+    {
+      database: test::Database;
+    }
+  }
+}

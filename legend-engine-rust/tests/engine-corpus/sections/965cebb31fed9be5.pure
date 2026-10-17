@@ -1,0 +1,15 @@
+
+ServiceStore test::testServiceStoreCompilationWithSingleService
+(
+  Service TestService
+  (
+    path : '/testService';
+    method : GET;
+    parameters :
+    (
+      serializationFormat : String ( location = query )
+    );
+    response : [ test::Person <- test::TestBinding1 ];
+    security : [];
+  )
+)

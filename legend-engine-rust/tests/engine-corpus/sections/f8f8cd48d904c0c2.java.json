@@ -1,0 +1,264 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "serviceStore",
+      "class" : "test::model::A",
+      "classSourceInformation" : {
+        "endColumn" : 17,
+        "endLine" : 82,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 82
+      },
+      "localMappingProperties" : [ ],
+      "root" : true,
+      "servicesMapping" : [ {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "param2",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 90,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 90
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "integer",
+                  "sourceInformation" : {
+                    "endColumn" : 21,
+                    "endLine" : 90,
+                    "sourceId" : "",
+                    "startColumn" : 21,
+                    "startLine" : 90
+                  },
+                  "value" : 1
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 21,
+                  "endLine" : 90,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 90
+                }
+              }
+            }, {
+              "serviceParameter" : "param",
+              "sourceInformation" : {
+                "endColumn" : 30,
+                "endLine" : 91,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 91
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "this",
+                    "sourceInformation" : {
+                      "endColumn" : 24,
+                      "endLine" : 91,
+                      "sourceId" : "",
+                      "startColumn" : 20,
+                      "startLine" : 91
+                    }
+                  } ],
+                  "property" : "alpha",
+                  "sourceInformation" : {
+                    "endColumn" : 30,
+                    "endLine" : 91,
+                    "sourceId" : "",
+                    "startColumn" : 26,
+                    "startLine" : 91
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 91,
+                  "sourceId" : "",
+                  "startColumn" : 20,
+                  "startLine" : 91
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 39,
+              "endLine" : 91,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 88
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 92,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 86
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TestServiceGroup",
+            "serviceStore" : "test::ServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 84,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 84
+            }
+          },
+          "service" : "TestService1",
+          "serviceStore" : "test::ServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 84,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 84
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 93,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 84
+        }
+      }, {
+        "requestBuildInfo" : {
+          "requestParametersBuildInfo" : {
+            "parameterBuildInfoList" : [ {
+              "serviceParameter" : "param1",
+              "sourceInformation" : {
+                "endColumn" : 39,
+                "endLine" : 100,
+                "sourceId" : "",
+                "startColumn" : 12,
+                "startLine" : 100
+              },
+              "transform" : {
+                "_type" : "lambda",
+                "body" : [ {
+                  "_type" : "func",
+                  "function" : "toOne",
+                  "parameters" : [ {
+                    "_type" : "property",
+                    "parameters" : [ {
+                      "_type" : "var",
+                      "name" : "this",
+                      "sourceInformation" : {
+                        "endColumn" : 25,
+                        "endLine" : 100,
+                        "sourceId" : "",
+                        "startColumn" : 21,
+                        "startLine" : 100
+                      }
+                    } ],
+                    "property" : "beta",
+                    "sourceInformation" : {
+                      "endColumn" : 30,
+                      "endLine" : 100,
+                      "sourceId" : "",
+                      "startColumn" : 27,
+                      "startLine" : 100
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 37,
+                    "endLine" : 100,
+                    "sourceId" : "",
+                    "startColumn" : 33,
+                    "startLine" : 100
+                  }
+                } ],
+                "parameters" : [ ],
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 100,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 100
+                }
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 9,
+              "endLine" : 101,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 98
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 7,
+            "endLine" : 102,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 96
+          }
+        },
+        "service" : {
+          "parent" : {
+            "serviceGroup" : "TestServiceGroup",
+            "serviceStore" : "test::ServiceStore",
+            "sourceInformation" : {
+              "endColumn" : 50,
+              "endLine" : 94,
+              "sourceId" : "",
+              "startColumn" : 35,
+              "startLine" : 94
+            }
+          },
+          "service" : "TestService2",
+          "serviceStore" : "test::ServiceStore",
+          "sourceInformation" : {
+            "endColumn" : 63,
+            "endLine" : 94,
+            "sourceId" : "",
+            "startColumn" : 52,
+            "startLine" : 94
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 103,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 94
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 104,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 82
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "mapping",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 105,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 80
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

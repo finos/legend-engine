@@ -1,0 +1,83 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "classInstance",
+    "sourceInformation" : {
+      "endColumn" : 96,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 48,
+      "startLine" : 1
+    },
+    "type" : "path",
+    "value" : {
+      "path" : [ {
+        "_type" : "propertyPath",
+        "parameters" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 82,
+            "endLine" : 1,
+            "sourceId" : "",
+            "startColumn" : 80,
+            "startLine" : 1
+          },
+          "value" : "a"
+        }, {
+          "_type" : "collection",
+          "multiplicity" : {
+            "lowerBound" : 2,
+            "upperBound" : 2
+          },
+          "values" : [ {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 86,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 86,
+              "startLine" : 1
+            },
+            "value" : 1
+          }, {
+            "_type" : "integer",
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 1,
+              "sourceId" : "",
+              "startColumn" : 89,
+              "startLine" : 1
+            },
+            "value" : 2
+          } ]
+        } ],
+        "property" : "nameWithPrefixAndSuffix",
+        "sourceInformation" : {
+          "endColumn" : 91,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 1
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 96,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 48,
+        "startLine" : 1
+      },
+      "startType" : "Person"
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 47,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Mapping test relational input data does not support format 'RANDOM'. Possible values: SQL, CSV",
+    "sourceInformation" : {
+      "endColumn" : 53,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 48,
+      "startLine" : 9
+    }
+  }
+}

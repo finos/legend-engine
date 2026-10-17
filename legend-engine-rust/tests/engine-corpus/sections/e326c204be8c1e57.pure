@@ -1,0 +1,21 @@
+
+Deephaven test::DeephavenStore
+(
+    Table stockTrades
+    (
+        TradeID: INT,
+        StockSymbol: STRING,
+        Price: FLOAT,
+        Quantity: INT,
+        City: STRING,
+        IsBuy: BOOLEAN
+    )
+)
+
+DeephavenApp test::MyDeephavenApp
+{
+    applicationName: 'StockTradesApp';
+    function: test::filterStockTrades():Any[*];
+    description: 'Filters stock trades by city and buy flag';
+    ownership: Deployment { identifier: '12345' };
+}

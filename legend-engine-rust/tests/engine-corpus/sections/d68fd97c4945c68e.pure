@@ -1,0 +1,19 @@
+
+Class demo::ssv::Row
+{
+  id: Integer[1];
+  lastVal: Integer[0..1];
+  initVals: String[0..1];
+  tailVals: String[0..1];
+  sortedVals: String[0..1];
+  reversedVals: String[0..1];
+  appendedVals: String[0..1];
+  positionOfTwo: Integer[0..1];
+  slicedVals: String[0..1];
+  droppedVals: String[0..1];
+  takenVals: String[0..1];
+  containsTwo: Boolean[0..1];
+  distinctVals: String[0..1];
+  concatenated: String[0..1];
+  sumVals: Integer[0..1];
+}

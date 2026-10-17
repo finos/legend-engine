@@ -1,0 +1,15 @@
+
+Class <<temporal.businesstemporal>> test::Product{
+   classification : test::Classification[1];
+}
+Class  <<temporal.businesstemporal>> test::Classification{
+   exchange : test::Exchange[1];
+   classificationType : String[1];
+}
+Class <<temporal.businesstemporal>> test::Exchange{
+   exchangeName : String[1];
+}
+function main::walkTree(): Any[*]
+{
+   {|test::Product.all(%2022-11-12)->project([p|$p.classification.classificationType, p|$p.classification.exchange.exchangeName],['exchangeType','classificationType'])}
+}

@@ -1,0 +1,161 @@
+{
+  "elements" : [ {
+    "_type" : "serviceStore",
+    "elements" : [ {
+      "_type" : "service",
+      "id" : "TestService",
+      "method" : "POST",
+      "parameters" : [ {
+        "location" : "QUERY",
+        "name" : "param1",
+        "serializationFormat" : { },
+        "sourceInformation" : {
+          "endColumn" : 42,
+          "endLine" : 43,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 43
+        },
+        "type" : {
+          "_type" : "string",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 43,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 43
+          }
+        }
+      }, {
+        "location" : "PATH",
+        "name" : "param2",
+        "serializationFormat" : { },
+        "sourceInformation" : {
+          "endColumn" : 41,
+          "endLine" : 44,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 44
+        },
+        "type" : {
+          "_type" : "string",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 44,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 44
+          }
+        }
+      } ],
+      "path" : "/testService/{param2}",
+      "requestBody" : {
+        "_type" : "complex",
+        "binding" : "test::TestBinding",
+        "list" : false,
+        "sourceInformation" : {
+          "endColumn" : 51,
+          "endLine" : 39,
+          "sourceId" : "",
+          "startColumn" : 19,
+          "startLine" : 39
+        },
+        "type" : "test::Person"
+      },
+      "response" : {
+        "_type" : "complex",
+        "binding" : "test::TestBinding",
+        "list" : false,
+        "sourceInformation" : {
+          "endColumn" : 48,
+          "endLine" : 46,
+          "sourceId" : "",
+          "startColumn" : 16,
+          "startLine" : 46
+        },
+        "type" : "test::Person"
+      },
+      "security" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 48,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 36
+      }
+    }, {
+      "_type" : "serviceGroup",
+      "elements" : [ {
+        "_type" : "service",
+        "id" : "NestedService",
+        "method" : "GET",
+        "parameters" : [ {
+          "location" : "QUERY",
+          "name" : "serializationFormat",
+          "serializationFormat" : { },
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 59
+          },
+          "type" : {
+            "_type" : "string",
+            "list" : false,
+            "sourceInformation" : {
+              "endColumn" : 36,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 31,
+              "startLine" : 59
+            }
+          }
+        } ],
+        "path" : "/testService",
+        "response" : {
+          "_type" : "complex",
+          "binding" : "test::TestBinding",
+          "list" : false,
+          "sourceInformation" : {
+            "endColumn" : 50,
+            "endLine" : 61,
+            "sourceId" : "",
+            "startColumn" : 18,
+            "startLine" : 61
+          },
+          "type" : "test::Person"
+        },
+        "security" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 63,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 53
+        }
+      } ],
+      "id" : "TestServices",
+      "path" : "/testServices",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 64,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 49
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testServiceStoreCompilationWithSingleServiceAndServiceGroup",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 65,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 34
+    }
+  } ]
+}

@@ -1,0 +1,5 @@
+
+function anything::somethingelse(a:String[1]):String[1]
+{
+   'hiiii'
+}

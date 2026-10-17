@@ -1,0 +1,5 @@
+
+function package::test(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
+{
+  [(true && (false && false)), false]->oneOf()
+}

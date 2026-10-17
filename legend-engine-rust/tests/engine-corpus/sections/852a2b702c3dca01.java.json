@@ -1,0 +1,448 @@
+{
+  "elements" : [ {
+    "_type" : "runtime",
+    "name" : "ShiftGmtRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 105,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 102
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 102,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 102
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftGmtConnection",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 104,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 104
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 104,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 104
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 98,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 98
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 107,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 94
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 107,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 94
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ShiftRegionRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 120,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 117
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 117,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 117
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftRegionConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 119,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 119
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 119,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 119
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 113,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 113
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 122,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 109
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 122,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 109
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ShiftOffsetRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 135,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 132
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 132,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 132
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftOffsetConnection",
+            "sourceInformation" : {
+              "endColumn" : 49,
+              "endLine" : 134,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 134
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 134,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 134
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 128,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 128
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 137,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 124
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 137,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 124
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ShiftUtcPrefixedOffsetRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 150,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 147
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 147,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 147
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftUtcPrefixedOffsetConnection",
+            "sourceInformation" : {
+              "endColumn" : 60,
+              "endLine" : 149,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 149
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 149,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 149
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 143,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 143
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 152,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 139
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 152,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 139
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ShiftHalfHourOffsetRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 165,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 162
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 162,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 162
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftHalfHourOffsetConnection",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 164,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 164
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 164,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 164
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 158,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 158
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 167,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 154
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 167,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 154
+    }
+  }, {
+    "_type" : "runtime",
+    "name" : "ShiftDaylightSavingRuntime",
+    "package" : "demo::runtime",
+    "runtimeValue" : {
+      "_type" : "engineRuntime",
+      "connectionStores" : [ ],
+      "connections" : [ {
+        "sourceInformation" : {
+          "endColumn" : 5,
+          "endLine" : 180,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 177
+        },
+        "store" : {
+          "path" : "demo::store::ShiftDB",
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 177,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 5,
+            "startLine" : 177
+          },
+          "type" : "STORE"
+        },
+        "storeConnections" : [ {
+          "connection" : {
+            "_type" : "connectionPointer",
+            "connection" : "demo::connection::ShiftDaylightSavingConnection",
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 179,
+              "sourceId" : "connection/connections.pure",
+              "startColumn" : 11,
+              "startLine" : 179
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 57,
+            "endLine" : 179,
+            "sourceId" : "connection/connections.pure",
+            "startColumn" : 7,
+            "startLine" : 179
+          }
+        } ]
+      } ],
+      "mappings" : [ {
+        "path" : "demo::ShiftMapping",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 173,
+          "sourceId" : "connection/connections.pure",
+          "startColumn" : 5,
+          "startLine" : 173
+        },
+        "type" : "MAPPING"
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 182,
+        "sourceId" : "connection/connections.pure",
+        "startColumn" : 1,
+        "startLine" : 169
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 182,
+      "sourceId" : "connection/connections.pure",
+      "startColumn" : 1,
+      "startLine" : 169
+    }
+  } ],
+  "imports" : [ ]
+}

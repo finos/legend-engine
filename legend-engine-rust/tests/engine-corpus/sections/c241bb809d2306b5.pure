@@ -1,0 +1,8 @@
+
+Mapping mapping::test
+(
+  mapping::SomeClass: XStore
+  {
+    +p: String[1]: 'a'
+  }
+)

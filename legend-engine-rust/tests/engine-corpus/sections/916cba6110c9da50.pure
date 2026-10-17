@@ -1,0 +1,41 @@
+
+Service test::service::FirmService
+{
+  pattern: '/firm';
+  title: 'my Service';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Firm.all()->project(~[name: f | $f.legalName]);
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::FirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite_a
+    (
+      test_a1 =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+    ),
+    testSuite_b 'other happy path'
+    (
+      test_b1 =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+      test_b2 =>
+        ExternalFormat
+        #{
+          contentType: 'application/json';
+          data: '[]';
+        }#;
+    )
+  ]
+}

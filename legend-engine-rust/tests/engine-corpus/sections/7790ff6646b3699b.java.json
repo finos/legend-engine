@@ -1,0 +1,230 @@
+{
+  "elements" : [ {
+    "_type" : "dataqualityRelationValidation",
+    "name" : "testvalidation",
+    "package" : "meta::external::dataquality",
+    "query" : {
+      "_type" : "lambda",
+      "body" : [ {
+        "_type" : "func",
+        "function" : "letFunction",
+        "parameters" : [ {
+          "_type" : "string",
+          "value" : "l"
+        }, {
+          "_type" : "func",
+          "function" : "from",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "select",
+            "parameters" : [ {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 59,
+                "endLine" : 106,
+                "sourceId" : "",
+                "startColumn" : 22,
+                "startLine" : 106
+              },
+              "type" : ">",
+              "value" : {
+                "path" : [ "meta::dataquality::db", "personTable" ],
+                "sourceInformation" : {
+                  "endColumn" : 59,
+                  "endLine" : 106,
+                  "sourceId" : "",
+                  "startColumn" : 22,
+                  "startLine" : 106
+                }
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 90,
+                "endLine" : 106,
+                "sourceId" : "",
+                "startColumn" : 70,
+                "startLine" : 106
+              },
+              "type" : "colSpecArray",
+              "value" : {
+                "colSpecs" : [ {
+                  "name" : "FIRSTNAME",
+                  "sourceInformation" : {
+                    "endColumn" : 79,
+                    "endLine" : 106,
+                    "sourceId" : "",
+                    "startColumn" : 71,
+                    "startLine" : 106
+                  }
+                }, {
+                  "name" : "LASTNAME",
+                  "sourceInformation" : {
+                    "endColumn" : 89,
+                    "endLine" : 106,
+                    "sourceId" : "",
+                    "startColumn" : 82,
+                    "startLine" : 106
+                  }
+                } ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 67,
+              "endLine" : 106,
+              "sourceId" : "",
+              "startColumn" : 62,
+              "startLine" : 106
+            }
+          }, {
+            "_type" : "packageableElementPtr",
+            "fullPath" : "meta::dataquality::DataQualityRuntime",
+            "sourceInformation" : {
+              "endColumn" : 135,
+              "endLine" : 106,
+              "sourceId" : "",
+              "startColumn" : 99,
+              "startLine" : 106
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 136,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 106
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 136,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 14,
+          "startLine" : 106
+        }
+      }, {
+        "_type" : "func",
+        "function" : "select",
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "l",
+          "sourceInformation" : {
+            "endColumn" : 140,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 139,
+            "startLine" : 106
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 159,
+            "endLine" : 106,
+            "sourceId" : "",
+            "startColumn" : 151,
+            "startLine" : 106
+          },
+          "type" : "colSpec",
+          "value" : {
+            "name" : "FIRSTNAME",
+            "sourceInformation" : {
+              "endColumn" : 159,
+              "endLine" : 106,
+              "sourceId" : "",
+              "startColumn" : 151,
+              "startLine" : 106
+            }
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 148,
+          "endLine" : 106,
+          "sourceId" : "",
+          "startColumn" : 143,
+          "startLine" : 106
+        }
+      } ],
+      "parameters" : [ ],
+      "sourceInformation" : {
+        "endColumn" : 161,
+        "endLine" : 106,
+        "sourceId" : "",
+        "startColumn" : 13,
+        "startLine" : 106
+      }
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 114,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 104
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "validations" : [ {
+      "assertion" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "letFunction",
+          "parameters" : [ {
+            "_type" : "string",
+            "value" : "isEmpty"
+          }, {
+            "_type" : "func",
+            "function" : "assertRelationNotEmpty",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "rel",
+              "sourceInformation" : {
+                "endColumn" : 43,
+                "endLine" : 111,
+                "sourceId" : "",
+                "startColumn" : 40,
+                "startLine" : 111
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 111,
+              "sourceId" : "",
+              "startColumn" : 26,
+              "startLine" : 111
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 69,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 26,
+            "startLine" : 111
+          }
+        }, {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "isEmpty",
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 111,
+            "sourceId" : "",
+            "startColumn" : 72,
+            "startLine" : 111
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "name" : "rel"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 79,
+          "endLine" : 111,
+          "sourceId" : "",
+          "startColumn" : 25,
+          "startLine" : 111
+        }
+      },
+      "description" : "dataset cannot be empty",
+      "name" : "nonEmptyDataset"
+    } ]
+  } ]
+}

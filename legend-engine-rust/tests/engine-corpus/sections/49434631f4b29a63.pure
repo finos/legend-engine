@@ -1,0 +1,18 @@
+
+Data demo::sse::data::TradingData
+{
+  Relation
+  #{
+    TRADING.BLOCKS:
+      ID,ACCOUNT,BLOCKDATA
+      b1,ACC1,"{""relatedEntities"":[{""tag"":""order"",""tagId"":""o1""},{""tag"":""order"",""tagId"":""o2""},{""tag"":""trade"",""tagId"":""t9""}]}"
+      b2,ACC2,"{""relatedEntities"":[{""tag"":""order"",""tagId"":""o3""}]}";
+
+    TRADING.ORDERS:
+      ID,ORDER_NAME
+      o1,Alpha
+      o2,Beta
+      o3,Gamma
+      t9,ShouldNotAppear;
+  }#
+}

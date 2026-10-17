@@ -1,0 +1,20 @@
+{
+  "elements" : [ {
+    "_type" : "binding",
+    "contentType" : "application/json",
+    "modelUnit" : {
+      "packageableElementExcludes" : [ ],
+      "packageableElementIncludes" : [ "meta::external::store::mongodb::showcase::domain::Person", "meta::external::store::mongodb::showcase::domain::Firm", "meta::external::store::mongodb::showcase::domain::Address" ]
+    },
+    "name" : "PersonCollectionBinding",
+    "package" : "meta::external::store::mongodb::showcase::store",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 34,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 26
+    }
+  } ],
+  "imports" : [ ]
+}

@@ -1,0 +1,4 @@
+
+Class {meta::pure::profiles::doc.doc = 'Documented.'} model::A
+{
+}

@@ -1,0 +1,22 @@
+
+Mapping example::MappingwithSubtype
+   (
+ example::Firm : Pure
+            {
+               ~src example::_S_Firm
+
+               legalName        : $src.name,
+               employees     : $src.sourceEmployeesA
+            }
+
+   example::Person  : Pure
+   {
+      ~src example::_S_Person
+     ~filter $src.fullName  == 'A1 Person'
+      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src->cast(@example::_S_PersonA).aName,
+      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())
+
+   }
+
+
+)

@@ -1,0 +1,545 @@
+{
+  "elements" : [ {
+    "_type" : "Enumeration",
+    "name" : "Family",
+    "package" : "model::animal",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 224,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 220
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "values" : [ {
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 222,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 222
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "UO"
+    }, {
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 223,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 223
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ],
+      "value" : "OP"
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Reptile",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal::reptile",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 228,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 228
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "hasFin",
+      "sourceInformation" : {
+        "endColumn" : 21,
+        "endLine" : 228,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 228
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 229,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 226
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ {
+      "path" : "model::animal::Animal2",
+      "sourceInformation" : {
+        "endColumn" : 83,
+        "endLine" : 226,
+        "sourceId" : "",
+        "startColumn" : 62,
+        "startLine" : 226
+      },
+      "type" : "CLASS"
+    }, {
+      "path" : "model::animal::Animal",
+      "sourceInformation" : {
+        "endColumn" : 106,
+        "endLine" : 226,
+        "sourceId" : "",
+        "startColumn" : 86,
+        "startLine" : 226
+      },
+      "type" : "CLASS"
+    } ],
+    "taggedValues" : [ {
+      "sourceInformation" : {
+        "endColumn" : 19,
+        "endLine" : 226,
+        "sourceId" : "",
+        "startColumn" : 8,
+        "startLine" : 226
+      },
+      "tag" : {
+        "profile" : "doc",
+        "profileSourceInformation" : {
+          "endColumn" : 10,
+          "endLine" : 226,
+          "sourceId" : "",
+          "startColumn" : 8,
+          "startLine" : 226
+        },
+        "sourceInformation" : {
+          "endColumn" : 14,
+          "endLine" : 226,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 226
+        },
+        "value" : "doc"
+      },
+      "value" : ""
+    } ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Animal",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::animal::Family",
+          "sourceInformation" : {
+            "endColumn" : 31,
+            "endLine" : 233,
+            "sourceId" : "",
+            "startColumn" : 11,
+            "startLine" : 233
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "family",
+      "sourceInformation" : {
+        "endColumn" : 35,
+        "endLine" : 233,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 233
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Number",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 234,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 234
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "noOfLegs",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 234,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 234
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::animal::GenericAnimal2",
+          "sourceInformation" : {
+            "endColumn" : 41,
+            "endLine" : 235,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 235
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0
+      },
+      "name" : "children",
+      "sourceInformation" : {
+        "endColumn" : 45,
+        "endLine" : 235,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 235
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "func",
+        "function" : "greaterThan",
+        "parameters" : [ {
+          "_type" : "property",
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "this",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 236,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 236
+            }
+          } ],
+          "property" : "noOfLegs",
+          "sourceInformation" : {
+            "endColumn" : 29,
+            "endLine" : 236,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 236
+          }
+        }, {
+          "_type" : "integer",
+          "sourceInformation" : {
+            "endColumn" : 33,
+            "endLine" : 236,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 236
+          },
+          "value" : 4
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 236,
+          "sourceId" : "",
+          "startColumn" : 31,
+          "startLine" : 236
+        }
+      } ],
+      "name" : "something",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Boolean",
+          "sourceInformation" : {
+            "endColumn" : 43,
+            "endLine" : 236,
+            "sourceId" : "",
+            "startColumn" : 37,
+            "startLine" : 236
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 47,
+        "endLine" : 236,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 236
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "body" : [ {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 0,
+          "upperBound" : 0
+        },
+        "sourceInformation" : {
+          "endColumn" : 18,
+          "endLine" : 237,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 237
+        },
+        "values" : [ ]
+      } ],
+      "name" : "something2",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "model::animal::GenericAnimal",
+          "sourceInformation" : {
+            "endColumn" : 49,
+            "endLine" : 237,
+            "sourceId" : "",
+            "startColumn" : 22,
+            "startLine" : 237
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 56,
+        "endLine" : 237,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 237
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 238,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 231
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "GenericAnimal2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 242,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 240
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "GenericAnimal",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal",
+    "properties" : [ ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 246,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 244
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Mammal",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal::mammal",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 250,
+            "sourceId" : "",
+            "startColumn" : 13,
+            "startLine" : 250
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "noOfLegs",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 250,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 250
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 251,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 248
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Animal2",
+    "originalMilestonedProperties" : [ ],
+    "package" : "model::animal",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 255,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 255
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "name",
+      "sourceInformation" : {
+        "endColumn" : 18,
+        "endLine" : 255,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 255
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ {
+      "body" : [ {
+        "_type" : "string",
+        "sourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 256,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 256
+        },
+        "value" : ""
+      } ],
+      "name" : "name2",
+      "parameters" : [ ],
+      "returnGenericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 256,
+            "sourceId" : "",
+            "startColumn" : 17,
+            "startLine" : 256
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "returnMultiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "sourceInformation" : {
+        "endColumn" : 26,
+        "endLine" : 256,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 256
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 257,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 253
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  } ],
+  "imports" : [ ]
+}

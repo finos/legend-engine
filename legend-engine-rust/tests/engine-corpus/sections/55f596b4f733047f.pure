@@ -1,0 +1,12 @@
+
+Class anything::goes
+{
+  fullName: String[1];
+  name: String[*];
+}
+
+Enum anything::else::goes2
+{
+  b
+}
+

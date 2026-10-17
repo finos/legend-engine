@@ -1,0 +1,9 @@
+
+Mapping my::testMapping
+(
+  *my::IntegerThing[t]: Relation
+  {
+    ~func my::numericColumnFunction():Relation<Any>[1]
+    amount: VAL
+  }
+)

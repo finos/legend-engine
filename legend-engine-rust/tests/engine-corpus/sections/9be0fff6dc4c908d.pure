@@ -1,0 +1,6 @@
+
+Class {meta::pure::profiles::doc.doc = '''
+A person in the system.
+Identity is established by name.'''} model::Person
+{
+}

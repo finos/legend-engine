@@ -1,0 +1,25 @@
+
+Mapping mapping
+(
+  Person[true]: Pure
+  {
+  }
+  Person[false]: Pure
+  {
+  }
+  Person[1]: Pure
+  {
+  }
+  Person[true]: EnumerationMapping 1
+  {
+      a : ['a']
+  }
+  Person[true]: EnumerationMapping true
+  {
+      a : ['a']
+  }
+  Person[true]: EnumerationMapping false
+  {
+      a : ['a']
+  }
+)

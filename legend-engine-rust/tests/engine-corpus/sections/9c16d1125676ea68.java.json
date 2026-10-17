@@ -1,0 +1,249 @@
+{
+  "elements" : [ {
+    "_type" : "relational",
+    "filters" : [ ],
+    "includedStores" : [ ],
+    "joins" : [ {
+      "name" : "PersonFirmJoin",
+      "operation" : {
+        "_type" : "dynaFunc",
+        "funcName" : "equal",
+        "parameters" : [ {
+          "_type" : "column",
+          "column" : "firmId",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 24,
+            "startLine" : 30
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "mapping::db",
+            "mainTableDb" : "mapping::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 24,
+              "startLine" : 30
+            },
+            "table" : "employeeFirmDenormTable"
+          },
+          "tableAlias" : "employeeFirmDenormTable"
+        }, {
+          "_type" : "column",
+          "column" : "id",
+          "sourceInformation" : {
+            "endColumn" : 72,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 57,
+            "startLine" : 30
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "mapping::db",
+            "mainTableDb" : "mapping::db",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 69,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 30
+            },
+            "table" : "FirmInfoTable"
+          },
+          "tableAlias" : "FirmInfoTable"
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 72,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 55,
+          "startLine" : 30
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 73,
+        "endLine" : 30,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 30
+      }
+    } ],
+    "name" : "db",
+    "package" : "mapping",
+    "schemas" : [ {
+      "name" : "default",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 31,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 14
+      },
+      "tables" : [ {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 17,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 17
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 18,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 18
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "firmId",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 19,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 19
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "legalName",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 26,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 20
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "address1",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 25,
+            "endLine" : 21,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 21
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "postcode",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 24,
+            "endLine" : 22,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 22
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 10
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "employeeFirmDenormTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 23,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 15
+        }
+      }, {
+        "columns" : [ {
+          "name" : "id",
+          "nullable" : false,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 26,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 26
+          },
+          "type" : {
+            "_type" : "Integer"
+          }
+        }, {
+          "name" : "name",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 27,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 27
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        }, {
+          "name" : "other",
+          "nullable" : true,
+          "sourceInformation" : {
+            "endColumn" : 22,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          },
+          "type" : {
+            "_type" : "Varchar",
+            "size" : 200
+          }
+        } ],
+        "milestoning" : [ ],
+        "name" : "FirmInfoTable",
+        "primaryKey" : [ "id" ],
+        "sourceInformation" : {
+          "endColumn" : 4,
+          "endLine" : 29,
+          "sourceId" : "",
+          "startColumn" : 4,
+          "startLine" : 24
+        }
+      } ],
+      "tabularFunctions" : [ ],
+      "views" : [ ]
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 31,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ]
+  } ]
+}

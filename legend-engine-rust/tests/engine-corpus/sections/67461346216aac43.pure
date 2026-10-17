@@ -1,0 +1,53 @@
+
+Service meta::pure::myServiceMulti
+{
+  pattern: 'url/myUrl/{env}';
+  owners:
+  [
+    'ownerName'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {src:    test::class[1]|$src.prop1};
+  }
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+    tests['PROD']:
+    {
+      data: 'moreData';
+      asserts:
+      [
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },
+        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }
+      ];
+    }
+  }
+}
+
+ExecutionEnvironment test::executionEnvironment
+{
+      executions:
+      [
+        QA:
+        {
+          mapping: test::mapping;
+          runtime: test::runtime;
+        },
+        PROD:
+        {
+          mapping: test::mapping;
+          runtime: test::runtime;
+        }
+      ];
+}

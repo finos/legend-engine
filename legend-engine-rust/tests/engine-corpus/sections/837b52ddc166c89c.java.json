@@ -1,0 +1,636 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "pureInstance",
+      "class" : "test::FiscalCalendar",
+      "classSourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 27,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "id" : "b",
+      "propertyMappings" : [ {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::FiscalCalendar",
+          "property" : "date",
+          "sourceInformation" : {
+            "endColumn" : 8,
+            "endLine" : 30,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 30
+          }
+        },
+        "source" : "b",
+        "sourceInformation" : {
+          "endColumn" : 19,
+          "endLine" : 30,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 30
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 30,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 30
+              }
+            } ],
+            "property" : "date",
+            "sourceInformation" : {
+              "endColumn" : 19,
+              "endLine" : 30,
+              "sourceId" : "",
+              "startColumn" : 16,
+              "startLine" : 30
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::FiscalCalendar",
+          "property" : "fiscalYear",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 31,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 31
+          }
+        },
+        "source" : "b",
+        "sourceInformation" : {
+          "endColumn" : 31,
+          "endLine" : 31,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 31
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 20,
+                "endLine" : 31,
+                "sourceId" : "",
+                "startColumn" : 17,
+                "startLine" : 31
+              }
+            } ],
+            "property" : "fiscalYear",
+            "sourceInformation" : {
+              "endColumn" : 31,
+              "endLine" : 31,
+              "sourceId" : "",
+              "startColumn" : 22,
+              "startLine" : 31
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::FiscalCalendar",
+          "property" : "fiscalMonth",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 32,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 32
+          }
+        },
+        "source" : "b",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 32,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 32
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 21,
+                "endLine" : 32,
+                "sourceId" : "",
+                "startColumn" : 18,
+                "startLine" : 32
+              }
+            } ],
+            "property" : "fiscalMonth",
+            "sourceInformation" : {
+              "endColumn" : 33,
+              "endLine" : 32,
+              "sourceId" : "",
+              "startColumn" : 23,
+              "startLine" : 32
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      }, {
+        "_type" : "purePropertyMapping",
+        "explodeProperty" : false,
+        "property" : {
+          "class" : "test::FiscalCalendar",
+          "property" : "fiscalQtr",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 33,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 33
+          }
+        },
+        "source" : "b",
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 33,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 33
+        },
+        "transform" : {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "src",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 33,
+                "sourceId" : "",
+                "startColumn" : 16,
+                "startLine" : 33
+              }
+            } ],
+            "property" : "fiscalQtr",
+            "sourceInformation" : {
+              "endColumn" : 29,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 21,
+              "startLine" : 33
+            }
+          } ],
+          "parameters" : [ ]
+        }
+      } ],
+      "root" : false,
+      "sourceClassSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 29,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 29
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 34,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 27
+      },
+      "srcClass" : "test::FiscalCalendar"
+    }, {
+      "_type" : "aggregationAware",
+      "aggregateSetImplementations" : [ {
+        "aggregateSpecification" : {
+          "aggregateValues" : [ {
+            "aggregateFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "func",
+                "function" : "sum",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "mapped",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 45,
+                    "sourceId" : "",
+                    "startColumn" : 52,
+                    "startLine" : 45
+                  }
+                } ],
+                "sourceInformation" : {
+                  "endColumn" : 63,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 61,
+                  "startLine" : 45
+                }
+              } ],
+              "parameters" : [ ]
+            },
+            "mapFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 26,
+                    "endLine" : 45,
+                    "sourceId" : "",
+                    "startColumn" : 22,
+                    "startLine" : 45
+                  }
+                } ],
+                "property" : "revenue",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 45,
+                  "sourceId" : "",
+                  "startColumn" : 28,
+                  "startLine" : 45
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          } ],
+          "canAggregate" : true,
+          "groupByFunctions" : [ {
+            "groupByFn" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "this",
+                  "sourceInformation" : {
+                    "endColumn" : 17,
+                    "endLine" : 42,
+                    "sourceId" : "",
+                    "startColumn" : 13,
+                    "startLine" : 42
+                  }
+                } ],
+                "property" : "salesDate",
+                "sourceInformation" : {
+                  "endColumn" : 27,
+                  "endLine" : 42,
+                  "sourceId" : "",
+                  "startColumn" : 19,
+                  "startLine" : 42
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          } ]
+        },
+        "index" : 0,
+        "setImplementation" : {
+          "_type" : "pureInstance",
+          "class" : "test::Sales",
+          "classSourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 47,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 47
+          },
+          "id" : "a_Aggregate_0",
+          "propertyMappings" : [ {
+            "_type" : "purePropertyMapping",
+            "explodeProperty" : false,
+            "property" : {
+              "class" : "test::Sales",
+              "property" : "salesDate",
+              "sourceInformation" : {
+                "endColumn" : 19,
+                "endLine" : 51,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 51
+              }
+            },
+            "source" : "a",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 51,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 51
+            },
+            "target" : "b",
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 28,
+                    "endLine" : 51,
+                    "sourceId" : "",
+                    "startColumn" : 25,
+                    "startLine" : 51
+                  }
+                } ],
+                "property" : "salesDate",
+                "sourceInformation" : {
+                  "endColumn" : 38,
+                  "endLine" : 51,
+                  "sourceId" : "",
+                  "startColumn" : 30,
+                  "startLine" : 51
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          }, {
+            "_type" : "purePropertyMapping",
+            "explodeProperty" : false,
+            "property" : {
+              "class" : "test::Sales",
+              "property" : "revenue",
+              "sourceInformation" : {
+                "endColumn" : 17,
+                "endLine" : 52,
+                "sourceId" : "",
+                "startColumn" : 11,
+                "startLine" : 52
+              }
+            },
+            "source" : "a",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 52,
+              "sourceId" : "",
+              "startColumn" : 11,
+              "startLine" : 52
+            },
+            "transform" : {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "src",
+                  "sourceInformation" : {
+                    "endColumn" : 23,
+                    "endLine" : 52,
+                    "sourceId" : "",
+                    "startColumn" : 20,
+                    "startLine" : 52
+                  }
+                } ],
+                "property" : "netRevenue",
+                "sourceInformation" : {
+                  "endColumn" : 34,
+                  "endLine" : 52,
+                  "sourceId" : "",
+                  "startColumn" : 25,
+                  "startLine" : 52
+                }
+              } ],
+              "parameters" : [ ]
+            }
+          } ],
+          "root" : false,
+          "sourceClassSourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 50,
+            "sourceId" : "",
+            "startColumn" : 16,
+            "startLine" : 50
+          },
+          "sourceInformation" : {
+            "endColumn" : 3,
+            "endLine" : 74,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 47
+          },
+          "srcClass" : "test::Sales_By_Date"
+        }
+      } ],
+      "class" : "test::Sales",
+      "id" : "a",
+      "mainSetImplementation" : {
+        "_type" : "pureInstance",
+        "class" : "test::Sales",
+        "classSourceInformation" : {
+          "endColumn" : 13,
+          "endLine" : 47,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 47
+        },
+        "id" : "a_Main",
+        "propertyMappings" : [ {
+          "_type" : "purePropertyMapping",
+          "explodeProperty" : false,
+          "property" : {
+            "class" : "test::Sales",
+            "property" : "salesDate",
+            "sourceInformation" : {
+              "endColumn" : 15,
+              "endLine" : 59,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 59
+            }
+          },
+          "source" : "a",
+          "sourceInformation" : {
+            "endColumn" : 34,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 59
+          },
+          "target" : "b",
+          "transform" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 24,
+                  "endLine" : 59,
+                  "sourceId" : "",
+                  "startColumn" : 21,
+                  "startLine" : 59
+                }
+              } ],
+              "property" : "salesDate",
+              "sourceInformation" : {
+                "endColumn" : 34,
+                "endLine" : 59,
+                "sourceId" : "",
+                "startColumn" : 26,
+                "startLine" : 59
+              }
+            } ],
+            "parameters" : [ ]
+          }
+        }, {
+          "_type" : "purePropertyMapping",
+          "explodeProperty" : false,
+          "property" : {
+            "class" : "test::Sales",
+            "property" : "revenue",
+            "sourceInformation" : {
+              "endColumn" : 13,
+              "endLine" : 60,
+              "sourceId" : "",
+              "startColumn" : 7,
+              "startLine" : 60
+            }
+          },
+          "source" : "a",
+          "sourceInformation" : {
+            "endColumn" : 27,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 60
+          },
+          "transform" : {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "property",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "src",
+                "sourceInformation" : {
+                  "endColumn" : 19,
+                  "endLine" : 60,
+                  "sourceId" : "",
+                  "startColumn" : 16,
+                  "startLine" : 60
+                }
+              } ],
+              "property" : "revenue",
+              "sourceInformation" : {
+                "endColumn" : 27,
+                "endLine" : 60,
+                "sourceId" : "",
+                "startColumn" : 21,
+                "startLine" : 60
+              }
+            } ],
+            "parameters" : [ ]
+          }
+        } ],
+        "root" : false,
+        "sourceClassSourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 58,
+          "sourceId" : "",
+          "startColumn" : 12,
+          "startLine" : 58
+        },
+        "sourceInformation" : {
+          "endColumn" : 3,
+          "endLine" : 74,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 47
+        },
+        "srcClass" : "test::Sales"
+      },
+      "propertyMappings" : [ {
+        "_type" : "AggregationAwarePropertyMapping",
+        "property" : {
+          "class" : "test::Sales",
+          "property" : "salesDate",
+          "sourceInformation" : {
+            "endColumn" : 15,
+            "endLine" : 59,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 59
+          }
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 34,
+          "endLine" : 59,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 59
+        },
+        "target" : "b"
+      }, {
+        "_type" : "AggregationAwarePropertyMapping",
+        "property" : {
+          "class" : "test::Sales",
+          "property" : "revenue",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 60,
+            "sourceId" : "",
+            "startColumn" : 7,
+            "startLine" : 60
+          }
+        },
+        "source" : "a",
+        "sourceInformation" : {
+          "endColumn" : 27,
+          "endLine" : 60,
+          "sourceId" : "",
+          "startColumn" : 7,
+          "startLine" : 60
+        }
+      } ],
+      "root" : false,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 35
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "map",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 25
+    },
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

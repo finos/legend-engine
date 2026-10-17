@@ -1,0 +1,23 @@
+
+Mapping Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::EnumerationMapping::Binding::Inline
+(
+  anything::else::goes: EnumerationMapping TargetTradeTypeMapping2
+  {
+    TT3: [anything::else::goes::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::EnumerationMapping::Binding::Inline.MT21]
+  }
+  *anything::goes[anything_goes]: Operation
+  {
+    meta::pure::router::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::EnumerationMapping::Binding::Inline::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)
+  }
+  *anything::goes[anything_goes]: Pure
+  {
+    ~src anything::goes::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::EnumerationMapping::Binding::Inline
+    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    incType : EnumerationMapping a : 1  }
+  *anything::goes[anything_goes]: Relation
+  {
+    ~func anything::goes::Mapping::import::include::MappingTests::extends::function::data::assert::doc::type::testSuites::asserts::tests::query::all::let::allVersions::allVersionsInRange::toBytes::EnumerationMapping::Binding::Inline():Any[1]
+    firstName: firstName
+  }
+
+)

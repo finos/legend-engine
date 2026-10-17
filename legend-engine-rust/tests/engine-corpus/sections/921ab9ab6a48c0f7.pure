@@ -1,0 +1,24 @@
+
+Binding demo::ssn::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Firm
+  ];
+}
+
+Binding demo::ssn::TagBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Tag
+  ];
+}
+
+Binding demo::ssn::ParticipantBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Participant
+  ];
+}

@@ -1,0 +1,97 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "letFunction",
+      "parameters" : [ {
+        "_type" : "string",
+        "value" : "s"
+      }, {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 28,
+            "endLine" : 3,
+            "sourceId" : "",
+            "startColumn" : 14,
+            "startLine" : 3
+          },
+          "value" : "sample string"
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 29,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 3,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 3
+      }
+    }, {
+      "_type" : "func",
+      "function" : "eval",
+      "parameters" : [ {
+        "_type" : "var",
+        "name" : "s",
+        "sourceInformation" : {
+          "endColumn" : 33,
+          "endLine" : 3,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 3
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 39,
+        "endLine" : 3,
+        "sourceId" : "",
+        "startColumn" : 36,
+        "startLine" : 3
+      }
+    } ],
+    "name" : "func__Any_MANY_",
+    "package" : "test",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 26,
+          "endLine" : 1,
+          "sourceId" : "",
+          "startColumn" : 24,
+          "startLine" : 1
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 4,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 1
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

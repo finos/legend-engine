@@ -1,0 +1,57 @@
+{
+  "elements" : [ {
+    "_type" : "MongoDatabase",
+    "collections" : [ {
+      "name" : "Person",
+      "validator" : {
+        "validationAction" : "error",
+        "validationLevel" : "strict",
+        "validatorExpression" : {
+          "_type" : "jsonSchemaExpression",
+          "schemaExpression" : {
+            "_type" : "schema",
+            "_enum" : [ ],
+            "additionalPropertiesAllowed" : false,
+            "allOf" : [ ],
+            "anyOf" : [ ],
+            "oneOf" : [ ],
+            "properties" : [ {
+              "key" : "name",
+              "value" : {
+                "_type" : "stringType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "description" : "name of the firm",
+                "minLength" : 2,
+                "oneOf" : [ ]
+              }
+            }, {
+              "key" : "id",
+              "value" : {
+                "_type" : "objectIdType",
+                "_enum" : [ ],
+                "allOf" : [ ],
+                "anyOf" : [ ],
+                "oneOf" : [ ]
+              }
+            } ],
+            "required" : [ ],
+            "title" : "Record of Firm"
+          }
+        }
+      }
+    } ],
+    "includedStores" : [ ],
+    "name" : "testEmptyDatabase",
+    "package" : "test",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 24,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "views" : [ ]
+  } ]
+}

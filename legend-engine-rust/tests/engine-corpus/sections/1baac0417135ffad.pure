@@ -1,0 +1,31 @@
+
+import anything::*;
+Class <<goes.businesstemporal>> {goes.doc = 'bla'} anything::A extends B, B
+[
+  $this.ok->toOne() == 1,
+  constraint2: if($this.ok == 'ok', |true, |false)
+]
+{
+  <<goes.Key>> {goes.doc = 'bla'} name: e::R[*];
+  {goes.doc = 'bla'} ok: A[1..2];
+  dance: enumGoes[1..2];
+  <<goes.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];
+  {robot::hio.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];
+  <<goes.inProgress>> {robot::hio.doc = 'bla'} anotherOne(s: goes[1]) {$s + 'ok'}: goes[1];
+}
+
+Class anything::B
+{
+  z: String[1];
+}
+
+Profile anything::goes
+{
+  stereotypes: [test];
+  tags: [doc, todo];
+}
+
+Enum anything::enumGoes
+{
+  c
+}

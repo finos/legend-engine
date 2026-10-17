@@ -1,0 +1,184 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "SourceToTargetM2M",
+    "package" : "model::mapping",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 21,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 9
+    },
+    "tests" : [ {
+      "assert" : {
+        "_type" : "expectedOutputMappingTestAssert",
+        "expectedOutput" : "{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}",
+        "sourceInformation" : {
+          "endColumn" : 291,
+          "endLine" : 18,
+          "sourceId" : "",
+          "startColumn" : 10,
+          "startLine" : 18
+        }
+      },
+      "inputData" : [ {
+        "_type" : "object",
+        "data" : "{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}",
+        "inputType" : "XML",
+        "sourceClass" : "model::domain::Source",
+        "sourceInformation" : {
+          "endColumn" : 209,
+          "endLine" : 17,
+          "sourceId" : "",
+          "startColumn" : 32,
+          "startLine" : 17
+        }
+      } ],
+      "name" : "defaultTest",
+      "query" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "serialize",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "graphFetchChecked",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "model::domain::Target",
+                "sourceInformation" : {
+                  "endColumn" : 40,
+                  "endLine" : 15,
+                  "sourceId" : "model::mapping::SourceToTargetM2M",
+                  "startColumn" : 20,
+                  "startLine" : 15
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 46,
+                "endLine" : 15,
+                "sourceId" : "model::mapping::SourceToTargetM2M",
+                "startColumn" : 41,
+                "startLine" : 15
+              }
+            }, {
+              "_type" : "classInstance",
+              "sourceInformation" : {
+                "endColumn" : 77,
+                "endLine" : 16,
+                "sourceId" : "model::mapping::SourceToTargetM2M",
+                "startColumn" : 66,
+                "startLine" : 16
+              },
+              "type" : "rootGraphFetchTree",
+              "value" : {
+                "_type" : "rootGraphFetchTree",
+                "_type" : "rootGraphFetchTree",
+                "class" : "ClassNotHere",
+                "sourceInformation" : {
+                  "endColumn" : 77,
+                  "endLine" : 16,
+                  "sourceId" : "model::mapping::SourceToTargetM2M",
+                  "startColumn" : 66,
+                  "startLine" : 16
+                },
+                "subTrees" : [ {
+                  "_type" : "propertyGraphFetchTree",
+                  "_type" : "propertyGraphFetchTree",
+                  "parameters" : [ ],
+                  "property" : "name",
+                  "sourceInformation" : {
+                    "endColumn" : 83,
+                    "endLine" : 16,
+                    "sourceId" : "model::mapping::SourceToTargetM2M",
+                    "startColumn" : 80,
+                    "startLine" : 16
+                  },
+                  "subTrees" : [ ],
+                  "subTypeTrees" : [ ]
+                } ],
+                "subTypeTrees" : [ ]
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 65,
+              "endLine" : 15,
+              "sourceId" : "model::mapping::SourceToTargetM2M",
+              "startColumn" : 49,
+              "startLine" : 15
+            }
+          }, {
+            "_type" : "classInstance",
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 16,
+              "sourceId" : "model::mapping::SourceToTargetM2M",
+              "startColumn" : 102,
+              "startLine" : 16
+            },
+            "type" : "rootGraphFetchTree",
+            "value" : {
+              "_type" : "rootGraphFetchTree",
+              "_type" : "rootGraphFetchTree",
+              "class" : "model::domain::Target",
+              "sourceInformation" : {
+                "endColumn" : 122,
+                "endLine" : 16,
+                "sourceId" : "model::mapping::SourceToTargetM2M",
+                "startColumn" : 102,
+                "startLine" : 16
+              },
+              "subTrees" : [ {
+                "_type" : "propertyGraphFetchTree",
+                "_type" : "propertyGraphFetchTree",
+                "parameters" : [ ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 127,
+                  "endLine" : 16,
+                  "sourceId" : "model::mapping::SourceToTargetM2M",
+                  "startColumn" : 124,
+                  "startLine" : 16
+                },
+                "subTrees" : [ ],
+                "subTypeTrees" : [ ]
+              } ],
+              "subTypeTrees" : [ ]
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 16,
+            "sourceId" : "model::mapping::SourceToTargetM2M",
+            "startColumn" : 90,
+            "startLine" : 16
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 16,
+          "sourceId" : "model::mapping::SourceToTargetM2M",
+          "startColumn" : 17,
+          "startLine" : 15
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 19,
+        "sourceId" : "",
+        "startColumn" : 7,
+        "startLine" : 13
+      }
+    } ]
+  } ],
+  "imports" : [ ]
+}

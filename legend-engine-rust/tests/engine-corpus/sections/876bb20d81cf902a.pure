@@ -1,0 +1,12 @@
+
+Association myAsso
+{
+  a: String[1];
+  b: a::c::A[1];
+}
+
+Association {doc.doc = 'bla'} k::p::Asso
+{
+  a: Integer[1];
+  b: a::c::B[1];
+}

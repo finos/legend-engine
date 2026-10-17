@@ -1,0 +1,16 @@
+
+Mapping test::mapping::FirmMapping
+(
+  *test::model::Firm: Pure
+  {
+    ~src test::store::S_Firm
+    legalName: $src.legalName,
+    employees[test_model_Person]: $src.employees
+  }
+  *test::model::Person: Pure
+  {
+    ~src test::store::S_Person
+    firstName: $src.firstName,
+    lastName: $src.lastName
+  }
+)

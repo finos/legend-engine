@@ -1,0 +1,23 @@
+
+Runtime demo::relation::runtime::EmployeeCardChainRuntime
+{
+  mappings:
+  [
+    demo::relation::mapping::EmployeeCardChainMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      chain: demo::relation::connection::EmployeeCardModelChainConnection
+    ],
+    demo::relation::db::EmployeeDB:
+    [
+      employeeH2: demo::relation::connection::EmployeeH2Connection
+    ],
+    demo::relation::db::FirmRegistryDB:
+    [
+      firmRegistryH2: demo::relation::connection::FirmRegistryH2Connection
+    ]
+  ];
+}

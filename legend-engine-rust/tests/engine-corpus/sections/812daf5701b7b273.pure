@@ -1,0 +1,20 @@
+
+DataSpace dataSpace::_FirmDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::ModelToModelMapping;
+      defaultRuntime: mapping::ModelToModelRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  elements: [
+    model,
+    -model::experiment,
+    -model::target::_Firm,
+    -model::NotRelevant
+  ];
+  title: 'Firm Dataspace';
+}

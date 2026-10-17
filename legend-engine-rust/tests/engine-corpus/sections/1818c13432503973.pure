@@ -1,0 +1,10 @@
+
+import model::*;Mapping model::myRelationalMapping
+(
+   
+  Firm : Relational
+  {
+    name : [model::relational::tests::dbInc]firmTable.LEGALNAME,
+    address : [model::relational::tests::dbInc]firmTable.ADDRESSID
+  }
+)

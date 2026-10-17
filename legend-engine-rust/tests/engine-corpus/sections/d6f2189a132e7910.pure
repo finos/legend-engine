@@ -1,0 +1,76 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  owners:
+  [
+    'ownerName',
+    'ownerName2'
+  ];
+  documentation: 'this is just for context';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {stringParam: String[1], stringOptionalParam: String[0..1], stringListParam: String[*], integerParam: Integer[1], integerOptionalParam: Integer[0..1], integerListParam: Integer[*], floatParam: Float[1], floatOptionalParam: Float[0..1], floatListParam: Float[*], strictDateParam: StrictDate[1], strictDateOptionalParam: StrictDate[0..1], strictDateListParam: StrictDate[*], dateTimeParam: DateTime[1], dateTimeOptionalParam: DateTime[0..1], dateTimeListParam: DateTime[*], booleanParam: Boolean[1], booleanOptionalParam: Boolean[0..1], booleanListParam: Boolean[*]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#)};
+    mapping: meta::myMapping;
+    runtime: meta::myRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/x.flatdata';
+              data: 'FIRST_NAME,LAST_NAME\nFred,Bloggs\nJane,Doe';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          parameters:
+          [
+            stringParam = 'dummy',
+            stringOptionalParam = 'dummy',
+            stringListParam = ['dummy', 'dummy'],
+            integerParam = 1,
+            integerOptionalParam = [],
+            integerListParam = [1, 2],
+            floatParam = 1.123,
+            floatOptionalParam = [],
+            floatListParam = [1.123, 4.456],
+            strictDateParam = %2020-1-1,
+            strictDateOptionalParam = [],
+            strictDateListParam = [%2020-1-1, %2020-1-2],
+            dateTimeParam = %2020-1-1T12:12:12,
+            dateTimeOptionalParam = [],
+            dateTimeListParam = [%2020-1-1T12:12:12, %2020-1-1T12:12:13],
+            booleanParam = false,
+            booleanOptionalParam = [],
+            booleanListParam = [true, false]
+          ]
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{Age:12, Name:"dummy"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

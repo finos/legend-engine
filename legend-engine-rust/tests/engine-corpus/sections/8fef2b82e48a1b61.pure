@@ -1,0 +1,10 @@
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  store: model::firm::Person;
+  timezone: +0700;
+  type: H2;
+  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };
+  auth: DefaultH2;
+}
+

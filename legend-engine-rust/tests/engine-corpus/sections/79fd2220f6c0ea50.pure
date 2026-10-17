@@ -1,0 +1,10 @@
+
+Mapping my::testMapping
+(
+    *Person: Relation
+    {
+        ~func my::testFunc():Any[1]
+        firstName : firstName
+        firm : jsonColumn
+    }
+)

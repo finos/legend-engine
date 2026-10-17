@@ -1,0 +1,1069 @@
+{
+  "elements" : [ {
+    "_type" : "mapping",
+    "associationMappings" : [ ],
+    "classMappings" : [ {
+      "_type" : "relational",
+      "class" : "demo::payment::CardPayment",
+      "classSourceInformation" : {
+        "endColumn" : 29,
+        "endLine" : 18,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 18
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "cardPayment",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::PaymentDB",
+        "mainTableDb" : "demo::store::PaymentDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 55,
+          "endLine" : 24,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 24
+        },
+        "table" : "CardPaymentTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 22,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 22
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PaymentDB",
+          "mainTableDb" : "demo::store::PaymentDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 22,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 22
+          },
+          "table" : "CardPaymentTable"
+        },
+        "tableAlias" : "CardPaymentTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::CardPayment",
+          "property" : "reference",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 25,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 25
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "reference",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 25,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 25
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 25,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 40,
+              "startLine" : 25
+            },
+            "table" : "CardPaymentTable"
+          },
+          "tableAlias" : "CardPaymentTable"
+        },
+        "source" : "cardPayment",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 25,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 25
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::CardPayment",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 26,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 26
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 59,
+            "endLine" : 26,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 26
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 26,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 26
+            },
+            "table" : "CardPaymentTable"
+          },
+          "tableAlias" : "CardPaymentTable"
+        },
+        "source" : "cardPayment",
+        "sourceInformation" : {
+          "endColumn" : 59,
+          "endLine" : 26,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 26
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::CardPayment",
+          "property" : "cardLast4",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 27,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 27
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "cardLast4",
+          "sourceInformation" : {
+            "endColumn" : 65,
+            "endLine" : 27,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 27
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 27,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 40,
+              "startLine" : 27
+            },
+            "table" : "CardPaymentTable"
+          },
+          "tableAlias" : "CardPaymentTable"
+        },
+        "source" : "cardPayment",
+        "sourceInformation" : {
+          "endColumn" : 65,
+          "endLine" : 27,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 27
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 28,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 18
+      }
+    }, {
+      "_type" : "relational",
+      "class" : "demo::payment::BankTransfer",
+      "classSourceInformation" : {
+        "endColumn" : 30,
+        "endLine" : 30,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 30
+      },
+      "distinct" : false,
+      "groupBy" : [ ],
+      "id" : "bankTransfer",
+      "mainTable" : {
+        "_type" : "Table",
+        "database" : "demo::store::PaymentDB",
+        "mainTableDb" : "demo::store::PaymentDB",
+        "schema" : "default",
+        "sourceInformation" : {
+          "endColumn" : 56,
+          "endLine" : 36,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 40,
+          "startLine" : 36
+        },
+        "table" : "BankTransferTable"
+      },
+      "primaryKey" : [ {
+        "_type" : "column",
+        "column" : "id",
+        "sourceInformation" : {
+          "endColumn" : 50,
+          "endLine" : 34,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 7,
+          "startLine" : 34
+        },
+        "table" : {
+          "_type" : "Table",
+          "database" : "demo::store::PaymentDB",
+          "mainTableDb" : "demo::store::PaymentDB",
+          "schema" : "default",
+          "sourceInformation" : {
+            "endColumn" : 47,
+            "endLine" : 34,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 31,
+            "startLine" : 34
+          },
+          "table" : "BankTransferTable"
+        },
+        "tableAlias" : "BankTransferTable"
+      } ],
+      "propertyMappings" : [ {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::BankTransfer",
+          "property" : "reference",
+          "sourceInformation" : {
+            "endColumn" : 13,
+            "endLine" : 37,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 37
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "reference",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 37,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 16,
+            "startLine" : 37
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 56,
+              "endLine" : 37,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 40,
+              "startLine" : 37
+            },
+            "table" : "BankTransferTable"
+          },
+          "tableAlias" : "BankTransferTable"
+        },
+        "source" : "bankTransfer",
+        "sourceInformation" : {
+          "endColumn" : 66,
+          "endLine" : 37,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 14,
+          "startLine" : 37
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::BankTransfer",
+          "property" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 10,
+            "endLine" : 38,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 38
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "amount",
+          "sourceInformation" : {
+            "endColumn" : 60,
+            "endLine" : 38,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 38
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 38,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 37,
+              "startLine" : 38
+            },
+            "table" : "BankTransferTable"
+          },
+          "tableAlias" : "BankTransferTable"
+        },
+        "source" : "bankTransfer",
+        "sourceInformation" : {
+          "endColumn" : 60,
+          "endLine" : 38,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 11,
+          "startLine" : 38
+        }
+      }, {
+        "_type" : "relationalPropertyMapping",
+        "property" : {
+          "class" : "demo::payment::BankTransfer",
+          "property" : "sortCode",
+          "sourceInformation" : {
+            "endColumn" : 12,
+            "endLine" : 39,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 5,
+            "startLine" : 39
+          }
+        },
+        "relationalOperation" : {
+          "_type" : "column",
+          "column" : "sortCode",
+          "sourceInformation" : {
+            "endColumn" : 64,
+            "endLine" : 39,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 39
+          },
+          "table" : {
+            "_type" : "Table",
+            "database" : "demo::store::PaymentDB",
+            "mainTableDb" : "demo::store::PaymentDB",
+            "schema" : "default",
+            "sourceInformation" : {
+              "endColumn" : 55,
+              "endLine" : 39,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 39,
+              "startLine" : 39
+            },
+            "table" : "BankTransferTable"
+          },
+          "tableAlias" : "BankTransferTable"
+        },
+        "source" : "bankTransfer",
+        "sourceInformation" : {
+          "endColumn" : 64,
+          "endLine" : 39,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 13,
+          "startLine" : 39
+        }
+      } ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 40,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 30
+      }
+    }, {
+      "_type" : "operation",
+      "class" : "demo::payment::Payment",
+      "classSourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 42,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 4,
+        "startLine" : 42
+      },
+      "operation" : "INHERITANCE",
+      "parameters" : [ ],
+      "root" : true,
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 45,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 3,
+        "startLine" : 42
+      }
+    } ],
+    "enumerationMappings" : [ ],
+    "includedMappings" : [ ],
+    "name" : "PaymentPolymorphicMapping",
+    "package" : "demo",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 112,
+      "sourceId" : "mapping/paymentMapping.pure",
+      "startColumn" : 1,
+      "startLine" : 16
+    },
+    "testSuites" : [ {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::payment::Payment",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 51,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 18,
+                  "startLine" : 51
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 40,
+                "startLine" : 51
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 51,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 57,
+                    "startLine" : 51
+                  }
+                } ],
+                "property" : "reference",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 51,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 60,
+                  "startLine" : 51
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 56,
+                "startLine" : 51
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 51,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 48,
+              "startLine" : 51
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 108,
+              "endLine" : 51,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 80,
+              "startLine" : 51
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 51,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 83,
+                    "startLine" : 51
+                  }
+                } ],
+                "property" : "reference",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 51,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 86,
+                  "startLine" : 51
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 94,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 82,
+                "startLine" : 51
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 100,
+                    "endLine" : 51,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 99,
+                    "startLine" : 51
+                  }
+                } ],
+                "property" : "amount",
+                "sourceInformation" : {
+                  "endColumn" : 107,
+                  "endLine" : 51,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 102,
+                  "startLine" : 51
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 107,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 98,
+                "startLine" : 51
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 133,
+              "endLine" : 51,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 111,
+              "startLine" : 51
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 122,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 112,
+                "startLine" : 51
+              },
+              "value" : "Reference"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 132,
+                "endLine" : 51,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 125,
+                "startLine" : 51
+              },
+              "value" : "Amount"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 51,
+            "sourceId" : "demo::PaymentPolymorphicMapping",
+            "startColumn" : 72,
+            "startLine" : 51
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 134,
+          "endLine" : 51,
+          "sourceId" : "demo::PaymentPolymorphicMapping",
+          "startColumn" : 17,
+          "startLine" : 51
+        }
+      },
+      "id" : "rootProjectionSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 79,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 49
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Reference\":\"PAY-001\",\"Amount\":100},{\"Reference\":\"PAY-002\",\"Amount\":200},{\"Reference\":\"PAY-003\",\"Amount\":300}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 74,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 70
+            }
+          },
+          "id" : "shouldReturnEveryPayment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 75,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 67
+          }
+        } ],
+        "id" : "superclassPropertiesAcrossSubtypes",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 77,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 54
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::PaymentData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 62,
+                "sourceId" : "mapping/paymentMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 59
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 62,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 59
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 62,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 58
+          },
+          "store" : {
+            "path" : "demo::store::PaymentDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 58,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 58
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    }, {
+      "_type" : "mappingTestSuite",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::payment::Payment",
+                "sourceInformation" : {
+                  "endColumn" : 39,
+                  "endLine" : 82,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 18,
+                  "startLine" : 82
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 45,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 40,
+                "startLine" : 82
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 58,
+                    "endLine" : 82,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 57,
+                    "startLine" : 82
+                  }
+                } ],
+                "property" : "reference",
+                "sourceInformation" : {
+                  "endColumn" : 68,
+                  "endLine" : 82,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 60,
+                  "startLine" : 82
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 68,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 56,
+                "startLine" : 82
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 53,
+              "endLine" : 82,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 48,
+              "startLine" : 82
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 149,
+              "endLine" : 82,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 80,
+              "startLine" : 82
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "x",
+                  "sourceInformation" : {
+                    "endColumn" : 84,
+                    "endLine" : 82,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 83,
+                    "startLine" : 82
+                  }
+                } ],
+                "property" : "reference",
+                "sourceInformation" : {
+                  "endColumn" : 94,
+                  "endLine" : 82,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 86,
+                  "startLine" : 82
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 94,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 82,
+                "startLine" : 82
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "func",
+                  "function" : "subType",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "x",
+                    "sourceInformation" : {
+                      "endColumn" : 100,
+                      "endLine" : 82,
+                      "sourceId" : "demo::PaymentPolymorphicMapping",
+                      "startColumn" : 99,
+                      "startLine" : 82
+                    }
+                  }, {
+                    "_type" : "genericTypeInstance",
+                    "genericType" : {
+                      "multiplicityArguments" : [ ],
+                      "rawType" : {
+                        "_type" : "packageableType",
+                        "fullPath" : "demo::payment::CardPayment",
+                        "sourceInformation" : {
+                          "endColumn" : 137,
+                          "endLine" : 82,
+                          "sourceId" : "demo::PaymentPolymorphicMapping",
+                          "startColumn" : 112,
+                          "startLine" : 82
+                        }
+                      },
+                      "typeArguments" : [ ],
+                      "typeVariableValues" : [ ]
+                    },
+                    "sourceInformation" : {
+                      "endColumn" : 137,
+                      "endLine" : 82,
+                      "sourceId" : "demo::PaymentPolymorphicMapping",
+                      "startColumn" : 111,
+                      "startLine" : 82
+                    }
+                  } ],
+                  "sourceInformation" : {
+                    "endColumn" : 109,
+                    "endLine" : 82,
+                    "sourceId" : "demo::PaymentPolymorphicMapping",
+                    "startColumn" : 103,
+                    "startLine" : 82
+                  }
+                } ],
+                "property" : "cardLast4",
+                "sourceInformation" : {
+                  "endColumn" : 148,
+                  "endLine" : 82,
+                  "sourceId" : "demo::PaymentPolymorphicMapping",
+                  "startColumn" : 140,
+                  "startLine" : 82
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "x"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 148,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 98,
+                "startLine" : 82
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 172,
+              "endLine" : 82,
+              "sourceId" : "demo::PaymentPolymorphicMapping",
+              "startColumn" : 152,
+              "startLine" : 82
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 163,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 153,
+                "startLine" : 82
+              },
+              "value" : "Reference"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 171,
+                "endLine" : 82,
+                "sourceId" : "demo::PaymentPolymorphicMapping",
+                "startColumn" : 166,
+                "startLine" : 82
+              },
+              "value" : "Card"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 78,
+            "endLine" : 82,
+            "sourceId" : "demo::PaymentPolymorphicMapping",
+            "startColumn" : 72,
+            "startLine" : 82
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 173,
+          "endLine" : 82,
+          "sourceId" : "demo::PaymentPolymorphicMapping",
+          "startColumn" : 17,
+          "startLine" : 82
+        }
+      },
+      "id" : "downcastSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 110,
+        "sourceId" : "mapping/paymentMapping.pure",
+        "startColumn" : 5,
+        "startLine" : 80
+      },
+      "tests" : [ {
+        "_type" : "mappingTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Reference\":\"PAY-001\",\"Card\":\"4242\"},{\"Reference\":\"PAY-002\",\"Card\":null},{\"Reference\":\"PAY-003\",\"Card\":\"1881\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 105,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 19,
+              "startLine" : 101
+            }
+          },
+          "id" : "shouldDowncastToCardPayment",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 106,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 15,
+            "startLine" : 98
+          }
+        } ],
+        "id" : "subtypeSpecificProperty",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 108,
+          "sourceId" : "mapping/paymentMapping.pure",
+          "startColumn" : 9,
+          "startLine" : 85
+        },
+        "storeTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::data::PaymentData",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 93,
+                "sourceId" : "mapping/paymentMapping.pure",
+                "startColumn" : 15,
+                "startLine" : 90
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 16,
+              "endLine" : 93,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 15,
+              "startLine" : 90
+            }
+          },
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 93,
+            "sourceId" : "mapping/paymentMapping.pure",
+            "startColumn" : 13,
+            "startLine" : 89
+          },
+          "store" : {
+            "path" : "demo::store::PaymentDB",
+            "sourceInformation" : {
+              "endColumn" : 34,
+              "endLine" : 89,
+              "sourceId" : "mapping/paymentMapping.pure",
+              "startColumn" : 13,
+              "startLine" : 89
+            },
+            "type" : "STORE"
+          }
+        } ]
+      } ]
+    } ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

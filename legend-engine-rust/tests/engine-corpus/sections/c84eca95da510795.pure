@@ -1,0 +1,16 @@
+
+function test::fetch(): Any[1]
+{
+  {names:String[*] | test::Person.all()
+                        ->project([x | $x.fullName, x | $x.firmName], ['fullName', 'firmName'])
+                        ->extend([col(row:TDSRow[1] | $row.getString('fullName'), 'string')])
+                        ->olapGroupBy(['fullName'], asc('firmName'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK 1')
+                        ->olapGroupBy(['fullName'], desc('firmName'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW 1')
+                        ->olapGroupBy(['fullName'], asc('firmName'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK 1')
+                        ->olapGroupBy(['fullName'], desc('firmName'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK 2')
+                        ->olapGroupBy(['firmName'], asc('fullName'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK 3')
+                        ->olapGroupBy(['firmName'], desc('fullName'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW 2')
+                        ->olapGroupBy(['firmName'], asc('fullName'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK 2')
+                        ->olapGroupBy(['firmName'], desc('fullName'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK 3')
+  }
+}

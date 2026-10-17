@@ -1,0 +1,3448 @@
+{
+  "elements" : [ {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Products as of a business date, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Product",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 30,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 13,
+                  "startLine" : 30
+                }
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 48,
+                  "endLine" : 30,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 38,
+                  "startLine" : 30
+                },
+                "value" : "2025-07-02"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 49,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 33,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 62,
+                    "endLine" : 30,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 61,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 65,
+                  "endLine" : 30,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 64,
+                  "startLine" : 30
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 60,
+                "startLine" : 30
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 57,
+              "endLine" : 30,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 52,
+              "startLine" : 30
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 96,
+              "endLine" : 30,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 77,
+              "startLine" : 30
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 81,
+                    "endLine" : 30,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 80,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 84,
+                  "endLine" : 30,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 83,
+                  "startLine" : 30
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 84,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 79,
+                "startLine" : 30
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 90,
+                    "endLine" : 30,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 89,
+                    "startLine" : 30
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 30,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 92,
+                  "startLine" : 30
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 95,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 88,
+                "startLine" : 30
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 30,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 99,
+              "startLine" : 30
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 103,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 100,
+                "startLine" : 30
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 30,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 106,
+                "startLine" : 30
+              },
+              "value" : "Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 75,
+            "endLine" : 30,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 69,
+            "startLine" : 30
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 113,
+          "endLine" : 30,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 12,
+          "startLine" : 30
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 31,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 31
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 32,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 32
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 33,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 28
+      }
+    },
+    "name" : "ProductAsOfLiteral",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/products",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 71,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 23
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "productSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 69,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 36
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 46,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 43
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 46,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 43
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 46,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 42
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 48,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 38
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Name\":\"Widget Mk2\"},{\"Id\":2,\"Name\":\"Gadget\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 64,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 60
+            }
+          },
+          "id" : "shouldReadTheNewName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 65,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 57
+          }
+        } ],
+        "id" : "onTheDayOfTheRename",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 67,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 51
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Products as of a business date, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Product",
+                "sourceInformation" : {
+                  "endColumn" : 60,
+                  "endLine" : 80,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 41,
+                  "startLine" : 80
+                }
+              }, {
+                "_type" : "var",
+                "name" : "businessDate",
+                "sourceInformation" : {
+                  "endColumn" : 78,
+                  "endLine" : 80,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 66,
+                  "startLine" : 80
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 61,
+                "startLine" : 80
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 92,
+                    "endLine" : 80,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 91,
+                    "startLine" : 80
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 95,
+                  "endLine" : 80,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 94,
+                  "startLine" : 80
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 95,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 90,
+                "startLine" : 80
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 87,
+              "endLine" : 80,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 82,
+              "startLine" : 80
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 126,
+              "endLine" : 80,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 107,
+              "startLine" : 80
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 111,
+                    "endLine" : 80,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 110,
+                    "startLine" : 80
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 114,
+                  "endLine" : 80,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 113,
+                  "startLine" : 80
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 114,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 109,
+                "startLine" : 80
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 120,
+                    "endLine" : 80,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 119,
+                    "startLine" : 80
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 125,
+                  "endLine" : 80,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 122,
+                  "startLine" : 80
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "p"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 125,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 118,
+                "startLine" : 80
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 142,
+              "endLine" : 80,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 129,
+              "startLine" : 80
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 133,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 130,
+                "startLine" : 80
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 141,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 136,
+                "startLine" : 80
+              },
+              "value" : "Name"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 80,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 99,
+            "startLine" : 80
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "StrictDate",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 80,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 27,
+                "startLine" : 80
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "businessDate",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 80,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 13,
+            "startLine" : 80
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 143,
+          "endLine" : 80,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 40,
+          "startLine" : 80
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 81,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 81
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 82,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 82
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 83,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 78
+      }
+    },
+    "name" : "ProductAsOfParameter",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/products/{businessDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 146,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 73
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "productSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 144,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 86
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 96,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 93
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 96,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 93
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 96,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 92
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 98,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 88
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Name\":\"Widget Mk2\"},{\"Id\":2,\"Name\":\"Gadget\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 118,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 114
+            }
+          },
+          "id" : "shouldReadTheNewName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 119,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 111
+          }
+        } ],
+        "id" : "onTheDayOfTheRename",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 106,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 106
+            },
+            "value" : "2025-07-02"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 121,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 101
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Name\":\"Widget\"},{\"Id\":2,\"Name\":\"Gadget\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 139,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 135
+            }
+          },
+          "id" : "shouldReadTheOldName",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 140,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 132
+          }
+        } ],
+        "id" : "theDayBefore",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 127,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 127
+            },
+            "value" : "2025-07-01"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 142,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 122
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Accounts as recorded at a processing date-time, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Account",
+                "sourceInformation" : {
+                  "endColumn" : 32,
+                  "endLine" : 158,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 13,
+                  "startLine" : 158
+                }
+              }, {
+                "_type" : "dateTime",
+                "sourceInformation" : {
+                  "endColumn" : 62,
+                  "endLine" : 158,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 38,
+                  "startLine" : 158
+                },
+                "value" : "2025-07-02T15:00:00+0000"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 33,
+                "startLine" : 158
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 76,
+                    "endLine" : 158,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 75,
+                    "startLine" : 158
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 79,
+                  "endLine" : 158,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 78,
+                  "startLine" : 158
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 79,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 74,
+                "startLine" : 158
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 71,
+              "endLine" : 158,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 66,
+              "startLine" : 158
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 112,
+              "endLine" : 158,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 91,
+              "startLine" : 158
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 95,
+                    "endLine" : 158,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 94,
+                    "startLine" : 158
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 158,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 97,
+                  "startLine" : 158
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 98,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 93,
+                "startLine" : 158
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 104,
+                    "endLine" : 158,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 103,
+                    "startLine" : 158
+                  }
+                } ],
+                "property" : "status",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 158,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 106,
+                  "startLine" : 158
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 102,
+                "startLine" : 158
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 158,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 115,
+              "startLine" : 158
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 119,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 116,
+                "startLine" : 158
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 158,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 122,
+                "startLine" : 158
+              },
+              "value" : "Status"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 89,
+            "endLine" : 158,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 83,
+            "startLine" : 158
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 131,
+          "endLine" : 158,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 12,
+          "startLine" : 158
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 159,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 159
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 160,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 160
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 161,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 156
+      }
+    },
+    "name" : "AccountAsOfLiteral",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/accounts",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 199,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 151
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "accountSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 197,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 164
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 174,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 171
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 174,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 171
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 174,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 170
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 176,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 166
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"FROZEN\"},{\"Id\":2,\"Status\":\"OPEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 192,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 188
+            }
+          },
+          "id" : "shouldReadTheStatusRecordedThen",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 193,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 185
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 195,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 179
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Accounts as recorded at a processing date-time, given as a parameter.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Account",
+                "sourceInformation" : {
+                  "endColumn" : 60,
+                  "endLine" : 208,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 41,
+                  "startLine" : 208
+                }
+              }, {
+                "_type" : "var",
+                "name" : "processingDate",
+                "sourceInformation" : {
+                  "endColumn" : 80,
+                  "endLine" : 208,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 66,
+                  "startLine" : 208
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 81,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 61,
+                "startLine" : 208
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 94,
+                    "endLine" : 208,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 93,
+                    "startLine" : 208
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 208,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 96,
+                  "startLine" : 208
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 97,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 92,
+                "startLine" : 208
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 208,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 84,
+              "startLine" : 208
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 130,
+              "endLine" : 208,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 109,
+              "startLine" : 208
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 113,
+                    "endLine" : 208,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 112,
+                    "startLine" : 208
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 116,
+                  "endLine" : 208,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 115,
+                  "startLine" : 208
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 116,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 111,
+                "startLine" : 208
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "a",
+                  "sourceInformation" : {
+                    "endColumn" : 122,
+                    "endLine" : 208,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 121,
+                    "startLine" : 208
+                  }
+                } ],
+                "property" : "status",
+                "sourceInformation" : {
+                  "endColumn" : 129,
+                  "endLine" : 208,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 124,
+                  "startLine" : 208
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "a"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 129,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 120,
+                "startLine" : 208
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 148,
+              "endLine" : 208,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 133,
+              "startLine" : 208
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 137,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 134,
+                "startLine" : 208
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 147,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 140,
+                "startLine" : 208
+              },
+              "value" : "Status"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 107,
+            "endLine" : 208,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 101,
+            "startLine" : 208
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 208,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 29,
+                "startLine" : 208
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "processingDate",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 208,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 13,
+            "startLine" : 208
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 149,
+          "endLine" : 208,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 40,
+          "startLine" : 208
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 209,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 209
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 210,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 210
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 211,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 206
+      }
+    },
+    "name" : "AccountAsOfParameter",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/accounts/{processingDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 274,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 201
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "accountSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 272,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 214
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 224,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 221
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 224,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 221
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 224,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 220
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 226,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 216
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"FROZEN\"},{\"Id\":2,\"Status\":\"OPEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 246,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 242
+            }
+          },
+          "id" : "shouldReadTheStatusRecordedThen",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 247,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 239
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 234,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 234
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 249,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 229
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Status\":\"OPEN\"},{\"Id\":2,\"Status\":\"PENDING\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 267,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 263
+            }
+          },
+          "id" : "shouldReadTheEarlierStatus",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 268,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 260
+          }
+        } ],
+        "id" : "earlyMorningInNewYork",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 255,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 255
+            },
+            "value" : "2025-07-02T06:00:00-0400"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 270,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 250
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Ratings as recorded at a processing date-time for a business date-time, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::dates::Rating",
+              "sourceInformation" : {
+                "endColumn" : 31,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 288
+              }
+            }, {
+              "_type" : "dateTime",
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 37,
+                "startLine" : 288
+              },
+              "value" : "2025-07-02T15:00:00+0000"
+            }, {
+              "_type" : "dateTime",
+              "sourceInformation" : {
+                "endColumn" : 88,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 64,
+                "startLine" : 288
+              },
+              "value" : "2025-07-01T14:00:00+0000"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 89,
+              "endLine" : 288,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 32,
+              "startLine" : 288
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 124,
+              "endLine" : 288,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 100,
+              "startLine" : 288
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 104,
+                    "endLine" : 288,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 103,
+                    "startLine" : 288
+                  }
+                } ],
+                "property" : "issuer",
+                "sourceInformation" : {
+                  "endColumn" : 111,
+                  "endLine" : 288,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 106,
+                  "startLine" : 288
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 111,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 102,
+                "startLine" : 288
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 288,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 116,
+                    "startLine" : 288
+                  }
+                } ],
+                "property" : "grade",
+                "sourceInformation" : {
+                  "endColumn" : 123,
+                  "endLine" : 288,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 119,
+                  "startLine" : 288
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 123,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 115,
+                "startLine" : 288
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 145,
+              "endLine" : 288,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 127,
+              "startLine" : 288
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 135,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 128,
+                "startLine" : 288
+              },
+              "value" : "Issuer"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 144,
+                "endLine" : 288,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 138,
+                "startLine" : 288
+              },
+              "value" : "Grade"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 98,
+            "endLine" : 288,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 92,
+            "startLine" : 288
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 146,
+          "endLine" : 288,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 12,
+          "startLine" : 288
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 289,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 289
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 290,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 290
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 291,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 286
+      }
+    },
+    "name" : "RatingAsOfLiteral",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/ratings",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 329,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 281
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "ratingSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 327,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 294
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 304,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 301
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 304,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 301
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 304,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 300
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 306,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 296
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Issuer\":\"Acme\",\"Grade\":\"BBB\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 322,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 318
+            }
+          },
+          "id" : "shouldReadTheGradeAtBothDates",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 323,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 315
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 325,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 309
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Ratings as recorded at a processing date-time for a business date-time, given as parameters.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "getAll",
+            "parameters" : [ {
+              "_type" : "packageableElementPtr",
+              "fullPath" : "demo::dates::Rating",
+              "sourceInformation" : {
+                "endColumn" : 86,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 68,
+                "startLine" : 338
+              }
+            }, {
+              "_type" : "var",
+              "name" : "processingDate",
+              "sourceInformation" : {
+                "endColumn" : 106,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 92,
+                "startLine" : 338
+              }
+            }, {
+              "_type" : "var",
+              "name" : "businessDate",
+              "sourceInformation" : {
+                "endColumn" : 121,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 109,
+                "startLine" : 338
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 338,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 87,
+              "startLine" : 338
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 157,
+              "endLine" : 338,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 133,
+              "startLine" : 338
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 137,
+                    "endLine" : 338,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 136,
+                    "startLine" : 338
+                  }
+                } ],
+                "property" : "issuer",
+                "sourceInformation" : {
+                  "endColumn" : 144,
+                  "endLine" : 338,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 139,
+                  "startLine" : 338
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 144,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 135,
+                "startLine" : 338
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "r",
+                  "sourceInformation" : {
+                    "endColumn" : 150,
+                    "endLine" : 338,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 149,
+                    "startLine" : 338
+                  }
+                } ],
+                "property" : "grade",
+                "sourceInformation" : {
+                  "endColumn" : 156,
+                  "endLine" : 338,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 152,
+                  "startLine" : 338
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "r"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 156,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 148,
+                "startLine" : 338
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 2,
+              "upperBound" : 2
+            },
+            "sourceInformation" : {
+              "endColumn" : 178,
+              "endLine" : 338,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 160,
+              "startLine" : 338
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 168,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 161,
+                "startLine" : 338
+              },
+              "value" : "Issuer"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 177,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 171,
+                "startLine" : 338
+              },
+              "value" : "Grade"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 131,
+            "endLine" : 338,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 125,
+            "startLine" : 338
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 29,
+                "startLine" : 338
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "processingDate",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 338,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 13,
+            "startLine" : 338
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 63,
+                "endLine" : 338,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 56,
+                "startLine" : 338
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "businessDate",
+          "sourceInformation" : {
+            "endColumn" : 66,
+            "endLine" : 338,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 42,
+            "startLine" : 338
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 179,
+          "endLine" : 338,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 67,
+          "startLine" : 338
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 339,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 339
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 340,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 340
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 341,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 336
+      }
+    },
+    "name" : "RatingAsOfParameter",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/ratings/{processingDate}/{businessDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 428,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 331
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "ratingSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 426,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 344
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 354,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 351
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 354,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 351
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 354,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 350
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 356,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 346
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Issuer\":\"Acme\",\"Grade\":\"BBB\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 377,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 373
+            }
+          },
+          "id" : "shouldReadTheGradeAtBothDates",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 378,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 370
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 364,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 364
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        }, {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 365,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 365
+            },
+            "value" : "2025-07-01T14:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 380,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 359
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Issuer\":\"Acme\",\"Grade\":\"AA\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 399,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 395
+            }
+          },
+          "id" : "shouldReadTheRestatedEarlierGrade",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 400,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 392
+          }
+        } ],
+        "id" : "laterProcessingEarlierBusiness",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 386,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 386
+            },
+            "value" : "2025-07-03T00:00:00+0000"
+          }
+        }, {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 387,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 387
+            },
+            "value" : "2025-06-30T12:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 402,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 381
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Issuer\":\"Acme\",\"Grade\":\"A-\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 421,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 417
+            }
+          },
+          "id" : "shouldReadADifferentGrade",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 422,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 414
+          }
+        } ],
+        "id" : "datesSwapped",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 408,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 408
+            },
+            "value" : "2025-07-01T14:00:00+0000"
+          }
+        }, {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 52,
+              "endLine" : 409,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 409
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 424,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 403
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades with their product and account as of a date for each, written into the query.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Trade",
+                "sourceInformation" : {
+                  "endColumn" : 30,
+                  "endLine" : 441,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 13,
+                  "startLine" : 441
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 31,
+                "startLine" : 441
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 49,
+                    "endLine" : 441,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 48,
+                    "startLine" : 441
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 52,
+                  "endLine" : 441,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 51,
+                  "startLine" : 441
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 52,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 47,
+                "startLine" : 441
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 44,
+              "endLine" : 441,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 39,
+              "startLine" : 441
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 152,
+              "endLine" : 441,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 64,
+              "startLine" : 441
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 68,
+                    "endLine" : 441,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 67,
+                    "startLine" : 441
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 71,
+                  "endLine" : 441,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 70,
+                  "startLine" : 441
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 71,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 66,
+                "startLine" : 441
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "t",
+                    "sourceInformation" : {
+                      "endColumn" : 77,
+                      "endLine" : 441,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 76,
+                      "startLine" : 441
+                    }
+                  }, {
+                    "_type" : "strictDate",
+                    "sourceInformation" : {
+                      "endColumn" : 97,
+                      "endLine" : 441,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 87,
+                      "startLine" : 441
+                    },
+                    "value" : "2025-07-02"
+                  } ],
+                  "property" : "product",
+                  "sourceInformation" : {
+                    "endColumn" : 85,
+                    "endLine" : 441,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 79,
+                    "startLine" : 441
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 103,
+                  "endLine" : 441,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 100,
+                  "startLine" : 441
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 103,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 75,
+                "startLine" : 441
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "t",
+                    "sourceInformation" : {
+                      "endColumn" : 109,
+                      "endLine" : 441,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 108,
+                      "startLine" : 441
+                    }
+                  }, {
+                    "_type" : "dateTime",
+                    "sourceInformation" : {
+                      "endColumn" : 143,
+                      "endLine" : 441,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 119,
+                      "startLine" : 441
+                    },
+                    "value" : "2025-07-02T15:00:00+0000"
+                  } ],
+                  "property" : "account",
+                  "sourceInformation" : {
+                    "endColumn" : 117,
+                    "endLine" : 441,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 111,
+                    "startLine" : 441
+                  }
+                } ],
+                "property" : "status",
+                "sourceInformation" : {
+                  "endColumn" : 151,
+                  "endLine" : 441,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 146,
+                  "startLine" : 441
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 151,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 107,
+                "startLine" : 441
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 189,
+              "endLine" : 441,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 155,
+              "startLine" : 441
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 159,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 156,
+                "startLine" : 441
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 170,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 162,
+                "startLine" : 441
+              },
+              "value" : "Product"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 188,
+                "endLine" : 441,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 173,
+                "startLine" : 441
+              },
+              "value" : "Account Status"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 62,
+            "endLine" : 441,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 56,
+            "startLine" : 441
+          }
+        } ],
+        "parameters" : [ ],
+        "sourceInformation" : {
+          "endColumn" : 190,
+          "endLine" : 441,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 12,
+          "startLine" : 441
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 442,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 442
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 443,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 443
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 444,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 439
+      }
+    },
+    "name" : "TradeMilestonedPropertiesLiteral",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/trades/as-of",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 482,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 434
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 480,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 447
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 457,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 454
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 457,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 454
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 457,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 453
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 459,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 449
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Product\":\"Widget Mk2\",\"Account Status\":\"FROZEN\"},{\"Id\":2,\"Product\":\"Widget Mk2\",\"Account Status\":\"OPEN\"},{\"Id\":3,\"Product\":\"Gadget\",\"Account Status\":\"FROZEN\"},{\"Id\":4,\"Product\":\"Gadget\",\"Account Status\":\"OPEN\"},{\"Id\":5,\"Product\":\"Widget Mk2\",\"Account Status\":\"FROZEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 475,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 471
+            }
+          },
+          "id" : "shouldNavigateAtBothDates",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 476,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 468
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 478,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 462
+        }
+      } ]
+    } ]
+  }, {
+    "_type" : "service",
+    "autoActivateUpdates" : true,
+    "documentation" : "Trades with their product and account as of a date for each, given as parameters.",
+    "execution" : {
+      "_type" : "pureSingleExecution",
+      "func" : {
+        "_type" : "lambda",
+        "body" : [ {
+          "_type" : "func",
+          "function" : "project",
+          "parameters" : [ {
+            "_type" : "func",
+            "function" : "sortBy",
+            "parameters" : [ {
+              "_type" : "func",
+              "function" : "getAll",
+              "parameters" : [ {
+                "_type" : "packageableElementPtr",
+                "fullPath" : "demo::dates::Trade",
+                "sourceInformation" : {
+                  "endColumn" : 87,
+                  "endLine" : 491,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 70,
+                  "startLine" : 491
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 93,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 88,
+                "startLine" : 491
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 106,
+                    "endLine" : 491,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 105,
+                    "startLine" : 491
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 109,
+                  "endLine" : 491,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 108,
+                  "startLine" : 491
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 109,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 104,
+                "startLine" : 491
+              }
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 101,
+              "endLine" : 491,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 96,
+              "startLine" : 491
+            }
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 201,
+              "endLine" : 491,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 121,
+              "startLine" : 491
+            },
+            "values" : [ {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "t",
+                  "sourceInformation" : {
+                    "endColumn" : 125,
+                    "endLine" : 491,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 124,
+                    "startLine" : 491
+                  }
+                } ],
+                "property" : "id",
+                "sourceInformation" : {
+                  "endColumn" : 128,
+                  "endLine" : 491,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 127,
+                  "startLine" : 491
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 128,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 123,
+                "startLine" : 491
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "t",
+                    "sourceInformation" : {
+                      "endColumn" : 134,
+                      "endLine" : 491,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 133,
+                      "startLine" : 491
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "businessDate",
+                    "sourceInformation" : {
+                      "endColumn" : 156,
+                      "endLine" : 491,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 144,
+                      "startLine" : 491
+                    }
+                  } ],
+                  "property" : "product",
+                  "sourceInformation" : {
+                    "endColumn" : 142,
+                    "endLine" : 491,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 136,
+                    "startLine" : 491
+                  }
+                } ],
+                "property" : "name",
+                "sourceInformation" : {
+                  "endColumn" : 162,
+                  "endLine" : 491,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 159,
+                  "startLine" : 491
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 162,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 132,
+                "startLine" : 491
+              }
+            }, {
+              "_type" : "lambda",
+              "body" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "property",
+                  "parameters" : [ {
+                    "_type" : "var",
+                    "name" : "t",
+                    "sourceInformation" : {
+                      "endColumn" : 168,
+                      "endLine" : 491,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 167,
+                      "startLine" : 491
+                    }
+                  }, {
+                    "_type" : "var",
+                    "name" : "processingDate",
+                    "sourceInformation" : {
+                      "endColumn" : 192,
+                      "endLine" : 491,
+                      "sourceId" : "service/asOfServices.pure",
+                      "startColumn" : 178,
+                      "startLine" : 491
+                    }
+                  } ],
+                  "property" : "account",
+                  "sourceInformation" : {
+                    "endColumn" : 176,
+                    "endLine" : 491,
+                    "sourceId" : "service/asOfServices.pure",
+                    "startColumn" : 170,
+                    "startLine" : 491
+                  }
+                } ],
+                "property" : "status",
+                "sourceInformation" : {
+                  "endColumn" : 200,
+                  "endLine" : 491,
+                  "sourceId" : "service/asOfServices.pure",
+                  "startColumn" : 195,
+                  "startLine" : 491
+                }
+              } ],
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "t"
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 200,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 166,
+                "startLine" : 491
+              }
+            } ]
+          }, {
+            "_type" : "collection",
+            "multiplicity" : {
+              "lowerBound" : 3,
+              "upperBound" : 3
+            },
+            "sourceInformation" : {
+              "endColumn" : 238,
+              "endLine" : 491,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 204,
+              "startLine" : 491
+            },
+            "values" : [ {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 208,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 205,
+                "startLine" : 491
+              },
+              "value" : "Id"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 219,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 211,
+                "startLine" : 491
+              },
+              "value" : "Product"
+            }, {
+              "_type" : "string",
+              "sourceInformation" : {
+                "endColumn" : 237,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 222,
+                "startLine" : 491
+              },
+              "value" : "Account Status"
+            } ]
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 119,
+            "endLine" : 491,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 113,
+            "startLine" : 491
+          }
+        } ],
+        "parameters" : [ {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "StrictDate",
+              "sourceInformation" : {
+                "endColumn" : 36,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 27,
+                "startLine" : 491
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "businessDate",
+          "sourceInformation" : {
+            "endColumn" : 39,
+            "endLine" : 491,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 13,
+            "startLine" : 491
+          }
+        }, {
+          "_type" : "var",
+          "genericType" : {
+            "multiplicityArguments" : [ ],
+            "rawType" : {
+              "_type" : "packageableType",
+              "fullPath" : "DateTime",
+              "sourceInformation" : {
+                "endColumn" : 65,
+                "endLine" : 491,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 58,
+                "startLine" : 491
+              }
+            },
+            "typeArguments" : [ ],
+            "typeVariableValues" : [ ]
+          },
+          "multiplicity" : {
+            "lowerBound" : 1,
+            "upperBound" : 1
+          },
+          "name" : "processingDate",
+          "sourceInformation" : {
+            "endColumn" : 68,
+            "endLine" : 491,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 42,
+            "startLine" : 491
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 239,
+          "endLine" : 491,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 69,
+          "startLine" : 491
+        }
+      },
+      "mapping" : "demo::dates::TradingMapping",
+      "mappingSourceInformation" : {
+        "endColumn" : 40,
+        "endLine" : 492,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 492
+      },
+      "runtime" : {
+        "_type" : "runtimePointer",
+        "runtime" : "demo::dates::runtime::TradingRuntime",
+        "sourceInformation" : {
+          "endColumn" : 49,
+          "endLine" : 493,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 14,
+          "startLine" : 493
+        }
+      },
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 494,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 14,
+        "startLine" : 489
+      }
+    },
+    "name" : "TradeMilestonedPropertiesParameter",
+    "owners" : [ ],
+    "package" : "demo::dates::service",
+    "pattern" : "/api/dates/trades/as-of/{businessDate}/{processingDate}",
+    "postValidations" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 559,
+      "sourceId" : "service/asOfServices.pure",
+      "startColumn" : 1,
+      "startLine" : 484
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "testSuites" : [ {
+      "_type" : "serviceTestSuite",
+      "id" : "tradeSuite",
+      "sourceInformation" : {
+        "endColumn" : 5,
+        "endLine" : 557,
+        "sourceId" : "service/asOfServices.pure",
+        "startColumn" : 5,
+        "startLine" : 497
+      },
+      "testData" : {
+        "connectionsTestData" : [ {
+          "data" : {
+            "_type" : "reference",
+            "dataElement" : {
+              "path" : "demo::dates::data::TradingData",
+              "sourceInformation" : {
+                "endColumn" : 14,
+                "endLine" : 507,
+                "sourceId" : "service/asOfServices.pure",
+                "startColumn" : 13,
+                "startLine" : 504
+              },
+              "type" : "DATA"
+            },
+            "sourceInformation" : {
+              "endColumn" : 14,
+              "endLine" : 507,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 13,
+              "startLine" : 504
+            }
+          },
+          "id" : "h2",
+          "sourceInformation" : {
+            "endColumn" : 14,
+            "endLine" : 507,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 11,
+            "startLine" : 503
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 7,
+          "endLine" : 509,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 7,
+          "startLine" : 499
+        }
+      },
+      "tests" : [ {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Product\":\"Widget Mk2\",\"Account Status\":\"FROZEN\"},{\"Id\":2,\"Product\":\"Widget Mk2\",\"Account Status\":\"OPEN\"},{\"Id\":3,\"Product\":\"Gadget\",\"Account Status\":\"FROZEN\"},{\"Id\":4,\"Product\":\"Gadget\",\"Account Status\":\"OPEN\"},{\"Id\":5,\"Product\":\"Widget Mk2\",\"Account Status\":\"FROZEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 530,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 526
+            }
+          },
+          "id" : "shouldNavigateAtBothDates",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 531,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 523
+          }
+        } ],
+        "id" : "afternoonUtc",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 517,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 517
+            },
+            "value" : "2025-07-02"
+          }
+        }, {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 518,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 518
+            },
+            "value" : "2025-07-02T15:00:00+0000"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 533,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 512
+        }
+      }, {
+        "_type" : "serviceTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[{\"Id\":1,\"Product\":\"Widget\",\"Account Status\":\"OPEN\"},{\"Id\":2,\"Product\":\"Widget\",\"Account Status\":\"PENDING\"},{\"Id\":3,\"Product\":\"Gadget\",\"Account Status\":\"OPEN\"},{\"Id\":4,\"Product\":\"Gadget\",\"Account Status\":\"PENDING\"},{\"Id\":5,\"Product\":\"Widget\",\"Account Status\":\"OPEN\"}]",
+            "sourceInformation" : {
+              "endColumn" : 20,
+              "endLine" : 552,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 19,
+              "startLine" : 548
+            }
+          },
+          "id" : "shouldNavigateToEarlierVersions",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 553,
+            "sourceId" : "service/asOfServices.pure",
+            "startColumn" : 15,
+            "startLine" : 545
+          }
+        } ],
+        "id" : "earlierDates",
+        "keys" : [ ],
+        "parameters" : [ {
+          "name" : "businessDate",
+          "value" : {
+            "_type" : "strictDate",
+            "sourceInformation" : {
+              "endColumn" : 38,
+              "endLine" : 539,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 28,
+              "startLine" : 539
+            },
+            "value" : "2025-07-01"
+          }
+        }, {
+          "name" : "processingDate",
+          "value" : {
+            "_type" : "dateTime",
+            "sourceInformation" : {
+              "endColumn" : 54,
+              "endLine" : 540,
+              "sourceId" : "service/asOfServices.pure",
+              "startColumn" : 30,
+              "startLine" : 540
+            },
+            "value" : "2025-07-02T06:00:00-0400"
+          }
+        } ],
+        "serializationFormat" : "PURE_TDSOBJECT",
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 555,
+          "sourceId" : "service/asOfServices.pure",
+          "startColumn" : 9,
+          "startLine" : 534
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ ]
+}

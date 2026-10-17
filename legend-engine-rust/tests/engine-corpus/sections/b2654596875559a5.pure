@@ -1,0 +1,17 @@
+
+SchemaSet test::SchemaSet
+{
+  format: FlatData;
+  schemas: [ 
+    { id: fd1; content: 'section Z: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \'|\';\n\n  Record\n  {\n    omega : STRING;\n  }\n}'; },
+    { id: fd2; content: 'section A: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n\n  Record\n  {\n    alpha   : STRING;\n    beta    : BOOLEAN(optional);\n    gamma   : INTEGER;\n    delta   : INTEGER;\n    epsilon : INTEGER;\n    zeta    : DECIMAL;\n    eta     : DECIMAL;\n    theta   : DATE;\n    iota    : DATETIME;\n  }\n}'; }
+ ];
+}
+
+Binding test::Binding
+{
+  schemaSet: test::SchemaSet;
+  schemaId: fd2;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [ test::model::A ];
+}

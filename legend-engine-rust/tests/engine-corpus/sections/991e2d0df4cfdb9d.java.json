@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Graph fetch tree must not be empty",
+    "sourceInformation" : {
+      "endColumn" : 59,
+      "endLine" : 14,
+      "sourceId" : "testing::mapping",
+      "startColumn" : 56,
+      "startLine" : 14
+    }
+  }
+}

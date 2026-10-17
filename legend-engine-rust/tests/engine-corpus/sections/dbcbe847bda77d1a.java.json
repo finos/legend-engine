@@ -1,0 +1,476 @@
+{
+  "elements" : [ {
+    "_type" : "class",
+    "constraints" : [ ],
+    "name" : "Employee",
+    "originalMilestonedProperties" : [ ],
+    "package" : "test",
+    "properties" : [ {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Integer",
+          "sourceInformation" : {
+            "endColumn" : 21,
+            "endLine" : 4,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 4
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "id",
+      "sourceInformation" : {
+        "endColumn" : 25,
+        "endLine" : 4,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 4
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Date",
+          "sourceInformation" : {
+            "endColumn" : 18,
+            "endLine" : 5,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 5
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "hireDate",
+      "sourceInformation" : {
+        "endColumn" : 22,
+        "endLine" : 5,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 5
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 6,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 6
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "hireType",
+      "sourceInformation" : {
+        "endColumn" : 24,
+        "endLine" : 6,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 6
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "Float",
+          "sourceInformation" : {
+            "endColumn" : 19,
+            "endLine" : 7,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 7
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 1,
+        "upperBound" : 1
+      },
+      "name" : "fteFactor",
+      "sourceInformation" : {
+        "endColumn" : 23,
+        "endLine" : 7,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 7
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    }, {
+      "genericType" : {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "packageableType",
+          "fullPath" : "String",
+          "sourceInformation" : {
+            "endColumn" : 20,
+            "endLine" : 8,
+            "sourceId" : "",
+            "startColumn" : 15,
+            "startLine" : 8
+          }
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      },
+      "multiplicity" : {
+        "lowerBound" : 0,
+        "upperBound" : 1
+      },
+      "name" : "firmName",
+      "sourceInformation" : {
+        "endColumn" : 27,
+        "endLine" : 8,
+        "sourceId" : "",
+        "startColumn" : 4,
+        "startLine" : 8
+      },
+      "stereotypes" : [ ],
+      "taggedValues" : [ ]
+    } ],
+    "qualifiedProperties" : [ ],
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 2
+    },
+    "stereotypes" : [ ],
+    "superTypes" : [ ],
+    "taggedValues" : [ ]
+  }, {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "groupBy",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "getAll",
+        "parameters" : [ {
+          "_type" : "packageableElementPtr",
+          "fullPath" : "test::Employee",
+          "sourceInformation" : {
+            "endColumn" : 16,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 11
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 17,
+          "startLine" : 11
+        }
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 47,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 33,
+          "startLine" : 11
+        },
+        "values" : [ {
+          "_type" : "lambda",
+          "body" : [ {
+            "_type" : "property",
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "p",
+              "sourceInformation" : {
+                "endColumn" : 37,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 36,
+                "startLine" : 11
+              }
+            } ],
+            "property" : "hireDate",
+            "sourceInformation" : {
+              "endColumn" : 46,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 39,
+              "startLine" : 11
+            }
+          } ],
+          "parameters" : [ {
+            "_type" : "var",
+            "name" : "p"
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 46,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 35,
+            "startLine" : 11
+          }
+        } ]
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 1,
+          "upperBound" : 1
+        },
+        "sourceInformation" : {
+          "endColumn" : 125,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 49,
+          "startLine" : 11
+        },
+        "values" : [ {
+          "_type" : "func",
+          "function" : "agg",
+          "parameters" : [ {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "wtd",
+              "parameters" : [ {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 64,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 63,
+                    "startLine" : 11
+                  }
+                } ],
+                "property" : "hireDate",
+                "sourceInformation" : {
+                  "endColumn" : 73,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 66,
+                  "startLine" : 11
+                }
+              }, {
+                "_type" : "string",
+                "sourceInformation" : {
+                  "endColumn" : 79,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 76,
+                  "startLine" : 11
+                },
+                "value" : "NY"
+              }, {
+                "_type" : "strictDate",
+                "sourceInformation" : {
+                  "endColumn" : 92,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 82,
+                  "startLine" : 11
+                },
+                "value" : "2022-11-16"
+              }, {
+                "_type" : "property",
+                "parameters" : [ {
+                  "_type" : "var",
+                  "name" : "p",
+                  "sourceInformation" : {
+                    "endColumn" : 96,
+                    "endLine" : 11,
+                    "sourceId" : "",
+                    "startColumn" : 95,
+                    "startLine" : 11
+                  }
+                } ],
+                "property" : "fteFactor",
+                "sourceInformation" : {
+                  "endColumn" : 106,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 98,
+                  "startLine" : 11
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 61,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 59,
+                "startLine" : 11
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "p"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 107,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 57,
+              "startLine" : 11
+            }
+          }, {
+            "_type" : "lambda",
+            "body" : [ {
+              "_type" : "func",
+              "function" : "sum",
+              "parameters" : [ {
+                "_type" : "var",
+                "name" : "y",
+                "sourceInformation" : {
+                  "endColumn" : 115,
+                  "endLine" : 11,
+                  "sourceId" : "",
+                  "startColumn" : 114,
+                  "startLine" : 11
+                }
+              } ],
+              "sourceInformation" : {
+                "endColumn" : 120,
+                "endLine" : 11,
+                "sourceId" : "",
+                "startColumn" : 118,
+                "startLine" : 11
+              }
+            } ],
+            "parameters" : [ {
+              "_type" : "var",
+              "name" : "y"
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 122,
+              "endLine" : 11,
+              "sourceId" : "",
+              "startColumn" : 112,
+              "startLine" : 11
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 53,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 51,
+            "startLine" : 11
+          }
+        } ]
+      }, {
+        "_type" : "collection",
+        "multiplicity" : {
+          "lowerBound" : 2,
+          "upperBound" : 2
+        },
+        "sourceInformation" : {
+          "endColumn" : 158,
+          "endLine" : 11,
+          "sourceId" : "",
+          "startColumn" : 127,
+          "startLine" : 11
+        },
+        "values" : [ {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 141,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 128,
+            "startLine" : 11
+          },
+          "value" : "includedDate"
+        }, {
+          "_type" : "string",
+          "sourceInformation" : {
+            "endColumn" : 157,
+            "endLine" : 11,
+            "sourceId" : "",
+            "startColumn" : 145,
+            "startLine" : 11
+          },
+          "value" : "calendarAgg"
+        } ]
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 31,
+        "endLine" : 11,
+        "sourceId" : "",
+        "startColumn" : 25,
+        "startLine" : 11
+      }
+    } ],
+    "name" : "testYtd__Any_MANY_",
+    "package" : "example",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "Any",
+        "sourceInformation" : {
+          "endColumn" : 32,
+          "endLine" : 10,
+          "sourceId" : "",
+          "startColumn" : 30,
+          "startLine" : 10
+        }
+      },
+      "typeArguments" : [ ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 0
+    },
+    "sourceInformation" : {
+      "endColumn" : 160,
+      "endLine" : 11,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 10
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ ]
+  } ],
+  "imports" : [ ]
+}

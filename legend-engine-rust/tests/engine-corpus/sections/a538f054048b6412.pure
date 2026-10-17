@@ -1,0 +1,18 @@
+
+Mapping test::mapping
+(
+  *test::model: ServiceStore
+  {
+    ~service [test::ServiceStore] TestServiceGroup.TestService
+    (
+      ~request
+      (
+        parameters
+        (
+          param = $this.prop,
+          param1 = $this.prop1
+        )
+      )
+    )
+  }
+)

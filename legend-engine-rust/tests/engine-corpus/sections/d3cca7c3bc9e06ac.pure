@@ -1,0 +1,15 @@
+
+Service meta::pure::myServiceSingle
+{
+  pattern: 'url/myUrl/';
+  documentation: 'this is just for context';
+  execution: Single
+  {
+    runtime: meta::myRuntime;
+    mapping: meta::myMapping;
+    query: src: meta::transform::tests::Address[1]|$src.a;
+  }
+  test: Single
+  {
+  }
+}

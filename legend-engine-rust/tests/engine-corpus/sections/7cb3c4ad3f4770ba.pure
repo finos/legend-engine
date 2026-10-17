@@ -1,0 +1,45 @@
+
+Runtime demo::runtime::ReadingNoZoneRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingNoZoneConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ReadingUtcRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingUtcConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ReadingNewYorkRuntime
+{
+  mappings:
+  [
+    demo::ReadingMapping
+  ];
+  connections:
+  [
+    demo::store::ReadingDB:
+    [
+      h2: demo::connection::ReadingNewYorkConnection
+    ]
+  ];
+}

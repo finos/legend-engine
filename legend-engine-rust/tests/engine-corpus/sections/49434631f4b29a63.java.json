@@ -1,0 +1,61 @@
+{
+  "elements" : [ {
+    "_type" : "dataElement",
+    "data" : {
+      "_type" : "relationAccessor",
+      "relationElements" : [ {
+        "columns" : [ "ID", "ACCOUNT", "BLOCKDATA" ],
+        "paths" : [ "TRADING", "BLOCKS" ],
+        "rows" : [ {
+          "values" : [ "b1", "ACC1", "\"{\"\"relatedEntities\"\":[{\"\"tag\"\":\"\"order\"\",\"\"tagId\"\":\"\"o1\"\"},{\"\"tag\"\":\"\"order\"\",\"\"tagId\"\":\"\"o2\"\"},{\"\"tag\"\":\"\"trade\"\",\"\"tagId\"\":\"\"t9\"\"}]}\"" ]
+        }, {
+          "values" : [ "b2", "ACC2", "\"{\"\"relatedEntities\"\":[{\"\"tag\"\":\"\"order\"\",\"\"tagId\"\":\"\"o3\"\"}]}\"" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 77,
+          "endLine" : 26,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 23
+        }
+      }, {
+        "columns" : [ "ID", "ORDER_NAME" ],
+        "paths" : [ "TRADING", "ORDERS" ],
+        "rows" : [ {
+          "values" : [ "o1", "Alpha" ]
+        }, {
+          "values" : [ "o2", "Beta" ]
+        }, {
+          "values" : [ "o3", "Gamma" ]
+        }, {
+          "values" : [ "t9", "ShouldNotAppear" ]
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 25,
+          "endLine" : 33,
+          "sourceId" : "data/testData.pure",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 7,
+        "endLine" : 34,
+        "sourceId" : "data/testData.pure",
+        "startColumn" : 5,
+        "startLine" : 23
+      }
+    },
+    "name" : "TradingData",
+    "package" : "demo::sse::data",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 35,
+      "sourceId" : "data/testData.pure",
+      "startColumn" : 1,
+      "startLine" : 19
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ]
+  } ]
+}

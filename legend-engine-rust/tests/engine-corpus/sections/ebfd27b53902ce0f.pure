@@ -1,0 +1,91 @@
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::TestDatabase;
+    }
+    ingestMode: UnitemporalSnapshot
+    {
+      transactionMilestoning: BatchId
+      {
+        batchIdInName: 'BATCH_IN';
+        batchIdOutName: 'BATCH_OUT';
+      }
+    }
+    targetShape: Flat
+    {
+      targetName: 'personTable';
+      modelClass: test::ServiceResult;
+    }
+  }
+  tests:
+  [
+   test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY", "BATCH_IN":1, "BATCH_OUT":999999999},{"ID":2, "NAME":"BRAD", "BATCH_IN":1, "BATCH_OUT":999999999},{"ID":3, "NAME":"CATHY", "BATCH_IN":1, "BATCH_OUT":999999999}]';
+                 }#;
+             }#
+         ]
+       },
+       testBatch2:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY"},{"ID":3, "NAME":"CATHERINE"},{"ID":4, "NAME":"TOM"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected :
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY", "BATCH_IN":1, "BATCH_OUT":999999999},{"ID":2, "NAME":"BRAD", "BATCH_IN":1, "BATCH_OUT":1}, {"ID":3, "NAME":"CATHY", "BATCH_IN":1, "BATCH_OUT":1}, {"ID":3, "NAME":"CATHERINE", "BATCH_IN":2, "BATCH_OUT":999999999}, {"ID":4, "NAME":"TOM", "BATCH_IN":2, "BATCH_OUT":999999999}]';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]
+}

@@ -1,0 +1,41 @@
+
+Mapping test::TestMapping
+(
+  *test::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::TestDb]TESTDB.PERSON_TABLE.ID
+    )
+    ~mainTable [test::TestDb]TESTDB.PERSON_TABLE
+    firstName: [test::TestDb]TESTDB.PERSON_TABLE.FIRSTNAME,
+    lastName: [test::TestDb]TESTDB.PERSON_TABLE.LASTNAME
+  }
+
+  MappingTests
+  [
+    test_1
+    (
+      query: |test::model::Person.all()->project(
+  [
+    x|$x.firstName,
+    x|$x.lastName
+  ],
+  [
+    'First Name',
+    'Last Name'
+  ]
+);
+      data:
+      [
+        <Relational, SQL, test::TestDb,
+          'create schema if not exists TESTDB;\n'+
+          'create table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\n'+
+          'delete from TESTDB.PERSON_TABLE;\n'+
+          'insert into TESTDB.PERSON_TABLE values(1,\'John\',\'Doe\');\n'
+        >
+      ];
+      assert: '[{"values":["John","Doe"]}]';
+    )
+  ]
+)

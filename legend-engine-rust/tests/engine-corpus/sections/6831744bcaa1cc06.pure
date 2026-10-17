@@ -1,0 +1,12 @@
+
+Class <<temporal.businesstemporal>> my::Class1
+{
+  prop1: Integer[1];
+  temporalProp: my::Class2[1];
+}
+ 
+Class <<temporal.businesstemporal>> my::Class2
+{
+  prop2: Integer[1];
+}
+ 

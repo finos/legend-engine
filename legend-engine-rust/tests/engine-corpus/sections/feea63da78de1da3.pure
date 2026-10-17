@@ -1,0 +1,10 @@
+
+Database demo::ssb::store::PersonDB
+(
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100),
+    FIRM_DETAILS SEMISTRUCTURED
+  )
+)

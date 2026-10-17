@@ -1,0 +1,12 @@
+{
+  "error" : {
+    "message" : "Field 'target' is required",
+    "sourceInformation" : {
+      "endColumn" : 3,
+      "endLine" : 9,
+      "sourceId" : "",
+      "startColumn" : 3,
+      "startLine" : 4
+    }
+  }
+}

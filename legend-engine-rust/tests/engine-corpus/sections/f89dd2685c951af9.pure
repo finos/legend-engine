@@ -1,0 +1,9 @@
+
+import meta::pure::profiles::*;
+import meta::pure::tests::model::simple::*;
+Enum meta::pure::tests::model::simple::GeographicEntityType
+{
+    {doc.doc = 'A city, town, village, or other urban area.'} CITY,
+    <<doc.deprecated>> COUNTRY,
+    {doc.doc = 'Any geographic entity other than a city or country.'} REGION
+}

@@ -1,0 +1,95 @@
+{
+  "elements" : [ {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "humanResourceModel::M2M_Mapping3" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 55,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 53
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 56,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 51
+      }
+    },
+    "name" : "M2MModelChainConnection",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 56,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 51
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "ModelChainConnection",
+      "element" : "ModelStore",
+      "mappings" : [ "humanResourceModel::M2M_Mapping3" ],
+      "mappingsSourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 62,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 60
+      },
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 63,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 58
+      }
+    },
+    "name" : "M2MModelChainConnection2",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 63,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 58
+    }
+  }, {
+    "_type" : "connection",
+    "connectionValue" : {
+      "_type" : "JsonModelConnection",
+      "class" : "humanResourceModel::students",
+      "classSourceInformation" : {
+        "endColumn" : 37,
+        "endLine" : 67,
+        "sourceId" : "",
+        "startColumn" : 10,
+        "startLine" : 67
+      },
+      "element" : "ModelStore",
+      "sourceInformation" : {
+        "endColumn" : 1,
+        "endLine" : 69,
+        "sourceId" : "",
+        "startColumn" : 1,
+        "startLine" : 65
+      },
+      "url" : "data:application/json,{\"name\": \"John Johnson\"}"
+    },
+    "name" : "JsonModelConnection",
+    "package" : "humanResourceModel",
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 69,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 65
+    }
+  } ],
+  "imports" : [ ]
+}

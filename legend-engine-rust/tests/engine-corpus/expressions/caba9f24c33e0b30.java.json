@@ -1,0 +1,35 @@
+{
+"value" : {
+  "_type" : "lambda",
+  "body" : [ {
+    "_type" : "func",
+    "function" : "abs",
+    "parameters" : [ {
+      "_type" : "float",
+      "sourceInformation" : {
+        "endColumn" : 4,
+        "endLine" : 1,
+        "sourceId" : "",
+        "startColumn" : 2,
+        "startLine" : 1
+      },
+      "value" : 4.0
+    } ],
+    "sourceInformation" : {
+      "endColumn" : 9,
+      "endLine" : 1,
+      "sourceId" : "",
+      "startColumn" : 7,
+      "startLine" : 1
+    }
+  } ],
+  "parameters" : [ ],
+  "sourceInformation" : {
+    "endColumn" : 11,
+    "endLine" : 1,
+    "sourceId" : "",
+    "startColumn" : 1,
+    "startLine" : 1
+  }
+}
+}

@@ -1,0 +1,6 @@
+
+Class test::A
+{
+   names : String[*];
+   prop() {%20:20:20} : Date[1];
+}

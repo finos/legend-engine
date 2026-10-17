@@ -1,0 +1,5 @@
+
+function my::functionParent(val: Integer[1]):String[1]
+{
+    between($val, %2020-01-01, %2021-01-01);
+}

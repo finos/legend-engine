@@ -1,0 +1,9 @@
+
+Mapping mapping::simpleModelMapping
+(
+  *model::TargetClass[my_mapping_id]: Pure
+  {
+    ~src model::SourceClass
+    name: $src.name
+  }
+)

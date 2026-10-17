@@ -1,0 +1,298 @@
+{
+  "elements" : [ {
+    "_type" : "function",
+    "body" : [ {
+      "_type" : "func",
+      "function" : "from",
+      "parameters" : [ {
+        "_type" : "func",
+        "function" : "select",
+        "parameters" : [ {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 32,
+            "endLine" : 16,
+            "sourceId" : "",
+            "startColumn" : 3,
+            "startLine" : 16
+          },
+          "type" : ">",
+          "value" : {
+            "path" : [ "store::TestDB", "PersonTable" ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 16,
+              "sourceId" : "",
+              "startColumn" : 3,
+              "startLine" : 16
+            }
+          }
+        }, {
+          "_type" : "classInstance",
+          "sourceInformation" : {
+            "endColumn" : 6,
+            "endLine" : 20,
+            "sourceId" : "",
+            "startColumn" : 6,
+            "startLine" : 17
+          },
+          "type" : "colSpecArray",
+          "value" : {
+            "colSpecs" : [ {
+              "name" : "firstName",
+              "sourceInformation" : {
+                "endColumn" : 16,
+                "endLine" : 18,
+                "sourceId" : "",
+                "startColumn" : 8,
+                "startLine" : 18
+              }
+            }, {
+              "name" : "lastName",
+              "sourceInformation" : {
+                "endColumn" : 15,
+                "endLine" : 19,
+                "sourceId" : "",
+                "startColumn" : 8,
+                "startLine" : 19
+              }
+            } ]
+          }
+        } ],
+        "sourceInformation" : {
+          "endColumn" : 40,
+          "endLine" : 16,
+          "sourceId" : "",
+          "startColumn" : 35,
+          "startLine" : 16
+        }
+      }, {
+        "_type" : "packageableElementPtr",
+        "fullPath" : "execution::Runtime",
+        "sourceInformation" : {
+          "endColumn" : 22,
+          "endLine" : 22,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 22
+        }
+      } ],
+      "sourceInformation" : {
+        "endColumn" : 9,
+        "endLine" : 21,
+        "sourceId" : "",
+        "startColumn" : 6,
+        "startLine" : 21
+      }
+    } ],
+    "name" : "RelationQuery__Relation_1_",
+    "package" : "model",
+    "parameters" : [ ],
+    "postConstraints" : [ ],
+    "preConstraints" : [ ],
+    "returnGenericType" : {
+      "multiplicityArguments" : [ ],
+      "rawType" : {
+        "_type" : "packageableType",
+        "fullPath" : "meta::pure::metamodel::relation::Relation",
+        "sourceInformation" : {
+          "endColumn" : 123,
+          "endLine" : 14,
+          "sourceId" : "",
+          "startColumn" : 34,
+          "startLine" : 14
+        }
+      },
+      "typeArguments" : [ {
+        "multiplicityArguments" : [ ],
+        "rawType" : {
+          "_type" : "relationType",
+          "columns" : [ {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Varchar",
+                "sourceInformation" : {
+                  "endColumn" : 98,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 87,
+                  "startLine" : 14
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 97,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 95,
+                  "startLine" : 14
+                },
+                "value" : 200
+              } ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "firstName",
+            "sourceInformation" : {
+              "endColumn" : 98,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 77,
+              "startLine" : 14
+            }
+          }, {
+            "genericType" : {
+              "multiplicityArguments" : [ ],
+              "rawType" : {
+                "_type" : "packageableType",
+                "fullPath" : "Varchar",
+                "sourceInformation" : {
+                  "endColumn" : 121,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 110,
+                  "startLine" : 14
+                }
+              },
+              "typeArguments" : [ ],
+              "typeVariableValues" : [ {
+                "_type" : "integer",
+                "sourceInformation" : {
+                  "endColumn" : 120,
+                  "endLine" : 14,
+                  "sourceId" : "",
+                  "startColumn" : 118,
+                  "startLine" : 14
+                },
+                "value" : 200
+              } ]
+            },
+            "multiplicity" : {
+              "lowerBound" : 0,
+              "upperBound" : 1
+            },
+            "name" : "lastName",
+            "sourceInformation" : {
+              "endColumn" : 121,
+              "endLine" : 14,
+              "sourceId" : "",
+              "startColumn" : 101,
+              "startLine" : 14
+            }
+          } ]
+        },
+        "typeArguments" : [ ],
+        "typeVariableValues" : [ ]
+      } ],
+      "typeVariableValues" : [ ]
+    },
+    "returnMultiplicity" : {
+      "lowerBound" : 1,
+      "upperBound" : 1
+    },
+    "sourceInformation" : {
+      "endColumn" : 1,
+      "endLine" : 37,
+      "sourceId" : "",
+      "startColumn" : 1,
+      "startLine" : 14
+    },
+    "stereotypes" : [ ],
+    "taggedValues" : [ ],
+    "tests" : [ {
+      "_type" : "functionTestSuite",
+      "id" : "testSuite_1",
+      "sourceInformation" : {
+        "endColumn" : 3,
+        "endLine" : 36,
+        "sourceId" : "",
+        "startColumn" : 3,
+        "startLine" : 26
+      },
+      "testData" : [ {
+        "data" : {
+          "_type" : "relationAccessor",
+          "relationElements" : [ {
+            "columns" : [ "id", "firstName", "lastName" ],
+            "paths" : [ "default", "PersonTable" ],
+            "rows" : [ {
+              "values" : [ "1", "I'm John", "\"Doe, Jr\"" ]
+            } ],
+            "sourceInformation" : {
+              "endColumn" : 32,
+              "endLine" : 33,
+              "sourceId" : "",
+              "startColumn" : 9,
+              "startLine" : 31
+            }
+          } ],
+          "sourceInformation" : {
+            "endColumn" : 11,
+            "endLine" : 34,
+            "sourceId" : "",
+            "startColumn" : 9,
+            "startLine" : 31
+          }
+        },
+        "packageableElementPointer" : {
+          "path" : "store::TestDB",
+          "sourceInformation" : {
+            "endColumn" : 17,
+            "endLine" : 28,
+            "sourceId" : "",
+            "startColumn" : 5,
+            "startLine" : 28
+          }
+        },
+        "sourceInformation" : {
+          "endColumn" : 9,
+          "endLine" : 34,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 28
+        }
+      } ],
+      "tests" : [ {
+        "_type" : "functionTest",
+        "assertions" : [ {
+          "_type" : "equalToJson",
+          "expected" : {
+            "_type" : "externalFormat",
+            "contentType" : "application/json",
+            "data" : "[ {\n  \"firstName\" : \"I'm John\",\n  \"lastName\" : \"Doe, Jr\"\n} ]",
+            "sourceInformation" : {
+              "endColumn" : 105,
+              "endLine" : 35,
+              "sourceId" : "",
+              "startColumn" : 33,
+              "startLine" : 35
+            }
+          },
+          "id" : "default",
+          "sourceInformation" : {
+            "endColumn" : 105,
+            "endLine" : 35,
+            "sourceId" : "",
+            "startColumn" : 33,
+            "startLine" : 35
+          }
+        } ],
+        "id" : "test_1",
+        "sourceInformation" : {
+          "endColumn" : 106,
+          "endLine" : 35,
+          "sourceId" : "",
+          "startColumn" : 5,
+          "startLine" : 35
+        }
+      } ]
+    } ]
+  } ],
+  "imports" : [ "meta::pure::precisePrimitives" ]
+}

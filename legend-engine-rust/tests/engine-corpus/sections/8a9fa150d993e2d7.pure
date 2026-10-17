@@ -1,0 +1,21 @@
+
+Service test::Service
+{
+  pattern: 'url/myUrl/';
+  title: 'my Service';
+  owners: ['ownerName', 'ownerName2'];
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);
+  }
+  test: Single
+  {
+    data: 'moreThanData';
+    asserts:
+    [
+        { [], res: meta::pure::mapping::Result<test::class|*>[1]|$res.values->toOne()->size() == 1 }
+    ];
+  }
+}

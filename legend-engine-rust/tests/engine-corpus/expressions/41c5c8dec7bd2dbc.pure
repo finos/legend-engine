@@ -1,0 +1,19 @@
+|test::Address.all()->graphFetch(
+  #{
+    test::Address{
+      Id,
+      ->subType(@test::Street){
+        street
+      }
+    }
+  }#
+)->serialize(
+  #{
+    test::Address{
+      Id,
+      ->subType(@test::Street){
+        street
+      }
+    }
+  }#
+)

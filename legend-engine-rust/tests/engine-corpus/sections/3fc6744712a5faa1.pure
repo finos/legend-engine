@@ -1,0 +1,6 @@
+
+SchemaSet test::Example1
+{
+  format: FlatData;
+  schemas: [ { content: 'section sectionName: DelimitedWithoutHeadings\n{\n  Record \n  {\n    A {1}: STRING;\n  }\n  Record\n  {\n    A {1}: STRING;\n  }\n}'; } ];
+}
