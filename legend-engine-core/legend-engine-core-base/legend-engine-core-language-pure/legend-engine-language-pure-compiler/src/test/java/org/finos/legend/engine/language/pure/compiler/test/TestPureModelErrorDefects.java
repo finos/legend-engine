@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverity;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -119,6 +120,80 @@ public class TestPureModelErrorDefects
         Assert.assertNotEquals(defect, new Defect(DefectSeverityLevel.ERROR, new SourceInformation("src", 3, 5, 3, 13), "the error", "TestError"));
         Assert.assertNotEquals(defect, new Defect(DefectSeverityLevel.WARN, new SourceInformation("src", 3, 5, 3, 12), "the error", "TestError"));
         Assert.assertNotEquals(defect, new Defect(DefectSeverityLevel.ERROR, null, "the error", "TestError"));
+    }
+
+    @Test
+    public void testDefectSeverityDefaultsWithoutSystemProperty()
+    {
+        Assert.assertEquals(DefectSeverityLevel.ERROR, DefectSeverity.of("TestDefect", DefectSeverityLevel.ERROR));
+        Assert.assertEquals(DefectSeverityLevel.INFO, DefectSeverity.of("TestDefect", DefectSeverityLevel.INFO));
+        Assert.assertEquals(DefectSeverityLevel.WARN, DefectSeverity.of(null, DefectSeverityLevel.WARN));
+    }
+
+    @Test
+    public void testDefectSeverityFromSystemProperty()
+    {
+        System.setProperty("legend.engine.pureModel.defect.TestDefect", "WARN");
+        try
+        {
+            Assert.assertEquals(DefectSeverityLevel.WARN, DefectSeverity.of("TestDefect", DefectSeverityLevel.ERROR));
+            Assert.assertEquals(DefectSeverityLevel.ERROR, DefectSeverity.of("OtherTestDefect", DefectSeverityLevel.ERROR));
+            Assert.assertEquals(DefectSeverityLevel.WARN, new Defect(DefectSeverityLevel.ERROR, null, "the error", "TestDefect").defectSeverityLevel);
+            Assert.assertEquals(DefectSeverityLevel.ERROR, new Defect(DefectSeverityLevel.ERROR, null, "the error", "OtherTestDefect").defectSeverityLevel);
+        }
+        finally
+        {
+            System.clearProperty("legend.engine.pureModel.defect.TestDefect");
+        }
+    }
+
+    @Test
+    public void testInvalidDefectSeveritySystemProperty()
+    {
+        System.setProperty("legend.engine.pureModel.defect.TestDefect", "warning");
+        try
+        {
+            IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> DefectSeverity.of("TestDefect", DefectSeverityLevel.ERROR));
+            Assert.assertEquals("Invalid value 'warning' for system property 'legend.engine.pureModel.defect.TestDefect', expected one of [INFO, WARN, ERROR]", e.getMessage());
+        }
+        finally
+        {
+            System.clearProperty("legend.engine.pureModel.defect.TestDefect");
+        }
+    }
+
+    @Test
+    public void testImpossibleCastSeverityFromSystemProperty()
+    {
+        System.setProperty("legend.engine.pureModel.defect.PureImpossibleCast", "WARN");
+        try
+        {
+            PureModel pureModel = compile("function test::f(i: Integer[1]): String[1]\n{\n  $i->cast(@String)\n}\n");
+
+            Assert.assertEquals(DefectSeverityLevel.WARN, pureModel.getDefects().getOnly().defectSeverityLevel);
+            pureModel.checkNoErrorDefect();
+        }
+        finally
+        {
+            System.clearProperty("legend.engine.pureModel.defect.PureImpossibleCast");
+        }
+    }
+
+    @Test
+    public void testWarningSeverityFromSystemProperty()
+    {
+        System.setProperty("legend.engine.pureModel.defect.PureWarning", "ERROR");
+        try
+        {
+            PureModel pureModel = compile("Enum test::E\n{\n  A, A\n}\n");
+
+            EngineException e = Assert.assertThrows(EngineException.class, pureModel::checkNoErrorDefect);
+            Assert.assertEquals("Found duplicated value 'A' in enumeration 'test::E'", e.getMessage());
+        }
+        finally
+        {
+            System.clearProperty("legend.engine.pureModel.defect.PureWarning");
+        }
     }
 
     private static PureModel compile(String code)

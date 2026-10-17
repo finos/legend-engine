@@ -25,9 +25,13 @@ public class Defect
     public final String message;
     public final String defectTypeId;
 
+    /**
+     * @param defectSeverityLevel the severity unless the system property {@code legend.engine.pureModel.defect.<defectTypeId>}
+     *                            overrides it, see {@link DefectSeverity}
+     */
     public Defect(DefectSeverityLevel defectSeverityLevel, SourceInformation sourceInformation, String message, String defectTypeId)
     {
-        this.defectSeverityLevel = defectSeverityLevel;
+        this.defectSeverityLevel = DefectSeverity.of(defectTypeId, defectSeverityLevel);
         this.sourceInformation = sourceInformation;
         this.message = message;
         this.defectTypeId = defectTypeId;
