@@ -2382,14 +2382,14 @@ public class Handlers
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::fail__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 0)
+                            h("meta::pure::functions::asserts::fail__Nil_1_", "fail", false, ps -> res("meta::pure::metamodel::type::Nil", "one"), ps -> ps.size() == 0)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
-                            h("meta::pure::functions::asserts::fail_Function_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
+                            h("meta::pure::functions::asserts::fail_String_1__Nil_1_", "fail", false, ps -> res("meta::pure::metamodel::type::Nil", "one"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
+                            h("meta::pure::functions::asserts::fail_Function_1__Nil_1_", "fail", false, ps -> res("meta::pure::metamodel::type::Nil", "one"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Nil_1_", "fail", false, ps -> res("meta::pure::metamodel::type::Nil", "one"), ps -> ps.size() == 2)
                     )
                 ));
     }

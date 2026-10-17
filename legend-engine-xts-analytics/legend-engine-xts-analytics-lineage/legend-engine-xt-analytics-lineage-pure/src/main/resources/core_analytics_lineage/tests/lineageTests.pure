@@ -1070,7 +1070,7 @@ import meta::relational::tests::model::simple::*;
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testNonExecutingEnumWithCast():Boolean[1]
 {
     //Note this pattern does not execute but lineage should still work
-    let fn= {|Address.all()->meta::pure::tds::project([col(p|if($p.type->isEmpty(),|'Country'->cast(@meta::relational::tests::model::simple::GeographicEntityType),|$p.type), 'type')])
+    let fn= {|Address.all()->meta::pure::tds::project([col(p|if($p.type->isEmpty(),|'Country'->cast(@Any)->cast(@meta::relational::tests::model::simple::GeographicEntityType),|$p.type), 'type')])
 
               };
 
