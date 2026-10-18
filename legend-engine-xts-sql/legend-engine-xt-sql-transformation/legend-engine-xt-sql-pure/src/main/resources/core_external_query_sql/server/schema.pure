@@ -57,7 +57,7 @@ function meta::external::query::sql::server::schema::transformOne(p:PackageableE
     meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraSchemaTransformers->concatenate(
       [
           d:Database[1]| let dbPath = $d->elementToPath();
-                         let dbStr = $d->serialize();
+                         let dbStr = if($d->meta::legend::isInGraph(), |'', |$d->serialize());
 
                         let accessors = $d.schemas.tables->map(t | 
                           let path = getTablePath($t);

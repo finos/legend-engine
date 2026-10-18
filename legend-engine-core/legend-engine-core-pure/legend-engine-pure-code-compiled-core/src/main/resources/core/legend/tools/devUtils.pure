@@ -22,6 +22,12 @@ function meta::legend::compileLegendGrammar(grammar:String[1]): PackageableEleme
   $func->eval($grammar);
 }
 
+// Code compiled with meta::legend::compile is a layer on the calling graph: it can reference elements of that graph, and must not redefine them.
+function meta::legend::isInGraph(element:PackageableElement[1]): Boolean[1]
+{
+  $element->elementToPath()->lenientPathToElement()->filter(e | $e->is($element))->isNotEmpty();
+}
+
 function meta::legend::compileLegendFile(file:String[1]): PackageableElement[*]
 {
   $file->readFile()->toOne('Unable to read file: ' + $file)->meta::legend::compileLegendGrammar();

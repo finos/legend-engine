@@ -96,26 +96,26 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverage():Boolean[1]
 {
-  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Target\n'+
   '{\n'+
   '  tgtId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Shared\n'+
   '{\n'+
   '  sharedId: String[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '{\n'+
   '  srcId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
   '###Mapping\n'+
-  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::autoMapped::simpleAutoMappedMapping\n'+
   '(\n'+
-  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::autoMapped::Target:Pure\n'+
   '  {\n'+
-  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '    tgtId: $src.srcId,\n'+
   '    shared: $src.shared\n'+
   '  }\n'+
@@ -124,33 +124,33 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
   assert($result.mappedEntities->size() == 2); 
-  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target_meta::analytics::mapping::modelCoverage::test::autoMapped::Source_autoMapped_shared');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexSiblingPropertiesShareMappedEntity():Boolean[1]
 {
-  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Target\n'+
   '{\n'+
   '  tgtId: String[1];\n'+
-  '  sharedA: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
-  '  sharedB: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  sharedA: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
+  '  sharedB: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Shared\n'+
   '{\n'+
   '  sharedId: String[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '{\n'+
   '  srcId: String[1];\n'+
-  '  sharedA: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
-  '  sharedB: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  sharedA: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
+  '  sharedB: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
   '###Mapping\n'+
-  'Mapping meta::analytics::mapping::modelCoverage::test::siblingAutoMappedMapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::autoMapped::siblingAutoMappedMapping\n'+
   '(\n'+
-  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::autoMapped::Target:Pure\n'+
   '  {\n'+
-  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '    tgtId: $src.srcId,\n'+
   '    sharedA: $src.sharedA,\n'+
   '    sharedB: $src.sharedB\n'+
@@ -164,7 +164,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 
   assert($result.mappedEntities.path->removeDuplicates()->size() == $result.mappedEntities->size());
 
-  let targetEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Target')->toOne();
+  let targetEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target')->toOne();
   let sharedAProp = $targetEntity.properties->filter(p|$p.name == 'sharedA')->toOne()->cast(@EntityMappedProperty);
   let sharedBProp = $targetEntity.properties->filter(p|$p.name == 'sharedB')->toOne()->cast(@EntityMappedProperty);
   assert($sharedAProp.entityPath == $sharedBProp.entityPath);
@@ -175,26 +175,26 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverageWithMappedEntityInfo():Boolean[1]
 {
-  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Target\n'+
   '{\n'+
   '  tgtId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Shared\n'+
   '{\n'+
   '  sharedId: String[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '{\n'+
   '  srcId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
   '###Mapping\n'+
-  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::autoMapped::simpleAutoMappedMapping\n'+
   '(\n'+
-  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::autoMapped::Target:Pure\n'+
   '  {\n'+
-  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '    tgtId: $src.srcId,\n'+
   '    shared: $src.shared\n'+
   '  }\n'+
@@ -203,38 +203,38 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo($autoMappedMapping);
   assert($result.mappedEntities->size() == 2); 
-  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target_meta::analytics::mapping::modelCoverage::test::autoMapped::Source_autoMapped_shared');
   assert($result.mappedEntities->filter(m |$m.info->isNotEmpty())->size() == 2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testCyclicalAutoMappedComplexPropertiesMappingCoverage():Boolean[1]
 {
-  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Target\n'+
   '{\n'+
   '  tgtId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Shared\n'+
   '{\n'+
   '  sharedId: String[1];\n'+
-  '  sharedToAddress: meta::analytics::mapping::modelCoverage::test::Address[1];\n' + 
+  '  sharedToAddress: meta::analytics::mapping::modelCoverage::test::autoMapped::Address[1];\n' + 
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Address\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Address\n'+
   '{\n'+
   '  Id: String[1];\n'+
-  '  addressToShared:meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  addressToShared:meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
-  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '{\n'+
   '  srcId: String[1];\n'+
-  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::autoMapped::Shared[1];\n'+
   '}\n'+
   '###Mapping\n'+
-  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::autoMapped::simpleAutoMappedMapping\n'+
   '(\n'+
-  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::autoMapped::Target:Pure\n'+
   '  {\n'+
-  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::autoMapped::Source\n'+
   '    tgtId: $src.srcId,\n'+
   '    shared: $src.shared\n'+
   '  }\n'+
@@ -243,9 +243,9 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
   assert($result.mappedEntities->size() == 3); 
-  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target');
-  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
-  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared_sharedToAddress');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target_meta::analytics::mapping::modelCoverage::test::autoMapped::Source_autoMapped_shared');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::autoMapped::Target_meta::analytics::mapping::modelCoverage::test::autoMapped::Source_autoMapped_shared_sharedToAddress');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedSemiStructuredMappingCoverage():Boolean[1]

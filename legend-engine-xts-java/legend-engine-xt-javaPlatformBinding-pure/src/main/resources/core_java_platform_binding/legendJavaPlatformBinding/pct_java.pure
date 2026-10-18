@@ -22,7 +22,7 @@ function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::e
 {
     let debug = if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug());
 
-    let elements = extractDependentElements($rawF)->distinct();
+    let elements = extractDependentElements($rawF)->distinct()->filter(e|!$e->meta::legend::isInGraph());
 
     // $elements->map(x | $x->elementToPath())->joinStrings(', ')->println();
 
