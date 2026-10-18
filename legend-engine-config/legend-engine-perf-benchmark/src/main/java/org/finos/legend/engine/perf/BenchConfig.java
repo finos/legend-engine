@@ -87,6 +87,10 @@ public class BenchConfig
 
     public String workloadId()
     {
+        if (SqlBench.QUERY.equals(this.query))
+        {
+            return this.query + "@scale" + this.scale;
+        }
         StringBuilder b = new StringBuilder(this.query);
         b.append("@scale").append(this.scale);
         if (this.unionSets > 0)

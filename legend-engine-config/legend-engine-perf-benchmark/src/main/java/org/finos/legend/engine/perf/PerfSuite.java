@@ -56,7 +56,7 @@ public class PerfSuite
         int iterations = Integer.parseInt(options.getOrDefault("iters", "5"));
         int warmup = Integer.parseInt(options.getOrDefault("warmup", "2"));
         String out = options.get("out");
-        String baselinePath = options.getOrDefault("baseline", DEFAULT_BASELINE);
+        String baselinePath = options.getOrDefault("baseline", defaultBaseline(suiteName));
         boolean rebase = options.containsKey("rebase");
         double margin = Double.parseDouble(options.getOrDefault("margin", "0.5"));
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
@@ -66,7 +66,7 @@ public class PerfSuite
         String record = options.get("record");
         if (record != null)
         {
-            return record(new File(record), new File(baselinePath), baselinePath);
+            return record(new File(record), options.get("baseline"));
         }
 
         List<BenchConfig> workloads = workloads(suiteName, iterations, warmup);
@@ -83,7 +83,7 @@ public class PerfSuite
         for (BenchConfig config : workloads)
         {
             System.out.println("  running " + config.workloadId());
-            Map<String, Object> result = new PipelineBench(config).quiet().measure();
+            Map<String, Object> result = SqlBench.QUERY.equals(config.query) ? new SqlBench(config).measure() : new PipelineBench(config).quiet().measure();
             workloadResults.add(result);
         }
         results.put("workloads", workloadResults);
@@ -138,14 +138,22 @@ public class PerfSuite
      * the baseline without re-running the suite here. A hosted runner cannot commit its own
      * baseline back, and hand-editing the file drifts from what the writer produces.
      */
-    private static int record(File results, File baselineFile, String baselinePath) throws Exception
+    private static int record(File results, String baselineOption) throws Exception
     {
         Map<String, Object> measured = MAPPER.readValue(results, Map.class);
+        String baselinePath = (baselineOption == null) ? defaultBaseline(String.valueOf(measured.get("suite"))) : baselineOption;
+        File baselineFile = new File(baselinePath);
         Map<String, Object> updated = recordInBaseline(baselineFile.exists() ? readBaseline(baselineFile) : null, measured);
         MAPPER.writerWithDefaultPrettyPrinter().writeValue(baselineFile, updated);
         System.out.println("baseline recorded for " + Environment.fingerprint(PipelineBench.asMap(measured.get("environment"))));
         System.out.println("environments now in " + baselinePath + ": " + environments(updated).keySet());
         return 0;
+    }
+
+    // A baseline file holds a single suite.
+    private static String defaultBaseline(String suiteName)
+    {
+        return (suiteName.equals("default") || suiteName.equals("canary")) ? DEFAULT_BASELINE : "perf-baseline-" + suiteName + ".json";
     }
 
     /**
@@ -216,6 +224,11 @@ public class PerfSuite
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
         }
+        else if (suiteName.equals(SqlBench.QUERY))
+        {
+            configs.add(workload(SqlBench.QUERY, 100));
+            configs.add(workload(SqlBench.QUERY, 1000));
+        }
         else
         {
             throw new IllegalArgumentException("Unknown suite: " + suiteName);
@@ -269,6 +282,10 @@ public class PerfSuite
                 "per-column lambda compilation in Relation mappings"));
         canaries.add(ratio(workloads, "javaBindGraphDepth", "javaBind", "graph4@scale30/H2", "graph1@scale30/H2",
                 "platform binder growth in graph-fetch tree size"));
+        canaries.add(ratio(workloads, "sqlQueryVsDatabaseSize", "sqlQuery", "sql@scale1000", "sql@scale100",
+                "a #SQL query compiling the whole database it reads from, rather than an accessor on it"));
+        canaries.add(ratio(workloads, "sqlCompileVsDatabaseSize", "compile", "sql@scale1000", "sql@scale100",
+                "compiling #SQL functions recompiling the database once per tb() source"));
         canaries.removeIf(canary -> canary.get("value") == null);
         return canaries;
     }

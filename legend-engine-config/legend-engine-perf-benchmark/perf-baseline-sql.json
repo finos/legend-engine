@@ -1,0 +1,98 @@
+{
+  "schemaVersion" : 1,
+  "suite" : "sql",
+  "environments" : {
+    "Mac OS X|aarch64|Apple M4 Max|16|8192|17" : {
+      "generatedAt" : "2026-10-18T17:42:20.460156Z",
+      "environment" : {
+        "os" : "Mac OS X",
+        "osVersion" : "26.6.2",
+        "arch" : "aarch64",
+        "cpu" : "Apple M4 Max",
+        "availableProcessors" : 16,
+        "maxHeapMb" : 8192,
+        "javaVersion" : "17.0.19",
+        "javaVendor" : "Eclipse Adoptium",
+        "jvmName" : "OpenJDK 64-Bit Server VM",
+        "jvmArgs" : "[-Xmx8g, -Xss8m]",
+        "engineVersion" : "unknown",
+        "gitCommit" : "3e608095b74d4d16e28030c3606a282b3f31bbbd",
+        "ci" : false
+      },
+      "workloads" : [ {
+        "workload" : "sql@scale100",
+        "config" : {
+          "scale" : 100,
+          "query" : "sql",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false
+        },
+        "iterations" : 5,
+        "warmup" : 2,
+        "coldMs" : {
+          "compile" : 783,
+          "sqlQuery" : 129,
+          "sqlJoin" : 314,
+          "schema" : 189
+        },
+        "warmMedianMs" : {
+          "compile" : 90,
+          "sqlQuery" : 75,
+          "sqlJoin" : 175,
+          "schema" : 34
+        }
+      }, {
+        "workload" : "sql@scale1000",
+        "config" : {
+          "scale" : 1000,
+          "query" : "sql",
+          "dbType" : "H2",
+          "unionSets" : 0,
+          "includes" : 0,
+          "semiDepth" : 0,
+          "milestoned" : false,
+          "relationFunction" : false,
+          "modelToModel" : false,
+          "nextMultiplicity" : "0..1",
+          "execute" : false
+        },
+        "iterations" : 5,
+        "warmup" : 2,
+        "coldMs" : {
+          "compile" : 109,
+          "sqlQuery" : 84,
+          "sqlJoin" : 178,
+          "schema" : 282
+        },
+        "warmMedianMs" : {
+          "compile" : 72,
+          "sqlQuery" : 61,
+          "sqlJoin" : 146,
+          "schema" : 265
+        }
+      } ],
+      "canaries" : [ {
+        "name" : "sqlQueryVsDatabaseSize",
+        "phase" : "sqlQuery",
+        "numerator" : "sql@scale1000",
+        "denominator" : "sql@scale100",
+        "guards" : "a #SQL query compiling the whole database it reads from, rather than an accessor on it",
+        "value" : 0.81
+      }, {
+        "name" : "sqlCompileVsDatabaseSize",
+        "phase" : "compile",
+        "numerator" : "sql@scale1000",
+        "denominator" : "sql@scale100",
+        "guards" : "compiling #SQL functions recompiling the database once per tb() source",
+        "value" : 0.8
+      } ]
+    }
+  }
+}
