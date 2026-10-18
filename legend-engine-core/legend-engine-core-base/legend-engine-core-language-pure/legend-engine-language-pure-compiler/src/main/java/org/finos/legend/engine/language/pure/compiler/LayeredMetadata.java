@@ -14,18 +14,10 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MapIterable;
-import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.LayeredPackage;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -69,63 +61,11 @@ public class LayeredMetadata extends MetadataWrapper
     }
 
     @Override
-    public MapIterable<String, CoreInstance> getMetadata(String classifier)
-    {
-        RichIterable<CoreInstance> own = getOwnElementsOfClassifier(classifier);
-        if (own.isEmpty())
-        {
-            return this.baseline.getMetadata(classifier);
-        }
-        MutableMap<String, CoreInstance> result = Maps.mutable.empty();
-        try
-        {
-            this.baseline.getMetadata(classifier).forEachKeyValue(result::put);
-        }
-        catch (RuntimeException ignore)
-        {
-            // a baseline that cannot list its instances, such as an interpreted runtime, contributes none
-        }
-        own.forEach(e -> result.put(PackageableElement.getUserPathForPackageableElement(e), e));
-        return result;
-    }
-
-    @Override
-    public RichIterable<CoreInstance> getClassifierInstances(String classifier)
-    {
-        RichIterable<CoreInstance> own = getOwnElementsOfClassifier(classifier);
-        if (own.isEmpty())
-        {
-            return this.baseline.getClassifierInstances(classifier);
-        }
-        RichIterable<CoreInstance> base;
-        try
-        {
-            base = this.baseline.getClassifierInstances(classifier);
-        }
-        catch (RuntimeException ignore)
-        {
-            base = Lists.immutable.empty();
-        }
-        return LazyIterate.concatenate(base, own);
-    }
-
-    @Override
     public CoreInstance getEnum(String enumerationName, String enumName)
     {
-        try
-        {
-            return this.baseline.getEnum(enumerationName, enumName);
-        }
-        catch (RuntimeException e)
-        {
-            CoreInstance enumeration = this.pureModel.getTypeFromIndex(stripRoot(enumerationName));
-            CoreInstance value = (enumeration instanceof Enumeration) ? org.finos.legend.pure.m3.navigation.enumeration.Enumeration.findEnum(enumeration, enumName) : null;
-            if (value == null)
-            {
-                throw e;
-            }
-            return value;
-        }
+        CoreInstance enumeration = this.pureModel.getTypeFromIndex(stripRoot(enumerationName));
+        CoreInstance value = (enumeration instanceof Enumeration) ? org.finos.legend.pure.m3.navigation.enumeration.Enumeration.findEnum(enumeration, enumName) : null;
+        return (value != null) ? value : this.baseline.getEnum(enumerationName, enumName);
     }
 
     // A package this layer added children to is answered from the layer. Any other package is answered by the baseline first:
@@ -178,28 +118,6 @@ public class LayeredMetadata extends MetadataWrapper
     {
         CoreInstance type = this.pureModel.getTypeFromIndex(path);
         return (type != null) ? type : this.pureModel.getPackageableElementFromIndex(path);
-    }
-
-    // A baseline that is a model compiled without a baseline does not list its own elements, so the first layer lists them.
-    private RichIterable<CoreInstance> getOwnElementsOfClassifier(String classifier)
-    {
-        MutableList<CoreInstance> result = Lists.mutable.empty();
-        PureModel unlayeredBaseline = ((this.baseline instanceof MetadataWrapper) && !(this.baseline instanceof LayeredMetadata)) ? ((MetadataWrapper) this.baseline).getPureModel() : null;
-        Lists.mutable.with(unlayeredBaseline, this.pureModel).select(m -> m != null).forEach(model -> model.getOwnedPackageableElements().forEach(e ->
-        {
-            if (classifier.equals(classifierPath(e)))
-            {
-                result.add(e);
-            }
-        }));
-        return result;
-    }
-
-    private static String classifierPath(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element)
-    {
-        GenericType classifierGenericType = element._classifierGenericType();
-        CoreInstance classifier = ((classifierGenericType != null) && (classifierGenericType._rawType() != null)) ? classifierGenericType._rawType() : element.getClassifier();
-        return (classifier == null) ? null : PackageableElement.getUserPathForPackageableElement(classifier);
     }
 
     private static String stripRoot(String id)

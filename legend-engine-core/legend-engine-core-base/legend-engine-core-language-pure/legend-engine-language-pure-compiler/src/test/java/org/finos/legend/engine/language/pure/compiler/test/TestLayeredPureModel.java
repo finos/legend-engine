@@ -24,7 +24,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
@@ -100,6 +99,18 @@ public class TestLayeredPureModel
     }
 
     @Test
+    public void testLayerResolvesPlatformElementsMissingFromTheBaselineTree()
+    {
+        String platformMapping = "meta::pure::mapping::MergedMapping";
+        PureModel outer = compile("Class demo::A {}", null);
+
+        PureModel inner = compile("###Mapping\nMapping demo::N\n(\n  include " + platformMapping + "\n)\n", metadataOf(outer));
+
+        Assert.assertSame(PureModel.METADATA_LAZY.getElementByPath(platformMapping), inner.getMapping("demo::N")._includes().getOnly()._included());
+        Assert.assertSame(PureModel.METADATA_LAZY.getElementByPath(platformMapping), inner.getPackageableElement_safe(platformMapping));
+    }
+
+    @Test
     public void testPackageLookupByPathShowsBaselineAndDeltaChildren()
     {
         PureModel outer = compile("Class demo::A {}", null);
@@ -132,13 +143,10 @@ public class TestLayeredPureModel
         Lists.fixedSize.with("demo::A", "demo::B", "demo::C", "demo::M", "demo::N").forEach(path -> Assert.assertNotNull(path, pathToElement(l2, path)));
         Assert.assertNull(pathToElement(l1, "demo::C"));
         Assert.assertNull(pathToElement(l1, "demo::N"));
-        Class<?> a = l0.getClass("demo::A");
-        Class<?> b = l1.getClass("demo::B");
-        Assert.assertEquals(Lists.fixedSize.with("B"), l2.getSpecializations(a).collect(g -> g._specific()._name()).toList());
-        Assert.assertEquals(Lists.fixedSize.with("C"), l2.getSpecializations(b).collect(g -> g._specific()._name()).toList());
-        Assert.assertTrue(l1.getSpecializations(b).isEmpty());
-        MutableList<Object> classes = Lists.mutable.withAll(metadataOf(l2).getClassifierInstances(M3Paths.Class));
-        Lists.fixedSize.with(a, b, l2.getClass("demo::C")).forEach(c -> Assert.assertTrue(c._name(), classes.anySatisfy(x -> x == c)));
+        Assert.assertSame(l1.getClass("demo::B"), l2.getClass("demo::C")._generalizations().getOnly()._general()._rawType());
+        Assert.assertSame(l0.getClass("demo::A"), l1.getClass("demo::B")._generalizations().getOnly()._general()._rawType());
+        Assert.assertTrue(l0.getClass("demo::A")._specializations().isEmpty());
+        Assert.assertTrue(l1.getClass("demo::B")._specializations().isEmpty());
         Assert.assertEquals(Lists.fixedSize.with("A"), childNames((Package) l0.getPackageableElement("demo")));
     }
 

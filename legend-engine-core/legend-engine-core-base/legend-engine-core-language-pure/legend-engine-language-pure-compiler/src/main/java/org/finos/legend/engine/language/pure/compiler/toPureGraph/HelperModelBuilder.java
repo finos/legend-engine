@@ -373,11 +373,6 @@ public class HelperModelBuilder
         return getOwnedProperty(_class, classPath, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, SourceInformation sourceInformation)
-    {
-        return getOwnedProperty(_class, classPath, name, sourceInformation, pureModel, pureModel.getExecutionSupport());
-    }
-
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _class._properties().detect(p -> name.equals(p.getName()));
@@ -426,11 +421,6 @@ public class HelperModelBuilder
         return getOwnedAppliedProperty(_class, classPath, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
     }
 
-    public static AbstractProperty<?> getOwnedAppliedProperty(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, SourceInformation sourceInformation)
-    {
-        return getOwnedAppliedProperty(_class, null, name, sourceInformation, pureModel, pureModel.getExecutionSupport());
-    }
-
     private static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)
     {
         AbstractProperty<?> prop = _class._properties().detect(p -> name.equals(p.getName()));
@@ -456,11 +446,6 @@ public class HelperModelBuilder
     public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         return getAllOwnedAppliedProperty(propertyOwner, name, sourceInformation, PureModel.fromExecutionSupport(executionSupport), executionSupport);
-    }
-
-    public static AbstractProperty<?> getAllOwnedAppliedProperty(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation)
-    {
-        return getAllOwnedAppliedProperty(propertyOwner, name, sourceInformation, pureModel, pureModel.getExecutionSupport());
     }
 
     private static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation, PureModel pureModel, CompiledExecutionSupport executionSupport)

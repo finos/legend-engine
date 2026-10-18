@@ -1500,7 +1500,7 @@ public class Handlers
     public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
             (parameters.size() >= 5 ? WindowReduceInference : GroupReduceInference).update(parameters, valueSpecificationBuilder);
 
-    private final Map<String, FunctionExpressionBuilder> map = Maps.mutable.empty();
+    private final Map<String, FunctionExpressionBuilder> map = new java.util.concurrent.ConcurrentHashMap<>();
     private final Set<String> seededFromBaseline = Sets.mutable.empty();
     private final Map<String, Dispatch> dispatchMap = Maps.mutable.empty();
     private final PureModel pureModel;
@@ -3271,7 +3271,7 @@ public class Handlers
             {
                 if (!this.seededFromBaseline.contains(functionName))
                 {
-                    this.pureModel.getBaselineFunctionHandlers(functionName, this.map.get(functionName)).forEach(h -> addBaselineFunctionHandler(functionName, h));
+                    this.pureModel.getBaselineFunctionHandlers(functionName).forEach(h -> addBaselineFunctionHandler(functionName, h));
                     this.seededFromBaseline.add(functionName);
                 }
             }
@@ -3286,16 +3286,13 @@ public class Handlers
         {
             this.map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
         }
-        else if (!(builder instanceof UnifiedInferenceFunctionExpressionBuilder) && builder.handlers().noneSatisfy(h -> h.getFunctionSignature().equals(handler.getFunctionSignature())))
+        else if (builder.supportFunctionHandler(handler))
         {
-            if (builder.supportFunctionHandler(handler))
-            {
-                builder.addFunctionHandler(handler);
-            }
-            else
-            {
-                this.addFunctionHandler(handler, builder);
-            }
+            builder.addFunctionHandler(handler);
+        }
+        else
+        {
+            this.addFunctionHandler(handler, builder);
         }
     }
 
@@ -3336,7 +3333,6 @@ public class Handlers
     public synchronized void register(UserDefinedFunctionHandler handler)
     {
         String functionName = handler.getFunctionName();
-        lookUpFunctionBuilder(functionName);
         boolean functionRegisteredByName = isFunctionRegisteredByName(handler);
 
         if (functionRegisteredByName && map.get(functionName) instanceof UnifiedInferenceFunctionExpressionBuilder)

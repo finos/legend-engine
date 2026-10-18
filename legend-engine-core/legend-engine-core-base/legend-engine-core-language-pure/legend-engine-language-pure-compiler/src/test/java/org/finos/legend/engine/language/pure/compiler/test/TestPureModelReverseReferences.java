@@ -36,7 +36,7 @@ public class TestPureModelReverseReferences
     }
 
     @Test
-    public void testSubclassOfBaselineClassIsKeptInTheLayer()
+    public void testSubclassOfBaselineClassLeavesTheBaselineClassUntouched()
     {
         PureModel outer = compile("Class demo::A { name: String[1]; }", null);
         Class<?> outerA = outer.getClass("demo::A");
@@ -44,8 +44,7 @@ public class TestPureModelReverseReferences
         PureModel inner = compile("Class demo::B extends demo::A {}", outer.getExecutionSupport().getMetadata());
 
         Assert.assertTrue(outerA._specializations().isEmpty());
-        Assert.assertTrue(outer.getSpecializations(outerA).isEmpty());
-        Assert.assertSame(inner.getClass("demo::B"), inner.getSpecializations(outerA).getOnly()._specific());
+        Assert.assertSame(outerA, inner.getClass("demo::B")._generalizations().getOnly()._general()._rawType());
     }
 
     @Test
@@ -126,8 +125,8 @@ public class TestPureModelReverseReferences
                 outer.getExecutionSupport().getMetadata());
 
         Assert.assertEquals("b", inner.getProperty("demo::A", "b", SourceInformation.getUnknownSourceInformation(), SourceInformation.getUnknownSourceInformation())._name());
-        Assert.assertEquals("b", HelperModelBuilder.getOwnedAppliedProperty(inner, outer.getClass("demo::A"), "b", SourceInformation.getUnknownSourceInformation())._name());
-        Assert.assertEquals("b", HelperModelBuilder.getAllOwnedAppliedProperty(inner, outer.getClass("demo::A"), "b", SourceInformation.getUnknownSourceInformation())._name());
+        Assert.assertEquals("b", HelperModelBuilder.getOwnedAppliedProperty(outer.getClass("demo::A"), "b", SourceInformation.getUnknownSourceInformation(), inner.getExecutionSupport())._name());
+        Assert.assertEquals("b", HelperModelBuilder.getAllOwnedAppliedProperty(outer.getClass("demo::A"), "b", SourceInformation.getUnknownSourceInformation(), inner.getExecutionSupport())._name());
     }
 
     @Test
