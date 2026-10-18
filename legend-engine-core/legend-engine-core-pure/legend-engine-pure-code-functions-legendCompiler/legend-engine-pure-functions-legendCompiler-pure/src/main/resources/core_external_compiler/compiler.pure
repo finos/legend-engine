@@ -18,6 +18,74 @@ import meta::pure::mapping::*;
 
 native function meta::legend::compile(s:String[1]):PackageableElement[*];
 
+native function meta::legend::compile<T|m>(grammar:String[1], f:Function<{->T[m]}>[1]):T[m];
+
 native function meta::legend::compileVS(s:String[1]):Any[1];
 
 native function meta::legend::compilePMCD(pmcdJSON:String[1]):PackageableElement[*];
+
+native function meta::legend::compilePMCD<T|m>(pmcdJSON:String[1], f:Function<{->T[m]}>[1]):T[m];
+
+Class meta::legend::tests::Base
+{
+}
+
+function meta::legend::tests::nameOfA():String[1]
+{
+  'a::A'->pathToElement().name->toOne()
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsAreOnTheGraphOnlyInsideTheFunction():Boolean[1]
+{
+  assertEmpty('a::A'->lenientPathToElement());
+  assertEquals('A', meta::legend::compile('Class a::A{}', {|
+    assertEquals('A', 'a::A'->pathToElement().name->toOne());
+    meta::legend::tests::nameOfA();
+  }));
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsOutliveTheFunctionButStayOutOfTheCallingGraph():Boolean[1]
+{
+  let a = meta::legend::compile('Class a::A{}', {|'a::A'->pathToElement()});
+  assertEquals('A', $a.name);
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithFunctionReturnsManyValues():Boolean[1]
+{
+  assertEquals(['A', 'B'], meta::legend::compile('Class a::A{} Class a::B{}', {|['a::A', 'a::B']->map(p | $p->pathToElement().name->toOne())}));
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsReferenceTheCallingGraph():Boolean[1]
+{
+  assertIs(meta::legend::tests::Base, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|'a::Sub'->pathToElement()->cast(@Class<Any>).generalizations.general.rawType->toOne()}));
+}
+
+function <<test.Test>> meta::legend::tests::compileWithFunctionDoesNotMutateTheCallingGraph():Boolean[1]
+{
+  assertEquals(0, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|meta::legend::tests::Base.specializations->size()}));
+  assertEmpty(meta::legend::tests::Base.specializations);
+}
+
+function meta::legend::tests::compileOnA():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class b::B extends a::A {}', {|'b::B'->pathToElement()->cast(@Class<Any>).generalizations.general.rawType.name->toOne()}));
+  assertEmpty('b::B'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::nestedCompileWithFunctionLayersOnTheEnclosingCompile():Boolean[1]
+{
+  assert(meta::legend::compile('Class a::A{}', {|meta::legend::tests::compileOnA()}));
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithAFunctionPointer():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class a::A{}', meta::legend::tests::nameOfA__String_1_));
+}
+
+function <<test.Test>> meta::legend::tests::compilePMCDWithFunctionSeesTheCompiledElements():Boolean[1]
+{
+  assertEquals('a', meta::legend::compilePMCD('{"_type": "data", "elements": [{"_type": "class", "package": "test::class", "name": "a"}]}', {|'test::class::a'->pathToElement().name->toOne()}));
+}
