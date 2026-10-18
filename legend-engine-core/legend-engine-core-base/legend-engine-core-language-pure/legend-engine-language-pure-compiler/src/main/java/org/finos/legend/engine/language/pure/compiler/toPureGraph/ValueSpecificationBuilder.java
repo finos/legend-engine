@@ -191,7 +191,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             case 0:
             {
                 return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
-                        ._genericType(packageableElement._classifierGenericType())
+                        ._genericType(classifierGenericType(packageableElement))
                         ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                         ._values(Lists.mutable.with(packageableElement));
             }
@@ -204,6 +204,13 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 throw new EngineException("More than one handler found for the Packageable Element '" + packageableElementPtr.fullPath + "'", packageableElementPtr.sourceInformation, EngineErrorType.COMPILATION);
             }
         }
+    }
+
+    // Elements compiled by the Pure compiler, rather than by this compiler, only carry a classifier generic type when it has type arguments.
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType classifierGenericType(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = packageableElement._classifierGenericType();
+        return (genericType != null) ? genericType : this.context.newGenericType((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.context.pureModel.getExecutionSupport().getProcessorSupport().getClassifier(packageableElement));
     }
 
     @Override

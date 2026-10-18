@@ -91,7 +91,6 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAnd
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationValidation;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationValidation_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
@@ -647,8 +646,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
         FastList<Constraint> constraints = FastList.newList();
         for (CoreInstance c_type : _Class.computeConstraintsInHierarchy(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            Root_meta_pure_metamodel_constraint_Constraint_Impl constraint = (Root_meta_pure_metamodel_constraint_Constraint_Impl) c_type;
-            if (treeConstraintNames.contains(constraint._name))
+            Constraint constraint = (Constraint) c_type;
+            if (treeConstraintNames.contains(constraint._name()))
             {
                 constraints.add(constraint);
             }
