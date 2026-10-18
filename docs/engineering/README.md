@@ -103,6 +103,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Key Java Areas](architecture/key-java-areas.md)              | Grammar layer, PureModel compiler, PlanGenerator, PlanExecutor, Relational executor, Auth, Server assembly                      |
 | [Key Pure Areas](architecture/key-pure-areas.md)              | Router, ExecutionPlan metamodel, GraphFetch, Milestoning, TDS/Relation, M2M chain, Service metamodel, Binding, PCT              |
 | [Alloy Compiler](architecture/alloy-compiler.md)              | Deep-dive on the Alloy (Legend Engine) compiler: compilation phases, type/function resolution, extension points, and testing    |
+| [Layered Compilation](architecture/layered-compilation.md)    | Compiling a `PureModel` as a read-only layer on another graph: the rules, `meta::legend::compile(grammar, f)`, how both runtimes run it, and its limits |
 | [Execution Plans](architecture/execution-plans.md)            | What execution plans are, the planning/execution split, node catalogue, caching, versioning                                     |
 | [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension                                                      |
 | [SQL Dialect Translation](architecture/sql-dialect-translation.md) | The AST-based dialect framework (`SqlDialect`/`NodeProcessor`): how it differs from `sqlQueryToString`, end-to-end translation, declaring per-dialect divergence, and the SDT conformance suite |
