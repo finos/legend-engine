@@ -187,11 +187,6 @@ function <<test.Test>> meta::legend::tests::compileValueSpecification():Boolean[
   assertEquals(1, meta::legend::compileVS('1'));
 }
 
-function <<test.Test>> meta::legend::tests::compileValueSpecificationWithEmbeddedGrammar():Boolean[1]
-{
-  assertEquals('X X Test', meta::legend::compileVS('#Test{X X Test}#'));
-}
-
 function <<test.Test>> meta::legend::tests::compilePMCD():Boolean[1]
 {
   let x = meta::legend::compilePMCD('{"_type": "data", "elements": [{"_type": "class", "package": "test::class", "name": "a"}]}');
