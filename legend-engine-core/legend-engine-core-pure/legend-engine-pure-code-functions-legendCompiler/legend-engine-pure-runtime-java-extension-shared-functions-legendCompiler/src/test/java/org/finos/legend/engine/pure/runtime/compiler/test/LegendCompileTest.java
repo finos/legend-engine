@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
+import org.junit.Assert;
 import org.junit.Test;
 
 public abstract class LegendCompileTest
@@ -54,6 +55,28 @@ public abstract class LegendCompileTest
                    "println($x);" +
                    "assertEquals(1, $x->size());" +
                    "assertEquals(['name', 'other'], $x.properties.name->sort());");
+    }
+
+    @Test
+    public void testCompiledCodeCallsAFunctionOfTheCallingGraph()
+    {
+        Tools.test("function test::helper(i:Integer[1]):Integer[1] { $i + 1 }\n",
+                "let f = meta::legend::compile('function a::g():Integer[1]{test::helper(1)}')->cast(@ConcreteFunctionDefinition<Any>)->toOne();" +
+                        "assertIs(test::helper_Integer_1__Integer_1_, $f.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).func);",
+                functionExecution, runtime);
+    }
+
+    @Test
+    public void testRedefiningAnElementOfTheCallingGraphFails()
+    {
+        Exception e = Assert.assertThrows(Exception.class, () -> Tools.test("Class test::Existing {}\n", "meta::legend::compile('Class test::Existing {}');", functionExecution, runtime));
+
+        Throwable cause = e;
+        while (cause.getCause() != null)
+        {
+            cause = cause.getCause();
+        }
+        Assert.assertEquals("An element named 'Existing' already exists in the package 'test'", cause.getMessage());
     }
 
     @Test

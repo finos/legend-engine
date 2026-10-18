@@ -67,28 +67,6 @@ function <<PCT.adapter>> {PCT.adapterName='SqlServer'} meta::relational::tests::
   )
 }
 
-function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
-{
-  $f->extractDependentFunctionsImpl([]);
-}
-
-function meta::relational::tests::pct::extractDependentFunctionsImpl(f:Any[1], visitedFuncs : Function<Any>[*]):Function<Any>[*]
-{
-  if ($f->in($visitedFuncs),
-    | [],
-    |  $f->match([
-        z:FunctionDefinition<Any>[1] |
-                    if($z->instanceOf(PackageableElement) && ($z->elementToPath()->startsWith('meta::external::scenario') || (!$z->hasStereotype('function', PCT) && $z->elementToPath()->contains('::tests::'))),|$z,|[])
-                      ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
-        x:SimpleFunctionExpression[1]|
-                    let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
-                    $x.func->extractDependentFunctionsImpl($visitedFuncs)->concatenate($res);,
-        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),
-        a:Any[1] | []
-      ]);
-    );
-}
-
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
   testAdapterForRelationalExecution($f, $dbc, relationalExtensions());
@@ -298,10 +276,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n',|''));
 
-            let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
-
-            print(if($debug.debug,|'Got ' + $otherFuncs->size()->makeString() + ' other functions' + '\n',|''));
-
             let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
 
             let code =  '\n###Relational\n'+
@@ -312,7 +286,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                           $reprocessed.mapping->toOne()->printMapping()
                         )+
                         '\n###Pure\n'+
-                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function ' +$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('')+
                         'function test::lambdaContainer():Any[*]{\n'+
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n'+
                         '}'

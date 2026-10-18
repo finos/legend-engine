@@ -31,12 +31,17 @@ import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.LayeredMetadata;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.BaselineFunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
@@ -148,6 +153,8 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
+    // Holds the model's own SectionIndex, which a layered model must not inherit from its baseline.
+    private static final String INTERNAL_PACKAGE = "__internal__";
     private static final Root_meta_pure_metamodel_type_Class_Impl<?> NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_type_Class_Impl<>("Anonymous_NoCounter");
     public static final MetadataPelt METADATA_LAZY = MetadataPelt.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
     private static final RichIterable<CodeRepository> repositories = CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore);
@@ -157,7 +164,7 @@ public class PureModel implements IPureModel
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
-    private final org.finos.legend.pure.m3.coreinstance.Package root = new Package_Impl(M3Paths.Root)._name(M3Paths.Root);
+    private final org.finos.legend.pure.m3.coreinstance.Package root;
     // NOTE: since we have states within each extension, we have to keep extensions local to `PureModel` rather than having
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
@@ -213,7 +220,14 @@ public class PureModel implements IPureModel
         this.extensions = extensions;
         this.deploymentMode = deploymentMode;
         this.pureModelProcessParameter = pureModelProcessParameter;
-        this.parent = (metaData instanceof MetadataWrapper) ? ((MetadataWrapper) metaData).getPureModel() : null;
+        if ((metaData != null) && (pureModelProcessParameter.getPackagePrefix() != null) && !pureModelProcessParameter.getPackagePrefix().isEmpty())
+        {
+            throw new EngineException("A package prefix is not supported when compiling on top of another model's metadata");
+        }
+        CoreInstance baselineRoot = (metaData == null) ? null : metaData.getMetadata(M3Paths.Package, M3Paths.Root);
+        PureModel baselineModel = (metaData instanceof MetadataWrapper) ? ((MetadataWrapper) metaData).getPureModel() : null;
+        this.parent = ((baselineModel != null) && (baselineModel.getRoot() == baselineRoot)) ? baselineModel : null;
+        this.root = (metaData == null) ? new Package_Impl(M3Paths.Root)._name(M3Paths.Root) : newLayeredRoot(baselineRoot);
         try
         {
             ConsoleCompiled console = new ConsoleCompiled();
@@ -225,7 +239,7 @@ public class PureModel implements IPureModel
             }
             this.executionSupport = new CompiledExecutionSupport(
                     new JavaCompilerState(null, classLoader),
-                    new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
+                    new CompiledProcessorSupport(classLoader, (metaData == null) ? new MetadataWrapper(this.root, METADATA_LAZY, this) : new LayeredMetadata((LayeredPackage) this.root, metaData, this), Sets.mutable.empty()),
                     null,
                     new CompositeCodeStorage(
                             new ClassLoaderCodeStorage(repositories),
@@ -814,6 +828,14 @@ public class PureModel implements IPureModel
     private <T> T lookupAndCastPackageableElement(String fullPath, java.lang.Class<T> expectedType)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.packageableElementsIndex.get(fullPath);
+        if ((packageableElement == null) && (this.root instanceof LayeredPackage))
+        {
+            packageableElement = findPackageableElement(fullPath);
+            if ((packageableElement != null) && !(packageableElement instanceof org.finos.legend.pure.m3.coreinstance.Package))
+            {
+                this.packageableElementsIndex.putIfAbsent(fullPath, packageableElement);
+            }
+        }
         return expectedType.isInstance(packageableElement) ? expectedType.cast(packageableElement) : null;
     }
 
@@ -1524,6 +1546,17 @@ public class PureModel implements IPureModel
         return type == NULL_ELEMENT_SENTINEL ? null : type;
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElementFromIndex(String fullPath)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = this.packageableElementsIndex.get(packagePrefix(fullPath));
+        return element == NULL_ELEMENT_SENTINEL ? null : element;
+    }
+
+    public RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getOwnedPackageableElements()
+    {
+        return this.packageableElementsIndex.valuesView().select(e -> (e != NULL_ELEMENT_SENTINEL) && owns(e));
+    }
+
     public GenericType getGenericTypeFromIndex(String fullPath)
     {
         if (M3Paths.Any.equals(fullPath))
@@ -1678,6 +1711,37 @@ public class PureModel implements IPureModel
         return this.executionSupport;
     }
 
+    public boolean isLayered()
+    {
+        return this.root instanceof LayeredPackage;
+    }
+
+    public RichIterable<? extends FunctionHandler> getBaselineFunctionHandlers(String functionName, FunctionExpressionBuilder ownBuilder)
+    {
+        if (this.parent != null)
+        {
+            FunctionExpressionBuilder baselineBuilder = this.parent.handlers.lookUpFunctionBuilder(functionName);
+            return (baselineBuilder == null) ?
+                   Lists.immutable.empty() :
+                   baselineBuilder.handlers().select(h -> (h instanceof UserDefinedFunctionHandler) || (h instanceof BaselineFunctionHandler));
+        }
+        // The handlers are the authority for platform functions, including those the compiler deliberately does not support.
+        int separator = functionName.lastIndexOf("::");
+        if ((ownBuilder != null) || (separator == -1) || this.handlers.isRegisteredMetaPackage(functionName.substring(0, separator)))
+        {
+            return Lists.immutable.empty();
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pkg = findPackageableElement(functionName.substring(0, separator));
+        if (!(pkg instanceof org.finos.legend.pure.m3.coreinstance.Package))
+        {
+            return Lists.immutable.empty();
+        }
+        String simpleName = functionName.substring(separator + 2);
+        return ((org.finos.legend.pure.m3.coreinstance.Package) pkg)._children()
+                .select(c -> (c instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function) && !owns(c) && (simpleName.equals(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) c)._functionName()) || functionName.equals(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) c)._functionName())))
+                .collect(f -> new BaselineFunctionHandler(this, functionName, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) f));
+    }
+
     public static PureModel fromExecutionSupport(CompiledExecutionSupport executionSupport)
     {
         Metadata metadata = executionSupport.getMetadata();
@@ -1744,6 +1808,15 @@ public class PureModel implements IPureModel
     public RichIterable<? extends QualifiedProperty<?>> getQualifiedPropertiesFromAssociations(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class)
     {
         return withLayers(_class._qualifiedPropertiesFromAssociations(), _class, model -> model.layerQualifiedPropertiesFromAssociations);
+    }
+
+    private static LayeredPackage newLayeredRoot(CoreInstance baselineRoot)
+    {
+        if (!(baselineRoot instanceof org.finos.legend.pure.m3.coreinstance.Package))
+        {
+            throw new EngineException("Cannot compile as a layer: the baseline metadata has no root package");
+        }
+        return new LayeredPackage((org.finos.legend.pure.m3.coreinstance.Package) baselineRoot, INTERNAL_PACKAGE);
     }
 
     private boolean owns(CoreInstance element)

@@ -65,11 +65,17 @@ public class Tools
 
     public static void test(String code, FunctionExecution functionExecution, PureRuntime runtime)
     {
+        test("", code, functionExecution, runtime);
+    }
+
+    public static void test(String definitions, String code, FunctionExecution functionExecution, PureRuntime runtime)
+    {
         try
         {
             runtime.createInMemoryAndCompile(
                     Tuples.pair("testSource.pure",
-                            "function test():Any[*] \n"
+                            definitions
+                                    + "function test():Any[*] \n"
                                     + "{"
                                     + code
                                     + "}\n"));

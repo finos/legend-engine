@@ -16,8 +16,10 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.pure.generated.Package_Impl;
 import org.finos.legend.pure.m3.coreinstance.Package;
@@ -33,21 +35,23 @@ public class LayeredPackage extends Package_Impl
 {
     private final Package baseline;
     private final LayeredPackage parent;
+    private final ImmutableSet<String> hiddenBaselineChildren;
     private final ConcurrentMap<String, LayeredPackage> overlays = new ConcurrentHashMap<>();
     private final MutableList<PackageableElement> own = Lists.mutable.empty();
     private volatile ImmutableList<PackageableElement> baselineChildren;
     private volatile ImmutableList<PackageableElement> children;
 
-    public LayeredPackage(Package baseline)
+    public LayeredPackage(Package baseline, String... hiddenBaselineChildren)
     {
-        this(baseline, null);
+        this(baseline, null, Sets.immutable.with(hiddenBaselineChildren));
     }
 
-    private LayeredPackage(Package baseline, LayeredPackage parent)
+    private LayeredPackage(Package baseline, LayeredPackage parent, ImmutableSet<String> hiddenBaselineChildren)
     {
         super(baseline._name(), baseline.getSourceInformation(), baseline.getClassifier());
         this.baseline = baseline;
         this.parent = parent;
+        this.hiddenBaselineChildren = hiddenBaselineChildren;
         this._name(baseline._name());
         this._package(parent);
     }
@@ -55,6 +59,14 @@ public class LayeredPackage extends Package_Impl
     public Package getBaseline()
     {
         return this.baseline;
+    }
+
+    public boolean hasOwnChildren()
+    {
+        synchronized (this.own)
+        {
+            return this.own.notEmpty();
+        }
     }
 
     @Override
@@ -160,7 +172,7 @@ public class LayeredPackage extends Package_Impl
         ImmutableList<PackageableElement> result = this.baselineChildren;
         if (result == null)
         {
-            result = Lists.immutable.withAll(LazyIterate.collect(this.baseline._children(), this::overlay));
+            result = Lists.immutable.withAll(LazyIterate.reject(this.baseline._children(), c -> this.hiddenBaselineChildren.contains(c._name())).collect(this::overlay));
             this.baselineChildren = result;
         }
         return result;
@@ -168,6 +180,6 @@ public class LayeredPackage extends Package_Impl
 
     private PackageableElement overlay(PackageableElement child)
     {
-        return (child instanceof Package) ? this.overlays.computeIfAbsent(child._name(), name -> new LayeredPackage((Package) child, this)) : child;
+        return (child instanceof Package) ? this.overlays.computeIfAbsent(child._name(), name -> new LayeredPackage((Package) child, this, Sets.immutable.empty())) : child;
     }
 }

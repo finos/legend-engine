@@ -64,6 +64,18 @@ public class TestLayeredPackage
     }
 
     @Test
+    public void testHiddenBaselineChildrenAreNotShown()
+    {
+        LayeredPackage root = new LayeredPackage(this.baselineRoot, "demo");
+        Package ownDemo = new Package_Impl("demo")._name("demo")._package(root);
+
+        root._childrenAdd(ownDemo);
+
+        Assert.assertSame(ownDemo, root._children().getOnly());
+        Assert.assertSame(this.baselineDemo, this.baselineRoot._children().getOnly());
+    }
+
+    @Test
     public void testOwnChildrenFollowBaselineChildrenWithoutTouchingTheBaseline()
     {
         LayeredPackage demo = child(new LayeredPackage(this.baselineRoot), "demo");
