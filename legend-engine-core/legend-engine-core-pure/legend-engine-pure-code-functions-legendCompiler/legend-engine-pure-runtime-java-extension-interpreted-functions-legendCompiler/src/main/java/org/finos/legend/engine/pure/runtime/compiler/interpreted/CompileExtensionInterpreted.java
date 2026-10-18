@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompile;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompilePMCD;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileVS;
+import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileWithFunction;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 import org.finos.legend.pure.runtime.java.interpreted.extension.InterpretedExtension;
 
@@ -29,7 +30,9 @@ public class CompileExtensionInterpreted extends BaseInterpretedExtension
         super(Lists.mutable.with(
                 Tuples.pair("compile_String_1__PackageableElement_MANY_", LegendCompile::new),
                 Tuples.pair("compileVS_String_1__Any_1_", LegendCompileVS::new),
-                Tuples.pair("compilePMCD_String_1__PackageableElement_MANY_", LegendCompilePMCD::new)
+                Tuples.pair("compilePMCD_String_1__PackageableElement_MANY_", LegendCompilePMCD::new),
+                Tuples.pair("compile_String_1__Function_1__T_m_", LegendCompileWithFunction::grammar),
+                Tuples.pair("compilePMCD_String_1__Function_1__T_m_", LegendCompileWithFunction::pmcd)
         ));
     }
 

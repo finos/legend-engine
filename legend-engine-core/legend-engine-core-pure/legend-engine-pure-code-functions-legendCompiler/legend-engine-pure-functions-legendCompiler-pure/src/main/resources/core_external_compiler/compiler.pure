@@ -35,7 +35,7 @@ function meta::legend::tests::nameOfA():String[1]
   'a::A'->pathToElement().name->toOne()
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compiledElementsAreOnTheGraphOnlyInsideTheFunction():Boolean[1]
+function <<test.Test>> meta::legend::tests::compiledElementsAreOnTheGraphOnlyInsideTheFunction():Boolean[1]
 {
   assertEmpty('a::A'->lenientPathToElement());
   assertEquals('A', meta::legend::compile('Class a::A{}', {|
@@ -45,24 +45,24 @@ function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::test
   assertEmpty('a::A'->lenientPathToElement());
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compiledElementsOutliveTheFunctionButStayOutOfTheCallingGraph():Boolean[1]
+function <<test.Test>> meta::legend::tests::compiledElementsOutliveTheFunctionButStayOutOfTheCallingGraph():Boolean[1]
 {
   let a = meta::legend::compile('Class a::A{}', {|'a::A'->pathToElement()});
   assertEquals('A', $a.name);
   assertEmpty('a::A'->lenientPathToElement());
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compileWithFunctionReturnsManyValues():Boolean[1]
+function <<test.Test>> meta::legend::tests::compileWithFunctionReturnsManyValues():Boolean[1]
 {
   assertEquals(['A', 'B'], meta::legend::compile('Class a::A{} Class a::B{}', {|['a::A', 'a::B']->map(p | $p->pathToElement().name->toOne())}));
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compiledElementsReferenceTheCallingGraph():Boolean[1]
+function <<test.Test>> meta::legend::tests::compiledElementsReferenceTheCallingGraph():Boolean[1]
 {
   assertIs(meta::legend::tests::Base, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|'a::Sub'->pathToElement()->cast(@Class<Any>).generalizations.general.rawType->toOne()}));
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compileWithFunctionDoesNotMutateTheCallingGraph():Boolean[1]
+function <<test.Test>> meta::legend::tests::compileWithFunctionDoesNotMutateTheCallingGraph():Boolean[1]
 {
   assertEquals(0, meta::legend::compile('Class a::Sub extends meta::legend::tests::Base {}', {|meta::legend::tests::Base.specializations->size()}));
   assertEmpty(meta::legend::tests::Base.specializations);
@@ -74,18 +74,29 @@ function meta::legend::tests::compileOnA():Boolean[1]
   assertEmpty('b::B'->lenientPathToElement());
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::nestedCompileWithFunctionLayersOnTheEnclosingCompile():Boolean[1]
+function <<test.Test>> meta::legend::tests::nestedCompileWithFunctionLayersOnTheEnclosingCompile():Boolean[1]
 {
   assert(meta::legend::compile('Class a::A{}', {|meta::legend::tests::compileOnA()}));
   assertEmpty('a::A'->lenientPathToElement());
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compileWithAFunctionPointer():Boolean[1]
+function <<test.Test>> meta::legend::tests::compileWithoutAFunctionInsideTheFunctionLayersOnTheEnclosingCompile():Boolean[1]
+{
+  assertEquals('A', meta::legend::compile('Class a::A{}', {|meta::legend::compile('Class b::B extends a::A {}')->cast(@Class<Any>).generalizations.general.rawType.name->toOne()}));
+}
+
+function <<test.Test>> meta::legend::tests::compiledElementsLeaveTheGraphWhenTheFunctionFails():Boolean[1]
+{
+  assertError(|meta::legend::compile('Class a::A{}', {|fail('function failed')}), 'function failed');
+  assertEmpty('a::A'->lenientPathToElement());
+}
+
+function <<test.Test>> meta::legend::tests::compileWithAFunctionPointer():Boolean[1]
 {
   assertEquals('A', meta::legend::compile('Class a::A{}', meta::legend::tests::nameOfA__String_1_));
 }
 
-function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::legend::tests::compilePMCDWithFunctionSeesTheCompiledElements():Boolean[1]
+function <<test.Test>> meta::legend::tests::compilePMCDWithFunctionSeesTheCompiledElements():Boolean[1]
 {
   assertEquals('a', meta::legend::compilePMCD('{"_type": "data", "elements": [{"_type": "class", "package": "test::class", "name": "a"}]}', {|'test::class::a'->pathToElement().name->toOne()}));
 }

@@ -19,6 +19,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.pure.m3.compiler.Context;
+import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -31,16 +32,60 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.AbstractCompiledCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
+import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.interpreted.natives.MapCoreInstance;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.function.Supplier;
 
 public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
 {
     private final ProcessorSupport originalProcessorSupport;
+    private final ThreadLocal<Deque<Metadata>> layers = ThreadLocal.withInitial(ArrayDeque::new);
 
     public LegendCompileMixedProcessorSupport(Context context, ModelRepository modelRepository, ProcessorSupport original)
     {
         super(context, modelRepository);
         this.originalProcessorSupport = original;
+    }
+
+    public static Metadata callingMetadata(ProcessorSupport processorSupport)
+    {
+        Metadata layer = (processorSupport instanceof LegendCompileMixedProcessorSupport) ? ((LegendCompileMixedProcessorSupport) processorSupport).layers.get().peek() : null;
+        return (layer == null) ? new InterpretedMetadata(processorSupport) : layer;
+    }
+
+    public <T> T inLayer(Metadata layer, Supplier<T> code)
+    {
+        Deque<Metadata> activeLayers = this.layers.get();
+        activeLayers.push(layer);
+        try
+        {
+            return code.get();
+        }
+        finally
+        {
+            activeLayers.pop();
+        }
+    }
+
+    // The Context caches what this finds, and that cache outlives the layer: the layer is asked directly.
+    @Override
+    public CoreInstance package_getByUserPath(String path)
+    {
+        CoreInstance element = super.package_getByUserPath(path);
+        Metadata layer = this.layers.get().peek();
+        if ((layer == null) || ((element != null) && !(element instanceof Package)))
+        {
+            return element;
+        }
+        if (element != null)
+        {
+            return layer.getMetadata(M3Paths.Package, path);
+        }
+        CoreInstance layerElement = layer.getMetadata(M3Paths.PackageableElement, path);
+        return (layerElement != null) ? layerElement : layer.getMetadata(M3Paths.Package, path);
     }
 
     // Intended mainly to Provide a classifier for ValCoreInstance (String, Integer, etc.)
