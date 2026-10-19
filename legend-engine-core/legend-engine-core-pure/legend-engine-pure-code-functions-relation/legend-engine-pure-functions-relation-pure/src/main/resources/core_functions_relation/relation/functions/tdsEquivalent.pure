@@ -75,7 +75,7 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
         true
       ),
       | true,
-      | fail($one->toString(true)+'\n is not equivalent to:\n'+$two->toString(true))
+      | fail($one->toString(true)+'\n is not equivalent to:\n'+$two->toString(true))->toMultiplicity(@[1])
    );
 }
 

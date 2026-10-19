@@ -332,7 +332,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
          $lines->println();
          assert(!$lines->split('\n')->exists(l| $l->startsWith('FAIL')), 'At least one test failed');
       },
-      |fail('Only supported for Alloy execution');
+      |fail('Only supported for Alloy execution')->toMultiplicity(@[1]);
    );
 }
 

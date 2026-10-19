@@ -80,10 +80,10 @@ meta::pure::functions::asserts::assert_Boolean_1__Function_1__Boolean_1_
 meta::pure::functions::asserts::assert_Boolean_1__String_1__Any_MANY__Boolean_1_
 meta::pure::functions::asserts::assert_Boolean_1__String_1__Boolean_1_
 meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_
-meta::pure::functions::asserts::fail_Function_1__Nil_1_
-meta::pure::functions::asserts::fail_String_1__Any_MANY__Nil_1_
-meta::pure::functions::asserts::fail_String_1__Nil_1_
-meta::pure::functions::asserts::fail__Nil_1_
+meta::pure::functions::asserts::fail_Function_1__Nil_0_
+meta::pure::functions::asserts::fail_String_1__Any_MANY__Nil_0_
+meta::pure::functions::asserts::fail_String_1__Nil_0_
+meta::pure::functions::asserts::fail__Nil_0_
 meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_
 meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_
 meta::pure::functions::boolean::equalJsonStrings_String_1__String_1__Boolean_1_

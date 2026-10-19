@@ -127,7 +127,7 @@ function meta::relational::dbTestRunner::runDataAssertion(result:Any[0..1], conf
   if($result->isEmpty(), |true,
     |if($config.deviatesFromStandard == true,
         | $assertion->runDataAssertionWhichDeviatesFromStandard();
-          fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');,
+          fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating')->toMultiplicity(@[1]);,
         | $assertion->eval()));
 }
 

@@ -456,7 +456,7 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
                                                   ^OperationWithParentPropertyMapping(element=$operation);,
                  n:NoSetRoutedValueSpecification[1]|$n.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  t:TDSRoutedValueSpecification[1] |  $t.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-                 a: Any[1] | fail($a->type()->elementToPath() + ' not supported!')->cast(@OperationWithParentPropertyMapping);
+                 a: Any[1] | fail($a->type()->elementToPath() + ' not supported!')->cast(@OperationWithParentPropertyMapping)->toMultiplicity(@[1]);
              ]);
     $res.element->map(e|$e->match([c:ClassInstanceHolder[1]|true, s:SelectWithCursor[1]|$s->validate($vs, $extensions), w:WindowColumn[1]|true]));
     $res;
@@ -10940,7 +10940,7 @@ function meta::relational::functions::pureToSqlQuery::genericTypeToDataType(gene
             // pair(|$path == 'UTinyInt', |fail('not supported yet!')),
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer)))
         ],
-        | fail ($genericType->printGenericType(false) + ' is not managed yet!');
+        | fail ($genericType->printGenericType(false) + ' is not managed yet!')->toMultiplicity(@[1]);
     )->cast(@meta::relational::metamodel::datatype::DataType);
 
     if ($mult->isToMany(), |^meta::relational::metamodel::datatype::Array(type = $type), |$type);
