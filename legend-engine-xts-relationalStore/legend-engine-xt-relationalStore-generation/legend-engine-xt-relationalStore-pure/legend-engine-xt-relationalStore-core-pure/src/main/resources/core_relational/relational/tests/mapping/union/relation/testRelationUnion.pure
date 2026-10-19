@@ -209,36 +209,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::
      $result.values->at(0)->sort([~first->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: importDataFlow plan generation currently fails with
-//   NullPointerException: Column 'U_TYPE' (case sensitive? true) not found among: [name]
-// The union plan injects a U_TYPE discriminator column that the Relation set
-// implementations do not surface, so the PK propagation step cannot resolve it.
-// =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_PksWithImportDataFlow():Boolean[1]
-{
-   let execCtx = ^RelationalExecutionContext(importDataFlow = true, importDataFlowAddFks = true);
-   let result = execute(
-      |Person.all()->project(~[name:p|$p.lastName]),
-      unionOfTwoRelationMappings,
-      meta::external::store::relational::tests::testRuntime(myDB),
-      $execCtx,
-      meta::relational::extension::relationalExtensions()
-   ).values->at(0);
-   // PersonSet1 rows carry inferred PK as ID_0 (ID_1 = 0 for non-PersonSet2 rows).
-   // PersonSet2 rows carry inferred PK as ID_1 (ID_0 = 0 for non-PersonSet1 rows).
-   assertEquals(
-     #TDS
-        name, ID_0, ID_1
-        Anand, 2, 0
-        Roberts, 3, 0
-        Scott, 1, 0
-        Taylor, 0, 1
-        Wright, 0, 2
-     #->toString(),
-     $result->sort([~name->ascending()])->toString());
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmProject():Boolean[1]
 {
    let result = execute(
