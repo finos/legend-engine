@@ -876,6 +876,37 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testFunctionTestWithReferenceDataResolver()
+    {
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  testing::MyData;\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "}\n");
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  MySuite\n" +
+                "  (\n" +
+                "    testing::MyData;\n" +
+                "    my::Database:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          Schema.table:\n" +
+                "              id, firstName\n" +
+                "              1 , John;\n" +
+                "        }#;\n" +
+                "    myTest | Hello('John') => 'Hello John!';\n" +
+                "  )\n" +
+                "}\n");
+    }
+
+    @Test
     public void testDecimalWithScale()
     {
         test("function withPath::f(d1: Decimal[1], d2: Decimal[1]): Decimal[1]\n" +

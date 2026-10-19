@@ -19,9 +19,12 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperRelationElementsDataComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.m3.type.EnumValue;
 import org.finos.legend.engine.protocol.pure.m3.function.property.AggregationKind;
 import org.finos.legend.engine.protocol.pure.m3.constraint.Constraint;
@@ -34,7 +37,6 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.type.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
@@ -349,12 +351,21 @@ public class HelperDomainGrammarComposer
         return str.toString();
     }
 
-    public static String renderFunctionTestData(FunctionTestData functionTestData, int currentInt, PureGrammarComposerContext context)
+    public static String renderFunctionTestData(DataResolver dataResolver, int currentInt, PureGrammarComposerContext context)
     {
+        if (dataResolver instanceof ReferenceDataResolver)
+        {
+            return getTabString(currentInt) + ((ReferenceDataResolver) dataResolver).elementPointer.path + ";";
+        }
+        if (!(dataResolver instanceof BaseDataResolver))
+        {
+            throw new UnsupportedOperationException("Unsupported function test data resolver type: " + dataResolver.getClass().getSimpleName());
+        }
+        BaseDataResolver baseDataResolver = (BaseDataResolver) dataResolver;
         StringBuilder dataStrBuilder = new StringBuilder();
         dataStrBuilder.append(getTabString(currentInt));
-        dataStrBuilder.append(HelperRuntimeGrammarComposer.renderPackageableElementPointer(functionTestData.packageableElementPointer)).append(":");
-        EmbeddedData embeddedData = functionTestData.data;
+        dataStrBuilder.append(HelperRuntimeGrammarComposer.renderPackageableElementPointer(baseDataResolver.elementPointer)).append(":");
+        EmbeddedData embeddedData = baseDataResolver.data;
         if (embeddedData instanceof DataElementReference)
         {
             dataStrBuilder.append(" ");
@@ -368,7 +379,7 @@ public class HelperDomainGrammarComposer
         else
         {
             dataStrBuilder.append("\n");
-            dataStrBuilder.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(functionTestData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(currentInt + 2)).build()));
+            dataStrBuilder.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(baseDataResolver.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(currentInt + 2)).build()));
         }
         dataStrBuilder.append(";");
         return dataStrBuilder.toString();

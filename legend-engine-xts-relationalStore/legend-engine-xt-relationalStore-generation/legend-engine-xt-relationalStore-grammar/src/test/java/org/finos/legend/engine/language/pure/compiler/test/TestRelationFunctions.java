@@ -1464,6 +1464,77 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void testFunctionTestDataWithReferenceDataResolver()
+    {
+        String model = "###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "  store::TestDB:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.PersonTable:\n" +
+                "        id,firstName,lastName\n" +
+                "        1,I'm John,\"Doe, Jr\";\n" +
+                "    }#;\n" +
+                "}\n" +
+                "Data data::RelationalDataNoResolvers\n" +
+                "{\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,I'm John,\"Doe, Jr\";\n" +
+                "  }#\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database store::TestDB\n" +
+                "(\n" +
+                "  Table PersonTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    firstName VARCHAR(200),\n" +
+                "    lastName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "###Pure\n" +
+                "import meta::pure::precisePrimitives::*;\n" +
+                "\n" +
+                "function model::RelationQuery(): meta::pure::metamodel::relation::Relation<(firstName:Varchar(200), lastName:Varchar(200))>[1]\n" +
+                "{\n" +
+                "  #>{store::TestDB.PersonTable}#->select(~[firstName, lastName])->from(execution::Runtime)\n" +
+                "}\n" +
+                "{\n" +
+                "  testSuite_1\n" +
+                "  (\n" +
+                "    data::RelationalData;\n" +
+                "%s" +
+                "    test_1 | RelationQuery() => (JSON) '[]';\n" +
+                "  )\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping mapping::myMapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Runtime\n" +
+                "Runtime execution::Runtime\n" +
+                "{\n" +
+                "  mappings: [mapping::myMapping];\n" +
+                "  connections:[];\n" +
+                "}\n";
+        test(String.format(model, ""));
+        test(String.format(model,
+                "    store::TestDB:\n" +
+                "      Relation\n" +
+                "      #{\n" +
+                "        default.PersonTable:\n" +
+                "          id,firstName,lastName\n" +
+                "          2,Nicole,Smith;\n" +
+                "      }#;\n"));
+        test(String.format(model, "    store::TestDB: data::RelationalDataNoResolvers;\n"),
+                "COMPILATION error at [42:5-51]: Function test data cannot reference a data element through base data when it also uses data element references");
+    }
+
+    @Test
     public void testInWithSingleColumnRelation()
     {
         test(

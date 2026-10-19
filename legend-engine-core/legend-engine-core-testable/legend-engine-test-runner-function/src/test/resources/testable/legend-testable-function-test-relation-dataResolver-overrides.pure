@@ -1,0 +1,110 @@
+###Data
+Data data::PersonAndFirmData
+{
+  store::TestDB:
+    Relation
+    #{
+      default.PersonTable:
+        id,firstName,employerId
+        1,John,1
+        2,Nicole,2;
+      default.FirmTable:
+        firmId,legalName
+        1,Finos
+        2,Apple;
+    }#;
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    employerId INTEGER
+  )
+  Table FirmTable
+  (
+    firmId INTEGER PRIMARY KEY,
+    legalName VARCHAR(200)
+  )
+)
+
+
+###Pure
+import meta::pure::precisePrimitives::*;
+
+function model::PersonFirmQuery(): meta::pure::metamodel::relation::Relation<(firstName:Varchar(200), legalName:Varchar(200))>[1]
+{
+  #>{store::TestDB.PersonTable}#->join(
+    #>{store::TestDB.FirmTable}#,
+    meta::pure::functions::relation::JoinKind.INNER,
+    {p, f|$p.employerId == $f.firmId}
+  )->select(
+    ~[
+       firstName,
+       legalName
+     ]
+  )->sort(
+    ascending(~firstName)
+  )->from(
+    execution::Runtime
+  )
+}
+{
+  referenceOnly
+  (
+    data::PersonAndFirmData;
+    testReferenceOnly | PersonFirmQuery() => Relation
+    #{
+      firstName, legalName
+      John, Finos
+      Nicole, Apple;
+    }#;
+  )
+
+  referenceWithBaseOverride
+  (
+    data::PersonAndFirmData;
+    store::TestDB:
+      Relation
+      #{
+        default.PersonTable:
+          id,firstName,employerId
+          1,Time,2;
+      }#;
+    testBaseOverridesReference | PersonFirmQuery() => Relation
+    #{
+      firstName, legalName
+      Time, Apple;
+    }#;
+  )
+}
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings: [];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

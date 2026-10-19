@@ -14,11 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function;
 
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;
 
 public class FunctionTestSuite extends TestSuite
 {
-    public List<FunctionTestData> testData;
+    public List<DataResolver> testData;
 }

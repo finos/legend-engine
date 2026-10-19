@@ -760,7 +760,8 @@
         } ]
       } ],
       "testData" : [ {
-        "packageableElementPointer" : {
+        "_type" : "baseDataResolver",
+        "elementPointer" : {
           "type" : "STORE",
           "path" : "store::TestDB"
         },
