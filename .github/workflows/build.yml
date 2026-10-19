@@ -168,11 +168,6 @@ jobs:
             echo "arg=" >> $GITHUB_OUTPUT
           fi
 
-#      - name: Collect Workflow Telemetry
-#        uses: runforesight/workflow-telemetry-action@v1
-#        with:
-#          theme: dark
-
       - name: Set profiles that required github secrets
         id: requiredSecrets
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
