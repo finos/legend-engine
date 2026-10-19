@@ -32,9 +32,10 @@ import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -112,29 +113,13 @@ public class Function extends PackageableElement
                     JsonNode testDataArray = testSuiteNode.get("testData");
                     if (testDataArray != null)
                     {
-                        MutableList<FunctionTestData> testDataList = Lists.mutable.empty();
+                        MutableList<DataResolver> testDataList = Lists.mutable.empty();
                         Iterator<JsonNode> testDataIterator = testDataArray.elements();
 
                         while (testDataIterator.hasNext())
                         {
                             JsonNode testDataNode = testDataIterator.next();
-                            FunctionTestData testData = new FunctionTestData();
-
-                            testData.doc = processOne(testDataNode, "doc", String.class, codec);
-                            testData.data = processOne(testDataNode, "data", EmbeddedData.class, codec);
-                            testData.sourceInformation = processOne(testDataNode, "sourceInformation", SourceInformation.class, codec);
-
-                            // Handle backward compatibility: storeProviderPointer -> packageableElementPointer
-                            if (testDataNode.has("packageableElementPointer"))
-                            {
-                                testData.packageableElementPointer = processOne(testDataNode, "packageableElementPointer", PackageableElementPointer.class, codec);
-                            }
-                            else if (testDataNode.has("store"))
-                            {
-                                testData.packageableElementPointer = processOne(testDataNode, "store", StoreProviderPointer.class, codec);
-                            }
-
-                            testDataList.add(testData);
+                            testDataList.add(testDataNode.has("_type") ? codec.treeToValue(testDataNode, DataResolver.class) : processLegacyFunctionTestData(testDataNode, codec));
                         }
                         testSuite.testData = testDataList;
                     }
@@ -155,6 +140,24 @@ public class Function extends PackageableElement
             result.body = processMany(node, "body", ValueSpecification.class, codec);
 
             return result;
+        }
+
+        private static BaseDataResolver processLegacyFunctionTestData(JsonNode testDataNode, ObjectCodec codec) throws IOException
+        {
+            BaseDataResolver testData = new BaseDataResolver();
+            testData.data = processOne(testDataNode, "data", EmbeddedData.class, codec);
+            testData.sourceInformation = processOne(testDataNode, "sourceInformation", SourceInformation.class, codec);
+
+            // Handle backward compatibility: storeProviderPointer -> packageableElementPointer
+            if (testDataNode.has("packageableElementPointer"))
+            {
+                testData.elementPointer = processOne(testDataNode, "packageableElementPointer", PackageableElementPointer.class, codec);
+            }
+            else if (testDataNode.has("store"))
+            {
+                testData.elementPointer = processOne(testDataNode, "store", StoreProviderPointer.class, codec);
+            }
+            return testData;
         }
     }
 }

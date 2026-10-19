@@ -23,6 +23,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
@@ -46,12 +47,18 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class DataResolverHelper
 {
     public MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> resolveDataFromDataResolvers(List<DataResolver> dataResolvers, CompileContext context, ProcessingContext processingContext)
+    {
+        return resolveDataFromDataResolvers(dataResolvers, context, processingContext, DataResolverHelper::resolveBaseDataElement);
+    }
+
+    public MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> resolveDataFromDataResolvers(List<DataResolver> dataResolvers, CompileContext context, ProcessingContext processingContext, BiFunction<PackageableElementPointer, CompileContext, PackageableElement> baseDataElementResolver)
     {
         // priority order for a given PackageableElement (later overrides earlier): DataElement reference < Direct PackageableElement (non DataElement) reference < base data
         // embeddedDataPerElement is populated in increasing priority order, and mergeByPriority picks the last entry (or per-path last-wins for RelationElementsData)
@@ -108,22 +115,15 @@ public class DataResolverHelper
             {
                 throw new EngineException("Duplicate base data reference: " + baseDataResolver.elementPointer.path, baseDataResolver.elementPointer.sourceInformation, EngineErrorType.COMPILATION);
             }
-            PackageableElement element = context.resolvePackageableElement(baseDataResolver.elementPointer.path, baseDataResolver.elementPointer.sourceInformation);
-            if (element instanceof Root_meta_pure_data_DataResolver || element instanceof Database)
-            {
-                Root_meta_pure_data_EmbeddedData metamodelData = baseDataResolver.data.accept(embeddedDataFirstPassBuilder);
-                Root_meta_pure_data_EmbeddedData resolvedData = context.getCompilerExtensions()
-                        .getPackageableElementToEmbeddedDataProcessors().stream()
-                        .map(processor -> processor.value(element, metamodelData, context, false, baseDataResolver.sourceInformation))
-                        .filter(java.util.Objects::nonNull)
-                        .findFirst()
-                        .orElse(metamodelData);
-                embeddedDataPerElement.getIfAbsentPut(element, ArrayList::new).add(resolvedData);
-            }
-            else
-            {
-                throw new EngineException("Unsupported type for data resolution: " + baseDataResolver.elementPointer.path, baseDataResolver.elementPointer.sourceInformation, EngineErrorType.COMPILATION);
-            }
+            PackageableElement element = baseDataElementResolver.apply(baseDataResolver.elementPointer, context);
+            Root_meta_pure_data_EmbeddedData metamodelData = baseDataResolver.data.accept(embeddedDataFirstPassBuilder);
+            Root_meta_pure_data_EmbeddedData resolvedData = context.getCompilerExtensions()
+                    .getPackageableElementToEmbeddedDataProcessors().stream()
+                    .map(processor -> processor.value(element, metamodelData, context, false, baseDataResolver.sourceInformation))
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst()
+                    .orElse(metamodelData);
+            embeddedDataPerElement.getIfAbsentPut(element, ArrayList::new).add(resolvedData);
             visitedBaseDataPaths.add(baseDataResolver.elementPointer.path);
         });
 
@@ -150,6 +150,11 @@ public class DataResolverHelper
     // resolveDataFromDataResolvers can be used for validation alongside this
     // shares merging logic with resolveDataFromDataResolvers
     public MutableMap<PackageableElement, EmbeddedData> resolveDataFromDataResolversToProtocol(List<DataResolver> dataResolvers, CompileContext context, PureModelContextData pureModelContextData)
+    {
+        return resolveDataFromDataResolversToProtocol(dataResolvers, context, pureModelContextData, DataResolverHelper::resolveBaseDataElement);
+    }
+
+    public MutableMap<PackageableElement, EmbeddedData> resolveDataFromDataResolversToProtocol(List<DataResolver> dataResolvers, CompileContext context, PureModelContextData pureModelContextData, BiFunction<PackageableElementPointer, CompileContext, PackageableElement> baseDataElementResolver)
     {
         MutableMap<PackageableElement, List<EmbeddedData>> embeddedDataPerElement = Maps.mutable.empty();
         MutableSet<String> visitedReferencePaths = Sets.mutable.empty();
@@ -212,18 +217,11 @@ public class DataResolverHelper
             {
                 throw new EngineException("Duplicate base data reference: " + base.elementPointer.path, base.elementPointer.sourceInformation, EngineErrorType.COMPILATION);
             }
-            PackageableElement element = context.resolvePackageableElement(base.elementPointer.path, base.elementPointer.sourceInformation);
-            if (element instanceof Root_meta_pure_data_DataResolver || element instanceof Database)
-            {
-                EmbeddedData resolvedData = base.data instanceof DataElementReference
-                        ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) base.data, pureModelContextData)
-                        : base.data;
-                embeddedDataPerElement.getIfAbsentPut(element, ArrayList::new).add(resolvedData);
-            }
-            else
-            {
-                throw new EngineException("Unsupported type for data resolution: " + base.elementPointer.path, base.elementPointer.sourceInformation, EngineErrorType.COMPILATION);
-            }
+            PackageableElement element = baseDataElementResolver.apply(base.elementPointer, context);
+            EmbeddedData resolvedData = base.data instanceof DataElementReference
+                    ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) base.data, pureModelContextData)
+                    : base.data;
+            embeddedDataPerElement.getIfAbsentPut(element, ArrayList::new).add(resolvedData);
             visitedBaseDataPaths.add(base.elementPointer.path);
         });
 
@@ -247,6 +245,16 @@ public class DataResolverHelper
                     merged.relationElements = Lists.mutable.withAll(relationElementByPath.valuesView());
                     return merged;
                 });
+    }
+
+    private static PackageableElement resolveBaseDataElement(PackageableElementPointer elementPointer, CompileContext context)
+    {
+        PackageableElement element = context.resolvePackageableElement(elementPointer.path, elementPointer.sourceInformation);
+        if (!(element instanceof Root_meta_pure_data_DataResolver || element instanceof Database))
+        {
+            throw new EngineException("Unsupported type for data resolution: " + elementPointer.path, elementPointer.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        return element;
     }
 
     private static <E, R extends E> MutableMap<PackageableElement, E> mergeByPriority(

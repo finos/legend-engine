@@ -46,8 +46,11 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.function.property.AggregationKind;
@@ -70,7 +73,6 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.type.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
@@ -677,10 +679,19 @@ public class DomainParseTreeWalker
         return externalFormatData;
     }
 
-    private FunctionTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
+    private DataResolver processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
     {
-        FunctionTestData functionTestData = new FunctionTestData();
-        functionTestData.packageableElementPointer = PackageableElementPointerFactory.create(functionDataContext.elementPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.elementPointer()));
+        if (functionDataContext.functionDataReference() != null)
+        {
+            DomainParserGrammar.QualifiedNameContext qualifiedName = functionDataContext.functionDataReference().qualifiedName();
+            ReferenceDataResolver referenceDataResolver = new ReferenceDataResolver();
+            referenceDataResolver.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionDataContext);
+            referenceDataResolver.elementPointer = new PackageableElementPointer(PureGrammarParserUtility.fromQualifiedName(qualifiedName.packagePath() == null ? Collections.emptyList() : qualifiedName.packagePath().identifier(), qualifiedName.identifier()));
+            referenceDataResolver.elementPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(qualifiedName);
+            return referenceDataResolver;
+        }
+        BaseDataResolver functionTestData = new BaseDataResolver();
+        functionTestData.elementPointer = PackageableElementPointerFactory.create(functionDataContext.elementPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.elementPointer()));
         functionTestData.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionDataContext);
         if (functionDataContext.functionDataValue() != null)
         {

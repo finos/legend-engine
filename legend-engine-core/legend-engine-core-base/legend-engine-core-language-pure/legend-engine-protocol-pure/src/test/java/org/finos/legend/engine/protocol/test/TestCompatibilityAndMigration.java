@@ -2087,10 +2087,16 @@ public class TestCompatibilityAndMigration
     @Test
     public void testStoreTestData() throws Exception
     {
+        String after = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionAfter.json"), "Can't find resource '" + "simpleFunctionAfter.json" + "'"), "UTF-8").useDelimiter("\\A").next();
         check(
                 new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionBefore.json"), "Can't find resource '" + "simpleFunctionBefore.json" + "'"), "UTF-8").useDelimiter("\\A").next(),
-                new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionAfter.json"), "Can't find resource '" + "simpleFunctionAfter.json" + "'"), "UTF-8").useDelimiter("\\A").next()
+                after
         );
+        check(
+                new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionWithPackageableElementPointerTestData.json"), "Can't find resource '" + "simpleFunctionWithPackageableElementPointerTestData.json" + "'"), "UTF-8").useDelimiter("\\A").next(),
+                after
+        );
+        check(after, after);
     }
 
     @Test

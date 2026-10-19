@@ -15,6 +15,8 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
@@ -24,11 +26,14 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuild
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest;
@@ -69,7 +74,7 @@ public class HelperFunctionBuilder
             Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite =  new Root_meta_legend_function_metamodel_FunctionTestSuite_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestSuite"));
             if (testSuite.testData != null && !testSuite.testData.isEmpty())
             {
-                TestBuilderHelper.validateIds(ListIterate.collect(testSuite.testData, testData -> testData.packageableElementPointer.path), testSuite.sourceInformation, "Multiple test data found for stores");
+                MutableList<BaseDataResolver> baseDataResolvers = ListIterate.selectInstancesOf(testSuite.testData, BaseDataResolver.class);
                 RichIterable<? extends org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime>  runtimes;
                 // TODO: we can remove some of these checks once we support these use cases
                 try
@@ -84,7 +89,23 @@ public class HelperFunctionBuilder
                 {
                     throw new EngineException("Function test data requires a function to have one runtime. Found " + runtimes.size() + " runtimes in function " + metamodelFunction.getName(), testSuite.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                metamodelSuite._testData(ListIterate.collect(testSuite.testData, storeData -> buildFunctionTestData(storeData, compileContext, processingContext)));
+                if (baseDataResolvers.size() == testSuite.testData.size())
+                {
+                    // using the legacy resolution for this case. my::store: my::dataElement references still allowed here
+                    TestBuilderHelper.validateIds(baseDataResolvers.collect(testData -> testData.elementPointer.path), testSuite.sourceInformation, "Multiple test data found for stores");
+                    metamodelSuite._testData(baseDataResolvers.collect(storeData -> buildFunctionTestData(storeData, compileContext, processingContext)));
+                }
+                else
+                {
+                    // the new resolution for when there is at least one reference resolver. Check that there aren't any my::store: my::dataElement references
+                    BaseDataResolver dataElementReferencingResolver = baseDataResolvers.detect(baseDataResolver -> baseDataResolver.data instanceof DataElementReference);
+                    if (dataElementReferencingResolver != null)
+                    {
+                        throw new EngineException("Function test data cannot reference a data element through base data when it also uses data element references", dataElementReferencingResolver.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                    MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> resolvedData = new DataResolverHelper().resolveDataFromDataResolvers(testSuite.testData, compileContext, processingContext, HelperFunctionBuilder::resolveFunctionTestDataElement);
+                    metamodelSuite._testData(resolvedData.keyValuesView().collect(elementData -> newFunctionTestData(elementData.getOne(), elementData.getTwo(), testSuite.sourceInformation, compileContext)));
+                }
             }
             metamodelSuite
                     ._id(testSuite.id)
@@ -121,10 +142,17 @@ public class HelperFunctionBuilder
             if (testSuite.testData != null && !testSuite.testData.isEmpty())
             {
                 EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
-                ListIterate.forEach(testSuite.testData, storeData ->
+                ListIterate.forEach(testSuite.testData, dataResolver ->
                 {
-                    prerequisiteElements.add(storeData.packageableElementPointer);
-                    storeData.data.accept(embeddedDataPrerequisiteElementsPassBuilder);
+                    if (dataResolver instanceof BaseDataResolver)
+                    {
+                        prerequisiteElements.add(((BaseDataResolver) dataResolver).elementPointer);
+                        ((BaseDataResolver) dataResolver).data.accept(embeddedDataPrerequisiteElementsPassBuilder);
+                    }
+                    else if (dataResolver instanceof ReferenceDataResolver)
+                    {
+                        prerequisiteElements.add(((ReferenceDataResolver) dataResolver).elementPointer);
+                    }
                 });
             }
             ListIterate.forEach(testSuite.tests, unitTest -> collectPrerequisiteElementsFromFunctionTestSuites(prerequisiteElements, unitTest, compileContext));
@@ -142,27 +170,34 @@ public class HelperFunctionBuilder
         }
     }
 
-    private static Root_meta_legend_function_metamodel_FunctionTestData buildFunctionTestData(FunctionTestData functionTestData, CompileContext compileContext, ProcessingContext ctx)
+    public static PackageableElement resolveFunctionTestDataElement(PackageableElementPointer elementPointer, CompileContext compileContext)
     {
-        PackageableElement element;
         try
         {
-            element = StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(functionTestData.packageableElementPointer, compileContext);
+            return StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(elementPointer, compileContext);
         }
         catch (Exception e)
         {
-            element = compileContext.resolvePackageableElement(functionTestData.packageableElementPointer);
+            return compileContext.resolvePackageableElement(elementPointer);
         }
-        PackageableElement resolvedElement = element;
+    }
+
+    private static Root_meta_legend_function_metamodel_FunctionTestData buildFunctionTestData(BaseDataResolver functionTestData, CompileContext compileContext, ProcessingContext ctx)
+    {
+        PackageableElement resolvedElement = resolveFunctionTestDataElement(functionTestData.elementPointer, compileContext);
         Root_meta_pure_data_EmbeddedData metamodelData = functionTestData.data.accept(new EmbeddedDataFirstPassBuilder(compileContext, ctx));
         Root_meta_pure_data_EmbeddedData resolvedData = compileContext.getCompilerExtensions().getPackageableElementToEmbeddedDataProcessors().stream().map(processor -> processor.value(resolvedElement, metamodelData, compileContext, true, functionTestData.sourceInformation))
                 .filter(java.util.Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new EngineException("Unsupported relation accessor"));
-        return new Root_meta_legend_function_metamodel_FunctionTestData_Impl("", SourceInformationHelper.toM3SourceInformation(functionTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestData"))
-                ._element(resolvedElement)
-                ._data(resolvedData)
-                ._doc(functionTestData.doc);
+        return newFunctionTestData(resolvedElement, resolvedData, functionTestData.sourceInformation, compileContext);
+    }
+
+    private static Root_meta_legend_function_metamodel_FunctionTestData newFunctionTestData(PackageableElement element, Root_meta_pure_data_EmbeddedData data, SourceInformation sourceInformation, CompileContext compileContext)
+    {
+        return new Root_meta_legend_function_metamodel_FunctionTestData_Impl("", SourceInformationHelper.toM3SourceInformation(sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestData"))
+                ._element(element)
+                ._data(data);
     }
 
     private static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(ParameterValue parameterValue, CompileContext context)

@@ -254,6 +254,15 @@ public class TestFunctionTestSuite
     }
 
     @Test
+    public void testRelationFunctionTestWithReferenceDataResolverAndBaseOverride()
+    {
+        List<TestResult> results = executeFunctionTest("legend-testable-function-test-relation-dataResolver-overrides.pure", "model::PersonFirmQuery__Relation_1_");
+        Assert.assertEquals(2, results.size());
+        Assert.assertTrue(hasTestPassed(findTestById(results, "testReferenceOnly")));
+        Assert.assertTrue(hasTestPassed(findTestById(results, "testBaseOverridesReference")));
+    }
+
+    @Test
     public void testRelationFunctionTestWithRelationAccessorAndRelationAssertion()
     {
         List<TestResult> relationFunctionTestResults = executeFunctionTest("legend-testable-function-test-relation-relationDatabaseAccessor-relationAssertion.pure", "model::RelationQuery__Relation_1_");

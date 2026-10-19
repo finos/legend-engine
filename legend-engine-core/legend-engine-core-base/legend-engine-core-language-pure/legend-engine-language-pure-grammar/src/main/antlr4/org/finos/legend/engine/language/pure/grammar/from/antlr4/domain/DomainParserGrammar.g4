@@ -169,7 +169,9 @@ simpleFunctionSuite:                            identifier
                                                     simpleFunctionTest (simpleFunctionTest)*
                                                 PAREN_CLOSE
 ;
-functionData:                                   elementPointer COLON functionDataValue SEMI_COLON
+functionData:                                   (functionDataReference | elementPointer COLON functionDataValue) SEMI_COLON
+;
+functionDataReference:                          qualifiedName
 ;
 elementPointer:                                 (packageableElementPointerType)? packageableElementPointer
 ;
