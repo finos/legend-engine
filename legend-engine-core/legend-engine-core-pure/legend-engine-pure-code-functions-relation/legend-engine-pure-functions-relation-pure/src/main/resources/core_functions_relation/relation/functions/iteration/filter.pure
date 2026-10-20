@@ -197,5 +197,5 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   id,payload\n'+
                 '   2,\'[4,5,6]\'\n'+
                 '   4,\'[10,11,12]\'\n'+
-                '#', $res->toString());
+                '#', $res->sort(~id->ascending())->toString());
 }
