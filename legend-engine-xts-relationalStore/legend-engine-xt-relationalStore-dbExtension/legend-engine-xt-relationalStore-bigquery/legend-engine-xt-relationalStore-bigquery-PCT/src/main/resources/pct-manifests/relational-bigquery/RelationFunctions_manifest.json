@@ -34,8 +34,36 @@
       "expectedError": "Error while executing: Create Table leSchema.tb"
     },
     {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_NoNulls_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_String_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNotInPattern_ThreeValued_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
       "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
       "expectedError": "Not supported data type :'LONG' for Pure type: 'String'"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testStringColumn_fromJson_extend_keyFromColumn_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
@@ -59,6 +87,10 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_keyFromColumn_Function_1__Boolean_1_",
       "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
     },
     {
@@ -184,6 +216,10 @@
     {
       "test": "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
       "expectedError": "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] EXCEPT ALL is not supported for Database Type: BigQuery"
     },
     {
       "test": "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
@@ -410,8 +446,44 @@
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
     },
     {
+      "test": "meta::pure::functions::relation::tests::in::testIn_Negated_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testIn_Negated_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_And_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
       "test": "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
-      "expectedError": "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_MixedWithScalarComparison_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] INTERSECT ALL is not supported for Database Type: BigQuery"
     },
     {
       "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_EmptyLast_Function_1__Boolean_1_",
