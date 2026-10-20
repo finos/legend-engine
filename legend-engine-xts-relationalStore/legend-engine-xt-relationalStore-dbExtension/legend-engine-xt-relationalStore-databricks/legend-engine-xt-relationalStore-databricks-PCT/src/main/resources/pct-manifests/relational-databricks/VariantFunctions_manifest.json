@@ -1,5 +1,5 @@
 {
-  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
+  "adapter" : "meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_",
     "expectedError" : "Invalid Pure Boolean: 'hello'"

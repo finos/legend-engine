@@ -1,5 +1,5 @@
 {
-  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
+  "adapter" : "meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""

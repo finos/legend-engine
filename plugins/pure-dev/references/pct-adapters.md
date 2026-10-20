@@ -15,7 +15,7 @@ fails to resolve after a rebase.
 | In-Memory | `meta::pure::test::pct::testAdapterForInMemoryExecution` |
 | Python - LegendQL | `meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter` |
 | Python - PandasAPI | `meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversePCTAdapter` |
-| Databricks | `meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution` |
+| Databricks | `meta::relational::tests::pct::databricks::testAdapterForRelationalWithDatabricksExecution` |
 | Spanner | `meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution` |
 | MemSQL | `meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution` |
 | SqlServer | `meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution` |
