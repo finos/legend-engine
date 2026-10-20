@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::model::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::*;
+
+Enum meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::TEventCode
+{
+ MAT,
+ RDM
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::TEvent
+{
+ details: TDetails[1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::TDetails
+{
+ code: TEventCode[1];
+ description: String[1];
+ eligible: Boolean[1];
+ termId: Integer[1];
+ processed: Date[1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::SEvent
+{
+ code: String[1];
+ description: String[0..1];
+ eligible: String[0..1];
+ termId: Integer[0..1];
+ processed: String[0..1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::parseOptionalDate(in: String[0..1]): Date[1]
+{
+ if($in->isEmpty(), | Nil->cast(@Date), | $in->toOne()->parseDate())
+}
+
+// Nil is a subtype of every type, so a reference to it in a mapping must not turn
+// to-one primitive / enum properties into multi-subtype properties in the generated Java
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_29_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::nilReference::testToOnePropertiesWithNilTypeReference():Boolean[1]
+{
+ let tree = #{
+    TEvent {
+       details {
+          code,
+          description,
+          eligible,
+          termId,
+          processed
+       }
+    }
+ }#;
+ let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::testMappingNilReference;
+ let query   = {|TEvent.all()->graphFetch($tree)->serialize($tree)};
+ let runtime = ^Runtime(
+    connectionStores = [
+       ^ConnectionStore(
+          element = ^ModelStore(),
+          connection = ^JsonModelConnection(
+             class = SEvent,
+             url = 'data:application/json,[{"code":"MAT","description":"Maturity","eligible":"Y","termId":1,"processed":"2022-05-31"}]'
+          )
+       )]);
+ let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
+ assertJsonStringsEqual('{"details":{"code":"MAT","description":"Maturity","eligible":true,"termId":1,"processed":"2022-05-31"}}', $result);
+}
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::nilReference::testMappingNilReference
+(
+ *TEvent: Pure
+ {
+    ~src SEvent
+    details: $src
+ }
+ *TDetails: Pure
+ {
+    ~src SEvent
+    code: EnumerationMapping TEventCodeMapping: $src.code,
+    description: if($src.description->isEmpty(), | '', | $src.description->toOne()),
+    eligible: $src.eligible == 'Y',
+    termId: if($src.termId->isEmpty(), | 0, | $src.termId->toOne()),
+    processed: $src.processed->parseOptionalDate()
+ }
+ TEventCode: EnumerationMapping TEventCodeMapping
+ {
+    MAT: 'MAT',
+    RDM: 'RDM'
+ }
+)
