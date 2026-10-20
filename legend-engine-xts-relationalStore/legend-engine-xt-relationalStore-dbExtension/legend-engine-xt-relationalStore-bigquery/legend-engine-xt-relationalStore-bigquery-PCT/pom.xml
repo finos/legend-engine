@@ -117,8 +117,20 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <forkCount>2</forkCount>
+                            <!-- A fresh fork per scope class, three at a time; alphabetical order puts the longest, Relation, in the first wave -->
+                            <forkCount>3</forkCount>
                             <reuseForks>false</reuseForks>
+                            <runOrder>alphabetical</runOrder>
+                            <!-- CI passes -Xmx6g for every module, which three forks would take past the runner's memory -->
+                            <argLine>${argLine} ${surefire.vm.params} -Xmx3g</argLine>
+                            <includes>
+                                <include>**/Test_Relational_BigQuery_PCT$*Functions.java</include>
+                                <include>**/TestPCTReportBigQuery.java</include>
+                            </includes>
+                            <!-- Replaces surefire's default exclusion of nested classes, which are the scopes -->
+                            <excludes>
+                                <exclude>**/Test_Relational_BigQuery_PCT.java</exclude>
+                            </excludes>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>
