@@ -51,6 +51,9 @@ AWS_ACCESS_KEY_ID={}
 AWS_SECRET_ACCESS_KEY={}
 ```
 
+The fixture dataset, `leSchema`, is created when the Java suite starts, never by the adapter, so against
+a fresh project run the suite once before running BigQuery PCT tests from the Pure IDE.
+
 ## Running on PURE IDE Light
 
 When starting the PURE IDE Light process, pass the following system property with the location of the file created above:

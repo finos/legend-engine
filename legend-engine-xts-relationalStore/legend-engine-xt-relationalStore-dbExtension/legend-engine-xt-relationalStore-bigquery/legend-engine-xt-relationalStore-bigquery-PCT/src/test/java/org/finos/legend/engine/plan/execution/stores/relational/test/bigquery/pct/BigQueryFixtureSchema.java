@@ -29,13 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Drops fixture tables left behind by earlier runs. BigQuery allows a temporary table only inside a
- * script or session, so PCT creates plain ones and nothing reclaims them. Only tables past the cutoff
- * are touched, leaving a concurrent run its fixtures.
+ * Creates the schema fixture tables go in, since the adapter's DDL translator emits no CREATE SCHEMA,
+ * and drops fixture tables left behind by earlier runs. BigQuery allows a temporary table only inside
+ * a script or session, so PCT creates plain ones and nothing reclaims them. Only tables past the
+ * cutoff are touched, leaving a concurrent run its fixtures.
  */
-class BigQueryLeakedTableSweep implements TestServerResource
+class BigQueryFixtureSchema implements TestServerResource
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryLeakedTableSweep.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryFixtureSchema.class);
 
     private static final String PCT_SCHEMA = "leSchema";
     private static final int MIN_AGE_DAYS = 2;
@@ -43,32 +44,33 @@ class BigQueryLeakedTableSweep implements TestServerResource
 
     private final TestConnectionIntegration integration;
 
-    BigQueryLeakedTableSweep(TestConnectionIntegration integration)
+    BigQueryFixtureSchema(TestConnectionIntegration integration)
     {
         this.integration = integration;
     }
 
     @Override
-    public void start()
+    public void start() throws SQLException
     {
-        try
-        {
-            ConnectionManagerSelector connectionManager = new RelationalStoreExecutorBuilder().build()
-                    .getStoreState().getRelationalExecutor().getConnectionManager();
+        ConnectionManagerSelector connectionManager = new RelationalStoreExecutorBuilder().build()
+                .getStoreState().getRelationalExecutor().getConnectionManager();
 
-            try (Connection connection = connectionManager.getDatabaseConnection(new Identity("legend-pct-cleanup"), this.integration.getConnection());
-                 Statement statement = connection.createStatement())
-            {
-                this.clean(statement);
-            }
-        }
-        catch (Exception e)
+        try (Connection connection = connectionManager.getDatabaseConnection(new Identity("legend-pct-cleanup"), this.integration.getConnection());
+             Statement statement = connection.createStatement())
         {
-            LOGGER.warn("BigQuery leaked table sweep skipped", e);
+            statement.execute("Create schema if not exists " + PCT_SCHEMA);
+            try
+            {
+                this.sweepLeakedTables(statement);
+            }
+            catch (SQLException e)
+            {
+                LOGGER.warn("BigQuery leaked table sweep skipped", e);
+            }
         }
     }
 
-    private void clean(Statement statement) throws SQLException
+    private void sweepLeakedTables(Statement statement) throws SQLException
     {
         MutableList<String> leaked = Lists.mutable.empty();
         String sql = "Select table_name From " + PCT_SCHEMA + ".INFORMATION_SCHEMA.TABLES" +
