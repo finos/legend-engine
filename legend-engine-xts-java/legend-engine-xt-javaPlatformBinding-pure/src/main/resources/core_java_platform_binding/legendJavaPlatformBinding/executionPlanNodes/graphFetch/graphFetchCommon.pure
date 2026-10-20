@@ -161,8 +161,12 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                     ],
                   {|
                      let returnType = $p->functionReturnType().rawType->toOne();
-                     let subtypes = $context.typeInfos->allClassInfos().type
-                        ->filter(c | $c != $returnType && $c->meta::pure::functions::meta::_subTypeOf($returnType));
+                     // Nil is a subtype of every type, so it must not be treated as a routable subtype
+                     let subtypes = if($returnType->instanceOf(meta::pure::metamodel::type::Class),
+                        | $context.typeInfos->allClassInfos().type
+                             ->filter(c | $c != $returnType && $c != meta::pure::metamodel::type::Nil && $c->meta::pure::functions::meta::_subTypeOf($returnType)),
+                        | []
+                     );
                      let errorMessage = 'Found multiple objects for property \'' + $p.name->toOne() + '\' of multiplicity with bound 1';
                      if ($subtypes->isEmpty(),
                         | [
