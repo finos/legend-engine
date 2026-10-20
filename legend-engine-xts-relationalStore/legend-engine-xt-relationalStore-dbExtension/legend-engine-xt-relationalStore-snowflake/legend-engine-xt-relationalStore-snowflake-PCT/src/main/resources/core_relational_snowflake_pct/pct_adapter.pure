@@ -17,12 +17,22 @@ import meta::pure::extension::*;
 import meta::relational::tests::pct::*;
 import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
     $f,
     meta::pure::testConnection::getTestConnection(DatabaseType.Snowflake),
-    relationalExtensions()
+    relationalExtensions(),
+    meta::relational::tests::pct::snowflake::fixtureDDLCommandsTranslator()
   )
+}
+
+function meta::relational::tests::pct::snowflake::fixtureDDLCommandsTranslator():RelationalDDLCommandsTranslator[1]
+{
+  let snowflake = createDbConfig(DatabaseType.Snowflake).ddlCommandsTranslator();
+  // SnowflakeFixtureSchema creates the schema once per run
+  ^$snowflake(createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)});
 }
