@@ -257,3 +257,9 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testLeve
 
    assertEquals('select editdistance("root".FIRSTNAME, \'John\') as "similarity" from personTable as "root"', $sql);
 }
+
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testByteConvertsToBinarySqlText():Boolean[1]
+{
+   let dataType = meta::relational::functions::typeConversion::snowflake::convert(^GenericType(rawType=Byte));
+   assertEquals('BINARY(10000)', meta::relational::functions::typeConversion::snowflake::dataTypeToSqlTextSnowflake($dataType));
+}
