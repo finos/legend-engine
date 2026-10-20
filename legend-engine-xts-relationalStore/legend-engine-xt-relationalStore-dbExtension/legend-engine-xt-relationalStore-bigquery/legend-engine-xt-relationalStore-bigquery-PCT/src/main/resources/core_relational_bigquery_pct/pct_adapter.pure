@@ -34,6 +34,13 @@ function <<PCT.adapter>> {PCT.adapterName='BigQuery'} meta::relational::tests::p
 function meta::relational::tests::pct::bigQuery::fixtureDDLCommandsTranslator():RelationalDDLCommandsTranslator[1]
 {
   let bigQuery = getDDLCommandsTranslatorForBigQuery();
-  // BigQueryFixtureSchema creates the schema once per run
-  ^$bigQuery(createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)});
+  ^$bigQuery(
+    // BigQueryFixtureSchema creates the schema once per run
+    createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)},
+    // Every fixture table is loaded, so the table is created there, holding its rows in one statement
+    createTable = {sql: CreateTableSQL[1], c: DbConfig[1] | []->cast(@String)},
+    loadTable = {sql: LoadTableSQL[1], c: DbConfig[1] | if($sql.parsedData.values->isEmpty(),
+                                                         | $bigQuery.createTable->toOne()->eval(^CreateTableSQL(table = $sql.table, applyConstraints = true), $c),
+                                                         | createTableAsSelectForBigQuery($sql, $c))}
+  );
 }

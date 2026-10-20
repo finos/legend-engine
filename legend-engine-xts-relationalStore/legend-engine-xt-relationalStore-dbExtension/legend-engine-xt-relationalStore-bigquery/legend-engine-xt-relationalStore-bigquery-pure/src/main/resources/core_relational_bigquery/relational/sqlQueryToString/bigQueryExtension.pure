@@ -70,6 +70,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateCreateTableStatementForBigQuery(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
+   $createTableSQL->createTableDefinitionForBigQuery($dbConfig) + ';';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::createTableDefinitionForBigQuery(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
    // BigQuery has no explicit NULL constraint, and will only accept a primary key it does not enforce
    let t = $createTableSQL.table;
    let applyConstraints = $createTableSQL.applyConstraints;
@@ -79,7 +84,38 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' + columnTypeForBigQuery($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false || $c.nullable == true, | '', | ' NOT NULL'))
          ->joinStrings(',')
       + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ') NOT ENFORCED')
-      +');';
+      +')';
+}
+
+// Creates a table already holding its rows: one statement where a create and an insert take two
+function meta::relational::functions::sqlQueryToString::bigQuery::createTableAsSelectForBigQuery(loadTableSQL:LoadTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+   let t = $loadTableSQL.table;
+   let columns = $t.columns->cast(@meta::relational::metamodel::Column);
+   let loaded = $loadTableSQL.columnsToLoad.name;
+   let rowType = 'STRUCT<' + range($columns->size())->map(i | '_c' + $i->toString() + ' ' + $columns->at($i).type->structFieldTypeForBigQuery())->joinStrings(', ') + '>';
+   ^CreateTableSQL(table = $t, applyConstraints = true)->createTableDefinitionForBigQuery($dbConfig)
+      + ' AS SELECT * FROM UNNEST(['
+      + $loadTableSQL.parsedData.values->map(r | $rowType + '(' + $columns->map(c | $c->rowValueForBigQuery($loaded, $r.values))->joinStrings(', ') + ')')->joinStrings(', ')
+      + ']);';
+}
+
+// A literal coerces to a STRUCT field's declared type, but the type cannot be parameterised
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::structFieldTypeForBigQuery(type:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $type->match([
+      d : meta::relational::metamodel::datatype::Decimal[1] | decimalFamilyForBigQuery($d.precision, $d.scale),
+      n : meta::relational::metamodel::datatype::Numeric[1] | decimalFamilyForBigQuery($n.precision, $n.scale),
+      a : meta::relational::metamodel::datatype::DataType[1] | $a->dataTypeToSqlTextBigQuery()
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::rowValueForBigQuery(column:meta::relational::metamodel::Column[1], loaded:String[*], values:String[*]):String[1]
+{
+   let i = $loaded->indexOf($column.name);
+   let literal = if($i < 0, | 'null', | meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($values->at($i), $column.type));
+   // A string literal does not coerce to JSON
+   if($column.type->instanceOf(meta::relational::metamodel::datatype::SemiStructured) && $literal != 'null', | 'PARSE_JSON(' + $literal + ')', | $literal);
 }
 
 function {doc.doc='Given the platform (ie DB agnostic) data types, convert to BigQuery specific type'} meta::relational::functions::sqlQueryToString::bigQuery::dataTypeToSqlTextBigQuery(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
