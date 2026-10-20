@@ -34,6 +34,13 @@ function <<PCT.adapter>> {PCT.adapterName='Databricks'} meta::relational::tests:
 function meta::relational::tests::pct::databricks::fixtureDDLCommandsTranslator():RelationalDDLCommandsTranslator[1]
 {
   let databricks = getDDLCommandsTranslatorForDatabricks();
-  // DatabricksFixtureSchema creates the schema once per run
-  ^$databricks(createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)});
+  ^$databricks(
+    // DatabricksFixtureSchema creates the schema once per run
+    createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)},
+    // Every fixture table is loaded, so the table is created there, holding its rows in one statement
+    createTable = {sql: CreateTableSQL[1], c: DbConfig[1] | []->cast(@String)},
+    loadTable = {sql: LoadTableSQL[1], c: DbConfig[1] | if($sql.parsedData.values->isEmpty(),
+                                                         | $databricks.createTable->toOne()->eval(^CreateTableSQL(table = $sql.table, applyConstraints = true), $c),
+                                                         | createTableAsSelectForDatabricks($sql, $c))}
+  );
 }
