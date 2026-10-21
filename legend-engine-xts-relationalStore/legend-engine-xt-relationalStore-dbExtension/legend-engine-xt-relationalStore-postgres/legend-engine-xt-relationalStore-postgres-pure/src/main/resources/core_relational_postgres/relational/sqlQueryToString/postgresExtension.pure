@@ -35,11 +35,8 @@ function meta::relational::functions::sqlQueryToString::postgres::createDbExtens
    let reservedWords = postgresReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForPostgres());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
-   let defaultDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForPostgres()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
-   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] |
-     if($func.name == 'length', | $func.parameters->toOne()->lengthToSqlForPostgres(), | $defaultDispatch->eval($func, $sgc))
-   };
 
    ^DbExtension(
       setOperationSupport = standardSetOperationSupport(),
@@ -187,28 +184,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
    ]);
 }
 
-// char_length has no jsonb overload, and a jsonb operand needs different text depending on what it
-// holds: toJson() output keeps its JSON quoting, while a string still held as jsonb (a semi-structured
-// array element inside a lambda, a Variant navigation) must be unquoted. Shapes not recognised here
-// keep the unquoting form.
-function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::lengthToSqlForPostgres(operand:RelationalOperationElement[1]):DynaFunctionToSql[1]
-{
-  ^DynaFunctionToSql(funcName = 'length', stateMatch = allGenerationStates(), toSql = ^ToSql(format = $operand->lengthFormatForPostgres()));
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::lengthFormatForPostgres(operand:RelationalOperationElement[1]):String[1]
-{
-  $operand->match([
-    a: Alias[1]            | $a.relationalElement->lengthFormatForPostgres(),
-    l: Literal[1]          | 'char_length(%s)',
-    c: TableAliasColumn[1] | if($c.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar) || $c.column.type->instanceOf(meta::relational::metamodel::datatype::Char),
-                               | 'char_length(%s)',
-                               | 'char_length(to_jsonb(%s) #>> \'{}\')'),
-    d: DynaFunction[1]     | if($d.name == 'toJson', | 'char_length(cast(%s as text))', | 'char_length(to_jsonb(%s) #>> \'{}\')'),
-    r: RelationalOperationElement[1] | 'char_length(to_jsonb(%s) #>> \'{}\')'
-  ]);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::getDynaFunctionToSqlForPostgres(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -230,7 +205,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='((%s) || to_jsonb(%s))')),
     dynaFnToSql('array_max',              $allStates,            ^ToSql(format='(select max((t.v #>> \'{}\')::numeric) from jsonb_array_elements(cast(%s as jsonb)) t(v))')),
     dynaFnToSql('array_min',              $allStates,            ^ToSql(format='(select min((t.v #>> \'{}\')::numeric) from jsonb_array_elements(cast(%s as jsonb)) t(v))')),
-    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='(select coalesce(sum((t.v #>> \'{}\')::numeric), 0) from jsonb_array_elements(cast(%s as jsonb)) t(v))')),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(t.k order by t.o), \'[]\'::jsonb) end from jsonb_object_keys(cast(%s as jsonb)) with ordinality t(k, o))'->format([$p->at(0), $p->at(0)])})),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(t.v order by t.o), \'[]\'::jsonb) end from jsonb_each(cast(%s as jsonb)) with ordinality t(k, v, o))'->format([$p->at(0), $p->at(0)])})),
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='((%s) || (%s))')),
@@ -250,10 +224,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
-    // Postgres binds IS [NOT] DISTINCT FROM more loosely than '=', so `x is not distinct from y = true`
-    // would parse as `x is not distinct from (y = true)`; keep these predicates parenthesised.
-    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='(%s is not distinct from %s)')),
-    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='(%s is distinct from %s)')),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForPostgres($p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='date_part(\'day\', %s)')),
@@ -278,6 +250,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchPostgres('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountPostgres()})),
