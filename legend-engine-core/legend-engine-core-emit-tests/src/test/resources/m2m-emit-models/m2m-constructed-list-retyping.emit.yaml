@@ -1,0 +1,37 @@
+name: m2m-constructed-list-retyping
+title: "M2M Transform Helpers Returning Lists That Need Retyping"
+description: |
+  Four helper shapes invoked from one M2M transform, each returning a list whose
+  static element type does not match its declared return type, or widening a scalar
+  into one: a match() expression whose arms construct a different subtype per arm, a
+  plain cast-and-navigate return of a narrower subtype list, a ->filter()->map()->first()
+  extraction over constructed instances widened back into a many-valued return, and a
+  boolean guard built from nested or/and/not calls selecting between an empty collection
+  and a scalar Integer helper call. Java generics are invariant, so the list cases need
+  their elements retyped rather than returned as-is; the scalar case needs the cast
+  placed around the whole guarded expression rather than on one of its operands.
+modelSources:
+  model:
+    root: m2m-constructed-list-retyping
+    files:
+      - model.pure
+features:
+  - grammar:class-inheritance
+  - grammar:function
+  - grammar:match-expression
+  - mapping:m2m-covariant-list-return
+  - mapping:m2m-scalar-to-list-widening
+  - mapping:m2m-target-instantiation
+  - mapping:m2m-transform
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator
+  - match
+  - cast
+  - conditional
+  - java-generation

@@ -385,9 +385,20 @@ function <<test.Test>> meta::external::language::java::factory::tests::notInstan
 function <<test.Test>> meta::external::language::java::factory::tests::listOfAtomic():Boolean[1]
 {
    let list = j_variable(javaString(), 'var')->j_listOf(javaList(javaString()));
-   assertCode('java.util.Optional.ofNullable(var)\n' + 
-              '                  .map(java.util.Collections::singletonList)\n' + 
+   assertCode('java.util.Optional.ofNullable((String) var)\n' +
+              '                  .map(java.util.Collections::singletonList)\n' +
               '                  .orElseGet(java.util.Collections::emptyList)', javaList(javaString()), $list);
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::listOfBoxedConditional():Boolean[1]
+{
+   let a    = j_variable(javaBoolean(), 'a');
+   let b    = j_variable(javaBoolean(), 'b');
+   let n    = j_variable(javaLong(), 'n');
+   let cond = j_conditional($a->j_or($b->j_not()), j_null(), $n)->j_cast(javaLongBoxed());
+   assertCode('java.util.Optional.ofNullable((Long) (a || !b ? null : n))\n' +
+              '                  .map(java.util.Collections::singletonList)\n' +
+              '                  .orElseGet(java.util.Collections::emptyList)', javaList(javaLongBoxed()), $cond->j_listOf(javaList(javaLongBoxed())));
 }
 
 function <<test.Test>> meta::external::language::java::factory::tests::listOfAtomicCasted():Boolean[1]
