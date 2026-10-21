@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.language.snowflakeM2MUdf.deployment;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUdfGenerator;
+import org.finos.legend.engine.language.snowflakeM2MUdf.stage.SnowflakeM2MUdfStageDeployer;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
@@ -35,14 +34,8 @@ import org.finos.legend.pure.generated.Root_meta_external_function_activator_sno
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 
@@ -52,11 +45,16 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
 
     private PlanExecutor planExecutor;
     private ConnectionManagerSelector connectionManager;
-    private Function<String, String> engineDownloadUrlProvider;
+    private final SnowflakeM2MUdfStageDeployer stageDeployer;
 
     public SnowflakeM2MUdfDeploymentManager(PlanExecutor planExecutor, Function<String, String> engineDownloadUrlProvider)
     {
-        this.engineDownloadUrlProvider = engineDownloadUrlProvider;
+        this(planExecutor, new SnowflakeM2MUdfStageDeployer(engineDownloadUrlProvider));
+    }
+
+    public SnowflakeM2MUdfDeploymentManager(PlanExecutor planExecutor, SnowflakeM2MUdfStageDeployer stageDeployer)
+    {
+        this.stageDeployer = stageDeployer;
         this.planExecutor = planExecutor;
         connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
     }
@@ -115,30 +113,14 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
 
     public void deployImpl(Connection jdbcConnection, SnowflakeM2MUdfContent content) throws SQLException
     {
-        String engineDownloadUrl = this.engineDownloadUrlProvider.apply(content.engineVersion);
         try
         {
-            downloadFile(engineDownloadUrl,SnowflakeM2MUdfGenerator.EXECUTION_JAR_FILENAME);
-            writeStringToFile(SnowflakeM2MUdfGenerator.EXECUTION_PLAN_FILENAME,content.executionPlan);
-            int i = 0;
-
-            for (String s: content.sqlCommands)
-            {
-                Statement statement = jdbcConnection.createStatement();
-                statement.execute(s);
-                i++;
-                LOGGER.info("{} sql execution successfull", i);
-            }
+            stageDeployer.putJarAndExecutionPlanToStage(jdbcConnection, content);
         }
         catch (SQLException e)
         {
             LOGGER.info("Error executing the sql commands for deployment");
             throw e;
-        }
-        finally
-        {
-            deleteFile(SnowflakeM2MUdfGenerator.EXECUTION_JAR_FILENAME);
-            deleteFile(SnowflakeM2MUdfGenerator.EXECUTION_PLAN_FILENAME);
         }
     }
 
@@ -151,44 +133,6 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
     public RelationalDatabaseConnection extractConnectionFromArtifact(SnowflakeM2MUdfArtifact artifact)
     {
         return ((SnowflakeM2MUdfDeploymentConfiguration)artifact.deploymentConfiguration).connection;
-    }
-
-    private static void downloadFile(String url, String fileName)
-    {
-        try
-        {
-            FileUtils.copyURLToFile(new URL(url), new File(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName));
-        }
-        catch (Exception e)
-        {
-            LOGGER.info("Not able to download the file");
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void deleteFile(String fileName)
-    {
-        try
-        {
-            Files.deleteIfExists(Paths.get(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void writeStringToFile(String fileName, String content)
-    {
-        try
-        {
-            Files.write(Paths.get(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName), content.getBytes());
-        }
-        catch (Exception e)
-        {
-            LOGGER.info("Not able to convert string execution plan to temp file");
-            throw new RuntimeException(e);
-        }
     }
 
 }

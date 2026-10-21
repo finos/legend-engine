@@ -1,0 +1,7 @@
+{
+  "purePackage": "meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeM2MUdf::deployment",
+  "javaPackage": "org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.deployment",
+  "multipleInheritance": true,
+  "elementsToBeExcluded": [
+  ]
+}

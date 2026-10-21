@@ -979,6 +979,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflake-m2mudf-stage-deployer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
