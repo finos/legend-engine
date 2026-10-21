@@ -90,8 +90,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
    let resolveServiceParamsMethod     = javaMethod(['public'], javaMap(javaString(), javaObject()), 'resolveServiceParameters', [$inputMap], $resolveServiceParamsMethodBody); 
    
    let executeClass   = $executeClassWithImports->addMethod($resolveServiceParamsMethod);
-   // [B] $propertiesMappingCodecs deps stay attached to $executeClass; root resolves once.
-   let project        = newProject()->addClasses($executeClass);
+   let project        = newProject()->addClasses($executeClass)->concatenate($propertiesMappingCodecs->dependencies()->resolveAndGetProjects())->toOneMany()->mergeProjects();
 
    generatedCode($project, $executeClass);
 }
