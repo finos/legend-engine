@@ -359,7 +359,13 @@ public class DelimitedLineReader implements LineReader
         {
             State evaluate()
             {
-                if (isEscape())
+                if (delimiterTest.test(LineParser.this))
+                {
+                    finishValue();
+                    delimiterConsumer.accept(LineParser.this);
+                    return startOfValue;
+                }
+                else if (isEscape())
                 {
                     skipChar();
                     return escapeInUnquotedValue;
@@ -374,12 +380,6 @@ public class DelimitedLineReader implements LineReader
                     discardValue();
                     skipChar();
                     return inQuotedValue;
-                }
-                else if (delimiterTest.test(LineParser.this))
-                {
-                    finishValue();
-                    delimiterConsumer.accept(LineParser.this);
-                    return startOfValue;
                 }
                 else
                 {
