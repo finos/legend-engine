@@ -9,14 +9,14 @@ tests:
   operator: "->"
   signature: "->(json, text) → json"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 - id: jsonb_arrow_get_field
   sql: SELECT jsonb_val -> 'b' AS result FROM json_data WHERE id = 1
   operator: "->"
   signature: "->(jsonb, text) → jsonb"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 # -> operator (get JSON array element by index)
 
@@ -25,14 +25,14 @@ tests:
   operator: "->"
   signature: "->(json, int4) → json"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 - id: jsonb_arrow_get_index
   sql: SELECT jsonb_arr -> 1 AS result FROM json_data WHERE id = 1
   operator: "->"
   signature: "->(jsonb, int4) → jsonb"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 # ->> operator (get JSON object field as text)
 
@@ -73,14 +73,14 @@ tests:
   operator: "#>"
   signature: "#>(json, anyarray) → json"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 - id: jsonb_hash_arrow_path
   sql: "SELECT jsonb_val #> '{a,b,c}' AS result FROM json_data WHERE id = 2"
   operator: "#>"
   signature: "#>(jsonb, anyarray) → jsonb"
   expected_tds_status: ERROR
-  expected_rel_status: PASS
+  expected_rel_status: FAIL
 
 # #>> operator (get JSON object at specified path as text)
 

@@ -462,7 +462,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                 
                   let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
                   let isPropertyAutoMapped = $srcSets->isPropertyAutoMapped($p, $extensions, $mapping);
-                  if (!$preLast.shouldBeRouted || $isPropertyAutoMapped,
+                  if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $isPropertyAutoMapped,
                       | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
                       | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
 
