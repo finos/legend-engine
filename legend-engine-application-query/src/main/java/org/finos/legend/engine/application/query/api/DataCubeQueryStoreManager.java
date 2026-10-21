@@ -37,14 +37,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class DataCubeQueryStoreManager
 {
     private static final int MAX_NUMBER_OF_QUERIES = 100;
     private static final int MAX_NUMBER_OF_EVENTS = 1000;
+    private static final int MAX_CONTENT_SIZE_BYTES = 5 * 1024 * 1024;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
 
     private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "owner", "createdAt", "lastUpdatedAt", "lastOpenAt");
@@ -88,7 +90,7 @@ public class DataCubeQueryStoreManager
     {
         try
         {
-            return this.objectMapper.convertValue(document, _class);
+            return objectMapper.convertValue(document, _class);
         }
         catch (Exception e)
         {
@@ -154,6 +156,19 @@ public class DataCubeQueryStoreManager
         validateNonEmptyQueryField(query.id, "Query ID is missing or empty");
         validateNonEmptyQueryField(query.name, "Query name is missing or empty");
         validate(query.content != null, "Query content is missing");
+        validate(getContentSizeInBytes(query.content) <= MAX_CONTENT_SIZE_BYTES, "Query content exceeds maximum allowed size of " + MAX_CONTENT_SIZE_BYTES + " bytes");
+    }
+
+    private static int getContentSizeInBytes(Map<String, ?> content)
+    {
+        try
+        {
+            return objectMapper.writeValueAsBytes(content).length;
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new ApplicationQueryException("Unable to serialize query content: " + e.getMessage(), Response.Status.BAD_REQUEST);
+        }
     }
 
     public List<DataCubeQuery> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
