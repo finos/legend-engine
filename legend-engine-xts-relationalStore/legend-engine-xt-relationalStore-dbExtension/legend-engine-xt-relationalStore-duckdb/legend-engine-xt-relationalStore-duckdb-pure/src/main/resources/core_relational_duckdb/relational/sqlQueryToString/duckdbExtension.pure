@@ -190,7 +190,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='coalesce(array_aggregate(%s, \'sum\'), 0)')),
     dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
     dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)')),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(json_array_length(cast(%s as JSON)), 0)')),
+    // A LIST (typed extraction, toMany) is measured with len(): DuckDB 1.4 casts a JSON[] to JSON as a list of quoted
+    // strings, which json_array_length rejects. Anything else (JSON values, JSON text) is still read as JSON.
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(case when suffix(typeof(%s), \']\') then cast(len(%s) as UBIGINT) else json_array_length(cast(%s as JSON)) end, 0)', transform={p:String[1] | [$p, $p, $p]}, parametersWithinWhenClause = [false])),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)')),
     dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='(%s[greatest(%s + 1, 1) : greatest(%s, 0)])')),
